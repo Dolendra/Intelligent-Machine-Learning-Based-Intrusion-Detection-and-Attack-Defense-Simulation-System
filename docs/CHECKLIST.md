@@ -24,6 +24,6 @@
 - [ ] README quick start works on a clean machine (or Docker)
 
 ## Optional
-- [ ] GitHub remote + README screenshots
+- [ ] GitHub: `gh auth login` then `powershell -File scripts\push_github.ps1`
 - [ ] `docker compose up --build`
 - [ ] Full-dataset note in report if using `sample_frac: 1.0`
