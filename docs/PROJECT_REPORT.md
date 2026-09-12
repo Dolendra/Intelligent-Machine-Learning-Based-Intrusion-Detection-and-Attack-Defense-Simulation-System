@@ -62,8 +62,12 @@ Intrusion detection research broadly spans **signature-based**, **anomaly-based*
 4. M. T. Ribeiro, S. Singh, and C. Guestrin, “‘Why Should I Trust You?’ Explaining the Predictions of Any Classifier,” in *KDD*, 2016.
 5. T. Chen and C. Guestrin, “XGBoost: A Scalable Tree Boosting System,” in *KDD*, 2016.
 6. R. Sommer and V. Paxson, “Outside the Closed World: On Using Machine Learning for Network Intrusion Detection,” in *IEEE S&P*, 2010.
+7. A. L. Buczak and E. Guven, “A Survey of Data Mining and Machine Learning Methods for Cyber Security Intrusion Detection,” *IEEE Communications Surveys & Tutorials*, 2016.
+8. H.-J. Liao et al., “Intrusion Detection System: A Comprehensive Review,” *Journal of Network and Computer Applications*, 2013.
+9. D. Gunning and D. Aha, “DARPA’s Explainable Artificial Intelligence (XAI) Program,” *AI Magazine*, 2019.
+10. N. Moustafa and J. Slay, “UNSW-NB15: A Comprehensive Data Set for Network Intrusion Detection Systems,” in *MilCIS*, 2015.
 
-*(Add 4–6 more papers from your college library for signature/anomaly IDS surveys and recent XAI-for-security work.)*
+*(Add institution-specific formatting / more recent XAI-for-IDS papers as required by your guide.)*
 
 ---
 

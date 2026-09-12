@@ -48,18 +48,20 @@ UI on port **5173**, API on **8000**. Requires `models/trained_models/` and `dat
 
 ## Architecture
 
+![Aegis IDS architecture](docs/architecture.svg)
+
 ```text
-┌────────────┐   ┌────────────┐   ┌─────────────┐   ┌──────────┐
-│ CICIDS2017 │→│ Preprocess │→│ Binary +     │→│ Risk +   │
-│ flow CSVs  │   │ + features │   │ Multiclass  │   │ SHAP     │
-└────────────┘   └────────────┘   └─────────────┘   └────┬─────┘
-                                                         ▼
-                                              ┌──────────────────┐
-                                              │ Recommendation + │
-                                              │ Attack/Defense   │
-                                              │ Simulation + UI  │
-                                              └──────────────────┘
+Network flow → preprocess → binary ML → multiclass → risk → SHAP/LIME
+→ recommendation → simulation → dashboard
 ```
+
+### Sample evaluation figures
+
+<p>
+<img src="models/trained_models/figures/binary_confusion_matrix.png" alt="Binary confusion matrix" width="280"/>
+<img src="models/trained_models/figures/binary_roc.png" alt="Binary ROC" width="280"/>
+<img src="models/trained_models/figures/feature_importance.png" alt="Feature importance" width="280"/>
+</p>
 
 Pipeline: **Network flow → preprocess → binary ML → (if attack) multiclass → risk → SHAP → recommendation → simulation → dashboard**
 
@@ -84,6 +86,7 @@ pytest -q
 |-----|---------|
 | [`docs/00-index.md`](docs/00-index.md) | Module index |
 | [`docs/DEMO.md`](docs/DEMO.md) | 2-minute viva demo |
+| [`docs/TEAM.md`](docs/TEAM.md) | 3-member ownership guide |
 | [`docs/PROJECT_REPORT.md`](docs/PROJECT_REPORT.md) | Full report draft |
 | [`docs/Aegis_IDS_Project_Report.docx`](docs/Aegis_IDS_Project_Report.docx) | Word export |
 | [`docs/Aegis_IDS_Viva_Presentation.pptx`](docs/Aegis_IDS_Viva_Presentation.pptx) | Viva PowerPoint |
