@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { AppLayout } from "../components/AppLayout";
 
@@ -27,5 +27,6 @@ describe("AppLayout", () => {
     expect(screen.getByText("Dashboard")).toBeTruthy();
     expect(screen.getByText("Detection")).toBeTruthy();
     expect(screen.getByText("Home content")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText(/Models online/i)).toBeTruthy());
   });
 });
