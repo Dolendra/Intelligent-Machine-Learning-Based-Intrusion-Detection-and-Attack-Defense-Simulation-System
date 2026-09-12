@@ -48,7 +48,7 @@ UI on port **5173**, API on **8000**. Requires `models/trained_models/` and `dat
 
 ## Architecture
 
-![Aegis IDS architecture](docs/architecture.svg)
+![Aegis IDS architecture](docs/architecture.png)
 
 ```text
 Network flow → preprocess → binary ML → multiclass → risk → SHAP/LIME
