@@ -237,6 +237,33 @@ export function ModelsPage() {
         </section>
       </div>
 
+      <section className="panel" style={{ marginBottom: "1rem" }}>
+        <h3 style={{ marginTop: 0 }}>Experiment conclusions</h3>
+        <ul className="timeline">
+          <li>
+            <strong>EXP-004 Threshold</strong>
+            <div className="muted">
+              0.85 selected because it maximized F1 under recall ≥ 0.95 after the freeze retrain.
+            </div>
+          </li>
+          <li>
+            <strong>EXP-003 Calibration</strong>
+            <div className="muted">Disabled — isotonic worsened Brier and reduced recall.</div>
+          </li>
+          <li>
+            <strong>EXP-005 Risk</strong>
+            <div className="muted">Severity labels remained stable across tested weight configurations.</div>
+          </li>
+          <li>
+            <strong>EXP-008 Drift</strong>
+            <div className="muted">
+              No feature exceeded the selected PSI ≥ 0.2 flagging threshold between the training and IID test
+              split.
+            </div>
+          </li>
+        </ul>
+      </section>
+
       <div className="split">
         <section className="panel">
           <h3 style={{ marginTop: 0 }}>Binary validation</h3>

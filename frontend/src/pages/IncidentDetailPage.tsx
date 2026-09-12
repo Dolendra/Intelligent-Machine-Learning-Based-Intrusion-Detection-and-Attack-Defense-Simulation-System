@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { DecisionTraceTimeline } from "../components/DecisionTrace";
 import { api } from "../services/api";
 
 export function IncidentDetailPage() {
@@ -104,108 +105,100 @@ export function IncidentDetailPage() {
       {!item && !error && <div className="panel">Loading…</div>}
 
       {item && (
-        <div className="split">
-          <section className="panel stack">
-            <div className="grid-stats">
-              <div className="stat">
-                <div className="label">Attack</div>
-                <div className="value" style={{ fontSize: "1.2rem" }}>
-                  {String(item.attack_type)}
-                </div>
-              </div>
-              <div className="stat">
-                <div className="label">Risk</div>
-                <div className="value">{String(item.risk_score)}</div>
-              </div>
-              <div className="stat">
-                <div className="label">Confidence</div>
-                <div className="value">{(Number(item.confidence) * 100).toFixed(0)}%</div>
-              </div>
-              <div className="stat">
-                <div className="label">Status</div>
-                <div className="value" style={{ fontSize: "1rem" }}>
-                  {String(item.status)}
-                </div>
+        <>
+          <div className="hero-action">
+            <div>
+              <div style={{ fontSize: "1.35rem", fontWeight: 650 }}>{String(item.attack_type)}</div>
+              <div className="muted">
+                <span className={`badge ${String(item.severity).toLowerCase()}`}>{String(item.severity)}</span>
+                {" · "}Risk {String(item.risk_score)}
+                {item.campaign_id ? ` · ${String(item.campaign_id)}` : ""}
               </div>
             </div>
-            <p>
-              <span className={`badge ${String(item.severity).toLowerCase()}`}>{String(item.severity)}</span>
-              {item.campaign_id ? (
-                <Link className="mono muted" to={`/campaigns/${encodeURIComponent(String(item.campaign_id))}`}>
-                  {" "}
-                  · {String(item.campaign_id)}
-                </Link>
-              ) : null}
-            </p>
-            <p>
-              <strong>Recommendation:</strong> {String(item.recommendation)}
-            </p>
-
-            <label className="muted">
-              Analyst notes
-              <textarea
-                className="select"
-                style={{ width: "100%", minHeight: "4.5rem", display: "block", marginTop: "0.35rem" }}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </label>
-            <label className="muted">
-              Defense action
-              <input
-                className="select"
-                style={{ width: "100%", display: "block", marginTop: "0.35rem" }}
-                value={defense}
-                onChange={(e) => setDefense(e.target.value)}
-                placeholder="e.g. rate-limit applied (advisory)"
-              />
-            </label>
-            <button className="btn btn-secondary" disabled={busy} onClick={() => void saveInvestigation()}>
-              Save investigation
+            <button className="btn btn-amber" onClick={() => void simulate()} disabled={busy}>
+              Simulate this incident
             </button>
+          </div>
 
-            <div className="row">
-              <button className="btn btn-amber" onClick={() => void simulate()} disabled={busy}>
-                Simulate
-              </button>
-              {next.map((s) => (
-                <button key={s} className="btn btn-secondary" disabled={busy} onClick={() => void advance(s)}>
-                  {s}
-                </button>
-              ))}
-            </div>
-            {trace && (
-              <div>
-                <h4 style={{ marginBottom: "0.35rem" }}>{trace.title}</h4>
-                <ol style={{ paddingLeft: "1.2rem" }}>
-                  {trace.steps.map((s, i) => (
-                    <li key={`${s.stage}-${i}`} style={{ marginBottom: "0.4rem" }}>
-                      <strong>{s.title}</strong>
-                      <div className="muted">{s.detail}</div>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            )}
-          </section>
-          <section className="panel">
-            <h3 style={{ marginTop: 0 }}>Timeline</h3>
-            {events.length === 0 && <p className="muted">No events recorded yet.</p>}
-            <ul className="timeline">
-              {events.map((e, idx) => (
-                <li key={idx}>
-                  <strong>
-                    {String(e.old_status ?? "—")} → {String(e.new_status)}
-                  </strong>
-                  <div className="muted mono">
-                    {String(e.timestamp ?? "")} · {String(e.actor ?? "system")}
+          <div className="split">
+            <section className="panel stack">
+              <div className="grid-stats">
+                <div className="stat">
+                  <div className="label">Attack</div>
+                  <div className="value" style={{ fontSize: "1.2rem" }}>
+                    {String(item.attack_type)}
                   </div>
-                  {e.notes ? <div className="muted">{String(e.notes)}</div> : null}
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
+                </div>
+                <div className="stat">
+                  <div className="label">Risk</div>
+                  <div className="value">{String(item.risk_score)}</div>
+                </div>
+                <div className="stat">
+                  <div className="label">Confidence</div>
+                  <div className="value">{(Number(item.confidence) * 100).toFixed(0)}%</div>
+                </div>
+                <div className="stat">
+                  <div className="label">Status</div>
+                  <div className="value" style={{ fontSize: "1rem" }}>
+                    {String(item.status)}
+                  </div>
+                </div>
+              </div>
+              <p>
+                <strong>Recommendation:</strong> {String(item.recommendation)}
+              </p>
+
+              <label className="muted">
+                Analyst notes
+                <textarea
+                  className="select"
+                  style={{ width: "100%", minHeight: "4.5rem", display: "block", marginTop: "0.35rem" }}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+              </label>
+              <label className="muted">
+                Defense action
+                <input
+                  className="select"
+                  style={{ width: "100%", display: "block", marginTop: "0.35rem" }}
+                  value={defense}
+                  onChange={(e) => setDefense(e.target.value)}
+                  placeholder="e.g. rate-limit applied (advisory)"
+                />
+              </label>
+              <button className="btn btn-secondary" disabled={busy} onClick={() => void saveInvestigation()}>
+                Save investigation
+              </button>
+
+              <div className="row">
+                {next.map((s) => (
+                  <button key={s} className="btn btn-secondary" disabled={busy} onClick={() => void advance(s)}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+              {trace ? <DecisionTraceTimeline title={trace.title} steps={trace.steps} /> : null}
+            </section>
+            <section className="panel">
+              <h3 style={{ marginTop: 0 }}>Lifecycle events</h3>
+              {events.length === 0 && <p className="muted">No events recorded yet.</p>}
+              <ul className="timeline">
+                {events.map((e, idx) => (
+                  <li key={idx}>
+                    <strong>
+                      {String(e.old_status ?? "—")} → {String(e.new_status)}
+                    </strong>
+                    <div className="muted mono">
+                      {String(e.timestamp ?? "")} · {String(e.actor ?? "system")}
+                    </div>
+                    {e.notes ? <div className="muted">{String(e.notes)}</div> : null}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+        </>
       )}
     </div>
   );

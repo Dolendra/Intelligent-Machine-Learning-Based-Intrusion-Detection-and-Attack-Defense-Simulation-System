@@ -7,125 +7,125 @@
     "binary_top": [
       {
         "feature": "Bwd Packet Length Std",
-        "importance": 0.39911335706710815
+        "importance": 0.3995392986699432
       },
       {
         "feature": "Average Packet Size",
-        "importance": 0.15812790393829346
-      },
-      {
-        "feature": "Packet Length Variance",
-        "importance": 0.08769141137599945
+        "importance": 0.2844936677951996
       },
       {
         "feature": "Max Packet Length",
-        "importance": 0.06854415684938431
-      },
-      {
-        "feature": "Packet Length Std",
-        "importance": 0.042083147913217545
-      },
-      {
-        "feature": "Bwd IAT Max",
-        "importance": 0.03857039660215378
-      },
-      {
-        "feature": "Fwd Packet Length Max",
-        "importance": 0.02761853113770485
-      },
-      {
-        "feature": "Fwd IAT Std",
-        "importance": 0.018214106559753418
+        "importance": 0.09568585033642611
       },
       {
         "feature": "Destination Port",
-        "importance": 0.011474146507680416
-      },
-      {
-        "feature": "Fwd IAT Max",
-        "importance": 0.010297084227204323
-      },
-      {
-        "feature": "Idle Mean",
-        "importance": 0.010113585740327835
-      },
-      {
-        "feature": "Fwd PSH Flags",
-        "importance": 0.009432482533156872
+        "importance": 0.07630844658459389
       },
       {
         "feature": "Init_Win_bytes_backward",
-        "importance": 0.0088450126349926
+        "importance": 0.056230343962480354
       },
       {
-        "feature": "Flow Packets/s",
-        "importance": 0.008771227672696114
+        "feature": "Bwd IAT Max",
+        "importance": 0.01772384634304093
       },
       {
-        "feature": "SYN Flag Count",
-        "importance": 0.008687558583915234
+        "feature": "Avg Fwd Segment Size",
+        "importance": 0.012720233458530307
+      },
+      {
+        "feature": "Avg Bwd Segment Size",
+        "importance": 0.010942866203375185
+      },
+      {
+        "feature": "Bwd IAT Std",
+        "importance": 0.008895062425139575
+      },
+      {
+        "feature": "Flow IAT Std",
+        "importance": 0.005730858044936898
+      },
+      {
+        "feature": "Fwd IAT Mean",
+        "importance": 0.0035262727002252844
+      },
+      {
+        "feature": "Fwd Packets/s",
+        "importance": 0.0034466223617496544
+      },
+      {
+        "feature": "Packet Length Variance",
+        "importance": 0.002279300679909808
+      },
+      {
+        "feature": "Idle Max",
+        "importance": 0.002230403083275724
+      },
+      {
+        "feature": "Down/Up Ratio",
+        "importance": 0.002006846410435765
       }
     ],
     "multiclass_top": [
       {
-        "feature": "Bwd Packet Length Min",
-        "importance": 0.1461571305990219
+        "feature": "Destination Port",
+        "importance": 0.1586787517264531
       },
       {
-        "feature": "Bwd Packet Length Std",
-        "importance": 0.1414112001657486
-      },
-      {
-        "feature": "Idle Max",
-        "importance": 0.12244724482297897
-      },
-      {
-        "feature": "Bwd Packet Length Mean",
-        "importance": 0.08334417641162872
-      },
-      {
-        "feature": "Average Packet Size",
-        "importance": 0.06237480416893959
-      },
-      {
-        "feature": "Idle Min",
-        "importance": 0.05566062405705452
-      },
-      {
-        "feature": "Fwd PSH Flags",
-        "importance": 0.04945151507854462
+        "feature": "Init_Win_bytes_backward",
+        "importance": 0.08010665723088398
       },
       {
         "feature": "Packet Length Mean",
-        "importance": 0.04717138409614563
+        "importance": 0.059809741733196295
       },
       {
-        "feature": "Packet Length Variance",
-        "importance": 0.04294212535023689
-      },
-      {
-        "feature": "Packet Length Std",
-        "importance": 0.03160993754863739
+        "feature": "Average Packet Size",
+        "importance": 0.058237091045200494
       },
       {
         "feature": "Fwd Packet Length Max",
-        "importance": 0.027697023004293442
+        "importance": 0.05501495826773204
+      },
+      {
+        "feature": "Fwd Packet Length Mean",
+        "importance": 0.0355862107881543
+      },
+      {
+        "feature": "Avg Fwd Segment Size",
+        "importance": 0.03231784294081748
+      },
+      {
+        "feature": "Bwd Header Length",
+        "importance": 0.030909979753282312
+      },
+      {
+        "feature": "Fwd Header Length.1",
+        "importance": 0.030032875736190047
       },
       {
         "feature": "Max Packet Length",
-        "importance": 0.02646748162806034
+        "importance": 0.028182236090405287
       },
       {
-        "feature": "Avg Bwd Segment Size",
-        "importance": 0.025511957705020905
+        "feature": "Init_Win_bytes_forward",
+        "importance": 0.02628929605865148
       },
       {
-        "feature": "Bwd IAT Std",
-        "importance": 0.014187377877533436
+        "feature": "min_seg_size_forward",
+        "importance": 0.02547929438090707
       },
       {
-        "feature": "Min Packet Length",
-        "importance": 0.010711630806326866
+        "feature": "Subflow Bwd Bytes",
+        "importance": 0.022721151059497458
+      },
+      {
+        "feature": "Total Length of Bwd Packets",
+        "importance": 0.021210876997715157
+      },
+      {
+        "feature": "Fwd Header Length",
+        "importance": 0.019944494605574355
       }
     ]
   },
@@ -133,192 +133,100 @@
     "method": "mean_abs_local_explanation",
     "note": "Attack-specific rankings averaged from local explanations on sampled flows.",
     "by_attack": {
+      "DDoS": {
+        "samples": 3,
+        "top_features": [
+          {
+            "feature": "Destination Port",
+            "mean_abs_contribution": 0.12499046540438959,
+            "n": 3
+          },
+          {
+            "feature": "Init_Win_bytes_backward",
+            "mean_abs_contribution": 0.09432538903287026,
+            "n": 3
+          },
+          {
+            "feature": "Fwd Packet Length Max",
+            "mean_abs_contribution": 0.07215730491842941,
+            "n": 3
+          },
+          {
+            "feature": "Fwd Packet Length Mean",
+            "mean_abs_contribution": 0.04871692037382114,
+            "n": 3
+          },
+          {
+            "feature": "Average Packet Size",
+            "mean_abs_contribution": 0.04749284988407689,
+            "n": 3
+          },
+          {
+            "feature": "min_seg_size_forward",
+            "mean_abs_contribution": 0.04715316762292817,
+            "n": 3
+          },
+          {
+            "feature": "Avg Fwd Segment Size",
+            "mean_abs_contribution": 0.04429730000044335,
+            "n": 3
+          },
+          {
+            "feature": "Packet Length Mean",
+            "mean_abs_contribution": 0.03849171596848738,
+            "n": 3
+          }
+        ]
+      },
       "BENIGN": {
         "samples": 21,
         "top_features": [
           {
             "feature": "Init_Win_bytes_backward",
-            "mean_abs_contribution": 1.4665984341076441,
-            "n": 21
-          },
-          {
-            "feature": "Fwd Packet Length Max",
-            "mean_abs_contribution": 1.0406719942887623,
+            "mean_abs_contribution": 0.13398627504396637,
             "n": 21
           },
           {
             "feature": "Destination Port",
-            "mean_abs_contribution": 1.0249471543800264,
+            "mean_abs_contribution": 0.10225782300093013,
+            "n": 13
+          },
+          {
+            "feature": "Bwd Packet Length Std",
+            "mean_abs_contribution": 0.09566163118561191,
             "n": 21
           },
           {
             "feature": "Average Packet Size",
-            "mean_abs_contribution": 0.9528096914291382,
+            "mean_abs_contribution": 0.09468074858204165,
             "n": 21
           },
           {
-            "feature": "Bwd Packet Length Min",
-            "mean_abs_contribution": 0.9523864934841791,
-            "n": 12
+            "feature": "Avg Fwd Segment Size",
+            "mean_abs_contribution": 0.0743157490293271,
+            "n": 3
           },
           {
-            "feature": "Bwd Packet Length Mean",
-            "mean_abs_contribution": 0.8814808279275894,
+            "feature": "Packet Length Variance",
+            "mean_abs_contribution": 0.0635904377692797,
             "n": 16
           },
           {
-            "feature": "Bwd Packet Length Std",
-            "mean_abs_contribution": 0.8025554461138589,
-            "n": 21
+            "feature": "URG Flag Count",
+            "mean_abs_contribution": 0.0635241253899794,
+            "n": 4
           },
           {
-            "feature": "Min Packet Length",
-            "mean_abs_contribution": 0.791561633348465,
-            "n": 10
-          }
-        ]
-      },
-      "DDoS": {
-        "samples": 1,
-        "top_features": [
-          {
-            "feature": "Destination Port",
-            "mean_abs_contribution": 0.9045358896255493,
-            "n": 1
-          },
-          {
-            "feature": "Init_Win_bytes_backward",
-            "mean_abs_contribution": 0.2525203824043274,
-            "n": 1
-          },
-          {
-            "feature": "Fwd IAT Std",
-            "mean_abs_contribution": 0.20283932983875275,
-            "n": 1
-          },
-          {
-            "feature": "Flow IAT Max",
-            "mean_abs_contribution": 0.180620476603508,
-            "n": 1
-          },
-          {
-            "feature": "Flow IAT Mean",
-            "mean_abs_contribution": 0.16673922538757324,
-            "n": 1
-          },
-          {
-            "feature": "Fwd IAT Mean",
-            "mean_abs_contribution": 0.09142899513244629,
-            "n": 1
-          },
-          {
-            "feature": "Packet Length Std",
-            "mean_abs_contribution": 0.0683380737900734,
-            "n": 1
-          },
-          {
-            "feature": "Fwd Packet Length Min",
-            "mean_abs_contribution": 0.06340489536523819,
-            "n": 1
-          }
-        ]
-      },
-      "DoS": {
-        "samples": 1,
-        "top_features": [
-          {
-            "feature": "Fwd Packet Length Max",
-            "mean_abs_contribution": 2.9200778007507324,
-            "n": 1
-          },
-          {
-            "feature": "Init_Win_bytes_backward",
-            "mean_abs_contribution": 1.086394190788269,
-            "n": 1
-          },
-          {
-            "feature": "Fwd Packet Length Mean",
-            "mean_abs_contribution": 0.404234379529953,
-            "n": 1
-          },
-          {
-            "feature": "Fwd IAT Std",
-            "mean_abs_contribution": 0.25126904249191284,
-            "n": 1
-          },
-          {
-            "feature": "Packet Length Std",
-            "mean_abs_contribution": 0.19959719479084015,
-            "n": 1
-          },
-          {
-            "feature": "Average Packet Size",
-            "mean_abs_contribution": 0.16532960534095764,
-            "n": 1
-          },
-          {
-            "feature": "Min Packet Length",
-            "mean_abs_contribution": 0.13505050539970398,
-            "n": 1
-          },
-          {
-            "feature": "Flow IAT Std",
-            "mean_abs_contribution": 0.12971451878547668,
-            "n": 1
-          }
-        ]
-      },
-      "PortScan": {
-        "samples": 1,
-        "top_features": [
-          {
-            "feature": "Destination Port",
-            "mean_abs_contribution": 2.518401622772217,
-            "n": 1
-          },
-          {
-            "feature": "Init_Win_bytes_backward",
-            "mean_abs_contribution": 0.5281000733375549,
-            "n": 1
-          },
-          {
-            "feature": "Min Packet Length",
-            "mean_abs_contribution": 0.4340226948261261,
-            "n": 1
-          },
-          {
-            "feature": "Bwd Packet Length Std",
-            "mean_abs_contribution": 0.40275442600250244,
-            "n": 1
-          },
-          {
-            "feature": "PSH Flag Count",
-            "mean_abs_contribution": 0.19767165184020996,
-            "n": 1
-          },
-          {
-            "feature": "Bwd Packet Length Mean",
-            "mean_abs_contribution": 0.18648572266101837,
-            "n": 1
-          },
-          {
-            "feature": "Idle Max",
-            "mean_abs_contribution": 0.17018510401248932,
-            "n": 1
-          },
-          {
-            "feature": "Fwd IAT Total",
-            "mean_abs_contribution": 0.15088221430778503,
-            "n": 1
+            "feature": "Bwd IAT Std",
+            "mean_abs_contribution": 0.05669676735810958,
+            "n": 6
           }
         ]
       }
     },
     "attacks": [
       "BENIGN",
-      "DDoS",
-      "DoS",
-      "PortScan"
+      "DDoS"
     ]
   },
   "samples_explained": 24

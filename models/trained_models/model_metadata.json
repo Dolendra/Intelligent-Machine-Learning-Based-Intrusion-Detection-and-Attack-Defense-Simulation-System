@@ -5,7 +5,10 @@
   "dataset_source": "MachineLearningCVE",
   "sample_frac": 1.0,
   "random_state": 42,
-  "generated_at": "2026-09-12T17:19:12.845812+00:00",
+  "min_class_count": 50,
+  "generated_at": "2026-09-12T19:04:41.246415+00:00",
+  "training_git_commit": "ad9f665",
+  "config_hash": "4fee07f7444a795f",
   "python_version": "3.11.9",
   "platform": "Windows-10-10.0.26200-SP0",
   "packages": {
@@ -15,31 +18,48 @@
     "numpy": "2.4.2",
     "pandas": "2.3.3"
   },
-  "binary_model": "xgboost",
-  "multiclass_model": "xgboost",
+  "split_sizes": {
+    "training_rows": 1764525,
+    "validation_rows": 252075,
+    "test_rows": 504151
+  },
+  "binary_model": "decision_tree",
+  "multiclass_model": "random_forest",
+  "attack_classes": [
+    "Bot",
+    "BruteForce",
+    "DDoS",
+    "DoS",
+    "PortScan",
+    "WebAttack"
+  ],
   "feature_count_binary": 40,
   "feature_count_multiclass": 40,
   "dual_selectors": true,
-  "binary_threshold": 0.5,
+  "binary_threshold": 0.85,
+  "uncertainty_lower": 0.1,
+  "uncertainty_upper": 0.95,
   "use_calibrated_binary": false,
   "test_metrics_binary": {
-    "f1": 0.992958451920074,
-    "recall": 0.9896287247912238,
-    "precision": 0.9963106612430234,
-    "pr_auc": null,
-    "fpr": null,
-    "fnr": null,
-    "brier_score": null,
-    "ece": null
+    "f1": 0.9904784130688448,
+    "recall": 0.9970048978728903,
+    "precision": 0.984036818492714,
+    "pr_auc": 0.9974366596551231,
+    "fpr": 0.003286302062948078,
+    "fnr": 0.0029951021271097853,
+    "brier_score": 0.0022855331175206566,
+    "ece": 0.00241754208811584
   },
   "artifact_hashes": {
-    "binary_best": "78303db739a1fbf6",
-    "multiclass_best": "fdb4a0b59af74359",
-    "feature_bundle": "03153b5d4c320b9a",
-    "binary_calibrated": null
+    "binary_best": "9b0158aacd2cde3c",
+    "multiclass_best": "d6da28dae45ca4c0",
+    "feature_bundle": "008dfe62ef5e663d",
+    "binary_calibrated": null,
+    "processed_train": "0da591e1bf851241"
   },
   "notes": [
     "Metadata for reproducibility \u2014 not a claim of production SOC deployment.",
-    "Calibration wrapper is optional; enable models.use_calibrated_binary after fitting script 14."
+    "Stage-2 multiclass excludes BENIGN (attack_label_encoder).",
+    "Calibration wrapper is optional; enable models.use_calibrated_binary after script 14 if justified."
   ]
 }

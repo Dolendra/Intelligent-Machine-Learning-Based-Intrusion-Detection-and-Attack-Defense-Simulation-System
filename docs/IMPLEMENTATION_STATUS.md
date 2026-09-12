@@ -1,32 +1,21 @@
 # Implementation status (honest inventory)
 
-Last updated after research-finalization: threshold/calibration conclusions, drift artifact, golden-path E2E.
+Last updated after **final freeze**: Stage-2 retrain (attack-only multiclass), deterministic simulation time, Research Results page, artifact consistency tests.
 
-## Implemented
+## Freeze package
 
-### Correctness & product loop (Phases 1–4)
-- Attack-only multiclass, SHAP shapes, severity bands, explicit `source_ref` dedup/campaigns
-- Evidence-based operating threshold + uncertainty bands (`threshold_operating_point.json`)
-- SOC UI, simulation latencies/series/campaign sim, `/api/ready`, non-root Docker, request IDs
+- Multiclass `classes_` / `attack_label_encoder`: **Bot, BruteForce, DDoS, DoS, PortScan, WebAttack** — **no BENIGN**
+- Binary best: **decision_tree**; Multiclass best: **random_forest**
+- Operating threshold **0.85**, uncertainty **[0.10, 0.95]** (regenerated after retrain)
+- Calibration remains **disabled** (prior research decision)
+- Simulation uses **deterministic `simulation_time`** (not wall-clock)
+- Research Results UI + experiment conclusions panels
+- Artifact consistency + SHAP alignment + golden-path E2E tests
 
-### Research finalization
-- **Threshold decision:** operating **0.30**, uncertainty **[0.10, 0.45]** (val sweep; see `docs/experiments/CALIBRATION_AND_THRESHOLD.md`)
-- **Calibration decision:** **disabled** — sample isotonic worsened Brier and reduced recall
-- **Risk sensitivity:** severity labels stable across A/B/C weight configs
-- **Drift:** train→test PSI report (`drift_report.json`); 0 features flagged ≥0.2
-- Error analysis + experiment index artifacts refreshed
+## Partially / optional
 
-### Phase-5 Model Lab
-- Global/attack importance, counterfactuals, health/drift/experiments UI
-
-### Integration test
-- Golden-path API E2E: demo → predict → explain → counterfactual → incident → simulate → recover
-
-## Partially implemented
-
-- Stage-2 **retrain** still recommended so production multiclass joblibs match attack-only encoder semantics from current training code
-- External CSE-CIC-IDS2018 needs compatible CSVs for official cross-dataset metrics
-- Browser Playwright/Cypress suite (API golden-path covers the loop server-side)
+- Browser Playwright journey (API golden-path already covers the loop)
+- CSE-CIC-IDS2018 external metrics require compatible CSVs
 
 ## Not implemented (do not claim)
 
@@ -34,4 +23,5 @@ Last updated after research-finalization: threshold/calibration conclusions, dri
 
 ## Academic wording
 
-Prefer: **ML-based intrusion detection prototype**, **controlled attack–defense simulation**, **decision-support recommendations**.
+Prefer: **ML-based intrusion detection prototype**, **controlled attack–defense simulation**, **decision-support recommendations**.  
+For drift: state that **no feature exceeded PSI ≥ 0.2 on the train→IID test split** — not “there is no data drift.”

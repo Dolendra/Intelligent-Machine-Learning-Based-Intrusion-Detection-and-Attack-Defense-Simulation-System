@@ -35,6 +35,18 @@ _PHASE_LABELS = {
     "recovered": "Recovery",
 }
 
+# Deterministic simulated seconds advanced on each phase (not wall-clock).
+_PHASE_DT = {
+    "idle": 0.0,
+    "normal": 0.0,
+    "attack_start": 2.0,
+    "attack_impact": 2.0,
+    "detected": 2.0,
+    "recommended": 2.0,
+    "defended": 2.0,
+    "recovered": 4.0,
+}
+
 
 @dataclass
 class SimulationSession:
@@ -110,7 +122,7 @@ class SimulationSession:
             "advisory_only": True,
             "disclaimer": (
                 "Controlled visualization only — not a real attack or live network control. "
-                "Timestamps and latencies are simulated wall-clock within this session."
+                "Phase timings use deterministic simulation_time (not wall-clock)."
             ),
         }
 
@@ -197,6 +209,8 @@ class SimulationEngine:
                 "configured_intensity": round(intensity, 3),
                 "asset_criticality": asset_criticality,
                 "t0_epoch": time.time(),
+                "simulation_time": 0.0,
+                "timing_mode": "deterministic_simulation_time",
                 "series": {
                     "labels": [],
                     "with_defense": {"traffic": [], "stress": [], "risk": []},
@@ -205,7 +219,7 @@ class SimulationEngine:
                 "campaign_progression": list(campaign_progression or []),
             },
         )
-        self._log(session, "session_created", "idle", f"Scenario: {attack_type}")
+        self._log(session, "session_created", "idle", f"Scenario: {attack_type}", dt=0.0)
         session.narrative.append(
             f"Scenario prepared for {attack_type} (intensity={intensity:.2f}, visualization only)."
         )
@@ -319,11 +333,25 @@ class SimulationEngine:
         return s.to_dict()
 
     def _elapsed_s(self, s: SimulationSession) -> float:
-        t0 = float(s.metrics.get("t0_epoch") or time.time())
-        return round(max(0.0, time.time() - t0), 2)
+        """Current deterministic simulation clock (seconds)."""
+        return round(float(s.metrics.get("simulation_time", 0.0)), 2)
 
-    def _log(self, s: SimulationSession, event: str, state: str, detail: str) -> None:
-        elapsed = self._elapsed_s(s)
+    def _phase_dt(self, s: SimulationSession, state: str) -> float:
+        base = float(_PHASE_DT.get(state, 2.0))
+        # Confidence modulates detection/defense/recovery slightly but stays deterministic
+        conf = max(0.0, min(1.0, float(s.confidence)))
+        if state == "detected":
+            return round(base + (1.0 - conf) * 2.0, 2)
+        if state == "defended":
+            return round(base + (1.0 - conf) * 1.5, 2)
+        if state == "recovered":
+            return round(base + (1.0 - conf) * 1.0, 2)
+        return base
+
+    def _log(self, s: SimulationSession, event: str, state: str, detail: str, dt: float | None = None) -> None:
+        step = self._phase_dt(s, state) if dt is None else float(dt)
+        elapsed = round(float(s.metrics.get("simulation_time", 0.0)) + max(0.0, step), 2)
+        s.metrics["simulation_time"] = elapsed
         s.timeline.append(
             {
                 "event": event,
@@ -331,6 +359,7 @@ class SimulationEngine:
                 "detail": detail,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "t_s": elapsed,
+                "dt_s": step,
             }
         )
         s.metrics[f"phase_{state}_at_s"] = elapsed

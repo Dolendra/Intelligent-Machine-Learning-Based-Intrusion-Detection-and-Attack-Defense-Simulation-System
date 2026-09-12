@@ -337,6 +337,50 @@ select {
   background: var(--cyan);
 }
 
+.decision-trace {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.decision-trace li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  gap: 0.65rem;
+  padding: 0.55rem 0;
+  border-left: 2px solid rgba(62, 199, 194, 0.28);
+  margin-left: 0.45rem;
+  padding-left: 0.85rem;
+}
+
+.decision-trace li:last-child {
+  border-left-color: transparent;
+}
+
+.decision-trace-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--cyan);
+  margin-left: -1.15rem;
+  margin-top: 0.35rem;
+  box-shadow: 0 0 0 3px rgba(62, 199, 194, 0.15);
+}
+
+.hero-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid rgba(228, 165, 74, 0.35);
+  background: linear-gradient(135deg, rgba(228, 165, 74, 0.12), rgba(62, 199, 194, 0.06));
+  border-radius: 14px;
+  margin-bottom: 1rem;
+}
+
 .select,
 .input {
   background: rgba(0, 0, 0, 0.25);

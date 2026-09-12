@@ -29,6 +29,7 @@ export function AppLayout() {
           <NavLink to="/reports">Reports</NavLink>
           <NavLink to="/campaigns">Campaigns</NavLink>
           <NavLink to="/models">Models</NavLink>
+          <NavLink to="/research">Research</NavLink>
         </nav>
         <div className="status-pill" style={{ marginTop: "auto" }}>
           <span className={`status-dot ${modelsLoaded ? "on" : ""}`} />

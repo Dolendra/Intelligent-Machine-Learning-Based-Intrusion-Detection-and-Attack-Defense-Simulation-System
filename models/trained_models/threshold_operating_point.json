@@ -1,9 +1,9 @@
 {
-  "operating_threshold": 0.3,
+  "operating_threshold": 0.85,
   "uncertainty_lower": 0.1,
-  "uncertainty_upper": 0.45,
+  "uncertainty_upper": 0.95,
   "selection_method": "max_f1_among_recall_ge_0.95_else_max_f1",
   "validation_split": "val",
   "val_rows": 150000,
-  "band_derivation": "lower\u2248thr where recall stays \u22650.98 (0.1); upper\u2248lowest thr with precision\u22650.95 (0.45); operating=0.3"
+  "band_derivation": "lower\u2248thr where recall stays \u22650.98 (0.1); upper\u2248lowest thr with precision\u22650.95 (0.95); operating=0.85"
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { NetworkTopology } from "../components/NetworkTopology";
+import { CompareTable } from "../components/DecisionTrace";
 import { api, SimSession } from "../services/api";
 
 const ATTACKS = ["DDoS", "DoS", "PortScan", "BruteForce", "WebAttack", "Bot"];
@@ -399,64 +400,13 @@ export function SimulationPage() {
                 {session.campaign_id && <span className="mono muted">Campaign {session.campaign_id}</span>}
                 {session.incident_id && <span className="mono muted">{session.incident_id}</span>}
               </div>
-              {session.comparison && (
-                <div className="panel compare-grid">
-                  <div>
-                    <h4 style={{ marginTop: 0 }}>Without defense</h4>
-                    <table className="table">
-                      <tbody>
-                        <tr>
-                          <td>Traffic</td>
-                          <td className="mono">{pct(session.comparison.without_defense.peak_traffic)}</td>
-                        </tr>
-                        <tr>
-                          <td>Server stress</td>
-                          <td className="mono">{pct(session.comparison.without_defense.server_stress)}</td>
-                        </tr>
-                        <tr>
-                          <td>Risk</td>
-                          <td className="mono">{session.comparison.without_defense.risk}</td>
-                        </tr>
-                        <tr>
-                          <td>Threat</td>
-                          <td className="mono">
-                            {(session.comparison.without_defense as { threat?: string }).threat ?? "ACTIVE"}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div>
-                    <h4 style={{ marginTop: 0 }}>With defense</h4>
-                    <table className="table">
-                      <tbody>
-                        <tr>
-                          <td>Traffic</td>
-                          <td className="mono">{pct(session.comparison.with_defense.peak_traffic)}</td>
-                        </tr>
-                        <tr>
-                          <td>Server stress</td>
-                          <td className="mono">{pct(session.comparison.with_defense.server_stress)}</td>
-                        </tr>
-                        <tr>
-                          <td>Risk</td>
-                          <td className="mono">{session.comparison.with_defense.risk}</td>
-                        </tr>
-                        <tr>
-                          <td>Threat</td>
-                          <td className="mono">
-                            {(session.comparison.with_defense as { threat?: string }).threat ?? "—"}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <p className="mono muted" style={{ marginBottom: 0 }}>
-                      blocked {pct(session.comparison.with_defense.traffic_blocked)} · efficacy{" "}
-                      {pct(m.defense_effectiveness)}
-                    </p>
-                  </div>
-                </div>
-              )}
+              {session.comparison ? (
+                <CompareTable
+                  without={session.comparison.without_defense}
+                  withDefense={session.comparison.with_defense}
+                  recoveryS={lat?.recovery_s ?? (m.recovery_time_s as number | undefined)}
+                />
+              ) : null}
             </section>
             <section className="panel stack">
               <h3 style={{ marginTop: 0 }}>Timeline</h3>
