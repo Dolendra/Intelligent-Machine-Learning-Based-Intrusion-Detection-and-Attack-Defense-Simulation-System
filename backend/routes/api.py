@@ -41,6 +41,27 @@ def health():
     )
 
 
+@router.get("/ready")
+def ready():
+    """Readiness probe — 503 until model artifacts are loadable."""
+    cfg = load_config()
+    if not svc.models_ready():
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "MODEL_NOT_READY",
+                "message": "Model artifacts not loaded",
+                "models_loaded": False,
+                "version": cfg["project"]["version"],
+            },
+        )
+    return {
+        "status": "ready",
+        "models_loaded": True,
+        "version": cfg["project"]["version"],
+    }
+
+
 @router.get("/models")
 def models():
     return svc.model_info()
@@ -198,6 +219,19 @@ def campaign_detail(campaign_id: str, db: Session = Depends(get_db)):
     if summary["incident_count"] == 0:
         raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "Unknown campaign"})
     return summary
+
+
+@router.post("/campaigns/{campaign_id}/simulate")
+def campaign_simulate(campaign_id: str, db: Session = Depends(get_db)):
+    from security.correlation import campaign_summary
+
+    summary = campaign_summary(db, campaign_id)
+    if summary["incident_count"] == 0:
+        raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "Unknown campaign"})
+    return simulation_engine.start_campaign(
+        campaign_id=campaign_id,
+        progression=list(summary.get("progression") or summary.get("attack_types") or []),
+    )
 
 
 @router.post("/simulation/from-prediction")

@@ -1,6 +1,6 @@
 # Implementation status (honest inventory)
 
-Last updated after Phase-2 research docs + Phase-3 SOC UI (risk why, campaigns, analyst notes, report filters).
+Last updated after Phase-4 simulation excellence + Phase-6 engineering hardening.
 
 ## Implemented
 
@@ -15,30 +15,37 @@ Last updated after Phase-2 research docs + Phase-3 SOC UI (risk why, campaigns, 
 - `DEMO_MODE` defaults to **false**; `/api/predict` ignores `allow_missing_features` unless DEMO_MODE
 
 ### Phase-2 research scaffolding
-- Label / rare-class audit script (`scripts/21_…`)
-- Experiment index writer (`scripts/22_…`)
-- Calibration/threshold decision notes (`docs/experiments/CALIBRATION_AND_THRESHOLD.md`) — fill conclusions after running sweeps
-- Enhanced model metadata (git commit, config hash, split sizes, uncertainty, attack classes)
+- Label / rare-class audit, experiment index, enhanced metadata
+- Calibration/threshold decision notes (`docs/experiments/…`) — fill conclusions after running sweeps
+- Error analysis script (`scripts/23_error_analysis.py`)
 
 ### Phase-3 SOC UI
-- Risk contributions + “Why this risk?” on Detection
-- Campaigns list/detail pages (`/campaigns`, `/campaigns/:id`) + API `GET /api/campaigns`
-- Analyst notes + defense action on Incident Detail
-- Dashboard: clickable incident IDs, risk distribution bars, View all
-- Reports: severity / attack / status / campaign filters
+- Risk why, campaigns pages, analyst notes, report filters, dashboard links/risk bars
+
+### Phase-4 simulation excellence
+- Real ISO timestamps + elapsed `t_s` on timeline events
+- Detection / defense / recovery latencies derived from session wall-clock
+- Before/after series + no-defense counterfactual charts in Simulation UI
+- Campaign simulation (`POST /api/campaigns/{id}/simulate`)
+- Mild intensity-based topology labeling
+
+### Phase-6 engineering
+- `GET /api/ready` (503 until models load)
+- Non-root API Docker user (`aegis` uid 10001)
+- Request IDs (`X-Request-ID`) on responses + structured logs
+- Standardized error envelopes (`code` / `message` / `request_id`)
+- Clearer Alembic fallback logging; lifespan fails loudly on DB init errors
 
 ## Partially implemented
 
 - Retrain required for production artifacts to pick up attack-only multiclass encoder
 - Calibration/threshold **conclusions** need values filled after experiment runs
 - External CSE-CIC-IDS2018 needs compatible CSVs on disk
-- Intensity reference / calibrated binary need training/script runs
+- Global/attack-specific SHAP dashboards, drift UI, full browser E2E suite
 
 ## Not implemented (do not claim)
 
 - Live packet capture / auto-mitigation / OAuth SSO
-- Full golden-path E2E browser suite
-- Non-root Docker / `/api/ready` hardening polish
 
 ## Academic wording
 

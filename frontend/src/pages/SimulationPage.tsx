@@ -24,6 +24,57 @@ function pct(v: unknown) {
   return `${Math.round(n * 100)}%`;
 }
 
+function SeriesBars({
+  title,
+  labels,
+  withVals,
+  withoutVals,
+  format = "pct",
+}: {
+  title: string;
+  labels: string[];
+  withVals: number[];
+  withoutVals: number[];
+  format?: "pct" | "risk";
+}) {
+  if (!labels.length) return null;
+  return (
+    <div className="panel" style={{ marginBottom: "1rem" }}>
+      <h4 style={{ marginTop: 0 }}>{title}</h4>
+      <p className="muted" style={{ marginTop: 0, fontSize: "0.85rem" }}>
+        With defense vs no-defense counterfactual (simulated).
+      </p>
+      {labels.map((label, i) => {
+        const w = withVals[i] ?? 0;
+        const o = withoutVals[i] ?? 0;
+        const wPct = format === "risk" ? Math.min(100, w) : Math.min(100, w * 100);
+        const oPct = format === "risk" ? Math.min(100, o) : Math.min(100, o * 100);
+        return (
+          <div key={`${label}-${i}`} style={{ marginBottom: "0.65rem" }}>
+            <div className="mono muted" style={{ fontSize: "0.8rem", marginBottom: "0.2rem" }}>
+              {label}
+            </div>
+            <div className="feature-bar">
+              <span>defense</span>
+              <div className="track">
+                <div className="fill" style={{ width: `${wPct}%`, background: "var(--cyan)" }} />
+              </div>
+              <span className="mono muted">{format === "risk" ? w : pct(w)}</span>
+            </div>
+            <div className="feature-bar">
+              <span>none</span>
+              <div className="track">
+                <div className="fill" style={{ width: `${oPct}%`, background: "var(--danger)" }} />
+              </div>
+              <span className="mono muted">{format === "risk" ? o : pct(o)}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function SimulationPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [attackType, setAttackType] = useState("DDoS");
@@ -154,6 +205,8 @@ export function SimulationPage() {
   }
 
   const m = session?.metrics ?? {};
+  const lat = session?.latencies;
+  const series = session?.series;
 
   return (
     <div className="rise">
@@ -280,30 +333,60 @@ export function SimulationPage() {
 
           <div className="grid-stats" style={{ marginBottom: "1rem" }}>
             <div className="stat">
-              <div className="label">Detection delay</div>
+              <div className="label">Detection latency</div>
               <div className="value" style={{ fontSize: "1.1rem" }}>
-                {m.detection_delay_s != null ? `${m.detection_delay_s}s` : "—"}
+                {lat?.detection_s != null
+                  ? `${lat.detection_s}s`
+                  : m.detection_delay_s != null
+                    ? `${m.detection_delay_s}s`
+                    : "—"}
               </div>
             </div>
             <div className="stat">
-              <div className="label">Defense delay</div>
+              <div className="label">Defense latency</div>
               <div className="value" style={{ fontSize: "1.1rem" }}>
-                {m.defense_delay_s != null ? `${m.defense_delay_s}s` : "—"}
+                {lat?.defense_s != null
+                  ? `${lat.defense_s}s`
+                  : m.defense_delay_s != null
+                    ? `${m.defense_delay_s}s`
+                    : "—"}
               </div>
             </div>
             <div className="stat">
               <div className="label">Recovery time</div>
               <div className="value" style={{ fontSize: "1.1rem" }}>
-                {m.recovery_time_s != null ? `${m.recovery_time_s}s` : "—"}
+                {lat?.recovery_s != null
+                  ? `${lat.recovery_s}s`
+                  : m.recovery_time_s != null
+                    ? `${m.recovery_time_s}s`
+                    : "—"}
               </div>
             </div>
             <div className="stat">
-              <div className="label">Risk reduction</div>
+              <div className="label">Attack→recover</div>
               <div className="value" style={{ fontSize: "1.1rem" }}>
-                {m.risk_reduction != null ? String(m.risk_reduction) : "—"}
+                {lat?.attack_to_recover_s != null ? `${lat.attack_to_recover_s}s` : "—"}
               </div>
             </div>
           </div>
+
+          {series && series.labels.length > 0 && (
+            <div className="split" style={{ marginBottom: "1rem" }}>
+              <SeriesBars
+                title="Traffic before / after"
+                labels={series.labels}
+                withVals={series.with_defense.traffic}
+                withoutVals={series.without_defense.traffic}
+              />
+              <SeriesBars
+                title="Risk before / after"
+                labels={series.labels}
+                withVals={series.with_defense.risk}
+                withoutVals={series.without_defense.risk}
+                format="risk"
+              />
+            </div>
+          )}
 
           <div className="split">
             <section className="stack">
@@ -313,6 +396,7 @@ export function SimulationPage() {
                 <span className="mono">State: {session.state}</span>
                 <span className="mono muted">Risk {session.risk_score}</span>
                 <span className="mono muted">{session.attack_type}</span>
+                {session.campaign_id && <span className="mono muted">Campaign {session.campaign_id}</span>}
                 {session.incident_id && <span className="mono muted">{session.incident_id}</span>}
               </div>
               {session.comparison && (
@@ -380,6 +464,10 @@ export function SimulationPage() {
                 {session.timeline.map((t, idx) => (
                   <li key={`${t.event}-${idx}`}>
                     <strong>{t.event}</strong>
+                    <div className="mono muted" style={{ fontSize: "0.78rem" }}>
+                      {t.t_s != null ? `t=${t.t_s}s` : ""}
+                      {t.timestamp ? ` · ${t.timestamp}` : ""}
+                    </div>
                     <div className="muted">{t.detail}</div>
                   </li>
                 ))}

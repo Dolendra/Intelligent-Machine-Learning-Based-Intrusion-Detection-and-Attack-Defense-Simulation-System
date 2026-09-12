@@ -80,7 +80,11 @@ def init_db() -> None:
     except Exception as exc:  # noqa: BLE001
         import logging
 
-        logging.getLogger("aegis.db").warning("Alembic upgrade skipped/failed (%s); using create_all fallback", exc)
+        logging.getLogger("aegis.db").warning(
+            "Alembic upgrade skipped/failed (%s); using create_all fallback. "
+            "If schema drifts, run `alembic upgrade head` manually.",
+            exc,
+        )
 
     Base.metadata.create_all(bind=engine)
     # Lightweight SQLite column add for existing prototype DBs

@@ -81,9 +81,20 @@ export type SimSession = {
   recommendation: PredictResult["recommendation"];
   nodes: { id: string; label: string; kind: string; status: string }[];
   edges: { id: string; source: string; target: string; traffic: string; intensity: number }[];
-  timeline: { event: string; state: string; detail: string }[];
+  timeline: { event: string; state: string; detail: string; timestamp?: string; t_s?: number }[];
   narrative?: string[];
-  metrics?: Record<string, number>;
+  metrics?: Record<string, number | string | unknown>;
+  series?: {
+    labels: string[];
+    with_defense: { traffic: number[]; stress: number[]; risk: number[] };
+    without_defense: { traffic: number[]; stress: number[]; risk: number[] };
+  };
+  latencies?: {
+    detection_s?: number | null;
+    defense_s?: number | null;
+    recovery_s?: number | null;
+    attack_to_recover_s?: number | null;
+  };
   phase_guide?: Array<{ t: string; label: string; state: string }>;
   comparison?: {
     without_defense: { peak_traffic: number; server_stress: number; risk: number; threat?: string };
@@ -96,6 +107,8 @@ export type SimSession = {
     };
   };
   incident_id?: string | null;
+  campaign_id?: string | null;
+  campaign_progression?: string[];
   disclaimer?: string;
 };
 
@@ -116,6 +129,8 @@ export const api = {
   campaigns: () => request<{ items: Array<Record<string, unknown>> }>("/api/campaigns"),
   getCampaign: (campaign_id: string) =>
     request<Record<string, unknown>>(`/api/campaigns/${encodeURIComponent(campaign_id)}`),
+  simulateCampaign: (campaign_id: string) =>
+    request<SimSession>(`/api/campaigns/${encodeURIComponent(campaign_id)}/simulate`, { method: "POST" }),
   analytics: () =>
     request<{ total_incidents: number; by_severity: Record<string, number>; by_attack_type: Record<string, number> }>(
       "/api/analytics"

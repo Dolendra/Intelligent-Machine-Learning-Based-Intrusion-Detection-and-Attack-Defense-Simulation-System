@@ -4,7 +4,8 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 10001 aegis
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -16,14 +17,20 @@ COPY security ./security
 COPY simulation ./simulation
 COPY backend ./backend
 COPY database ./database
+COPY alembic ./alembic
+COPY alembic.ini ./
 COPY models/trained_models ./models/trained_models
 COPY data/processed ./data/processed
+
+RUN mkdir -p /app/database && chown -R aegis:aegis /app
 
 ENV PYTHONUNBUFFERED=1
 ENV MPLBACKEND=Agg
 EXPOSE 8000
 
-HEALTHCHECK --interval=15s --timeout=5s --retries=5 --start-period=20s \
+USER aegis
+
+HEALTHCHECK --interval=15s --timeout=5s --retries=5 --start-period=25s \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')" || exit 1
 
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

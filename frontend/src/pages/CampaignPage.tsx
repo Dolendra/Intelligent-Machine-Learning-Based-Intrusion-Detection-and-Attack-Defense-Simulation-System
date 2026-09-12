@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../services/api";
 
 export function CampaignPage() {
   const { campaignId } = useParams();
+  const navigate = useNavigate();
   const [list, setList] = useState<Array<Record<string, unknown>>>([]);
   const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     api
@@ -25,6 +27,20 @@ export function CampaignPage() {
       .then(setDetail)
       .catch((e) => setError(e instanceof Error ? e.message : String(e)));
   }, [campaignId]);
+
+  async function simulateCampaign() {
+    if (!campaignId) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const session = await api.simulateCampaign(campaignId);
+      navigate(`/simulation?session=${encodeURIComponent(session.id)}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const progression = (detail?.progression as string[] | undefined) ?? [];
   const incidents = (detail?.incidents as Array<Record<string, unknown>> | undefined) ?? [];
@@ -72,6 +88,9 @@ export function CampaignPage() {
                 Incidents: {String(detail.incident_count)} · Max risk: {String(detail.max_risk)} · Severity:{" "}
                 {String(detail.max_severity)}
               </p>
+              <button className="btn btn-amber" disabled={busy} onClick={() => void simulateCampaign()}>
+                Simulate campaign progression
+              </button>
               <h4>Attack progression</h4>
               <ol>
                 {progression.map((p, i) => (

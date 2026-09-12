@@ -27,7 +27,7 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
         self.header_name = header_name
 
     def _is_public(self, path: str) -> bool:
-        if path in {"/", "/docs", "/openapi.json", "/redoc", "/api/health"}:
+        if path in {"/", "/docs", "/openapi.json", "/redoc", "/api/health", "/api/ready"}:
             return True
         if path.startswith("/api/ws"):
             return True

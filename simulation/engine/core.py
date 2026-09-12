@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import time
 import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -24,6 +25,16 @@ SimState = Literal[
     "recovered",
 ]
 
+_PHASE_LABELS = {
+    "normal": "Normal",
+    "attack_start": "Attack begins",
+    "attack_impact": "Traffic spike",
+    "detected": "IDS alert",
+    "recommended": "Recommendation",
+    "defended": "Defense",
+    "recovered": "Recovery",
+}
+
 
 @dataclass
 class SimulationSession:
@@ -40,9 +51,11 @@ class SimulationSession:
     narrative: list[str] = field(default_factory=list)
     metrics: dict[str, Any] = field(default_factory=dict)
     incident_id: str | None = None
+    campaign_id: str | None = None
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def to_dict(self) -> dict[str, Any]:
+        series = self.metrics.get("series") or {"labels": [], "with_defense": {}, "without_defense": {}}
         return {
             "id": self.id,
             "attack_type": self.attack_type,
@@ -56,6 +69,7 @@ class SimulationSession:
             "timeline": self.timeline,
             "narrative": self.narrative,
             "metrics": self.metrics,
+            "series": series,
             "comparison": {
                 "without_defense": {
                     "peak_traffic": self.metrics.get(
@@ -82,20 +96,52 @@ class SimulationSession:
                     "threat": "CONTAINED" if self.state in ("defended", "recovered") else "PENDING",
                 },
             },
-            "phase_guide": [
-                {"t": "00s", "label": "Normal", "state": "normal"},
-                {"t": "02s", "label": "Attack begins", "state": "attack_start"},
-                {"t": "04s", "label": "Traffic spike", "state": "attack_impact"},
-                {"t": "06s", "label": "IDS alert", "state": "detected"},
-                {"t": "08s", "label": "Recommendation", "state": "recommended"},
-                {"t": "10s", "label": "Defense", "state": "defended"},
-                {"t": "12s", "label": "Recovery", "state": "recovered"},
-            ],
+            "latencies": {
+                "detection_s": self.metrics.get("detection_latency_s", self.metrics.get("detection_delay_s")),
+                "defense_s": self.metrics.get("defense_latency_s", self.metrics.get("defense_delay_s")),
+                "recovery_s": self.metrics.get("recovery_time_s"),
+                "attack_to_recover_s": self.metrics.get("time_to_recover_s"),
+            },
+            "phase_guide": self._phase_guide(),
             "incident_id": self.incident_id,
+            "campaign_id": self.campaign_id,
+            "campaign_progression": self.metrics.get("campaign_progression"),
             "created_at": self.created_at,
             "advisory_only": True,
-            "disclaimer": "Controlled visualization only — not a real attack or live network control. Metrics are simulated.",
+            "disclaimer": (
+                "Controlled visualization only — not a real attack or live network control. "
+                "Timestamps and latencies are simulated wall-clock within this session."
+            ),
         }
+
+    def _phase_guide(self) -> list[dict[str, str]]:
+        order = [
+            "normal",
+            "attack_start",
+            "attack_impact",
+            "detected",
+            "recommended",
+            "defended",
+            "recovered",
+        ]
+        guide = []
+        for state in order:
+            key = f"phase_{state}_at_s"
+            if key in self.metrics:
+                t = f"{float(self.metrics[key]):.1f}s"
+            else:
+                fallback = {
+                    "normal": "00s",
+                    "attack_start": "02s",
+                    "attack_impact": "04s",
+                    "detected": "06s",
+                    "recommended": "08s",
+                    "defended": "10s",
+                    "recovered": "12s",
+                }
+                t = fallback[state]
+            guide.append({"t": t, "label": _PHASE_LABELS[state], "state": state})
+        return guide
 
 
 class SimulationEngine:
@@ -114,10 +160,16 @@ class SimulationEngine:
         recommendation: dict[str, Any] | None = None,
         traffic_intensity: float | None = None,
         asset_criticality: float | None = None,
+        campaign_id: str | None = None,
+        campaign_progression: list[str] | None = None,
     ) -> dict[str, Any]:
         nodes, edges = topology_for(attack_type)
+        # Mild dynamic topology cue: mark primary target under higher intensity
         intensity = float(traffic_intensity if traffic_intensity is not None else 0.55)
         intensity = max(0.05, min(1.0, intensity))
+        for n in nodes:
+            if n.kind in {"server", "web", "db"} and intensity >= 0.75:
+                n.label = f"{n.label} (critical)"
         risk = compute_risk(
             attack_type,
             confidence,
@@ -137,23 +189,51 @@ class SimulationEngine:
             nodes=nodes,
             edges=edges,
             incident_id=incident_id,
+            campaign_id=campaign_id,
             metrics={
                 "peak_traffic": 0.2,
                 "server_stress": 0.1,
                 "traffic_blocked": 0.0,
                 "configured_intensity": round(intensity, 3),
                 "asset_criticality": asset_criticality,
+                "t0_epoch": time.time(),
+                "series": {
+                    "labels": [],
+                    "with_defense": {"traffic": [], "stress": [], "risk": []},
+                    "without_defense": {"traffic": [], "stress": [], "risk": []},
+                },
+                "campaign_progression": list(campaign_progression or []),
             },
         )
-        session.timeline.append(
-            {"event": "session_created", "state": "idle", "detail": f"Scenario: {attack_type}"}
-        )
+        self._log(session, "session_created", "idle", f"Scenario: {attack_type}")
         session.narrative.append(
             f"Scenario prepared for {attack_type} (intensity={intensity:.2f}, visualization only)."
         )
+        if campaign_id:
+            session.narrative.append(
+                f"Campaign {campaign_id} progression: {' → '.join(campaign_progression or [attack_type])}"
+            )
         self.sessions[session.id] = session
         self._persist(session)
         return session.to_dict()
+
+    def start_campaign(
+        self,
+        campaign_id: str,
+        progression: list[str],
+        confidence: float = 0.92,
+        traffic_intensity: float = 0.8,
+    ) -> dict[str, Any]:
+        """Start a controlled sim seeded by a campaign's attack progression."""
+        attacks = [a for a in progression if a and a != "BENIGN"]
+        primary = attacks[-1] if attacks else "DDoS"
+        return self.start(
+            attack_type=primary,
+            confidence=confidence,
+            traffic_intensity=traffic_intensity,
+            campaign_id=campaign_id,
+            campaign_progression=attacks or [primary],
+        )
 
     def get(self, session_id: str) -> dict[str, Any]:
         return self._require(session_id).to_dict()
@@ -210,21 +290,14 @@ class SimulationEngine:
                 s.recommendation,
                 traffic_intensity=s.metrics.get("configured_intensity"),
                 asset_criticality=s.metrics.get("asset_criticality"),
+                campaign_id=s.campaign_id,
+                campaign_progression=s.metrics.get("campaign_progression"),
             )
         if action == "defend" and s.state in ("detected", "recommended", "attack_impact"):
             if s.state != "recommended":
                 self._to_recommended(s)
                 s.state = "recommended"
-            detail = apply_defense(s)
-            s.timeline.append({"event": "defense_applied", "state": "defended", "detail": detail})
-            s.narrative.append(detail)
-            eff = self._defense_effectiveness(s)
-            peak = float(s.metrics.get("peak_traffic", 0.9))
-            s.metrics["defense_effectiveness"] = round(eff, 3)
-            s.metrics["traffic_blocked"] = round(eff, 3)
-            s.metrics["remaining_malicious"] = round(peak * (1.0 - eff), 3)
-            s.metrics["server_stress"] = max(0.08, float(s.metrics.get("server_stress", 0.9)) * (1.0 - 0.75 * eff))
-            s.metrics["defense_delay_s"] = round(1.2 + (1.0 - s.confidence) * 2.5, 2)
+            self._to_defended(s)
             s.state = "defended"
             self._persist(s)
             return s.to_dict()
@@ -245,6 +318,56 @@ class SimulationEngine:
         self._persist(s)
         return s.to_dict()
 
+    def _elapsed_s(self, s: SimulationSession) -> float:
+        t0 = float(s.metrics.get("t0_epoch") or time.time())
+        return round(max(0.0, time.time() - t0), 2)
+
+    def _log(self, s: SimulationSession, event: str, state: str, detail: str) -> None:
+        elapsed = self._elapsed_s(s)
+        s.timeline.append(
+            {
+                "event": event,
+                "state": state,
+                "detail": detail,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "t_s": elapsed,
+            }
+        )
+        s.metrics[f"phase_{state}_at_s"] = elapsed
+
+    def _snapshot_series(self, s: SimulationSession, label: str) -> None:
+        series = s.metrics.setdefault(
+            "series",
+            {
+                "labels": [],
+                "with_defense": {"traffic": [], "stress": [], "risk": []},
+                "without_defense": {"traffic": [], "stress": [], "risk": []},
+            },
+        )
+        series["labels"].append(label)
+        traffic = float(s.metrics.get("peak_traffic", 0.2))
+        stress = float(s.metrics.get("server_stress", 0.1))
+        risk = float(s.risk_score)
+        blocked = float(s.metrics.get("traffic_blocked", 0.0))
+        defended_like = blocked > 0 or s.state in ("defended", "recovered")
+        with_traffic = round(traffic * (1.0 - blocked), 3) if defended_like else traffic
+        series["with_defense"]["traffic"].append(with_traffic)
+        series["with_defense"]["stress"].append(round(stress, 3))
+        series["with_defense"]["risk"].append(round(risk, 1))
+
+        # Counterfactual: without defense, attack peak persists / slowly worsens
+        nd_traffic = float(s.metrics.get("no_defense_peak_traffic", traffic))
+        nd_stress = float(s.metrics.get("no_defense_server_stress", stress))
+        nd_risk = float(s.metrics.get("no_defense_risk", risk))
+        if defended_like:
+            nd_stress = min(0.99, nd_stress + 0.03)
+            nd_risk = min(100.0, nd_risk + 2.0)
+            s.metrics["no_defense_server_stress"] = round(nd_stress, 3)
+            s.metrics["no_defense_risk"] = round(nd_risk, 1)
+        series["without_defense"]["traffic"].append(round(nd_traffic, 3))
+        series["without_defense"]["stress"].append(round(nd_stress, 3))
+        series["without_defense"]["risk"].append(round(nd_risk, 1))
+
     def _defense_effectiveness(self, s: SimulationSession) -> float:
         """Simulation assumption: defense efficacy from config + confidence + risk."""
         try:
@@ -264,7 +387,6 @@ class SimulationEngine:
         conf_boost = 0.08 * max(0.0, min(1.0, s.confidence))
         risk_factor = max(0.0, min(1.0, s.risk_score / 100.0))
         intensity = float(s.metrics.get("configured_intensity") or s.metrics.get("peak_traffic") or 0.5)
-        # Higher risk / intensity slightly reduce effectiveness (harder incidents)
         return float(max(0.45, min(0.97, base + conf_boost - 0.10 * risk_factor - 0.05 * intensity)))
 
     def _persist(self, s: SimulationSession) -> None:
@@ -299,7 +421,6 @@ class SimulationEngine:
 
     def _require(self, session_id: str) -> SimulationSession:
         if session_id not in self.sessions:
-            # Try restore from DB
             try:
                 from database.db import SessionLocal, SimulationRecord
 
@@ -322,8 +443,11 @@ class SimulationEngine:
                             narrative=data.get("narrative", []),
                             metrics=data.get("metrics", {}),
                             incident_id=data.get("incident_id"),
+                            campaign_id=data.get("campaign_id"),
                             created_at=data.get("created_at", datetime.now(timezone.utc).isoformat()),
                         )
+                        if "t0_epoch" not in session.metrics:
+                            session.metrics["t0_epoch"] = time.time()
                         self.sessions[session_id] = session
                         return session
                 finally:
@@ -344,8 +468,9 @@ class SimulationEngine:
         for n in s.nodes:
             n.status = "ok"
         detail = "Baseline client to server traffic"
-        s.timeline.append({"event": "normal_traffic", "state": "normal", "detail": detail})
+        self._log(s, "normal_traffic", "normal", detail)
         s.narrative.append(detail)
+        self._snapshot_series(s, "normal")
 
     def _to_attack_start(self, s: SimulationSession) -> None:
         fn = START.get(s.attack_type, apply_generic_start)
@@ -353,9 +478,9 @@ class SimulationEngine:
         configured = float(s.metrics.get("configured_intensity") or 0.55)
         intensity = min(0.99, configured * (0.85 + 0.15 * max(0.0, min(1.0, s.confidence))))
         s.metrics["peak_traffic"] = round(intensity, 3)
-        s.metrics["attack_start_s"] = 2.0
-        s.timeline.append({"event": "attack_start", "state": "attack_start", "detail": detail})
+        self._log(s, "attack_start", "attack_start", detail)
         s.narrative.append(detail)
+        self._snapshot_series(s, "attack_start")
 
     def _to_attack_impact(self, s: SimulationSession) -> None:
         fn = IMPACT.get(s.attack_type, apply_generic_impact)
@@ -375,34 +500,42 @@ class SimulationEngine:
         s.metrics["server_stress"] = round(min(0.98, 0.45 + 0.5 * intensity), 3)
         s.metrics["attack_server_stress"] = s.metrics["server_stress"]
         s.metrics["attack_risk"] = s.risk_score
-        # Counterfactual: if no defense is applied, stress/risk remain at attack peak
         s.metrics["no_defense_peak_traffic"] = s.metrics["peak_traffic"]
         s.metrics["no_defense_server_stress"] = s.metrics["server_stress"]
         s.metrics["no_defense_risk"] = s.risk_score
-        s.timeline.append({"event": "impact", "state": "attack_impact", "detail": detail})
+        self._log(s, "impact", "attack_impact", detail)
         s.narrative.append(detail)
+        self._snapshot_series(s, "impact")
 
     def _to_detected(self, s: SimulationSession) -> None:
         for n in s.nodes:
             if n.id == "ids":
                 n.status = "alert"
-        # Simulated detection latency: lower confidence → slower alert
-        detect_at = round(4.0 + (1.0 - s.confidence) * 3.0, 2)
-        start_at = float(s.metrics.get("attack_start_s", 2.0))
-        s.metrics["detection_at_s"] = detect_at
-        s.metrics["detection_delay_s"] = round(max(0.2, detect_at - start_at), 2)
-        detail = (
-            f"IDS detected {s.attack_type} (confidence {s.confidence:.0%}); "
-            f"simulated detection delay {s.metrics['detection_delay_s']}s"
+        self._log(
+            s,
+            "ids_alert",
+            "detected",
+            f"IDS detected {s.attack_type} (confidence {s.confidence:.0%})",
         )
-        s.timeline.append({"event": "ids_alert", "state": "detected", "detail": detail})
-        s.narrative.append(detail)
+        attack_at = float(s.metrics.get("phase_attack_start_at_s", 0.0))
+        detect_at = float(s.metrics.get("phase_detected_at_s", self._elapsed_s(s)))
+        latency = round(max(0.05, detect_at - attack_at), 2)
+        s.metrics["detection_latency_s"] = latency
+        s.metrics["detection_delay_s"] = latency  # UI alias
+        s.metrics["detection_at_s"] = detect_at
+        s.timeline[-1]["detail"] = (
+            f"IDS detected {s.attack_type} (confidence {s.confidence:.0%}); "
+            f"detection latency {latency}s"
+        )
+        s.narrative.append(s.timeline[-1]["detail"])
+        self._snapshot_series(s, "detected")
 
     def _to_recommended(self, s: SimulationSession) -> None:
         s.recommendation = recommend(s.attack_type, s.severity)
         detail = s.recommendation["primary"]
-        s.timeline.append({"event": "recommendation", "state": "recommended", "detail": detail})
+        self._log(s, "recommendation", "recommended", detail)
         s.narrative.append(f"Recommended response: {detail}")
+        self._snapshot_series(s, "recommended")
 
     def _to_defended(self, s: SimulationSession) -> None:
         detail = apply_defense(s)
@@ -411,10 +544,18 @@ class SimulationEngine:
         s.metrics["defense_effectiveness"] = round(eff, 3)
         s.metrics["traffic_blocked"] = round(eff, 3)
         s.metrics["remaining_malicious"] = round(peak * (1.0 - eff), 3)
-        s.metrics["server_stress"] = round(max(0.08, float(s.metrics.get("server_stress", 0.9)) * (1.0 - 0.75 * eff)), 3)
-        s.metrics["defense_delay_s"] = round(1.2 + (1.0 - s.confidence) * 2.5, 2)
-        s.timeline.append({"event": "defense_applied", "state": "defended", "detail": detail})
-        s.narrative.append(detail)
+        s.metrics["server_stress"] = round(
+            max(0.08, float(s.metrics.get("server_stress", 0.9)) * (1.0 - 0.75 * eff)), 3
+        )
+        self._log(s, "defense_applied", "defended", detail)
+        detect_at = float(s.metrics.get("phase_detected_at_s", 0.0))
+        defend_at = float(s.metrics.get("phase_defended_at_s", self._elapsed_s(s)))
+        latency = round(max(0.05, defend_at - detect_at), 2)
+        s.metrics["defense_latency_s"] = latency
+        s.metrics["defense_delay_s"] = latency
+        s.timeline[-1]["detail"] = f"{detail} (defense latency {latency}s)"
+        s.narrative.append(s.timeline[-1]["detail"])
+        self._snapshot_series(s, "defended")
 
     def _to_recovered(self, s: SimulationSession) -> None:
         for n in s.nodes:
@@ -428,18 +569,23 @@ class SimulationEngine:
         s.risk_score = max(5.0, s.risk_score * (1.0 - 0.7 * float(s.metrics.get("defense_effectiveness", 0.8))))
         s.severity = "LOW"
         s.metrics["server_stress"] = 0.12
-        detect_at = float(s.metrics.get("detection_at_s", 6.0))
-        defense_delay = float(s.metrics.get("defense_delay_s", 2.0))
-        s.metrics["recovery_time_s"] = round(2.0 + defense_delay * 0.5, 2)
+        self._log(s, "recovered", "recovered", "Service restored; threat mitigated (simulated)")
+        defend_at = float(s.metrics.get("phase_defended_at_s", 0.0))
+        recover_at = float(s.metrics.get("phase_recovered_at_s", self._elapsed_s(s)))
+        attack_at = float(s.metrics.get("phase_attack_start_at_s", 0.0))
+        recovery = round(max(0.05, recover_at - defend_at), 2)
+        total = round(max(0.05, recover_at - attack_at), 2)
+        s.metrics["recovery_time_s"] = recovery
+        s.metrics["time_to_recover_s"] = total
         s.metrics["risk_reduction"] = round(
             max(0.0, float(s.metrics.get("attack_risk", s.risk_score)) - s.risk_score), 1
         )
-        detail = (
+        s.timeline[-1]["detail"] = (
             f"Service restored; threat mitigated (simulated). "
-            f"Recovery≈{s.metrics['recovery_time_s']}s after defense"
+            f"Recovery {recovery}s after defense; attack→recover {total}s"
         )
-        s.timeline.append({"event": "recovered", "state": "recovered", "detail": detail})
-        s.narrative.append(detail)
+        s.narrative.append(s.timeline[-1]["detail"])
+        self._snapshot_series(s, "recovered")
 
 
 simulation_engine = SimulationEngine()

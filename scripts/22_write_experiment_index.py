@@ -23,6 +23,7 @@ EXPERIMENTS = [
     ("EXP-008", "drift", "drift_report.json", "Feature/label drift vs train"),
     ("EXP-009", "cross_dataset", "cross_dataset_status.json", "External dataset status/score"),
     ("EXP-010", "label_audit", "label_audit_report.json", "Label map + rare-class audit"),
+    ("EXP-011", "error_analysis", "error_analysis_report.json", "Confusion / error analysis"),
 ]
 
 

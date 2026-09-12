@@ -18,6 +18,7 @@ from backend.services.seed import seed_demo_incidents
 from backend.middleware.rate_limit import attach_rate_limit
 from backend.middleware.api_auth import attach_api_auth
 from backend.middleware.logging_mw import attach_request_logging
+from backend.middleware.errors import attach_error_handlers
 from database.db import init_db
 from ids_config import load_config
 
@@ -26,9 +27,14 @@ cfg = load_config()
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    import logging
     import os
 
-    init_db()
+    try:
+        init_db()
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger("aegis.api").exception("Database init failed: %s", exc)
+        raise RuntimeError(f"Database initialization failed: {exc}") from exc
     demo_mode = os.getenv("DEMO_MODE", "false").lower() in {"1", "true", "yes"}
     if demo_mode:
         n = seed_demo_incidents()
@@ -56,6 +62,7 @@ app.add_middleware(
 )
 
 app.include_router(router, prefix="/api")
+attach_error_handlers(app)
 attach_rate_limit(app)
 attach_api_auth(app)
 attach_request_logging(app)
@@ -68,4 +75,5 @@ def root():
         "version": cfg["project"]["version"],
         "docs": "/docs",
         "health": "/api/health",
+        "ready": "/api/ready",
     }
