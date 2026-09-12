@@ -24,6 +24,7 @@ EXPERIMENTS = [
     ("EXP-009", "cross_dataset", "cross_dataset_status.json", "External dataset status/score"),
     ("EXP-010", "label_audit", "label_audit_report.json", "Label map + rare-class audit"),
     ("EXP-011", "error_analysis", "error_analysis_report.json", "Confusion / error analysis"),
+    ("EXP-012", "global_shap", "global_shap_summary.json", "Global + attack-specific importance"),
 ]
 
 

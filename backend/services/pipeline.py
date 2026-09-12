@@ -749,3 +749,176 @@ def export_analytics_payload(db: Session) -> dict[str, Any]:
         "exported_at": datetime.now(timezone.utc).isoformat(),
         "note": "Decision-support export from Aegis IDS prototype — not live packet capture.",
     }
+
+
+def _artifact_json(name: str) -> dict[str, Any] | None:
+    cfg = load_config()
+    path = resolve_path(cfg["models"]["output_dir"]) / name
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def model_health() -> dict[str, Any]:
+    """Research-facing model health / readiness summary."""
+    info = model_info()
+    cfg = load_config()
+    model_dir = resolve_path(cfg["models"]["output_dir"])
+    required = ["feature_bundle.joblib", "binary_best.joblib", "multiclass_best.joblib"]
+    missing = [f for f in required if not (model_dir / f).exists()]
+    operating = _artifact_json("threshold_operating_point.json")
+    drift = _artifact_json("drift_report.json")
+    xai = _artifact_json("xai_agreement_report.json")
+    status = "healthy" if info["models_loaded"] and not missing else "degraded"
+    return {
+        "status": status,
+        "models_loaded": info["models_loaded"],
+        "missing_artifacts": missing,
+        "application_version": info.get("application_version"),
+        "model_version": info.get("model_version"),
+        "binary_threshold": info.get("binary_threshold"),
+        "calibrated_binary_active": info.get("calibrated_binary_active"),
+        "metadata": info.get("metadata"),
+        "operating_point_available": operating is not None,
+        "operating_point": operating,
+        "drift_available": drift is not None,
+        "drift_summary": {
+            "flagged": (drift or {}).get("feature_drift", {}).get("flagged_psi_ge_0.2")
+            if drift
+            else None,
+            "status": (drift or {}).get("status"),
+        }
+        if drift
+        else None,
+        "xai_agreement_available": xai is not None,
+        "note": "Prototype health view — does not claim production SOC monitoring.",
+    }
+
+
+def global_shap_summary(top_k: int = 15, refresh: bool = False) -> dict[str, Any]:
+    from explainability.global_importance import (
+        attack_specific_from_explanations,
+        global_model_importance,
+    )
+
+    cached = _artifact_json("global_shap_summary.json")
+    if cached and not refresh:
+        return cached
+
+    predictor = get_predictor()
+    if predictor is None:
+        raise RuntimeError("Models not loaded")
+    global_imp = global_model_importance(predictor, top_k=top_k)
+    explanations: list[dict[str, Any]] = []
+    items: list[dict[str, Any]] = []
+    if refresh:
+        try:
+            items = load_demo_flows(n=18).get("items") or []
+        except Exception:
+            items = []
+        for item in items:
+            try:
+                explanations.append(
+                    run_explain(item["features"], method="shap", top_k=10, allow_missing_features=True)
+                )
+            except Exception:
+                continue
+    attack_imp = (
+        attack_specific_from_explanations(explanations, top_k=8)
+        if explanations
+        else {
+            "method": "mean_abs_local_explanation",
+            "note": "Run scripts/24_global_shap_summary.py or call with refresh=true for attack-specific ranks.",
+            "by_attack": {},
+            "attacks": [],
+        }
+    )
+    report = {
+        "experiment": "global_and_attack_shap",
+        "status": "ok",
+        "global": global_imp,
+        "attack_specific": attack_imp,
+        "samples_explained": len(explanations),
+        "cached": False,
+    }
+    try:
+        out = resolve_path(load_config()["models"]["output_dir"]) / "global_shap_summary.json"
+        out.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+    return report
+
+
+def experiment_index() -> dict[str, Any]:
+    cached = _artifact_json("experiment_index.json")
+    if cached:
+        return cached
+    # Lightweight inline index if script not run yet
+    cfg = load_config()
+    out_dir = resolve_path(cfg["models"]["output_dir"])
+    known = [
+        ("EXP-001", "baseline_training", "training_report.json"),
+        ("EXP-004", "threshold", "threshold_sweep.json"),
+        ("EXP-006", "xai_agreement", "xai_agreement_report.json"),
+        ("EXP-008", "drift", "drift_report.json"),
+        ("EXP-011", "error_analysis", "error_analysis_report.json"),
+        ("EXP-012", "global_shap", "global_shap_summary.json"),
+    ]
+    items = []
+    for eid, name, filename in known:
+        path = out_dir / filename
+        items.append(
+            {
+                "experiment_id": eid,
+                "name": name,
+                "artifact": filename,
+                "present": path.exists(),
+            }
+        )
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "experiments": items,
+        "note": "Run scripts/22_write_experiment_index.py for the full index.",
+    }
+
+
+def drift_status() -> dict[str, Any]:
+    drift = _artifact_json("drift_report.json")
+    if drift is None:
+        return {
+            "available": False,
+            "status": "missing",
+            "message": "drift_report.json not found — run scripts/20_data_drift_report.py",
+        }
+    return {"available": True, **drift}
+
+
+def run_counterfactual(
+    features: dict[str, float],
+    *,
+    allow_missing_features: bool = False,
+    max_edits: int = 5,
+) -> dict[str, Any]:
+    from explainability.counterfactual import suggest_counterfactuals
+
+    predictor = get_predictor()
+    if predictor is None:
+        raise RuntimeError("Models not loaded")
+    top = None
+    try:
+        exp = run_explain(
+            features, method="shap", top_k=max_edits, allow_missing_features=allow_missing_features
+        )
+        top = exp.get("top_features")
+    except Exception:
+        top = None
+    return suggest_counterfactuals(
+        predictor,
+        features,
+        top_features=top,
+        max_edits=max_edits,
+        allow_missing=allow_missing_features,
+    )

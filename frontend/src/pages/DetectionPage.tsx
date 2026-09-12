@@ -14,6 +14,7 @@ export function DetectionPage() {
   const [explain, setExplain] = useState<ExplainResult | null>(null);
   const [lime, setLime] = useState<ExplainResult | null>(null);
   const [xaiTab, setXaiTab] = useState<"shap" | "lime">("shap");
+  const [counterfactual, setCounterfactual] = useState<Record<string, unknown> | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +31,7 @@ export function DetectionPage() {
     setBatch(null);
     setExplain(null);
     setLime(null);
+    setCounterfactual(null);
     try {
       const demo = await api.demoFlow(attackHint);
       setFeatures(demo.features);
@@ -50,16 +52,19 @@ export function DetectionPage() {
       const pred = await api.predict(features);
       setResult(pred);
       if (pred.is_attack) {
-        const [ex, lx] = await Promise.all([
+        const [ex, lx, cf] = await Promise.all([
           api.explain(features, "shap"),
           api.explain(features, "lime"),
+          api.counterfactual(features).catch(() => null),
         ]);
         setExplain(ex);
         setLime(lx);
+        setCounterfactual(cf);
         setXaiTab("shap");
       } else {
         setExplain(null);
         setLime(null);
+        setCounterfactual(null);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -374,6 +379,50 @@ export function DetectionPage() {
           )}
         </section>
       </div>
+
+      {counterfactual && (
+        <section className="panel" style={{ marginTop: "1rem" }}>
+          <h3 style={{ marginTop: 0 }}>What-if counterfactual</h3>
+          <p className="muted" style={{ fontSize: "0.85rem" }}>
+            {String(counterfactual.note ?? "Illustrative feature edits only.")}
+          </p>
+          <p className="mono muted">
+            Baseline: {String((counterfactual.baseline as Record<string, unknown> | undefined)?.attack_type)} · p(attack)=
+            {String((counterfactual.baseline as Record<string, unknown> | undefined)?.binary_proba_attack)}
+          </p>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Edit</th>
+                <th>New label</th>
+                <th>p(attack)</th>
+                <th>Flip?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {((counterfactual.edits as Array<Record<string, unknown>>) ?? []).map((e) => (
+                <tr key={String(e.feature)}>
+                  <td>{String(e.feature)}</td>
+                  <td className="mono">
+                    {String(e.original_value)} → {String(e.counterfactual_value)}
+                  </td>
+                  <td>{String(e.new_attack_type)}</td>
+                  <td className="mono">{String(e.new_binary_proba_attack)}</td>
+                  <td>{e.flipped_to_benign ? "yes" : e.family_changed ? "family" : "no"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {counterfactual.combined != null ? (
+            <p className="mono muted">
+              Combined edit → {String((counterfactual.combined as Record<string, unknown>).new_attack_type)} · p=
+              {String((counterfactual.combined as Record<string, unknown>).new_binary_proba_attack)}
+              {(counterfactual.combined as Record<string, unknown>).flipped_to_benign ? " · flipped to BENIGN" : ""}
+            </p>
+          ) : null}
+        </section>
+      )}
     </div>
   );
 }

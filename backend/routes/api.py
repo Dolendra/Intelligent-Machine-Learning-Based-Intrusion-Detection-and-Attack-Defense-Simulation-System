@@ -67,12 +67,35 @@ def models():
     return svc.model_info()
 
 
+@router.get("/models/health")
+def models_health():
+    return svc.model_health()
+
+
 @router.get("/models/comparison")
 def models_comparison():
     try:
         return svc.training_comparison()
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail={"code": "NO_REPORT", "message": str(exc)}) from exc
+
+
+@router.get("/models/shap/global")
+def models_shap_global(top_k: int = 15, refresh: bool = False):
+    try:
+        return svc.global_shap_summary(top_k=top_k, refresh=refresh)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
+
+
+@router.get("/experiments")
+def experiments():
+    return svc.experiment_index()
+
+
+@router.get("/drift")
+def drift():
+    return svc.drift_status()
 
 
 @router.post("/predict", response_model=PredictResponse)
@@ -149,6 +172,20 @@ def explain(body: ExplainRequest):
             top_k=body.top_k,
             method=body.method,
             allow_missing_features=body.allow_missing_features,
+        )
+    except FeatureValidationError as exc:
+        raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
+
+
+@router.post("/explain/counterfactual")
+def explain_counterfactual(body: ExplainRequest):
+    try:
+        return svc.run_counterfactual(
+            body.features,
+            allow_missing_features=body.allow_missing_features,
+            max_edits=min(8, max(1, body.top_k)),
         )
     except FeatureValidationError as exc:
         raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc

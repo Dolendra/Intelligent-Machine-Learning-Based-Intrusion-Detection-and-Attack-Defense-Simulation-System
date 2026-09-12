@@ -1,0 +1,104 @@
+{
+  "generated_at": "2026-09-12T18:52:17.493991+00:00",
+  "git_commit": "058de15",
+  "model_version": "1.1.0",
+  "experiments": [
+    {
+      "experiment_id": "EXP-001",
+      "name": "baseline_training",
+      "artifact": "training_report.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\training_report.json",
+      "intended_conclusion": "Model selection + test metrics"
+    },
+    {
+      "experiment_id": "EXP-002",
+      "name": "feature_selector",
+      "artifact": "feature_selector_experiment.json",
+      "present": false,
+      "path": null,
+      "intended_conclusion": "Dual vs shared SelectKBest"
+    },
+    {
+      "experiment_id": "EXP-003",
+      "name": "calibration_hpo",
+      "artifact": "calibration_hpo_report.json",
+      "present": false,
+      "path": null,
+      "intended_conclusion": "Calibration / HPO sample experiment"
+    },
+    {
+      "experiment_id": "EXP-004",
+      "name": "threshold",
+      "artifact": "threshold_sweep.json",
+      "present": false,
+      "path": null,
+      "intended_conclusion": "Operating threshold + uncertainty bands"
+    },
+    {
+      "experiment_id": "EXP-005",
+      "name": "risk_sensitivity",
+      "artifact": "risk_weight_sensitivity.json",
+      "present": false,
+      "path": null,
+      "intended_conclusion": "Risk weight configurations"
+    },
+    {
+      "experiment_id": "EXP-006",
+      "name": "xai_agreement",
+      "artifact": "xai_agreement_report.json",
+      "present": false,
+      "path": null,
+      "intended_conclusion": "SHAP vs LIME agreement"
+    },
+    {
+      "experiment_id": "EXP-007",
+      "name": "scenario_aware",
+      "artifact": "scenario_aware_evaluation.json",
+      "present": false,
+      "path": null,
+      "intended_conclusion": "IID / regime / family slices"
+    },
+    {
+      "experiment_id": "EXP-008",
+      "name": "drift",
+      "artifact": "drift_report.json",
+      "present": false,
+      "path": null,
+      "intended_conclusion": "Feature/label drift vs train"
+    },
+    {
+      "experiment_id": "EXP-009",
+      "name": "cross_dataset",
+      "artifact": "cross_dataset_status.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\cross_dataset_status.json",
+      "intended_conclusion": "External dataset status/score"
+    },
+    {
+      "experiment_id": "EXP-010",
+      "name": "label_audit",
+      "artifact": "label_audit_report.json",
+      "present": false,
+      "path": null,
+      "intended_conclusion": "Label map + rare-class audit"
+    },
+    {
+      "experiment_id": "EXP-011",
+      "name": "error_analysis",
+      "artifact": "error_analysis_report.json",
+      "present": false,
+      "path": null,
+      "intended_conclusion": "Confusion / error analysis"
+    },
+    {
+      "experiment_id": "EXP-012",
+      "name": "global_shap",
+      "artifact": "global_shap_summary.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\global_shap_summary.json",
+      "intended_conclusion": "Global + attack-specific importance"
+    }
+  ],
+  "note": "Index of research artifacts \u2014 run the corresponding scripts to populate missing files."
+}

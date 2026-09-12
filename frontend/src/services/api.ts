@@ -124,7 +124,12 @@ export const api = {
       steps: Array<{ stage: string; title: string; detail: string; timestamp?: string }>;
     }>(`/api/incidents/${encodeURIComponent(incident_id)}/trace`),
   models: () => request<Record<string, unknown>>("/api/models"),
+  modelsHealth: () => request<Record<string, unknown>>("/api/models/health"),
   modelsComparison: () => request<Record<string, unknown>>("/api/models/comparison"),
+  globalShap: (refresh = false) =>
+    request<Record<string, unknown>>(`/api/models/shap/global?refresh=${refresh ? "true" : "false"}`),
+  experiments: () => request<{ experiments?: Array<Record<string, unknown>> }>("/api/experiments"),
+  drift: () => request<Record<string, unknown>>("/api/drift"),
   assets: () => request<{ items: Array<Record<string, unknown>> }>("/api/assets"),
   campaigns: () => request<{ items: Array<Record<string, unknown>> }>("/api/campaigns"),
   getCampaign: (campaign_id: string) =>
@@ -155,6 +160,11 @@ export const api = {
     request<ExplainResult>("/api/explain", {
       method: "POST",
       body: JSON.stringify({ features, top_k: 10, method }),
+    }),
+  counterfactual: (features: Record<string, number>) =>
+    request<Record<string, unknown>>("/api/explain/counterfactual", {
+      method: "POST",
+      body: JSON.stringify({ features, top_k: 5, method: "shap" }),
     }),
   demoFlow: (attackType?: string) =>
     request<{ features: Record<string, number>; label: string | null }>(
