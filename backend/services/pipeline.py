@@ -617,14 +617,50 @@ def sample_feature_template() -> dict[str, float]:
     return {name: 0.0 for name in predictor.bundle.feature_names}
 
 
+def _bundled_demo_flows() -> dict[str, Any] | None:
+    """Committed demo vectors for CI / fresh clones without data/processed."""
+    path = resolve_path(load_config()["models"]["output_dir"]) / "demo_flows.json"
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _demo_from_bundle(attack_hint: str | None = None) -> dict[str, Any] | None:
+    blob = _bundled_demo_flows()
+    if not blob:
+        return None
+    by_label: dict[str, dict[str, float]] = blob.get("by_label") or {}
+    if not by_label:
+        return None
+    hint = (attack_hint or "").strip()
+    if hint and hint in by_label:
+        label = hint
+    elif hint == "BENIGN" and "BENIGN" in by_label:
+        label = "BENIGN"
+    else:
+        label = next((k for k in by_label if k != "BENIGN"), next(iter(by_label)))
+    features = dict(by_label[label])
+    predictor = get_predictor()
+    if predictor is not None:
+        # Align to trained schema; fill missing with 0 only for absent keys
+        features = {name: float(features.get(name, 0.0)) for name in predictor.bundle.feature_names}
+    return {"features": features, "label": label, "source": "bundled_demo_flows"}
+
+
 def load_demo_flow(attack_hint: str | None = None) -> dict[str, Any]:
-    """Load one processed test row for demos."""
+    """Load one demo flow: prefer processed test split, else committed demo_flows.json."""
     from ml.preprocessing.dataset import load_processed
 
     try:
         test = load_processed("test")
     except FileNotFoundError:
-        return {"features": sample_feature_template(), "label": None}
+        bundled = _demo_from_bundle(attack_hint)
+        if bundled:
+            return bundled
+        return {"features": sample_feature_template(), "label": None, "source": "zero_template"}
     if attack_hint and attack_hint != "BENIGN":
         subset = test[test["Label"] == attack_hint]
         if subset.empty:
@@ -635,20 +671,24 @@ def load_demo_flow(attack_hint: str | None = None) -> dict[str, Any]:
         subset = test[test["is_attack"] == 1]
     if subset.empty:
         subset = test
-    row = subset.sample(1, random_state=None).iloc[0]
+    row = subset.sample(1, random_state=42).iloc[0]
     features = {c: float(row[c]) for c in predictor.bundle.feature_names} if (predictor := get_predictor()) else {}
-    return {"features": features, "label": str(row["Label"])}
+    return {"features": features, "label": str(row["Label"]), "source": "processed_test"}
 
 
 def load_demo_flows(attack_hint: str | None = None, n: int = 10) -> dict[str, Any]:
-    """Load multiple processed test rows for batch demos."""
+    """Load multiple demo flows for batch demos."""
     from ml.preprocessing.dataset import load_processed
 
     n = max(1, min(100, int(n)))
     try:
         test = load_processed("test")
     except FileNotFoundError:
-        return {"items": [], "count": 0}
+        bundled = _demo_from_bundle(attack_hint)
+        if not bundled:
+            return {"items": [], "count": 0}
+        items = [{"features": bundled["features"], "label": bundled["label"]} for _ in range(n)]
+        return {"items": items, "count": len(items), "source": "bundled_demo_flows"}
     if attack_hint and attack_hint != "BENIGN":
         subset = test[test["Label"] == attack_hint]
         if subset.empty:
@@ -659,7 +699,7 @@ def load_demo_flows(attack_hint: str | None = None, n: int = 10) -> dict[str, An
         subset = test
     if subset.empty:
         return {"items": [], "count": 0}
-    sample = subset.sample(min(n, len(subset)), random_state=None)
+    sample = subset.sample(min(n, len(subset)), random_state=42)
     predictor = get_predictor()
     if predictor is None:
         return {"items": [], "count": 0}
@@ -667,7 +707,7 @@ def load_demo_flows(attack_hint: str | None = None, n: int = 10) -> dict[str, An
     for _, row in sample.iterrows():
         features = {c: float(row[c]) for c in predictor.bundle.feature_names}
         items.append({"features": features, "label": str(row["Label"])})
-    return {"items": items, "count": len(items)}
+    return {"items": items, "count": len(items), "source": "processed_test"}
 
 
 def parse_flows_csv(content: str | bytes, *, max_rows: int = 500) -> list[dict[str, float]]:
