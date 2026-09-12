@@ -1,7 +1,7 @@
 """FastAPI route handlers."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -19,7 +19,9 @@ from backend.schemas.api import (
     SimulationStartRequest,
 )
 from backend.services import pipeline as svc
-from database.db import get_db
+from backend.services.events import event_hub
+from backend.services.report_pdf import build_analytics_pdf
+from database.db import SessionLocal, get_db
 from ids_config import load_config
 from ml.prediction.predictor import FeatureValidationError
 from security.recommendations.engine import recommend
@@ -237,6 +239,49 @@ def export_incidents_csv(db: Session = Depends(get_db)):
 @router.get("/export/analytics.json")
 def export_analytics_json(db: Session = Depends(get_db)):
     return svc.analytics_summary(db)
+
+
+@router.get("/export/report.pdf")
+def export_report_pdf(db: Session = Depends(get_db)):
+    payload = svc.export_analytics_payload(db)
+    pdf_bytes = build_analytics_pdf(payload)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=aegis_analytics_report.pdf"},
+    )
+
+
+@router.websocket("/ws/events")
+async def ws_events(websocket: WebSocket):
+    """Push analytics snapshots + incident notifications for dashboard refresh."""
+    import asyncio
+
+    await event_hub.connect(websocket)
+    try:
+        await websocket.send_json({"type": "connected", "message": "Aegis event stream"})
+        while True:
+            db = SessionLocal()
+            try:
+                snap = svc.analytics_summary(db)
+                recent = svc.list_incidents(db, limit=8)
+            finally:
+                db.close()
+            await websocket.send_json(
+                {
+                    "type": "analytics",
+                    "analytics": snap,
+                    "incidents": recent,
+                }
+            )
+            try:
+                await asyncio.wait_for(websocket.receive_text(), timeout=4.0)
+            except asyncio.TimeoutError:
+                continue
+    except WebSocketDisconnect:
+        await event_hub.disconnect(websocket)
+    except Exception:
+        await event_hub.disconnect(websocket)
 
 
 @router.get("/features/template")

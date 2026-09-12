@@ -24,6 +24,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Unit tests (no raw CICIDS required)
+        env:
+          MPLBACKEND: Agg
         run: |
           python -m pytest tests -q --tb=short
 

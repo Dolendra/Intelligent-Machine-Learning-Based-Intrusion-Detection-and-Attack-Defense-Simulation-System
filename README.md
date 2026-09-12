@@ -97,11 +97,14 @@ pytest -q
 | [`notebooks/03_explainability_demo.ipynb`](notebooks/03_explainability_demo.ipynb) | SHAP/LIME demo |
 | [`notebooks/05_model_evaluation.ipynb`](notebooks/05_model_evaluation.ipynb) | Evaluation figures |
 | [`notebooks/06_error_analysis.ipynb`](notebooks/06_error_analysis.ipynb) | FP/FN + confusion analysis |
+| [`notebooks/07_calibration_hpo.ipynb`](notebooks/07_calibration_hpo.ipynb) | Calibration / HPO experiment viewer |
 
 Feature-selector research experiment (optional):
 
 ```bash
 python scripts/10_feature_selector_experiment.py
+python scripts/11_calibration_hpo_experiment.py
+python scripts/12_cross_dataset_status.py
 ```
 
 

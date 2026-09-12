@@ -146,6 +146,20 @@ def run_prediction(
         )
         db.add(row)
         db.commit()
+        try:
+            from backend.services.events import notify_sync
+
+            notify_sync(
+                {
+                    "type": "incident_created",
+                    "incident_id": incident_id,
+                    "attack_type": pred.attack_type,
+                    "severity": payload["severity"],
+                    "risk_score": payload["risk_score"],
+                }
+            )
+        except Exception:
+            pass
 
     payload["incident_id"] = incident_id
     return payload

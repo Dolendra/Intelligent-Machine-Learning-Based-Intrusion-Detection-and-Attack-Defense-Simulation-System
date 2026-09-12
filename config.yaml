@@ -67,6 +67,10 @@ xai:
   default_method: shap
   top_k: 10
 
+research:
+  experiment_sample_rows: 60000
+  hpo_n_iter: 8
+
 incident:
   statuses:
     - Detected

@@ -156,7 +156,7 @@ export const api = {
     if (!res.ok) throw new Error((await res.text()) || res.statusText);
     return res.json() as Promise<BatchPredictResult>;
   },
-  downloadExport: async (kind: "incidents.csv" | "incidents.json" | "analytics.json") => {
+  downloadExport: async (kind: "incidents.csv" | "incidents.json" | "analytics.json" | "report.pdf") => {
     const res = await fetch(`${API_BASE}/api/export/${kind}`);
     if (!res.ok) throw new Error((await res.text()) || res.statusText);
     const blob = await res.blob();

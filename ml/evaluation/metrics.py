@@ -63,6 +63,15 @@ def evaluate_binary(y_true: np.ndarray, y_pred: np.ndarray, y_proba: np.ndarray 
             metrics["pr_auc"] = float(average_precision_score(y_true, y_proba))
         except ValueError:
             metrics["pr_auc"] = None
+        try:
+            from ml.evaluation.calibration import calibration_report
+
+            cal = calibration_report(y_true, y_proba)
+            metrics["brier_score"] = cal["brier_score"]
+            metrics["ece"] = cal["ece"]
+        except Exception:
+            metrics["brier_score"] = None
+            metrics["ece"] = None
     return metrics
 
 

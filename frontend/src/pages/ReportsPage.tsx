@@ -57,6 +57,12 @@ export function ReportsPage() {
           >
             Export JSON
           </button>
+          <button
+            className="btn btn-amber"
+            onClick={() => api.downloadExport("report.pdf").catch((e) => setError(String(e)))}
+          >
+            Export PDF
+          </button>
         </div>
       </div>
 

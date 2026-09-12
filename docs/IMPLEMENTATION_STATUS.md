@@ -1,38 +1,31 @@
 # Implementation status (honest inventory)
 
-Last updated with play/pause simulation, CSV batch, exports, dual feature selectors.
+Last updated with calibration/HPO research, WebSocket dashboard refresh, PDF export.
 
 ## Implemented
 
-- CICIDS2017 load/clean/split + rare-class filter (documented)
-- Two-stage ML (binary + multiclass) with trained artifacts
-- Dual SelectKBest support (binary vs multiclass) + experiment script
-- Feature validation on predict; certainty bands; class-index via `classes_`
-- SHAP/LIME with honest method labeling
-- Configurable risk weights + asset criticality
-- Rule engine → context-aware recommendations
-- Attack-specific simulation + Play/Pause/Step timeline + comparison metrics
-- Prediction → incident → simulate
-- Incident lifecycle transitions
-- Batch prediction (JSON + CSV upload)
-- Reports analytics + CSV/JSON export
-- PR-AUC / FPR / FNR + error-analysis notebook
-- Docker; CI (pytest + frontend build); docs
+- CICIDS2017 pipeline, two-stage ML, dual feature-selector support
+- Prediction validation, certainty bands, SHAP/LIME honesty
+- Risk + rule-driven recommendations + incident lifecycle
+- Attack-specific simulation with Play/Pause/Step
+- Batch JSON/CSV prediction; Reports CSV/JSON/**PDF** export
+- Dashboard auto-refresh via **WebSocket** (polling fallback)
+- Calibration metrics (Brier, ECE) + sample HPO experiment script
+- Cross-dataset status scaffold script
+- Docker; CI; notebooks including calibration analysis
 
 ## Partially implemented
 
-- Production artifacts may still be from shared-selector training until `02_train_models.py` is re-run
-- Feature-selector experiment uses a sample (not full-dataset Optuna/calibration)
-- Simulation DB restore after restart (best-effort)
-- PDF report export not yet
+- Production models may predate dual selectors / calibrated wrappers until retrain
+- HPO/calibration experiments are **sample-based**, not full-dataset Optuna
+- Cross-dataset evaluation awaits CSE-CIC-IDS2018 (or compatible) data on disk
+- WebSocket pushes analytics snapshots (not packet-level live IDS)
 
 ## Not implemented (do not claim)
 
-- Live packet capture / real-time network IDS
-- Automatic network mitigation
-- WebSockets / true live SOC streaming
-- Cross-dataset evaluation (CSE-CIC-IDS2018)
-- Full Optuna HPO / probability calibration curves
+- Live packet capture / automatic network mitigation
+- Full Optuna multi-objective search on entire CICIDS2017
+- Completed cross-dataset scoring without external data
 - Alembic migrations
 
 ## Academic wording

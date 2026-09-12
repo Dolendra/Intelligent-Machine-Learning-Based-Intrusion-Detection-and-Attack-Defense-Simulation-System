@@ -1,0 +1,8 @@
+{
+  "experiment": "cross_dataset_validation",
+  "train_dataset": "CICIDS2017",
+  "external_dataset_dir": "D:\\IDS-Project\\CSE-CIC-IDS2018",
+  "status": "skipped",
+  "reason": "External dataset directory not found",
+  "note": "Place a compatible CSE-CIC-IDS2018 (or similar) ML flow export in the configured directory, then extend this script to map labels/features and score binary_best.joblib under distribution shift."
+}
