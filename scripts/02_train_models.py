@@ -35,10 +35,18 @@ def main() -> None:
 
     print("Fitting feature pipeline on train only...")
     bundle, X_train, y_bin_train, y_multi_train = fit_feature_pipeline(train)
-    X_val, y_bin_val, y_multi_val = transform_split(bundle, val)
-    X_test, y_bin_test, y_multi_test = transform_split(bundle, test)
+    X_val, y_bin_val, _ = transform_split(bundle, val, task="binary")
+    X_test, y_bin_test, _ = transform_split(bundle, test, task="binary")
+    X_train_m, _, y_multi_train = transform_split(bundle, train, task="multiclass")
+    X_val_m, _, y_multi_val = transform_split(bundle, val, task="multiclass")
+    X_test_m, _, y_multi_test = transform_split(bundle, test, task="multiclass")
     bundle.save(out_dir / "feature_bundle.joblib")
-    print(f"Selected {len(bundle.selected_features)} features")
+    overlap = set(bundle.selected_features) & set(bundle.selected_features_multiclass)
+    print(
+        f"Selected {len(bundle.selected_features)} binary features; "
+        f"{len(bundle.selected_features_multiclass)} multiclass features; "
+        f"overlap={len(overlap)}"
+    )
 
     binary_results = {}
     best_binary_name = None
@@ -86,9 +94,9 @@ def main() -> None:
     for name in cfg["models"]["multiclass"]["algorithms"]:
         model = build_model(name, cfg["data"]["random_state"])
         t0 = time.perf_counter()
-        model.fit(X_train, y_multi_train)
+        model.fit(X_train_m, y_multi_train)
         train_time = time.perf_counter() - t0
-        pred = model.predict(X_val)
+        pred = model.predict(X_val_m)
         metrics = evaluate_multiclass(y_multi_val, pred, labels=class_names)
         metrics["train_seconds"] = round(train_time, 3)
         multi_results[name] = {k: v for k, v in metrics.items() if k != "report"}
@@ -105,14 +113,17 @@ def main() -> None:
     # Final test evaluation with best models
     bin_test_pred = best_binary_model.predict(X_test)
     bin_test_proba = _predict_proba_pos(best_binary_model, X_test)
-    multi_test_pred = best_multi_model.predict(X_test)
+    multi_test_pred = best_multi_model.predict(X_test_m)
 
     report = {
         "selection_criteria": {
             "binary": "validation F1 (primary); PR-AUC, FPR, FNR reported for IDS imbalance analysis",
             "multiclass": "validation macro-F1",
+            "features": "dual SelectKBest (binary vs multiclass) when features.dual_selectors=true",
         },
         "selected_features": bundle.selected_features,
+        "selected_features_multiclass": bundle.selected_features_multiclass,
+        "feature_overlap": sorted(set(bundle.selected_features) & set(bundle.selected_features_multiclass)),
         "binary": {
             "best": best_binary_name,
             "validation": binary_results,

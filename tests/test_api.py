@@ -74,3 +74,21 @@ def test_predict_batch():
     assert body["total_flows"] == 2
     assert "results" in body
     assert len(body["results"]) == 2
+
+
+def test_export_endpoints():
+    r = client.get("/api/export/incidents.csv")
+    assert r.status_code == 200
+    assert "incident_id" in r.text.splitlines()[0]
+    j = client.get("/api/export/incidents.json")
+    assert j.status_code == 200
+    assert "analytics" in j.json()
+
+
+def test_simulation_has_phase_guide():
+    start = client.post("/api/simulation/start", json={"attack_type": "DDoS", "confidence": 0.9})
+    assert start.status_code == 200
+    body = start.json()
+    assert "phase_guide" in body
+    assert "comparison" in body
+    assert len(body["phase_guide"]) >= 5

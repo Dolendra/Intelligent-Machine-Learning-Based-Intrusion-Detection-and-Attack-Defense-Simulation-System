@@ -56,10 +56,32 @@ class SimulationSession:
             "timeline": self.timeline,
             "narrative": self.narrative,
             "metrics": self.metrics,
+            "comparison": {
+                "without_defense": {
+                    "peak_traffic": self.metrics.get("peak_traffic", 0),
+                    "server_stress": self.metrics.get("attack_server_stress", self.metrics.get("server_stress", 0)),
+                    "risk": self.metrics.get("attack_risk", self.risk_score),
+                },
+                "with_defense": {
+                    "peak_traffic": round(self.metrics.get("peak_traffic", 0) * (1 - self.metrics.get("traffic_blocked", 0)), 3),
+                    "server_stress": self.metrics.get("server_stress", 0),
+                    "risk": self.risk_score,
+                    "traffic_blocked": self.metrics.get("traffic_blocked", 0),
+                },
+            },
+            "phase_guide": [
+                {"t": "00s", "label": "Normal", "state": "normal"},
+                {"t": "02s", "label": "Attack begins", "state": "attack_start"},
+                {"t": "04s", "label": "Traffic spike", "state": "attack_impact"},
+                {"t": "06s", "label": "IDS alert", "state": "detected"},
+                {"t": "08s", "label": "Recommendation", "state": "recommended"},
+                {"t": "10s", "label": "Defense", "state": "defended"},
+                {"t": "12s", "label": "Recovery", "state": "recovered"},
+            ],
             "incident_id": self.incident_id,
             "created_at": self.created_at,
             "advisory_only": True,
-            "disclaimer": "Controlled visualization only — not a real attack or live network control.",
+            "disclaimer": "Controlled visualization only — not a real attack or live network control. Metrics are simulated.",
         }
 
 
@@ -226,6 +248,8 @@ class SimulationEngine:
         s.severity = risk["severity"]
         s.metrics["peak_traffic"] = 0.95
         s.metrics["server_stress"] = 0.91
+        s.metrics["attack_server_stress"] = 0.91
+        s.metrics["attack_risk"] = s.risk_score
         s.timeline.append({"event": "impact", "state": "attack_impact", "detail": detail})
         s.narrative.append(detail)
 

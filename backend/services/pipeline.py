@@ -387,3 +387,67 @@ def load_demo_flows(attack_hint: str | None = None, n: int = 10) -> dict[str, An
         features = {c: float(row[c]) for c in predictor.bundle.feature_names}
         items.append({"features": features, "label": str(row["Label"])})
     return {"items": items, "count": len(items)}
+
+
+def parse_flows_csv(content: str | bytes, *, max_rows: int = 500) -> list[dict[str, float]]:
+    """Parse a CSV of flow features into dict rows (schema-validated later by predictor)."""
+    import io
+
+    import pandas as pd
+
+    text = content.decode("utf-8-sig") if isinstance(content, (bytes, bytearray)) else content
+    df = pd.read_csv(io.StringIO(text))
+    if df.empty:
+        raise ValueError("CSV contains no rows")
+    if len(df) > max_rows:
+        raise ValueError(f"CSV limited to {max_rows} rows (got {len(df)})")
+    # Drop non-feature helper columns if present
+    drop = [c for c in ("Label", "is_attack", "Flow ID", "Timestamp") if c in df.columns]
+    df = df.drop(columns=drop, errors="ignore")
+    rows: list[dict[str, float]] = []
+    for _, row in df.iterrows():
+        features: dict[str, float] = {}
+        for k, v in row.items():
+            try:
+                features[str(k).strip()] = float(v)
+            except (TypeError, ValueError):
+                continue
+        if features:
+            rows.append(features)
+    if not rows:
+        raise ValueError("No numeric feature rows found in CSV")
+    return rows
+
+
+def export_incidents_csv(db: Session, limit: int = 1000) -> str:
+    import csv
+    import io
+
+    items = list_incidents(db, limit=limit)
+    buf = io.StringIO()
+    fields = [
+        "incident_id",
+        "created_at",
+        "attack_type",
+        "confidence",
+        "risk_score",
+        "severity",
+        "recommendation",
+        "status",
+        "defense_action",
+        "resolved_at",
+    ]
+    writer = csv.DictWriter(buf, fieldnames=fields, extrasaction="ignore")
+    writer.writeheader()
+    for item in items:
+        writer.writerow({k: item.get(k) for k in fields})
+    return buf.getvalue()
+
+
+def export_analytics_payload(db: Session) -> dict[str, Any]:
+    return {
+        "analytics": analytics_summary(db),
+        "incidents": list_incidents(db, limit=1000),
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "note": "Decision-support export from Aegis IDS prototype — not live packet capture.",
+    }

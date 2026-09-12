@@ -119,8 +119,8 @@ class IDSPredictor:
         allow_missing: bool | None = None,
     ) -> PredictionResult:
         df, missing, extra = self._prepare_frame(features, allow_missing=allow_missing)
-        X = self.bundle.transform(df)
-        attack_proba = float(self._proba_attack(self.binary_model, X)[0])
+        X_bin = self.bundle.transform(df, task="binary")
+        attack_proba = float(self._proba_attack(self.binary_model, X_bin)[0])
         is_attack = attack_proba >= self.binary_threshold
         certainty = self._certainty(attack_proba)
 
@@ -138,7 +138,11 @@ class IDSPredictor:
                 extra_features=extra,
             )
 
-        multi_proba = self.multiclass_model.predict_proba(X)[0]
+        X_multi = self.bundle.transform(df, task="multiclass")
+        # Guard: older multiclass models expect binary-selected width
+        if X_multi.shape[1] != getattr(self.multiclass_model, "n_features_in_", X_multi.shape[1]):
+            X_multi = X_bin
+        multi_proba = self.multiclass_model.predict_proba(X_multi)[0]
         # Prefer model.classes_ when available; fall back to label encoder
         if hasattr(self.multiclass_model, "classes_"):
             raw_classes = list(self.multiclass_model.classes_)

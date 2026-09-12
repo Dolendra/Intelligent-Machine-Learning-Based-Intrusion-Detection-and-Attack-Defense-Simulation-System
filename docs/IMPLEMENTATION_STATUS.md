@@ -1,34 +1,30 @@
 # Implementation status (honest inventory)
 
-Last updated with the Phase-2/3 hardening pass (rules, risk context, lifecycle, batch).
+Last updated with play/pause simulation, CSV batch, exports, dual feature selectors.
 
 ## Implemented
 
 - CICIDS2017 load/clean/split + rare-class filter (documented)
 - Two-stage ML (binary + multiclass) with trained artifacts
-- Feature validation on predict (422 if schema incomplete; demo can opt-in to fill)
-- Explicit binary class-index via `model.classes_`
-- Certainty bands (likely_benign / uncertain / likely_attack)
-- SHAP with `actual_method` / `fallback_used` (no silent “fake SHAP”)
-- LIME as secondary explainer
-- Configurable risk weights + asset criticality factor
-- Rule engine (`security/rules`) driving context-aware recommendations
-- Attack-specific simulation topologies/behaviors
-- Prediction → incident → simulate; session query handoff
-- Incident lifecycle transitions (`PATCH /api/incidents/{id}`)
-- Batch prediction (`POST /api/predict/batch`) + Detection batch demo
-- PR-AUC / FPR / FNR in metrics + training console/report metadata
-- Error-analysis notebook (`notebooks/06_error_analysis.ipynb`)
-- Dashboard / Detection / Simulation / Reports UI
-- Docker; CI (pytest + frontend build/tsc); docs
+- Dual SelectKBest support (binary vs multiclass) + experiment script
+- Feature validation on predict; certainty bands; class-index via `classes_`
+- SHAP/LIME with honest method labeling
+- Configurable risk weights + asset criticality
+- Rule engine → context-aware recommendations
+- Attack-specific simulation + Play/Pause/Step timeline + comparison metrics
+- Prediction → incident → simulate
+- Incident lifecycle transitions
+- Batch prediction (JSON + CSV upload)
+- Reports analytics + CSV/JSON export
+- PR-AUC / FPR / FNR + error-analysis notebook
+- Docker; CI (pytest + frontend build); docs
 
 ## Partially implemented
 
+- Production artifacts may still be from shared-selector training until `02_train_models.py` is re-run
+- Feature-selector experiment uses a sample (not full-dataset Optuna/calibration)
 - Simulation DB restore after restart (best-effort)
-- Reports export (PDF/CSV) not yet
-- Hyperparameter search / calibration curves (research next)
-- Separate binary vs multiclass feature selectors (planned experiment)
-- Play/pause auto-timeline for simulation
+- PDF report export not yet
 
 ## Not implemented (do not claim)
 
@@ -36,7 +32,8 @@ Last updated with the Phase-2/3 hardening pass (rules, risk context, lifecycle, 
 - Automatic network mitigation
 - WebSockets / true live SOC streaming
 - Cross-dataset evaluation (CSE-CIC-IDS2018)
-- Alembic migrations (SQLite lightweight alters only)
+- Full Optuna HPO / probability calibration curves
+- Alembic migrations
 
 ## Academic wording
 

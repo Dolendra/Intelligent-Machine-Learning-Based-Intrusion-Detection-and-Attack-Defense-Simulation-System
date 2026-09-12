@@ -118,6 +118,35 @@ export function DetectionPage() {
         <button className="btn btn-amber" onClick={runBatch} disabled={busy}>
           Batch sample (12)
         </button>
+        <label className="btn btn-secondary" style={{ cursor: busy ? "not-allowed" : "pointer" }}>
+          Upload CSV
+          <input
+            type="file"
+            accept=".csv,text/csv"
+            hidden
+            disabled={busy}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              setBusy(true);
+              setError(null);
+              setResult(null);
+              setExplain(null);
+              setLime(null);
+              try {
+                const out = await api.predictBatchCsv(file, false);
+                setBatch(out);
+                setLabel(`CSV upload (${out.total_flows} flows)`);
+                setFeatures(null);
+              } catch (err) {
+                setError(err instanceof Error ? err.message : String(err));
+              } finally {
+                setBusy(false);
+              }
+            }}
+          />
+        </label>
         {busy && <span className="muted mono">Working…</span>}
         {label && (
           <span className="muted mono">

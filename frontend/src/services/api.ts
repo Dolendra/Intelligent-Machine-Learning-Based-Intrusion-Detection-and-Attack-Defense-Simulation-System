@@ -77,6 +77,11 @@ export type SimSession = {
   timeline: { event: string; state: string; detail: string }[];
   narrative?: string[];
   metrics?: Record<string, number>;
+  phase_guide?: Array<{ t: string; label: string; state: string }>;
+  comparison?: {
+    without_defense: { peak_traffic: number; server_stress: number; risk: number };
+    with_defense: { peak_traffic: number; server_stress: number; risk: number; traffic_blocked: number };
+  };
   incident_id?: string | null;
   disclaimer?: string;
 };
@@ -141,4 +146,25 @@ export const api = {
     }),
   getSim: (session_id: string) =>
     request<SimSession>(`/api/simulation/${encodeURIComponent(session_id)}`),
+  predictBatchCsv: async (file: File, persist = false) => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(
+      `${API_BASE}/api/predict/batch/csv?persist=${persist ? "true" : "false"}`,
+      { method: "POST", body: form }
+    );
+    if (!res.ok) throw new Error((await res.text()) || res.statusText);
+    return res.json() as Promise<BatchPredictResult>;
+  },
+  downloadExport: async (kind: "incidents.csv" | "incidents.json" | "analytics.json") => {
+    const res = await fetch(`${API_BASE}/api/export/${kind}`);
+    if (!res.ok) throw new Error((await res.text()) || res.statusText);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `aegis_${kind}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
 };

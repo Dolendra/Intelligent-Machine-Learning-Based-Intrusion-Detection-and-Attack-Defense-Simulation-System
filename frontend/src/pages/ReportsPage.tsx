@@ -44,6 +44,20 @@ export function ReportsPage() {
           <h2>Reports & Analytics</h2>
           <p>Persisted incident history from the IDS decision-support pipeline (not live packet capture).</p>
         </div>
+        <div className="row">
+          <button
+            className="btn btn-secondary"
+            onClick={() => api.downloadExport("incidents.csv").catch((e) => setError(String(e)))}
+          >
+            Export CSV
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => api.downloadExport("incidents.json").catch((e) => setError(String(e)))}
+          >
+            Export JSON
+          </button>
+        </div>
       </div>
 
       {error && (

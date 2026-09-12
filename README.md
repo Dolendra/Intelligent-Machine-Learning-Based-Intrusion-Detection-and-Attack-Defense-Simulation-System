@@ -98,6 +98,13 @@ pytest -q
 | [`notebooks/05_model_evaluation.ipynb`](notebooks/05_model_evaluation.ipynb) | Evaluation figures |
 | [`notebooks/06_error_analysis.ipynb`](notebooks/06_error_analysis.ipynb) | FP/FN + confusion analysis |
 
+Feature-selector research experiment (optional):
+
+```bash
+python scripts/10_feature_selector_experiment.py
+```
+
+
 ## Team split (suggested)
 
 - **Member 1 — ML/Data:** dataset, features, training, evaluation  

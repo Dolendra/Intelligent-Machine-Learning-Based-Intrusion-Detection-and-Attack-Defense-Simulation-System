@@ -1,7 +1,8 @@
 """FastAPI route handlers."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from backend.schemas.api import (
@@ -69,6 +70,30 @@ def predict_batch(body: BatchPredictRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
     except ValueError as exc:
         raise HTTPException(status_code=422, detail={"code": "INVALID_BATCH", "message": str(exc)}) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
+
+
+@router.post("/predict/batch/csv")
+async def predict_batch_csv(
+    file: UploadFile = File(...),
+    persist: bool = False,
+    allow_missing_features: bool = False,
+    db: Session = Depends(get_db),
+):
+    raw = await file.read()
+    try:
+        flows = svc.parse_flows_csv(raw)
+        return svc.run_prediction_batch(
+            flows,
+            db=db,
+            persist=persist,
+            allow_missing_features=allow_missing_features,
+        )
+    except FeatureValidationError as exc:
+        raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail={"code": "INVALID_CSV", "message": str(exc)}) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
 
@@ -191,6 +216,26 @@ def incident_simulate(incident_id: str, db: Session = Depends(get_db)):
 
 @router.get("/analytics")
 def analytics(db: Session = Depends(get_db)):
+    return svc.analytics_summary(db)
+
+
+@router.get("/export/incidents.json")
+def export_incidents_json(db: Session = Depends(get_db)):
+    return svc.export_analytics_payload(db)
+
+
+@router.get("/export/incidents.csv")
+def export_incidents_csv(db: Session = Depends(get_db)):
+    csv_text = svc.export_incidents_csv(db)
+    return Response(
+        content=csv_text,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=aegis_incidents.csv"},
+    )
+
+
+@router.get("/export/analytics.json")
+def export_analytics_json(db: Session = Depends(get_db)):
     return svc.analytics_summary(db)
 
 

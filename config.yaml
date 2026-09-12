@@ -26,6 +26,8 @@ features:
   # Max features after selection (SelectKBest / importance)
   max_features: 40
   scale: true
+  # Fit separate SelectKBest for binary vs multiclass (shared scaler)
+  dual_selectors: true
 
 models:
   output_dir: "models/trained_models"

@@ -39,10 +39,15 @@ class LimeExplanationEngine:
             if col not in df.columns:
                 df[col] = 0.0
         df = df[self.bundle.feature_names]
-        X = self.bundle.transform(df)
-        names = self.bundle.selected_features
-
+        task = "multiclass" if pred.is_attack else "binary"
+        X = self.bundle.transform(df, task=task)
         model = self.predictor.multiclass_model if pred.is_attack else self.predictor.binary_model
+        expected_n = getattr(model, "n_features_in_", None)
+        if expected_n is not None and X.shape[1] != expected_n:
+            X = self.bundle.transform(df, task="binary")
+            task = "binary"
+        names = self.bundle.selected_for(task)
+
         contributions = self._lime_or_fallback(model, X, names, pred.is_attack, top_k)
         ranked = sorted(contributions.items(), key=lambda kv: abs(kv[1]), reverse=True)[:top_k]
         top = ", ".join(f"{f} ({v:+.3f})" for f, v in ranked[:3]) if ranked else "n/a"

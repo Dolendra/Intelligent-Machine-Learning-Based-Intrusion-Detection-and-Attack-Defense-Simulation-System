@@ -47,12 +47,17 @@ class ExplanationEngine:
         for col in missing:
             df[col] = 0.0
         df = df[expected]
-        X = self.bundle.transform(df)
-
+        task = "multiclass" if pred.is_attack else "binary"
+        X = self.bundle.transform(df, task=task)
         model = self.predictor.multiclass_model if pred.is_attack else self.predictor.binary_model
+        expected_n = getattr(model, "n_features_in_", None)
+        if expected_n is not None and X.shape[1] != expected_n:
+            X = self.bundle.transform(df, task="binary")
+            task = "binary"
+        feature_names = self.bundle.selected_for(task)
         class_index = self._predicted_class_index(model, pred)
         contributions, actual_method, fallback_used = self._explain_values(
-            model, X, class_index=class_index
+            model, X, class_index=class_index, feature_names=feature_names
         )
 
         ranked = sorted(contributions.items(), key=lambda kv: abs(kv[1]), reverse=True)[:top_k]
@@ -94,9 +99,9 @@ class ExplanationEngine:
         return int(np.argmax(list(pred.class_probabilities.values())))
 
     def _explain_values(
-        self, model: Any, X: np.ndarray, class_index: int
+        self, model: Any, X: np.ndarray, class_index: int, feature_names: list[str] | None = None
     ) -> tuple[dict[str, float], str, bool]:
-        names = self.bundle.selected_features
+        names = feature_names or self.bundle.selected_features
         if HAS_SHAP:
             try:
                 explainer = shap.TreeExplainer(model)
