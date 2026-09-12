@@ -19,9 +19,12 @@ python scripts/01_prepare_data.py      # once (full CICIDS2017)
 python scripts/02_train_models.py      # once
 python scripts/05_plot_evaluation.py   # report figures → models/trained_models/figures/
 
+# One-click (Windows): API + UI in two terminals
+powershell -File scripts/start_all.ps1
+
+# Or manually:
 # Terminal A
 uvicorn backend.main:app --reload --port 8000
-
 # Terminal B
 cd frontend && npm install && npm run dev
 ```
@@ -29,6 +32,7 @@ cd frontend && npm install && npm run dev
 - UI: http://127.0.0.1:5173/  
 - API docs: http://127.0.0.1:8000/docs  
 - Demo script: [`docs/DEMO.md`](docs/DEMO.md)
+- Optional env overrides: copy `.env.example` → `.env`
 
 ### Docker (after models are trained)
 
@@ -81,6 +85,7 @@ pytest -q
 | [`docs/PRESENTATION.md`](docs/PRESENTATION.md) | Slide outline |
 | [`docs/CHECKLIST.md`](docs/CHECKLIST.md) | Submission checklist |
 | [`notebooks/01_data_analysis.ipynb`](notebooks/01_data_analysis.ipynb) | EDA |
+| [`notebooks/03_explainability_demo.ipynb`](notebooks/03_explainability_demo.ipynb) | SHAP/LIME demo |
 | [`notebooks/05_model_evaluation.ipynb`](notebooks/05_model_evaluation.ipynb) | Evaluation figures |
 
 ## Team split (suggested)
