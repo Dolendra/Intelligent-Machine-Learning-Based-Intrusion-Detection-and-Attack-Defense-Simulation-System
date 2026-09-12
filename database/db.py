@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import os
 from sqlalchemy import Column, DateTime, Float, Integer, String, Text, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime, timezone
 
 from ids_config import ROOT
 
-DATABASE_URL = f"sqlite:///{ROOT / 'database' / 'ids.db'}"
+_db_path = os.getenv("IDS_DB_PATH") or str(ROOT / "database" / "ids.db")
+DATABASE_URL = os.getenv("IDS_DB_URL") or f"sqlite:///{_db_path}"
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
