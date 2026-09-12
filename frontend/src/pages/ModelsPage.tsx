@@ -174,12 +174,42 @@ export function ModelsPage() {
           <h3 style={{ marginTop: 0 }}>Drift</h3>
           {!drift?.available ? <p className="muted">{String(drift?.message ?? "No drift report.")}</p> : null}
           {drift?.available ? (
-            <p className="mono muted">
-              Status: {String(drift.status ?? "ok")} · Flagged PSI≥0.2:{" "}
-              {JSON.stringify(
-                (drift.feature_drift as Record<string, unknown> | undefined)?.["flagged_psi_ge_0.2"] ?? []
-              )}
-            </p>
+            <>
+              <p className="mono muted">
+                Status: {String(drift.retrain_recommendation ? "review" : "monitor")} · Ref=
+                {String(drift.ref)} → {String(drift.current)} · Flagged PSI≥0.2:{" "}
+                {JSON.stringify(
+                  (drift.feature_drift as Record<string, unknown> | undefined)?.["flagged_psi_ge_0.2"] ?? []
+                )}
+              </p>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th>PSI</th>
+                    <th>|z| shift</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(
+                    ((drift.feature_drift as Record<string, unknown> | undefined)?.top_psi as Array<
+                      Record<string, unknown>
+                    >) ?? []
+                  )
+                    .slice(0, 8)
+                    .map((row) => (
+                      <tr key={String(row.feature)}>
+                        <td>{String(row.feature)}</td>
+                        <td className="mono">{Number(row.psi ?? 0).toFixed(3)}</td>
+                        <td className="mono">{Math.abs(Number(row.mean_shift_z ?? 0)).toFixed(3)}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+              <p className="muted" style={{ fontSize: "0.85rem" }}>
+                {String(drift.note ?? "Prototype drift monitoring only.")}
+              </p>
+            </>
           ) : null}
         </section>
         <section className="panel">

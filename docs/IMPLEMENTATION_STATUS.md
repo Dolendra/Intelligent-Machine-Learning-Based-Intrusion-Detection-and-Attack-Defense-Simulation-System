@@ -1,27 +1,32 @@
 # Implementation status (honest inventory)
 
-Last updated after Phase-5 Model Lab / XAI polish (global SHAP, counterfactuals, drift, experiments).
+Last updated after research-finalization: threshold/calibration conclusions, drift artifact, golden-path E2E.
 
 ## Implemented
 
-### Phase-1–4 (summary)
-- Correctness: attack-only multiclass, SHAP shapes, severity, dedup/source_ref, thresholds, DEMO_MODE defaults
-- Research scaffolding + SOC UI + simulation latencies/series/campaign sim
-- Engineering: `/api/ready`, non-root Docker, request IDs, standardized errors
+### Correctness & product loop (Phases 1–4)
+- Attack-only multiclass, SHAP shapes, severity bands, explicit `source_ref` dedup/campaigns
+- Evidence-based operating threshold + uncertainty bands (`threshold_operating_point.json`)
+- SOC UI, simulation latencies/series/campaign sim, `/api/ready`, non-root Docker, request IDs
 
-### Phase-5 advanced XAI / research UI
-- Global + attack-specific importance (`GET /api/models/shap/global`, `scripts/24_…`)
-- What-if counterfactuals (`POST /api/explain/counterfactual`) on Detection
-- Model health (`GET /api/models/health`), drift (`GET /api/drift`), experiments (`GET /api/experiments`)
-- Model Lab UI panels for health, global/attack drivers, drift, experiment index
+### Research finalization
+- **Threshold decision:** operating **0.30**, uncertainty **[0.10, 0.45]** (val sweep; see `docs/experiments/CALIBRATION_AND_THRESHOLD.md`)
+- **Calibration decision:** **disabled** — sample isotonic worsened Brier and reduced recall
+- **Risk sensitivity:** severity labels stable across A/B/C weight configs
+- **Drift:** train→test PSI report (`drift_report.json`); 0 features flagged ≥0.2
+- Error analysis + experiment index artifacts refreshed
+
+### Phase-5 Model Lab
+- Global/attack importance, counterfactuals, health/drift/experiments UI
+
+### Integration test
+- Golden-path API E2E: demo → predict → explain → counterfactual → incident → simulate → recover
 
 ## Partially implemented
 
-- Retrain required for production artifacts to pick up attack-only multiclass encoder
-- Calibration/threshold **conclusions** need values filled after experiment runs
-- Drift report UI needs `scripts/20_…` artifact on disk for full display
-- Attack-specific SHAP rankings richer after `scripts/24_global_shap_summary.py`
-- Full browser E2E suite
+- Stage-2 **retrain** still recommended so production multiclass joblibs match attack-only encoder semantics from current training code
+- External CSE-CIC-IDS2018 needs compatible CSVs for official cross-dataset metrics
+- Browser Playwright/Cypress suite (API golden-path covers the loop server-side)
 
 ## Not implemented (do not claim)
 

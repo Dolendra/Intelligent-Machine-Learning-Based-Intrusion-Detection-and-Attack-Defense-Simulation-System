@@ -1,0 +1,342 @@
+{
+  "experiment": "error_analysis",
+  "status": "ok",
+  "guidance": "Prefer per-class precision/recall from training_report; re-run after attack-only Stage-2 retrain for family-level confusion.",
+  "source": "training_report.json",
+  "binary": {
+    "best": "xgboost",
+    "validation": {
+      "logistic_regression": {
+        "accuracy": 0.9314965783992859,
+        "precision": 0.7206418418069243,
+        "recall": 0.9706124174869036,
+        "f1": 0.827154067905189,
+        "confusion_matrix": [
+          [
+            193489,
+            16017
+          ],
+          [
+            1251,
+            41318
+          ]
+        ],
+        "roc_auc": 0.9859611694543107,
+        "train_seconds": 18.187,
+        "infer_seconds_val": 0.0124
+      },
+      "decision_tree": {
+        "accuracy": 0.9967747694138649,
+        "precision": 0.9844982827438967,
+        "recall": 0.9965937654161479,
+        "f1": 0.9905090998237237,
+        "confusion_matrix": [
+          [
+            208838,
+            668
+          ],
+          [
+            145,
+            42424
+          ]
+        ],
+        "roc_auc": 0.9989489457777087,
+        "train_seconds": 39.882,
+        "infer_seconds_val": 0.035
+      },
+      "random_forest": {
+        "accuracy": 0.9970167608846573,
+        "precision": 0.9863459793910353,
+        "recall": 0.9961239399563062,
+        "f1": 0.9912108461898084,
+        "confusion_matrix": [
+          [
+            208919,
+            587
+          ],
+          [
+            165,
+            42404
+          ]
+        ],
+        "roc_auc": 0.9999438764149076,
+        "train_seconds": 49.797,
+        "infer_seconds_val": 0.1669
+      },
+      "xgboost": {
+        "accuracy": 0.9976435584647426,
+        "precision": 0.9961466631994516,
+        "recall": 0.989875261340412,
+        "f1": 0.993001060445387,
+        "confusion_matrix": [
+          [
+            209343,
+            163
+          ],
+          [
+            431,
+            42138
+          ]
+        ],
+        "roc_auc": 0.9999405205668205,
+        "train_seconds": 9.044,
+        "infer_seconds_val": 0.0945
+      }
+    },
+    "test": {
+      "accuracy": 0.9976296784098415,
+      "precision": 0.9963106612430234,
+      "recall": 0.9896287247912238,
+      "f1": 0.992958451920074,
+      "confusion_matrix": [
+        [
+          418700,
+          312
+        ],
+        [
+          883,
+          84256
+        ]
+      ],
+      "roc_auc": 0.999938250188364
+    }
+  },
+  "multiclass": {
+    "best": "xgboost",
+    "classes": [
+      "BENIGN",
+      "Bot",
+      "BruteForce",
+      "DDoS",
+      "DoS",
+      "PortScan",
+      "WebAttack"
+    ],
+    "validation": {
+      "random_forest": {
+        "accuracy": 0.9906496082515125,
+        "precision_macro": 0.7706343064193216,
+        "recall_macro": 0.9905627083263617,
+        "f1_macro": 0.8063127328585217,
+        "precision_weighted": 0.9972568887541191,
+        "recall_weighted": 0.9906496082515125,
+        "f1_weighted": 0.9935128863950774,
+        "confusion_matrix": [
+          [
+            207230,
+            1510,
+            0,
+            2,
+            200,
+            97,
+            467
+          ],
+          [
+            3,
+            192,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            912,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            12798,
+            0,
+            0,
+            0
+          ],
+          [
+            51,
+            0,
+            0,
+            0,
+            19314,
+            1,
+            9
+          ],
+          [
+            4,
+            0,
+            0,
+            0,
+            0,
+            9065,
+            0
+          ],
+          [
+            7,
+            0,
+            0,
+            0,
+            0,
+            0,
+            207
+          ]
+        ],
+        "train_seconds": 55.658
+      },
+      "xgboost": {
+        "accuracy": 0.9981513438460775,
+        "precision_macro": 0.971456212250526,
+        "recall_macro": 0.887505293043693,
+        "f1_macro": 0.9194303027443438,
+        "precision_weighted": 0.9981087366023641,
+        "recall_weighted": 0.9981513438460775,
+        "f1_weighted": 0.9980737416444537,
+        "confusion_matrix": [
+          [
+            209321,
+            9,
+            1,
+            2,
+            59,
+            97,
+            17
+          ],
+          [
+            97,
+            98,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2,
+            0,
+            913,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2,
+            0,
+            0,
+            12799,
+            0,
+            0,
+            0
+          ],
+          [
+            116,
+            0,
+            0,
+            0,
+            19259,
+            0,
+            0
+          ],
+          [
+            4,
+            0,
+            0,
+            0,
+            0,
+            9065,
+            0
+          ],
+          [
+            59,
+            0,
+            0,
+            0,
+            1,
+            0,
+            154
+          ]
+        ],
+        "train_seconds": 55.238
+      }
+    },
+    "test": {
+      "accuracy": 0.9981434133821018,
+      "precision_macro": 0.9745856535230103,
+      "recall_macro": 0.883566540630609,
+      "f1_macro": 0.9174945063135739,
+      "precision_weighted": 0.998104638523207,
+      "recall_weighted": 0.9981434133821018,
+      "f1_weighted": 0.9980592291216125,
+      "confusion_matrix": [
+        [
+          418663,
+          14,
+          2,
+          9,
+          102,
+          196,
+          26
+        ],
+        [
+          198,
+          191,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          1826,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          25603,
+          0,
+          0,
+          0
+        ],
+        [
+          242,
+          0,
+          0,
+          0,
+          38502,
+          3,
+          2
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          7,
+          18128,
+          3
+        ],
+        [
+          126,
+          0,
+          0,
+          0,
+          1,
+          0,
+          302
+        ]
+      ]
+    }
+  }
+}

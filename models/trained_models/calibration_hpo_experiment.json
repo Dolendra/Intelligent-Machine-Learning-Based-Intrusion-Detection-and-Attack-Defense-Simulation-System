@@ -1,0 +1,96 @@
+{
+  "experiment": "calibration_and_constrained_hpo",
+  "sample_train_rows": 60000,
+  "sample_val_rows": 10000,
+  "baseline": {
+    "metrics": {
+      "accuracy": 0.9966,
+      "precision": 0.9941072480848556,
+      "recall": 0.9859731151373465,
+      "f1": 0.9900234741784038,
+      "specificity": 0.9987935818554711,
+      "fpr": 0.0012064181445288937,
+      "fnr": 0.014026884862653419,
+      "mcc": 0.9879864482090434,
+      "true_negatives": 8279,
+      "false_positives": 10,
+      "false_negatives": 24,
+      "true_positives": 1687,
+      "roc_auc": 0.9994685696344059,
+      "pr_auc": 0.9986108819251402,
+      "brier_score": 0.0028281555116178624,
+      "ece": 0.0014556039669454657
+    },
+    "calibration": {
+      "brier_score": 0.0028281555116178624,
+      "ece": 0.0014556039669454657,
+      "n_bins": 10
+    },
+    "fit_seconds": 0.61
+  },
+  "isotonic_calibrated": {
+    "metrics": {
+      "accuracy": 0.9958,
+      "precision": 0.9934949733885275,
+      "recall": 0.9818819403857393,
+      "f1": 0.9876543209876543,
+      "specificity": 0.9986729400410183,
+      "fpr": 0.001327059958981783,
+      "fnr": 0.018118059614260665,
+      "mcc": 0.9851487188787923,
+      "true_negatives": 8278,
+      "false_positives": 11,
+      "false_negatives": 31,
+      "true_positives": 1680,
+      "roc_auc": 0.9995855802078043,
+      "pr_auc": 0.9981659855879372,
+      "brier_score": 0.0036745132088685066,
+      "ece": 0.0013912890704971684
+    },
+    "calibration": {
+      "brier_score": 0.0036745132088685066,
+      "ece": 0.0013912890704971684,
+      "n_bins": 10
+    },
+    "fit_seconds": 0.93
+  },
+  "randomized_search": {
+    "best_params": {
+      "n_estimators": 60,
+      "min_samples_split": 5,
+      "min_samples_leaf": 1,
+      "max_features": "sqrt",
+      "max_depth": 20
+    },
+    "best_cv_f1": 0.9882235994864651,
+    "metrics": {
+      "accuracy": 0.9959,
+      "precision": 0.9940828402366864,
+      "recall": 0.9818819403857393,
+      "f1": 0.9879447221405468,
+      "specificity": 0.9987935818554711,
+      "fpr": 0.0012064181445288937,
+      "fnr": 0.018118059614260665,
+      "mcc": 0.985502081255868,
+      "true_negatives": 8279,
+      "false_positives": 10,
+      "false_negatives": 31,
+      "true_positives": 1680,
+      "roc_auc": 0.9991703848107233,
+      "pr_auc": 0.9975908032516265,
+      "brier_score": 0.003583888734351653,
+      "ece": 0.0020828939290002514
+    },
+    "calibration": {
+      "brier_score": 0.003583888734351653,
+      "ece": 0.0020828939290002514,
+      "n_bins": 10
+    },
+    "fit_seconds": 10.14,
+    "n_iter": 8
+  },
+  "figures": {
+    "calibration_curve": "models\\trained_models\\figures\\calibration_curve.png"
+  },
+  "note": "Sample-based research experiment. Does not replace production joblibs. Confidence \u2260 empirical probability until calibration is validated."
+}

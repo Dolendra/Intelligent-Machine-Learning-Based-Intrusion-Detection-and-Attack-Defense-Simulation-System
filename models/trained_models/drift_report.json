@@ -1,0 +1,141 @@
+{
+  "experiment": "data_drift",
+  "ref": "train",
+  "current": "test",
+  "feature_drift": {
+    "n_ref": 1764525,
+    "n_cur": 504151,
+    "features_compared": 78,
+    "flagged_psi_ge_0.2": [],
+    "top_psi": [
+      {
+        "feature": "Destination Port",
+        "psi": 0.0,
+        "mean_shift_z": 0.0018
+      },
+      {
+        "feature": "Flow Duration",
+        "psi": 0.0,
+        "mean_shift_z": -0.0
+      },
+      {
+        "feature": "Total Fwd Packets",
+        "psi": 0.0,
+        "mean_shift_z": -0.0018
+      },
+      {
+        "feature": "Total Backward Packets",
+        "psi": 0.0,
+        "mean_shift_z": -0.0018
+      },
+      {
+        "feature": "Total Length of Fwd Packets",
+        "psi": 0.0,
+        "mean_shift_z": 0.004
+      },
+      {
+        "feature": "Total Length of Bwd Packets",
+        "psi": 0.0,
+        "mean_shift_z": -0.0019
+      },
+      {
+        "feature": "Fwd Packet Length Max",
+        "psi": 0.0,
+        "mean_shift_z": 0.0004
+      },
+      {
+        "feature": "Fwd Packet Length Min",
+        "psi": 0.0,
+        "mean_shift_z": -0.0009
+      },
+      {
+        "feature": "Fwd Packet Length Mean",
+        "psi": 0.0,
+        "mean_shift_z": 0.001
+      },
+      {
+        "feature": "Fwd Packet Length Std",
+        "psi": 0.0,
+        "mean_shift_z": 0.0004
+      },
+      {
+        "feature": "Bwd Packet Length Max",
+        "psi": 0.0,
+        "mean_shift_z": 0.0007
+      },
+      {
+        "feature": "Bwd Packet Length Min",
+        "psi": 0.0,
+        "mean_shift_z": -0.0005
+      },
+      {
+        "feature": "Bwd Packet Length Mean",
+        "psi": 0.0,
+        "mean_shift_z": 0.0007
+      },
+      {
+        "feature": "Bwd Packet Length Std",
+        "psi": 0.0,
+        "mean_shift_z": 0.0011
+      },
+      {
+        "feature": "Flow Bytes/s",
+        "psi": 0.0,
+        "mean_shift_z": 0.0023
+      }
+    ],
+    "note": "PSI>=0.2 often treated as notable shift (heuristic, not a universal rule)."
+  },
+  "label_drift": {
+    "by_label": [
+      {
+        "label": "BENIGN",
+        "ref_pct": 83.11,
+        "cur_pct": 83.11,
+        "delta_pp": 0.0
+      },
+      {
+        "label": "Bot",
+        "ref_pct": 0.08,
+        "cur_pct": 0.08,
+        "delta_pp": -0.0
+      },
+      {
+        "label": "BruteForce",
+        "ref_pct": 0.36,
+        "cur_pct": 0.36,
+        "delta_pp": -0.0
+      },
+      {
+        "label": "DDoS",
+        "ref_pct": 5.08,
+        "cur_pct": 5.08,
+        "delta_pp": 0.0
+      },
+      {
+        "label": "DoS",
+        "ref_pct": 7.69,
+        "cur_pct": 7.69,
+        "delta_pp": 0.0
+      },
+      {
+        "label": "PortScan",
+        "ref_pct": 3.6,
+        "cur_pct": 3.6,
+        "delta_pp": 0.0
+      },
+      {
+        "label": "WebAttack",
+        "ref_pct": 0.09,
+        "cur_pct": 0.09,
+        "delta_pp": 0.0
+      }
+    ]
+  },
+  "retrain_recommendation": {
+    "action": "monitor",
+    "reason": "Few or no high-PSI features",
+    "promote": false
+  },
+  "note": "Prototype drift monitoring \u2014 does not auto-replace production models."
+}

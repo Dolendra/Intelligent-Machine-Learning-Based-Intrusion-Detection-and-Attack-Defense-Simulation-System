@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-12T18:52:17.493991+00:00",
-  "git_commit": "058de15",
+  "generated_at": "2026-09-12T18:56:21.457299+00:00",
+  "git_commit": "0becf1b",
   "model_version": "1.1.0",
   "experiments": [
     {
@@ -31,16 +31,16 @@
       "experiment_id": "EXP-004",
       "name": "threshold",
       "artifact": "threshold_sweep.json",
-      "present": false,
-      "path": null,
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\threshold_sweep.json",
       "intended_conclusion": "Operating threshold + uncertainty bands"
     },
     {
       "experiment_id": "EXP-005",
       "name": "risk_sensitivity",
       "artifact": "risk_weight_sensitivity.json",
-      "present": false,
-      "path": null,
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\risk_weight_sensitivity.json",
       "intended_conclusion": "Risk weight configurations"
     },
     {
@@ -63,8 +63,8 @@
       "experiment_id": "EXP-008",
       "name": "drift",
       "artifact": "drift_report.json",
-      "present": false,
-      "path": null,
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\drift_report.json",
       "intended_conclusion": "Feature/label drift vs train"
     },
     {
@@ -87,8 +87,8 @@
       "experiment_id": "EXP-011",
       "name": "error_analysis",
       "artifact": "error_analysis_report.json",
-      "present": false,
-      "path": null,
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\error_analysis_report.json",
       "intended_conclusion": "Confusion / error analysis"
     },
     {

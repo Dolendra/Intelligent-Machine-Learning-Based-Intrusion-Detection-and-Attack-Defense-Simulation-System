@@ -156,7 +156,7 @@ def main() -> None:
     print(f"Wrote {out_path}")
     print(
         f"Brier baseline={base_cal['brier_score']:.4f} calibrated={cal_cal['brier_score']:.4f} | "
-        f"ECE {base_cal['ece']:.4f} → {cal_cal['ece']:.4f} | "
+        f"ECE {base_cal['ece']:.4f} -> {cal_cal['ece']:.4f} | "
         f"HPO val F1={hpo_metrics['f1']:.4f} params={search.best_params_}"
     )
 

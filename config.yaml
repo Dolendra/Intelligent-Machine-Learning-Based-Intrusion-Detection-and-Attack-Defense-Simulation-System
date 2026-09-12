@@ -32,11 +32,12 @@ features:
 models:
   output_dir: "models/trained_models"
   model_version: "1.1.0"
-  binary_threshold: 0.5
+  binary_threshold: 0.3
   # Certainty bands (overridden by threshold_operating_point.json when present)
-  uncertainty_lower: 0.30
-  uncertainty_upper: 0.70
+  uncertainty_lower: 0.10
+  uncertainty_upper: 0.45
   # Prefer binary_calibrated.joblib when true and the artifact exists
+  # Kept false: sample isotonic calibration worsened Brier and cut recall (see docs/experiments/)
   use_calibrated_binary: false
   # Multi-objective binary selection weights (project-justified)
   selection_weights:
