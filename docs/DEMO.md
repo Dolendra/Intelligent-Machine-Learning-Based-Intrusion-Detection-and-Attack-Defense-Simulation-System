@@ -11,16 +11,18 @@
 2. Go to **Detection**
    - Demo flow type: `DDoS` → **Load sample flow** → **Detect & classify**
    - Point to: verdict, confidence, certainty band, risk/severity, recommendation, **rules fired**
+   - Point to **WHY DID AEGIS DO THIS?** decision trace (traffic → ML → risk → recommendation → incident)
    - Scroll to **Why?** — show SHAP (and that fallback is labeled if used)
    - Click **Simulate this incident** (hands off to Simulation with that session)
    - Optional: **Batch sample** or **Upload CSV** for multi-flow analytics
 3. Go to **Simulation**
-   - Press **Play** (or Step) through attack → detection → recommendation → defense → recovery
-   - Point to attack-specific topology / narrative / without-vs-with defense metrics
+   - Configure intensity/confidence if desired, then **Run simulation** / **Play**
+   - Point to detection/defense/recovery delays and without-vs-with defense table
    - Say: “Controlled visualization only — not a real attack tool.”
-4. Go to **Reports**
-   - Show severity / lifecycle charts and incident status updates
+4. Go to **Reports** / **Incident detail**
+   - Show lifecycle timeline + decision trace
    - Optional: **Export CSV / JSON / PDF**
+5. Optional: **Models** page — health, threshold, validation comparison table
 
 ## Likely viva questions
 

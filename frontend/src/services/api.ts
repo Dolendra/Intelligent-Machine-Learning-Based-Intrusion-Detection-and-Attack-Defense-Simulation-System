@@ -34,6 +34,11 @@ export type PredictResult = {
   certainty?: string;
   threshold?: number;
   risk_factors?: Record<string, number>;
+  decision_trace?: {
+    title: string;
+    advisory_only?: boolean;
+    steps: Array<{ stage: string; title: string; detail: string; timestamp?: string }>;
+  };
 };
 
 export type BatchPredictResult = {
@@ -98,6 +103,11 @@ export const api = {
   incidents: () => request<{ items: Array<Record<string, unknown>> }>("/api/incidents"),
   getIncident: (incident_id: string) =>
     request<Record<string, unknown>>(`/api/incidents/${encodeURIComponent(incident_id)}`),
+  incidentTrace: (incident_id: string) =>
+    request<{
+      title: string;
+      steps: Array<{ stage: string; title: string; detail: string; timestamp?: string }>;
+    }>(`/api/incidents/${encodeURIComponent(incident_id)}/trace`),
   models: () => request<Record<string, unknown>>("/api/models"),
   modelsComparison: () => request<Record<string, unknown>>("/api/models/comparison"),
   assets: () => request<{ items: Array<Record<string, unknown>> }>("/api/assets"),

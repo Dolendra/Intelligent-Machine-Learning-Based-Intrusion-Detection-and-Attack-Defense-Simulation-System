@@ -44,6 +44,7 @@ class PredictResponse(BaseModel):
     source_ref: str | None = None
     campaign_id: str | None = None
     escalated: bool | None = None
+    decision_trace: dict[str, Any] | None = None
 
 
 class BatchPredictRequest(BaseModel):

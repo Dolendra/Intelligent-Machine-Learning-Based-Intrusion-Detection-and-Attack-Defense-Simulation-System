@@ -17,6 +17,7 @@ from backend.routes.api import router
 from backend.services.seed import seed_demo_incidents
 from backend.middleware.rate_limit import attach_rate_limit
 from backend.middleware.api_auth import attach_api_auth
+from backend.middleware.logging_mw import attach_request_logging
 from database.db import init_db
 from ids_config import load_config
 
@@ -57,6 +58,7 @@ app.add_middleware(
 app.include_router(router, prefix="/api")
 attach_rate_limit(app)
 attach_api_auth(app)
+attach_request_logging(app)
 
 
 @app.get("/")

@@ -6,13 +6,21 @@ export function IncidentDetailPage() {
   const { incidentId } = useParams();
   const navigate = useNavigate();
   const [item, setItem] = useState<Record<string, unknown> | null>(null);
+  const [trace, setTrace] = useState<{
+    title: string;
+    steps: Array<{ stage: string; title: string; detail: string; timestamp?: string }>;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function load() {
     if (!incidentId) return;
-    const data = await api.getIncident(incidentId);
+    const [data, tr] = await Promise.all([
+      api.getIncident(incidentId),
+      api.incidentTrace(incidentId).catch(() => null),
+    ]);
     setItem(data);
+    setTrace(tr);
   }
 
   useEffect(() => {
@@ -26,6 +34,8 @@ export function IncidentDetailPage() {
     try {
       const updated = await api.updateIncident(incidentId, status);
       setItem(updated);
+      const tr = await api.incidentTrace(incidentId).catch(() => null);
+      setTrace(tr);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -96,6 +106,7 @@ export function IncidentDetailPage() {
             </div>
             <p>
               <span className={`badge ${String(item.severity).toLowerCase()}`}>{String(item.severity)}</span>
+              {item.campaign_id ? <span className="mono muted"> · {String(item.campaign_id)}</span> : null}
             </p>
             <p>
               <strong>Recommendation:</strong> {String(item.recommendation)}
@@ -110,6 +121,19 @@ export function IncidentDetailPage() {
                 </button>
               ))}
             </div>
+            {trace && (
+              <div>
+                <h4 style={{ marginBottom: "0.35rem" }}>{trace.title}</h4>
+                <ol style={{ paddingLeft: "1.2rem" }}>
+                  {trace.steps.map((s, i) => (
+                    <li key={`${s.stage}-${i}`} style={{ marginBottom: "0.4rem" }}>
+                      <strong>{s.title}</strong>
+                      <div className="muted">{s.detail}</div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
           </section>
           <section className="panel">
             <h3 style={{ marginTop: 0 }}>Timeline</h3>

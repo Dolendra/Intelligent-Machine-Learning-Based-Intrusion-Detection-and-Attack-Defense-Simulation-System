@@ -287,6 +287,19 @@ export function DetectionPage() {
                     "Advisory only — the platform does not execute network changes."}
                 </p>
               </div>
+              {result.decision_trace && (
+                <div>
+                  <h4 style={{ marginBottom: "0.35rem" }}>{result.decision_trace.title}</h4>
+                  <ol className="timeline" style={{ listStyle: "decimal", paddingLeft: "1.2rem" }}>
+                    {result.decision_trace.steps.map((s, i) => (
+                      <li key={`${s.stage}-${i}`} style={{ marginBottom: "0.45rem" }}>
+                        <strong>{s.title}</strong>
+                        <div className="muted">{s.detail}</div>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
             </>
           )}
         </section>

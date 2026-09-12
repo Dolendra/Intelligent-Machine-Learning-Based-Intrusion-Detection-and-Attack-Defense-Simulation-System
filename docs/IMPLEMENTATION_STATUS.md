@@ -1,32 +1,25 @@
 # Implementation status (honest inventory)
 
-Last updated after polish batch (scenario split, drift, cross-dataset scoring, optional API auth).
+Last updated after final polish (Alembic, decision trace, structured logging).
 
-## Implemented (including recent review items)
+## Implemented
 
-- Dual feature selectors; prediction validation; certainty bands
-- Multi-objective selection; threshold/risk/XAI/scenario-aware/drift experiment scripts
-- Percentile intensity; rule engine; asset inventory; campaigns + severity escalation
-- Dynamic simulation with **per-attack scenario modules** (`simulation/scenarios/*.py`)
-- Incident lifecycle, events, dedup; Model/Incident UI; sim config/replay
-- Cross-dataset script scores when compatible external CSVs + models exist (else honest skip)
-- Optional API rate limit + **API-key auth** (both off by default)
-- Vectorized batch; strict CSV; Vitest; CI docker compose build
-- Docker healthchecks; compose smoke script
+- Full Aegis loop: prepare → train/select → predict → XAI → risk → rules → recommend → incident → simulate → dashboard
+- Research experiments: HPO/calibration, threshold, risk sensitivity, scenario-aware eval, XAI agreement, drift, cross-dataset scoring (when data present)
+- Incident intelligence: lifecycle, events, dedup, escalation, campaigns, decision trace
+- Simulation: per-attack modules, dynamic metrics, config/replay, before/after
+- Engineering: vectorized batch, strict CSV, optional rate-limit/API-key, structured request logs, Alembic migrations, Vitest, CI (pytest + frontend + docker build)
 
 ## Partially implemented
 
-- Production dual-selector/calibrated artifacts need retrain / script 14
-- Intensity reference requires training run (or falls back to 1e5 scale)
-- External CSE-CIC-IDS2018 eval requires placing compatible CSVs under configured dir
-- Full compose-up smoke is local/script (CI builds images)
-- Model drift / auto-promote is recommendation-only (`20_data_drift_report.py`)
+- External CSE-CIC-IDS2018 results require placing compatible CSVs
+- Intensity reference / calibrated binary need training/script runs
+- Compose-up smoke is local (`scripts/19_…`); CI builds images
 
 ## Not implemented (do not claim)
 
-- Live packet capture / auto-mitigation
-- Full Optuna on entire CICIDS; guaranteed external-dataset results without data
-- Alembic migrations; production SSO/OAuth
+- Live packet capture / auto-mitigation / OAuth SSO
+- Guaranteed external-dataset metrics without data on disk
 
 ## Academic wording
 

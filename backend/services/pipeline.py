@@ -344,6 +344,9 @@ def run_prediction(
                 pass
 
     payload["incident_id"] = incident_id
+    from backend.services.decision_trace import build_trace_from_prediction
+
+    payload["decision_trace"] = build_trace_from_prediction(payload)
     return payload
 
 

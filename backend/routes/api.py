@@ -237,6 +237,16 @@ def incident_detail(incident_id: str, db: Session = Depends(get_db)):
     return item
 
 
+@router.get("/incidents/{incident_id}/trace")
+def incident_trace(incident_id: str, db: Session = Depends(get_db)):
+    from backend.services.decision_trace import build_trace_from_incident
+
+    trace = build_trace_from_incident(db, incident_id)
+    if trace is None:
+        raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "Unknown incident"})
+    return trace
+
+
 @router.patch("/incidents/{incident_id}")
 def incident_update(incident_id: str, body: IncidentUpdateRequest, db: Session = Depends(get_db)):
     try:

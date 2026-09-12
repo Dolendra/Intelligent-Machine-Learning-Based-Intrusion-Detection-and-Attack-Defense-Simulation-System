@@ -28,5 +28,7 @@
 
 ## Optional
 - [ ] `python scripts/14_fit_calibrated_binary.py` then set `models.use_calibrated_binary: true`
-- [ ] `docker compose up --build` (API healthcheck gates frontend)
+- [ ] `python scripts/18_scenario_aware_evaluation.py` / `20_data_drift_report.py`
+- [ ] `alembic upgrade head` (also runs via `init_db` when Alembic is installed)
+- [ ] `docker compose up --build` then `python scripts/19_docker_compose_smoke.py`
 - [ ] GitHub push via HTTPS / `scripts/push_github.ps1`

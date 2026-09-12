@@ -63,7 +63,25 @@ class IncidentEvent(Base):
 
 
 def init_db() -> None:
+    """Create/upgrade schema.
+
+    Prefer Alembic when available; fall back to create_all + PRAGMA alters for
+    prototype DBs that predate migrations.
+    """
     (ROOT / "database").mkdir(parents=True, exist_ok=True)
+    try:
+        from alembic import command
+        from alembic.config import Config
+
+        cfg = Config(str(ROOT / "alembic.ini"))
+        cfg.set_main_option("sqlalchemy.url", DATABASE_URL)
+        command.upgrade(cfg, "head")
+        return
+    except Exception as exc:  # noqa: BLE001
+        import logging
+
+        logging.getLogger("aegis.db").warning("Alembic upgrade skipped/failed (%s); using create_all fallback", exc)
+
     Base.metadata.create_all(bind=engine)
     # Lightweight SQLite column add for existing prototype DBs
     with engine.connect() as conn:
