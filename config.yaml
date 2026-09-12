@@ -42,6 +42,12 @@ risk:
     medium: [31, 60]
     high: [61, 80]
     critical: [81, 100]
+  # Blend weights (project convention — must sum conceptually to ~1.0)
+  weights:
+    attack_base: 0.50
+    confidence: 0.25
+    intensity: 0.15
+    asset_criticality: 0.10
   # Base severity by attack family (0–100 contribution)
   attack_base:
     BENIGN: 0
@@ -54,6 +60,22 @@ risk:
     Infiltration: 85
     Heartbleed: 95
     Other: 50
+
+xai:
+  default_method: shap
+  top_k: 10
+
+incident:
+  statuses:
+    - Detected
+    - Triaged
+    - Investigating
+    - MitigationRecommended
+    - DefenseApplied
+    - Simulating
+    - Monitoring
+    - Resolved
+    - FalsePositive
 
 simulation:
   default_topology: "enterprise_simple"

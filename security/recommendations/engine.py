@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from security.rules import evaluate_rules, rule_actions
+
 # Recommendations are advisory — the platform does not execute destructive network changes.
 RECOMMENDATIONS: dict[str, dict[str, Any]] = {
     "BENIGN": {
@@ -107,12 +109,83 @@ RECOMMENDATIONS: dict[str, dict[str, Any]] = {
     },
 }
 
+_ACTION_LABELS = {
+    "UPSTREAM_FILTER": "Enable upstream / edge traffic filtering",
+    "RATE_LIMIT": "Apply rate limiting on affected paths",
+    "BLOCK_SOURCE": "Block or tarpit the scanning source",
+    "AUTH_LOCKOUT": "Enforce account lockout / auth rate limits",
+    "WAF_TIGHTEN": "Tighten WAF rules for injection patterns",
+    "HOST_ISOLATE": "Isolate the compromised host from the LAN",
+    "SEGMENT_ISOLATE": "Isolate affected network segment",
+    "ESCALATE_ANALYST": "Escalate to SOC analyst for critical response",
+    "ANALYST_REVIEW": "Hold aggressive blocking — request analyst review",
+    "CONTINUE_MONITORING": "Continue monitoring",
+}
 
-def recommend(attack_type: str, severity: str | None = None) -> dict[str, Any]:
+_SEVERITY_PRIMARY = {
+    "CRITICAL": "Escalate containment and monitor recovery closely",
+    "HIGH": "Apply primary containment immediately",
+    "MEDIUM": "Apply measured containment and continue monitoring",
+    "LOW": "Heighten monitoring; defer aggressive blocking if uncertain",
+}
+
+
+def recommend(
+    attack_type: str,
+    severity: str | None = None,
+    *,
+    confidence: float | None = None,
+    traffic_intensity: float | None = None,
+    certainty: str | None = None,
+    is_attack: bool | None = None,
+) -> dict[str, Any]:
+    """Context-aware advisory recommendation using base playbooks + rule hits."""
     key = attack_type if attack_type in RECOMMENDATIONS else "Other"
     payload = dict(RECOMMENDATIONS[key])
+    sev = (severity or "MEDIUM").upper()
+    attack_flag = True if is_attack is None else bool(is_attack)
+    if attack_type == "BENIGN":
+        attack_flag = False
+
+    hits = evaluate_rules(
+        attack_type=attack_type,
+        severity=sev,
+        is_attack=attack_flag,
+        traffic_intensity=traffic_intensity,
+        certainty=certainty,
+    )
+    rule_codes = rule_actions(hits)
+    rule_action_labels = [_ACTION_LABELS.get(a, a) for a in rule_codes]
+
+    # Merge playbook actions with rule-driven actions (rules first for context).
+    merged: list[str] = []
+    for a in rule_action_labels + list(payload.get("actions", [])):
+        if a not in merged:
+            merged.append(a)
+
+    # Severity / intensity can escalate the primary recommendation.
+    primary = payload["primary"]
+    if sev == "CRITICAL" and attack_flag:
+        primary = merged[0] if merged else _SEVERITY_PRIMARY["CRITICAL"]
+    elif certainty == "uncertain" and attack_flag:
+        primary = "Analyst review (uncertain prediction)"
+    elif traffic_intensity is not None and traffic_intensity >= 0.7 and attack_type in {"DDoS", "DoS"}:
+        primary = "Upstream filtering + aggressive rate limiting"
+
+    rationale = payload["rationale"]
+    if confidence is not None:
+        rationale += f" Model confidence={float(confidence):.2f}."
+    if traffic_intensity is not None:
+        rationale += f" Observed traffic intensity≈{float(traffic_intensity):.2f}."
+    rationale += f" Severity band={sev}."
+
+    payload["actions"] = merged
+    payload["primary"] = primary
+    payload["rationale"] = rationale
     payload["attack_type"] = attack_type
-    payload["severity"] = severity
+    payload["severity"] = sev
+    payload["rule_hits"] = [h.to_dict() for h in hits]
+    payload["rule_actions"] = rule_codes
     payload["advisory_only"] = True
     payload["disclaimer"] = (
         "These are recommended defensive actions for decision support. "

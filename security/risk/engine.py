@@ -21,14 +21,25 @@ def compute_risk(
     confidence: float,
     is_attack: bool,
     traffic_intensity: float | None = None,
+    asset_criticality: float | None = None,
 ) -> dict[str, Any]:
     """
-    Combine attack-family base severity + model confidence + optional intensity.
+    Combine attack-family base severity + model confidence + intensity + asset criticality.
 
-    Returns a score in 0–100 and a severity band. Thresholds are configurable
-    in config.yaml and are project conventions, not universal standards.
+    Returns a score in 0–100 and a severity band. Weights and thresholds are
+    configurable project conventions in config.yaml — not universal standards.
     """
     cfg = load_config()
+    weights = cfg.get("risk", {}).get("weights", {})
+    w_base = float(weights.get("attack_base", 0.50))
+    w_conf = float(weights.get("confidence", 0.25))
+    w_int = float(weights.get("intensity", 0.15))
+    w_asset = float(weights.get("asset_criticality", 0.10))
+    total_w = w_base + w_conf + w_int + w_asset
+    if total_w <= 0:
+        w_base, w_conf, w_int, w_asset, total_w = 0.50, 0.25, 0.15, 0.10, 1.0
+    w_base, w_conf, w_int, w_asset = (w / total_w for w in (w_base, w_conf, w_int, w_asset))
+
     if not is_attack or attack_type == "BENIGN":
         return {
             "risk_score": 0,
@@ -37,6 +48,13 @@ def compute_risk(
                 "attack_base": 0,
                 "confidence": float(confidence),
                 "intensity": 0.0,
+                "asset_criticality": float(asset_criticality or 0.5),
+            },
+            "weights": {
+                "attack_base": w_base,
+                "confidence": w_conf,
+                "intensity": w_int,
+                "asset_criticality": w_asset,
             },
         }
 
@@ -44,9 +62,19 @@ def compute_risk(
     base = float(base_map.get(attack_type, base_map.get("Other", 50)))
     conf = max(0.0, min(1.0, float(confidence)))
     intensity = 0.5 if traffic_intensity is None else max(0.0, min(1.0, float(traffic_intensity)))
+    # Asset criticality: accept 1–5 scale or 0–1; default mid-tier (3/5).
+    if asset_criticality is None:
+        asset_01 = 0.6
+    else:
+        ac = float(asset_criticality)
+        asset_01 = max(0.0, min(1.0, ac / 5.0 if ac > 1.0 else ac))
 
-    # Weighted blend: family severity dominates, then confidence, then intensity
-    score = 0.55 * base + 0.30 * (conf * 100.0) + 0.15 * (intensity * 100.0)
+    score = (
+        w_base * base
+        + w_conf * (conf * 100.0)
+        + w_int * (intensity * 100.0)
+        + w_asset * (asset_01 * 100.0)
+    )
     score = round(max(0.0, min(100.0, score)), 1)
 
     return {
@@ -56,5 +84,12 @@ def compute_risk(
             "attack_base": base,
             "confidence": conf,
             "intensity": intensity,
+            "asset_criticality": asset_01,
+        },
+        "weights": {
+            "attack_base": w_base,
+            "confidence": w_conf,
+            "intensity": w_int,
+            "asset_criticality": w_asset,
         },
     }

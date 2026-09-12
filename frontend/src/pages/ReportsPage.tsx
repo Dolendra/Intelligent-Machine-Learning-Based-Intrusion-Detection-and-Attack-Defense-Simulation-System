@@ -7,17 +7,33 @@ export function ReportsPage() {
     total_incidents: number;
     by_severity: Record<string, number>;
     by_attack_type: Record<string, number>;
+    by_status?: Record<string, number>;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  async function refresh() {
+    const [i, a] = await Promise.all([api.incidents(), api.analytics()]);
+    setIncidents(i.items);
+    setAnalytics(a);
+  }
 
   useEffect(() => {
-    Promise.all([api.incidents(), api.analytics()])
-      .then(([i, a]) => {
-        setIncidents(i.items);
-        setAnalytics(a);
-      })
-      .catch((e) => setError(e instanceof Error ? e.message : String(e)));
+    refresh().catch((e) => setError(e instanceof Error ? e.message : String(e)));
   }, []);
+
+  async function changeStatus(incidentId: string, status: string) {
+    setBusyId(incidentId);
+    setError(null);
+    try {
+      await api.updateIncident(incidentId, status);
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   const total = analytics?.total_incidents ?? 0;
 
@@ -76,8 +92,8 @@ export function ReportsPage() {
           ))}
         </section>
         <section className="panel">
-          <h3 style={{ marginTop: 0 }}>Severity distribution</h3>
-          {Object.entries(analytics?.by_severity ?? {}).map(([k, v]) => (
+          <h3 style={{ marginTop: 0 }}>Lifecycle status</h3>
+          {Object.entries(analytics?.by_status ?? {}).map(([k, v]) => (
             <div className="feature-bar" key={k}>
               <span>{k}</span>
               <div className="track">
@@ -86,6 +102,9 @@ export function ReportsPage() {
               <span className="mono muted">{v}</span>
             </div>
           ))}
+          {Object.keys(analytics?.by_status ?? {}).length === 0 && (
+            <p className="muted">No status data yet.</p>
+          )}
         </section>
       </div>
 
@@ -101,22 +120,50 @@ export function ReportsPage() {
               <th>Risk</th>
               <th>Recommendation</th>
               <th>Status</th>
+              <th>Advance</th>
             </tr>
           </thead>
           <tbody>
-            {incidents.map((r) => (
-              <tr key={String(r.incident_id)}>
-                <td className="mono">{String(r.incident_id)}</td>
-                <td className="mono muted">{String(r.created_at ?? "")}</td>
-                <td>{String(r.attack_type)}</td>
-                <td>
-                  <span className={`badge ${String(r.severity).toLowerCase()}`}>{String(r.severity)}</span>
-                </td>
-                <td className="mono">{String(r.risk_score)}</td>
-                <td>{String(r.recommendation)}</td>
-                <td>{String(r.status)}</td>
-              </tr>
-            ))}
+            {incidents.map((r) => {
+              const id = String(r.incident_id);
+              const next = (r.allowed_next_statuses as string[] | undefined) ?? [];
+              return (
+                <tr key={id}>
+                  <td className="mono">{id}</td>
+                  <td className="mono muted">{String(r.created_at ?? "")}</td>
+                  <td>{String(r.attack_type)}</td>
+                  <td>
+                    <span className={`badge ${String(r.severity).toLowerCase()}`}>{String(r.severity)}</span>
+                  </td>
+                  <td className="mono">{String(r.risk_score)}</td>
+                  <td>{String(r.recommendation)}</td>
+                  <td>{String(r.status)}</td>
+                  <td>
+                    {next.length === 0 ? (
+                      <span className="muted mono">—</span>
+                    ) : (
+                      <select
+                        className="select"
+                        disabled={busyId === id}
+                        defaultValue=""
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (v) void changeStatus(id, v);
+                          e.target.value = "";
+                        }}
+                      >
+                        <option value="">Update…</option>
+                        {next.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

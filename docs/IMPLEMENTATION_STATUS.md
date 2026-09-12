@@ -1,6 +1,6 @@
 # Implementation status (honest inventory)
 
-Last updated with the Batch-1/Batch-3 hardening pass.
+Last updated with the Phase-2/3 hardening pass (rules, risk context, lifecycle, batch).
 
 ## Implemented
 
@@ -11,20 +11,24 @@ Last updated with the Batch-1/Batch-3 hardening pass.
 - Certainty bands (likely_benign / uncertain / likely_attack)
 - SHAP with `actual_method` / `fallback_used` (no silent “fake SHAP”)
 - LIME as secondary explainer
-- Risk + advisory recommendations
-- Attack-specific simulation topologies/behaviors (DDoS, DoS, PortScan, BruteForce, WebAttack, Bot)
-- Simulation narrative + simulated metrics
-- Prediction → incident → `/incidents/{id}/simulate`
-- Simulation session persistence (SQLite best-effort)
+- Configurable risk weights + asset criticality factor
+- Rule engine (`security/rules`) driving context-aware recommendations
+- Attack-specific simulation topologies/behaviors
+- Prediction → incident → simulate; session query handoff
+- Incident lifecycle transitions (`PATCH /api/incidents/{id}`)
+- Batch prediction (`POST /api/predict/batch`) + Detection batch demo
+- PR-AUC / FPR / FNR in metrics + training console/report metadata
+- Error-analysis notebook (`notebooks/06_error_analysis.ipynb`)
 - Dashboard / Detection / Simulation / Reports UI
-- Docker, CI (pytest), docs, report, slides
+- Docker; CI (pytest + frontend build/tsc); docs
 
 ## Partially implemented
 
 - Simulation DB restore after restart (best-effort)
-- Reports analytics (charts, not export yet)
-- Incident lifecycle (status field exists; limited transitions)
-- Rule engine directory (`security/rules`) still thin
+- Reports export (PDF/CSV) not yet
+- Hyperparameter search / calibration curves (research next)
+- Separate binary vs multiclass feature selectors (planned experiment)
+- Play/pause auto-timeline for simulation
 
 ## Not implemented (do not claim)
 
@@ -32,8 +36,7 @@ Last updated with the Batch-1/Batch-3 hardening pass.
 - Automatic network mitigation
 - WebSockets / true live SOC streaming
 - Cross-dataset evaluation (CSE-CIC-IDS2018)
-- Hyperparameter search / calibration curves (planned research)
-- Separate binary vs multiclass feature selectors (planned experiment)
+- Alembic migrations (SQLite lightweight alters only)
 
 ## Academic wording
 

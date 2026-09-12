@@ -27,10 +27,28 @@ export type PredictResult = {
     expected_effect: string;
     advisory_only: boolean;
     disclaimer?: string;
+    rule_hits?: Array<Record<string, string>>;
+    rule_actions?: string[];
   };
   incident_id: string | null;
   certainty?: string;
   threshold?: number;
+  risk_factors?: Record<string, number>;
+};
+
+export type BatchPredictResult = {
+  total_flows: number;
+  attack_flows: number;
+  benign_flows: number;
+  attack_percentage: number;
+  by_attack_type: Record<string, number>;
+  highest_risk: {
+    flow_index: number;
+    attack_type: string;
+    risk_score: number;
+    severity: string;
+  } | null;
+  results: Array<PredictResult & { flow_index: number }>;
 };
 
 export type ExplainResult = {
@@ -72,6 +90,20 @@ export const api = {
   incidents: () => request<{ items: Array<Record<string, unknown>> }>("/api/incidents"),
   predict: (features: Record<string, number>) =>
     request<PredictResult>("/api/predict", { method: "POST", body: JSON.stringify({ features, persist: true }) }),
+  predictBatch: (flows: Record<string, number>[], persist = false) =>
+    request<BatchPredictResult>("/api/predict/batch", {
+      method: "POST",
+      body: JSON.stringify({ flows, persist }),
+    }),
+  demoFlows: (attackType?: string, n = 10) =>
+    request<{ items: Array<{ features: Record<string, number>; label: string }>; count: number }>(
+      `/api/demo/flows?n=${n}${attackType ? `&attack_type=${encodeURIComponent(attackType)}` : ""}`
+    ),
+  updateIncident: (incident_id: string, status: string, extras?: { analyst_notes?: string; defense_action?: string }) =>
+    request<Record<string, unknown>>(`/api/incidents/${encodeURIComponent(incident_id)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status, ...extras }),
+    }),
   explain: (features: Record<string, number>, method: "shap" | "lime" = "shap") =>
     request<ExplainResult>("/api/explain", {
       method: "POST",

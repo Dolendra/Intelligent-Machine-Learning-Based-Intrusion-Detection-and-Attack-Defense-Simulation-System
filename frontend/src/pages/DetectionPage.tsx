@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, ExplainResult, PredictResult } from "../services/api";
+import { api, BatchPredictResult, ExplainResult, PredictResult } from "../services/api";
 
 const ATTACK_OPTIONS = ["DDoS", "DoS", "PortScan", "BruteForce", "WebAttack", "Bot", "BENIGN"];
 
@@ -10,6 +10,7 @@ export function DetectionPage() {
   const [label, setLabel] = useState<string | null>(null);
   const [features, setFeatures] = useState<Record<string, number> | null>(null);
   const [result, setResult] = useState<PredictResult | null>(null);
+  const [batch, setBatch] = useState<BatchPredictResult | null>(null);
   const [explain, setExplain] = useState<ExplainResult | null>(null);
   const [lime, setLime] = useState<ExplainResult | null>(null);
   const [xaiTab, setXaiTab] = useState<"shap" | "lime">("shap");
@@ -26,6 +27,7 @@ export function DetectionPage() {
     setBusy(true);
     setError(null);
     setResult(null);
+    setBatch(null);
     setExplain(null);
     setLime(null);
     try {
@@ -43,6 +45,7 @@ export function DetectionPage() {
     if (!features) return;
     setBusy(true);
     setError(null);
+    setBatch(null);
     try {
       const pred = await api.predict(features);
       setResult(pred);
@@ -58,6 +61,29 @@ export function DetectionPage() {
         setExplain(null);
         setLime(null);
       }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runBatch() {
+    setBusy(true);
+    setError(null);
+    setResult(null);
+    setExplain(null);
+    setLime(null);
+    try {
+      const demo = await api.demoFlows(attackHint === "BENIGN" ? "BENIGN" : attackHint, 12);
+      if (!demo.items.length) throw new Error("No demo flows available — prepare processed data first.");
+      const out = await api.predictBatch(
+        demo.items.map((i) => i.features),
+        false
+      );
+      setBatch(out);
+      setLabel(`${demo.count} sample flows (${attackHint})`);
+      setFeatures(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -84,10 +110,13 @@ export function DetectionPage() {
           ))}
         </select>
         <button className="btn btn-secondary" onClick={loadDemo} disabled={busy}>
-          {busy && !features ? "Loading…" : "Load sample flow"}
+          {busy && !features && !batch ? "Loading…" : "Load sample flow"}
         </button>
         <button className="btn btn-primary" onClick={runDetect} disabled={busy || !features}>
           {busy && features ? "Detecting…" : "Detect & classify"}
+        </button>
+        <button className="btn btn-amber" onClick={runBatch} disabled={busy}>
+          Batch sample (12)
         </button>
         {busy && <span className="muted mono">Working…</span>}
         {label && (
@@ -103,10 +132,64 @@ export function DetectionPage() {
         </div>
       )}
 
+      {batch && (
+        <section className="panel" style={{ marginBottom: "1rem" }}>
+          <h3 style={{ marginTop: 0 }}>Batch analytics</h3>
+          <div className="grid-stats">
+            <div className="stat">
+              <div className="label">Flows</div>
+              <div className="value">{batch.total_flows}</div>
+            </div>
+            <div className="stat">
+              <div className="label">Attacks</div>
+              <div className="value">{batch.attack_flows}</div>
+            </div>
+            <div className="stat">
+              <div className="label">Attack %</div>
+              <div className="value">{batch.attack_percentage}%</div>
+            </div>
+            <div className="stat">
+              <div className="label">Highest risk</div>
+              <div className="value" style={{ fontSize: "1rem" }}>
+                {batch.highest_risk
+                  ? `${batch.highest_risk.attack_type} (${batch.highest_risk.risk_score})`
+                  : "—"}
+              </div>
+            </div>
+          </div>
+          <table className="table" style={{ marginTop: "1rem" }}>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Verdict</th>
+                <th>Confidence</th>
+                <th>Risk</th>
+                <th>Severity</th>
+                <th>Certainty</th>
+              </tr>
+            </thead>
+            <tbody>
+              {batch.results.map((r) => (
+                <tr key={r.flow_index}>
+                  <td className="mono">{r.flow_index}</td>
+                  <td>{r.is_attack ? r.attack_type : "BENIGN"}</td>
+                  <td className="mono">{(r.confidence * 100).toFixed(0)}%</td>
+                  <td className="mono">{r.risk_score}</td>
+                  <td>
+                    <span className={`badge ${r.severity.toLowerCase()}`}>{r.severity}</span>
+                  </td>
+                  <td className="mono muted">{r.certainty ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
       <div className="split">
         <section className="panel stack">
           <h3 style={{ marginTop: 0 }}>Prediction</h3>
-          {!result && <p className="muted">Load a CICIDS2017 sample flow, then run detection.</p>}
+          {!result && !batch && <p className="muted">Load a CICIDS2017 sample flow, then run detection.</p>}
           {result && (
             <>
               <div className="grid-stats" style={{ marginBottom: 0 }}>
@@ -165,6 +248,11 @@ export function DetectionPage() {
                     <li key={a}>{a}</li>
                   ))}
                 </ul>
+                {result.recommendation.rule_actions && result.recommendation.rule_actions.length > 0 && (
+                  <p className="mono muted" style={{ fontSize: "0.8rem" }}>
+                    Rules fired: {result.recommendation.rule_actions.join(", ")}
+                  </p>
+                )}
                 <p className="muted" style={{ fontSize: "0.85rem" }}>
                   {result.recommendation.disclaimer ??
                     "Advisory only — the platform does not execute network changes."}
@@ -200,8 +288,8 @@ export function DetectionPage() {
           {activeExplain && (
             <>
               <p className="muted mono" style={{ fontSize: "0.78rem" }}>
-                  Method: {(activeExplain.actual_method ?? activeExplain.method ?? xaiTab).toUpperCase()}
-                  {activeExplain.fallback_used ? " (fallback — not pure SHAP)" : ""}
+                Method: {(activeExplain.actual_method ?? activeExplain.method ?? xaiTab).toUpperCase()}
+                {activeExplain.fallback_used ? " (fallback — not pure SHAP)" : ""}
               </p>
               <p>{activeExplain.explanation}</p>
               {activeExplain.top_features.map((f) => (

@@ -59,14 +59,21 @@ def main() -> None:
         metrics["train_seconds"] = round(train_time, 3)
         metrics["infer_seconds_val"] = round(infer, 4)
         binary_results[name] = metrics
-        print(f"  {name}: F1={metrics['f1']:.4f} Recall={metrics['recall']:.4f} Prec={metrics['precision']:.4f}")
+        pr = metrics.get("pr_auc")
+        pr_s = f"{pr:.4f}" if pr is not None else "n/a"
+        print(
+            f"  {name}: F1={metrics['f1']:.4f} Recall={metrics['recall']:.4f} "
+            f"Prec={metrics['precision']:.4f} PR-AUC={pr_s} "
+            f"FPR={metrics.get('fpr', float('nan')):.4f} FNR={metrics.get('fnr', float('nan')):.4f}"
+        )
+        # Primary selection: F1; PR-AUC logged for imbalance-aware reporting
         if metrics["f1"] > best_binary_f1:
             best_binary_f1 = metrics["f1"]
             best_binary_name = name
             best_binary_model = model
 
     save_model(best_binary_model, out_dir / "binary_best.joblib")
-    print(f"Best binary model: {best_binary_name}")
+    print(f"Best binary model: {best_binary_name} (selected by validation F1; see PR-AUC/FPR/FNR in report)")
 
     # Multiclass: train on all rows (including benign) so labels stay consistent
     multi_results = {}
@@ -101,6 +108,10 @@ def main() -> None:
     multi_test_pred = best_multi_model.predict(X_test)
 
     report = {
+        "selection_criteria": {
+            "binary": "validation F1 (primary); PR-AUC, FPR, FNR reported for IDS imbalance analysis",
+            "multiclass": "validation macro-F1",
+        },
         "selected_features": bundle.selected_features,
         "binary": {
             "best": best_binary_name,

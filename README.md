@@ -96,6 +96,7 @@ pytest -q
 | [`notebooks/01_data_analysis.ipynb`](notebooks/01_data_analysis.ipynb) | EDA |
 | [`notebooks/03_explainability_demo.ipynb`](notebooks/03_explainability_demo.ipynb) | SHAP/LIME demo |
 | [`notebooks/05_model_evaluation.ipynb`](notebooks/05_model_evaluation.ipynb) | Evaluation figures |
+| [`notebooks/06_error_analysis.ipynb`](notebooks/06_error_analysis.ipynb) | FP/FN + confusion analysis |
 
 ## Team split (suggested)
 

@@ -28,6 +28,10 @@ class Incident(Base):
     explanation = Column(Text)
     status = Column(String(32), default="Detected")
     source_ref = Column(String(128), nullable=True)
+    analyst_notes = Column(Text, nullable=True)
+    defense_action = Column(String(128), nullable=True)
+    resolved_at = Column(DateTime, nullable=True)
+    asset_criticality = Column(Float, nullable=True)
 
 
 class SimulationRecord(Base):
@@ -44,6 +48,22 @@ class SimulationRecord(Base):
 def init_db() -> None:
     (ROOT / "database").mkdir(parents=True, exist_ok=True)
     Base.metadata.create_all(bind=engine)
+    # Lightweight SQLite column add for existing prototype DBs
+    with engine.connect() as conn:
+        cols = {row[1] for row in conn.exec_driver_sql("PRAGMA table_info(incidents)").fetchall()}
+        alters = []
+        if "analyst_notes" not in cols:
+            alters.append("ALTER TABLE incidents ADD COLUMN analyst_notes TEXT")
+        if "defense_action" not in cols:
+            alters.append("ALTER TABLE incidents ADD COLUMN defense_action VARCHAR(128)")
+        if "resolved_at" not in cols:
+            alters.append("ALTER TABLE incidents ADD COLUMN resolved_at DATETIME")
+        if "asset_criticality" not in cols:
+            alters.append("ALTER TABLE incidents ADD COLUMN asset_criticality FLOAT")
+        for stmt in alters:
+            conn.exec_driver_sql(stmt)
+        if alters:
+            conn.commit()
 
 
 def get_db():

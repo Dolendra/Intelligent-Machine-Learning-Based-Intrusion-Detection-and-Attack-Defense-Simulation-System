@@ -13,6 +13,12 @@ class PredictRequest(BaseModel):
         False,
         description="Demo-only: fill missing features with 0. Production should keep false.",
     )
+    asset_criticality: float | None = Field(
+        None,
+        ge=0.0,
+        le=5.0,
+        description="Affected asset criticality 0–1 or 1–5",
+    )
 
 
 class PredictResponse(BaseModel):
@@ -27,6 +33,14 @@ class PredictResponse(BaseModel):
     incident_id: str | None = None
     certainty: str | None = None
     threshold: float | None = None
+    risk_factors: dict[str, Any] | None = None
+
+
+class BatchPredictRequest(BaseModel):
+    flows: list[dict[str, float]] = Field(..., min_length=1, max_length=500)
+    persist: bool = False
+    allow_missing_features: bool = False
+    asset_criticality: float | None = Field(None, ge=0.0, le=5.0)
 
 
 class ExplainRequest(BaseModel):
@@ -41,11 +55,22 @@ class RiskRequest(BaseModel):
     confidence: float = Field(..., ge=0.0, le=1.0)
     is_attack: bool = True
     traffic_intensity: float | None = Field(None, ge=0.0, le=1.0)
+    asset_criticality: float | None = Field(None, ge=0.0, le=5.0)
 
 
 class RecommendationRequest(BaseModel):
     attack_type: str
     severity: str | None = None
+    confidence: float | None = Field(None, ge=0.0, le=1.0)
+    traffic_intensity: float | None = Field(None, ge=0.0, le=1.0)
+    certainty: str | None = None
+    is_attack: bool | None = None
+
+
+class IncidentUpdateRequest(BaseModel):
+    status: str
+    analyst_notes: str | None = None
+    defense_action: str | None = None
 
 
 class SimulationStartRequest(BaseModel):

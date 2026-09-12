@@ -5,8 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.schemas.api import (
+    BatchPredictRequest,
     ExplainRequest,
     HealthResponse,
+    IncidentUpdateRequest,
     PredictRequest,
     PredictResponse,
     RecommendationRequest,
@@ -44,10 +46,29 @@ def predict(body: PredictRequest, db: Session = Depends(get_db)):
             db=db,
             persist=body.persist,
             allow_missing_features=body.allow_missing_features,
+            asset_criticality=body.asset_criticality,
         )
         return PredictResponse(**result)
     except FeatureValidationError as exc:
         raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
+
+
+@router.post("/predict/batch")
+def predict_batch(body: BatchPredictRequest, db: Session = Depends(get_db)):
+    try:
+        return svc.run_prediction_batch(
+            body.flows,
+            db=db,
+            persist=body.persist,
+            allow_missing_features=body.allow_missing_features,
+            asset_criticality=body.asset_criticality,
+        )
+    except FeatureValidationError as exc:
+        raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail={"code": "INVALID_BATCH", "message": str(exc)}) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
 
@@ -69,12 +90,25 @@ def explain(body: ExplainRequest):
 
 @router.post("/risk")
 def risk(body: RiskRequest):
-    return compute_risk(body.attack_type, body.confidence, body.is_attack, body.traffic_intensity)
+    return compute_risk(
+        body.attack_type,
+        body.confidence,
+        body.is_attack,
+        body.traffic_intensity,
+        asset_criticality=body.asset_criticality,
+    )
 
 
 @router.post("/recommendation")
 def recommendation(body: RecommendationRequest):
-    return recommend(body.attack_type, body.severity)
+    return recommend(
+        body.attack_type,
+        body.severity,
+        confidence=body.confidence,
+        traffic_intensity=body.traffic_intensity,
+        certainty=body.certainty,
+        is_attack=body.is_attack,
+    )
 
 
 @router.post("/simulation/start")
@@ -131,6 +165,22 @@ def incident_detail(incident_id: str, db: Session = Depends(get_db)):
     return item
 
 
+@router.patch("/incidents/{incident_id}")
+def incident_update(incident_id: str, body: IncidentUpdateRequest, db: Session = Depends(get_db)):
+    try:
+        return svc.update_incident_status(
+            db,
+            incident_id,
+            body.status,
+            analyst_notes=body.analyst_notes,
+            defense_action=body.defense_action,
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": str(exc)}) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail={"code": "INVALID_TRANSITION", "message": str(exc)}) from exc
+
+
 @router.post("/incidents/{incident_id}/simulate")
 def incident_simulate(incident_id: str, db: Session = Depends(get_db)):
     try:
@@ -152,3 +202,8 @@ def feature_template():
 @router.get("/demo/flow")
 def demo_flow(attack_type: str | None = None):
     return svc.load_demo_flow(attack_type)
+
+
+@router.get("/demo/flows")
+def demo_flows(attack_type: str | None = None, n: int = 10):
+    return svc.load_demo_flows(attack_type, n=n)

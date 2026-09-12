@@ -24,7 +24,25 @@ def test_health():
 def test_recommendation_endpoint():
     r = client.post("/api/recommendation", json={"attack_type": "PortScan", "severity": "MEDIUM"})
     assert r.status_code == 200
-    assert r.json()["advisory_only"] is True
+    body = r.json()
+    assert body["advisory_only"] is True
+    assert "rule_hits" in body
+
+
+def test_risk_with_asset_criticality():
+    r = client.post(
+        "/api/risk",
+        json={
+            "attack_type": "DDoS",
+            "confidence": 0.9,
+            "is_attack": True,
+            "traffic_intensity": 0.8,
+            "asset_criticality": 5,
+        },
+    )
+    assert r.status_code == 200
+    assert r.json()["risk_score"] > 0
+    assert "asset_criticality" in r.json()["factors"]
 
 
 def test_simulation_endpoints():
@@ -42,3 +60,17 @@ def test_predict_requires_features():
     r = client.post("/api/predict", json={"features": tmpl, "persist": False})
     assert r.status_code == 200
     assert "attack_type" in r.json()
+
+
+@pytest.mark.skipif(not models_ready(), reason="Train models first")
+def test_predict_batch():
+    tmpl = client.get("/api/features/template").json()["features"]
+    r = client.post(
+        "/api/predict/batch",
+        json={"flows": [tmpl, tmpl], "persist": False},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["total_flows"] == 2
+    assert "results" in body
+    assert len(body["results"]) == 2
