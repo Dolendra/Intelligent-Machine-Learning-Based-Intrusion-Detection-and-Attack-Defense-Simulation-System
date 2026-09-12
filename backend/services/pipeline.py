@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from typing import Any
 
@@ -16,6 +16,7 @@ from explainability.lime_engine import LimeExplanationEngine
 from ids_config import load_config, resolve_path
 from ml.features.intensity import intensity_from_features
 from ml.prediction.predictor import FeatureValidationError, IDSPredictor, PredictionResult
+from security.assets import criticality_for
 from security.recommendations.engine import recommend
 from security.risk.engine import compute_risk
 
@@ -193,53 +194,121 @@ def _enrich_prediction(
     }
 
 
+def _flow_source_ref(features: dict[str, float], explicit: str | None = None) -> str | None:
+    if explicit:
+        return explicit[:128]
+    port = features.get("Destination Port")
+    if port is None:
+        return None
+    try:
+        return f"dstport:{int(float(port))}"
+    except (TypeError, ValueError):
+        return None
+
+
+def _find_duplicate_incident(
+    db: Session,
+    attack_type: str,
+    source_ref: str | None,
+) -> Incident | None:
+    cfg = load_config()
+    window = int(cfg.get("incident", {}).get("dedup_window_minutes", 5))
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=window)
+    closed = ("Resolved", "FalsePositive")
+    q = (
+        db.query(Incident)
+        .filter(
+            Incident.attack_type == attack_type,
+            Incident.created_at >= cutoff,
+            ~Incident.status.in_(closed),
+        )
+        .order_by(Incident.created_at.desc())
+    )
+    if source_ref:
+        q = q.filter(Incident.source_ref == source_ref)
+    return q.first()
+
+
 def run_prediction(
     features: dict[str, float],
     db: Session | None = None,
     persist: bool = True,
     allow_missing_features: bool = False,
     asset_criticality: float | None = None,
+    source_ref: str | None = None,
+    asset_id: str | None = None,
 ) -> dict[str, Any]:
     predictor = get_predictor()
     if predictor is None:
         raise RuntimeError("Models not trained. Run scripts/01_prepare_data.py and scripts/02_train_models.py")
 
+    if asset_criticality is None and asset_id:
+        asset_criticality = criticality_for(asset_id)
+
     pred: PredictionResult = predictor.predict_row(features, allow_missing=allow_missing_features)
     payload = _enrich_prediction(pred, features, asset_criticality=asset_criticality)
+    flow_ref = _flow_source_ref(features, source_ref)
+    payload["source_ref"] = flow_ref
+    payload["deduplicated"] = False
 
     incident_id = None
     if persist and db is not None and pred.is_attack:
-        incident_id = f"INC-{uuid.uuid4().hex[:6].upper()}"
-        row = Incident(
-            incident_code=incident_id,
-            attack_type=pred.attack_type,
-            is_attack=1,
-            confidence=payload["confidence"],
-            risk_score=payload["risk_score"],
-            severity=payload["severity"],
-            recommendation=payload["recommendation"]["primary"],
-            explanation="",
-            status="Detected",
-            asset_criticality=asset_criticality,
-        )
-        db.add(row)
-        db.flush()
-        _record_incident_event(db, incident_id, None, "Detected", actor="system", notes="Created from prediction")
-        db.commit()
-        try:
-            from backend.services.events import notify_sync
-
-            notify_sync(
-                {
-                    "type": "incident_created",
-                    "incident_id": incident_id,
-                    "attack_type": pred.attack_type,
-                    "severity": payload["severity"],
-                    "risk_score": payload["risk_score"],
-                }
+        existing = _find_duplicate_incident(db, pred.attack_type, flow_ref)
+        if existing is not None:
+            incident_id = existing.incident_code
+            existing.confidence = max(float(existing.confidence or 0), float(payload["confidence"]))
+            if float(payload["risk_score"]) >= float(existing.risk_score or 0):
+                existing.risk_score = payload["risk_score"]
+                existing.severity = payload["severity"]
+                existing.recommendation = payload["recommendation"]["primary"]
+            if asset_criticality is not None:
+                existing.asset_criticality = asset_criticality
+            if flow_ref and not existing.source_ref:
+                existing.source_ref = flow_ref
+            _record_incident_event(
+                db,
+                incident_id,
+                existing.status,
+                existing.status,
+                actor="system",
+                notes="Deduplicated prediction (same attack within window)",
+                action="dedup",
             )
-        except Exception:
-            pass
+            db.commit()
+            payload["deduplicated"] = True
+        else:
+            incident_id = f"INC-{uuid.uuid4().hex[:6].upper()}"
+            row = Incident(
+                incident_code=incident_id,
+                attack_type=pred.attack_type,
+                is_attack=1,
+                confidence=payload["confidence"],
+                risk_score=payload["risk_score"],
+                severity=payload["severity"],
+                recommendation=payload["recommendation"]["primary"],
+                explanation="",
+                status="Detected",
+                asset_criticality=asset_criticality,
+                source_ref=flow_ref,
+            )
+            db.add(row)
+            db.flush()
+            _record_incident_event(db, incident_id, None, "Detected", actor="system", notes="Created from prediction")
+            db.commit()
+            try:
+                from backend.services.events import notify_sync
+
+                notify_sync(
+                    {
+                        "type": "incident_created",
+                        "incident_id": incident_id,
+                        "attack_type": pred.attack_type,
+                        "severity": payload["severity"],
+                        "risk_score": payload["risk_score"],
+                    }
+                )
+            except Exception:
+                pass
 
     payload["incident_id"] = incident_id
     return payload

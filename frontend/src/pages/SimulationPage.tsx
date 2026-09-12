@@ -4,6 +4,7 @@ import { NetworkTopology } from "../components/NetworkTopology";
 import { api, SimSession } from "../services/api";
 
 const ATTACKS = ["DDoS", "DoS", "PortScan", "BruteForce", "WebAttack", "Bot"];
+const INTENSITY_PRESETS: Record<string, number> = { Low: 0.35, Medium: 0.6, High: 0.9 };
 
 const STEPS = [
   "Start normal traffic",
@@ -17,10 +18,19 @@ const STEPS = [
 
 const SPEED_MS: Record<string, number> = { "0.5x": 1600, "1x": 900, "2x": 450 };
 
+function pct(v: unknown) {
+  const n = Number(v);
+  if (Number.isNaN(n)) return "—";
+  return `${Math.round(n * 100)}%`;
+}
+
 export function SimulationPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [attackType, setAttackType] = useState("DDoS");
+  const [intensityLabel, setIntensityLabel] = useState("High");
+  const [confidence, setConfidence] = useState(0.96);
   const [session, setSession] = useState<SimSession | null>(null);
+  const [history, setHistory] = useState<Array<Record<string, unknown>>>([]);
   const [busy, setBusy] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState("1x");
@@ -28,9 +38,17 @@ export function SimulationPage() {
   const playRef = useRef(false);
   const sessionRef = useRef<SimSession | null>(null);
 
+  function refreshHistory() {
+    api.listSims(15).then((r) => setHistory(r.items ?? [])).catch(() => setHistory([]));
+  }
+
   useEffect(() => {
     sessionRef.current = session;
   }, [session]);
+
+  useEffect(() => {
+    refreshHistory();
+  }, []);
 
   useEffect(() => {
     const sid = searchParams.get("session");
@@ -75,6 +93,7 @@ export function SimulationPage() {
           setSession(s);
           if (s.state === "recovered") {
             setPlaying(false);
+            refreshHistory();
             break;
           }
         } catch (e) {
@@ -99,14 +118,22 @@ export function SimulationPage() {
     setPlaying(false);
     setError(null);
     try {
-      const s = await api.startSim(attackType);
+      const s = await api.startSim(attackType, confidence, undefined, {
+        traffic_intensity: INTENSITY_PRESETS[intensityLabel] ?? 0.6,
+      });
       setSession(s);
       setSearchParams({ session: s.id });
+      refreshHistory();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
+  }
+
+  async function replay(sessionId: string) {
+    setPlaying(false);
+    setSearchParams({ session: sessionId });
   }
 
   async function advance(action?: string) {
@@ -118,12 +145,15 @@ export function SimulationPage() {
       const s = await api.advanceSim(session.id, action);
       setSession(s);
       if (action === "reset") setSearchParams({ session: s.id });
+      refreshHistory();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
   }
+
+  const m = session?.metrics ?? {};
 
   return (
     <div className="rise">
@@ -134,40 +164,68 @@ export function SimulationPage() {
         </div>
       </div>
 
-      <div className="panel row" style={{ marginBottom: "1rem" }}>
-        <select className="select" value={attackType} onChange={(e) => setAttackType(e.target.value)}>
-          {ATTACKS.map((a) => (
-            <option key={a} value={a}>
-              {a}
-            </option>
-          ))}
-        </select>
-        <button className="btn btn-primary" onClick={createSession} disabled={busy}>
-          New scenario
-        </button>
-        <button
-          className="btn btn-amber"
-          onClick={() => setPlaying((p) => !p)}
-          disabled={busy || !session || session.state === "recovered"}
-        >
-          {playing ? "Pause" : "Play"}
-        </button>
-        <select className="select" value={speed} onChange={(e) => setSpeed(e.target.value)} disabled={!session}>
-          {Object.keys(SPEED_MS).map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-        <button className="btn btn-secondary" onClick={() => advance()} disabled={busy || !session || playing}>
-          Step
-        </button>
-        <button className="btn btn-secondary" onClick={() => advance("defend")} disabled={busy || !session || playing}>
-          Apply defense
-        </button>
-        <button className="btn btn-danger" onClick={() => advance("reset")} disabled={busy || !session}>
-          Reset
-        </button>
+      <div className="panel stack" style={{ marginBottom: "1rem" }}>
+        <div className="row" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
+          <label className="muted">
+            Attack{" "}
+            <select className="select" value={attackType} onChange={(e) => setAttackType(e.target.value)}>
+              {ATTACKS.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="muted">
+            Intensity{" "}
+            <select className="select" value={intensityLabel} onChange={(e) => setIntensityLabel(e.target.value)}>
+              {Object.keys(INTENSITY_PRESETS).map((k) => (
+                <option key={k} value={k}>
+                  {k}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="muted">
+            Confidence{" "}
+            <input
+              className="select"
+              type="number"
+              min={0.5}
+              max={1}
+              step={0.01}
+              value={confidence}
+              onChange={(e) => setConfidence(Number(e.target.value))}
+              style={{ width: "5rem" }}
+            />
+          </label>
+          <button className="btn btn-primary" onClick={createSession} disabled={busy}>
+            Run simulation
+          </button>
+          <button
+            className="btn btn-amber"
+            onClick={() => setPlaying((p) => !p)}
+            disabled={busy || !session || session.state === "recovered"}
+          >
+            {playing ? "Pause" : "Play"}
+          </button>
+          <select className="select" value={speed} onChange={(e) => setSpeed(e.target.value)} disabled={!session}>
+            {Object.keys(SPEED_MS).map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          <button className="btn btn-secondary" onClick={() => advance()} disabled={busy || !session || playing}>
+            Step
+          </button>
+          <button className="btn btn-secondary" onClick={() => advance("defend")} disabled={busy || !session || playing}>
+            Apply defense
+          </button>
+          <button className="btn btn-danger" onClick={() => advance("reset")} disabled={busy || !session}>
+            Reset
+          </button>
+        </div>
       </div>
 
       {error && <div className="panel" style={{ marginBottom: "1rem" }}>{error}</div>}
@@ -175,14 +233,31 @@ export function SimulationPage() {
       {!session && (
         <div className="panel">
           <p className="muted">
-            Create a scenario, or open one from Detection via{" "}
-            <span className="mono">Simulate this incident</span>.
+            Configure attack intensity and confidence, then run — or replay a saved session below.
           </p>
           <ol className="muted">
             {STEPS.map((s) => (
               <li key={s}>{s}</li>
             ))}
           </ol>
+        </div>
+      )}
+
+      {history.length > 0 && (
+        <div className="panel" style={{ marginBottom: "1rem" }}>
+          <h3 style={{ marginTop: 0 }}>Simulation history</h3>
+          <div className="row" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
+            {history.map((h) => (
+              <button
+                key={String(h.session_id)}
+                className="btn btn-secondary"
+                type="button"
+                onClick={() => replay(String(h.session_id))}
+              >
+                {String(h.attack_type)} · {String(h.state)} · {String(h.session_id).slice(0, 8)}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -203,6 +278,33 @@ export function SimulationPage() {
             })}
           </div>
 
+          <div className="grid-stats" style={{ marginBottom: "1rem" }}>
+            <div className="stat">
+              <div className="label">Detection delay</div>
+              <div className="value" style={{ fontSize: "1.1rem" }}>
+                {m.detection_delay_s != null ? `${m.detection_delay_s}s` : "—"}
+              </div>
+            </div>
+            <div className="stat">
+              <div className="label">Defense delay</div>
+              <div className="value" style={{ fontSize: "1.1rem" }}>
+                {m.defense_delay_s != null ? `${m.defense_delay_s}s` : "—"}
+              </div>
+            </div>
+            <div className="stat">
+              <div className="label">Recovery time</div>
+              <div className="value" style={{ fontSize: "1.1rem" }}>
+                {m.recovery_time_s != null ? `${m.recovery_time_s}s` : "—"}
+              </div>
+            </div>
+            <div className="stat">
+              <div className="label">Risk reduction</div>
+              <div className="value" style={{ fontSize: "1.1rem" }}>
+                {m.risk_reduction != null ? String(m.risk_reduction) : "—"}
+              </div>
+            </div>
+          </div>
+
           <div className="split">
             <section className="stack">
               <NetworkTopology nodes={session.nodes} edges={session.edges} />
@@ -216,19 +318,57 @@ export function SimulationPage() {
               {session.comparison && (
                 <div className="panel compare-grid">
                   <div>
-                    <h4 style={{ marginTop: 0 }}>Without defense (peak)</h4>
-                    <p className="mono muted">
-                      traffic {session.comparison.without_defense.peak_traffic} · stress{" "}
-                      {session.comparison.without_defense.server_stress} · risk{" "}
-                      {session.comparison.without_defense.risk}
-                    </p>
+                    <h4 style={{ marginTop: 0 }}>Without defense</h4>
+                    <table className="table">
+                      <tbody>
+                        <tr>
+                          <td>Traffic</td>
+                          <td className="mono">{pct(session.comparison.without_defense.peak_traffic)}</td>
+                        </tr>
+                        <tr>
+                          <td>Server stress</td>
+                          <td className="mono">{pct(session.comparison.without_defense.server_stress)}</td>
+                        </tr>
+                        <tr>
+                          <td>Risk</td>
+                          <td className="mono">{session.comparison.without_defense.risk}</td>
+                        </tr>
+                        <tr>
+                          <td>Threat</td>
+                          <td className="mono">
+                            {(session.comparison.without_defense as { threat?: string }).threat ?? "ACTIVE"}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                   <div>
-                    <h4 style={{ marginTop: 0 }}>With defense (simulated)</h4>
-                    <p className="mono muted">
-                      traffic {session.comparison.with_defense.peak_traffic} · stress{" "}
-                      {session.comparison.with_defense.server_stress} · risk {session.comparison.with_defense.risk} ·
-                      blocked {session.comparison.with_defense.traffic_blocked}
+                    <h4 style={{ marginTop: 0 }}>With defense</h4>
+                    <table className="table">
+                      <tbody>
+                        <tr>
+                          <td>Traffic</td>
+                          <td className="mono">{pct(session.comparison.with_defense.peak_traffic)}</td>
+                        </tr>
+                        <tr>
+                          <td>Server stress</td>
+                          <td className="mono">{pct(session.comparison.with_defense.server_stress)}</td>
+                        </tr>
+                        <tr>
+                          <td>Risk</td>
+                          <td className="mono">{session.comparison.with_defense.risk}</td>
+                        </tr>
+                        <tr>
+                          <td>Threat</td>
+                          <td className="mono">
+                            {(session.comparison.with_defense as { threat?: string }).threat ?? "—"}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <p className="mono muted" style={{ marginBottom: 0 }}>
+                      blocked {pct(session.comparison.with_defense.traffic_blocked)} · efficacy{" "}
+                      {pct(m.defense_effectiveness)}
                     </p>
                   </div>
                 </div>
@@ -254,12 +394,11 @@ export function SimulationPage() {
                   </ol>
                 </div>
               )}
-              {session.metrics && (
-                <div className="mono muted">
-                  Metrics (simulated): peak={session.metrics.peak_traffic ?? "—"} stress=
-                  {session.metrics.server_stress ?? "—"} blocked={session.metrics.traffic_blocked ?? "—"}
-                </div>
-              )}
+              <div className="mono muted">
+                Metrics (simulated): peak={String(m.peak_traffic ?? "—")} stress=
+                {String(m.server_stress ?? "—")} remaining=
+                {String(m.remaining_malicious ?? "—")} persistence={String(m.persistence ?? "—")}
+              </div>
               {session.disclaimer && (
                 <p className="muted" style={{ fontSize: "0.85rem" }}>
                   {session.disclaimer}

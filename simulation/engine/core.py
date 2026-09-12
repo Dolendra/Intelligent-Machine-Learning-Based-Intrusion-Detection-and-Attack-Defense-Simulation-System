@@ -58,15 +58,28 @@ class SimulationSession:
             "metrics": self.metrics,
             "comparison": {
                 "without_defense": {
-                    "peak_traffic": self.metrics.get("peak_traffic", 0),
-                    "server_stress": self.metrics.get("attack_server_stress", self.metrics.get("server_stress", 0)),
-                    "risk": self.metrics.get("attack_risk", self.risk_score),
+                    "peak_traffic": self.metrics.get(
+                        "no_defense_peak_traffic", self.metrics.get("peak_traffic", 0)
+                    ),
+                    "server_stress": self.metrics.get(
+                        "no_defense_server_stress",
+                        self.metrics.get("attack_server_stress", self.metrics.get("server_stress", 0)),
+                    ),
+                    "risk": self.metrics.get("no_defense_risk", self.metrics.get("attack_risk", self.risk_score)),
+                    "threat": "ACTIVE",
                 },
                 "with_defense": {
-                    "peak_traffic": round(self.metrics.get("peak_traffic", 0) * (1 - self.metrics.get("traffic_blocked", 0)), 3),
+                    "peak_traffic": round(
+                        float(self.metrics.get("peak_traffic", 0))
+                        * (1 - float(self.metrics.get("traffic_blocked", 0))),
+                        3,
+                    )
+                    if self.state in ("defended", "recovered")
+                    else self.metrics.get("peak_traffic", 0),
                     "server_stress": self.metrics.get("server_stress", 0),
                     "risk": self.risk_score,
                     "traffic_blocked": self.metrics.get("traffic_blocked", 0),
+                    "threat": "CONTAINED" if self.state in ("defended", "recovered") else "PENDING",
                 },
             },
             "phase_guide": [
@@ -99,9 +112,19 @@ class SimulationEngine:
         risk_score: float | None = None,
         severity: str | None = None,
         recommendation: dict[str, Any] | None = None,
+        traffic_intensity: float | None = None,
+        asset_criticality: float | None = None,
     ) -> dict[str, Any]:
         nodes, edges = topology_for(attack_type)
-        risk = compute_risk(attack_type, confidence, is_attack=True, traffic_intensity=0.3)
+        intensity = float(traffic_intensity if traffic_intensity is not None else 0.55)
+        intensity = max(0.05, min(1.0, intensity))
+        risk = compute_risk(
+            attack_type,
+            confidence,
+            is_attack=True,
+            traffic_intensity=intensity,
+            asset_criticality=asset_criticality,
+        )
         rec = recommendation or recommend(attack_type, severity or risk["severity"])
         session = SimulationSession(
             id=str(uuid.uuid4()),
@@ -114,12 +137,20 @@ class SimulationEngine:
             nodes=nodes,
             edges=edges,
             incident_id=incident_id,
-            metrics={"peak_traffic": 0.2, "server_stress": 0.1, "traffic_blocked": 0.0},
+            metrics={
+                "peak_traffic": 0.2,
+                "server_stress": 0.1,
+                "traffic_blocked": 0.0,
+                "configured_intensity": round(intensity, 3),
+                "asset_criticality": asset_criticality,
+            },
         )
         session.timeline.append(
             {"event": "session_created", "state": "idle", "detail": f"Scenario: {attack_type}"}
         )
-        session.narrative.append(f"Scenario prepared for {attack_type} (visualization only).")
+        session.narrative.append(
+            f"Scenario prepared for {attack_type} (intensity={intensity:.2f}, visualization only)."
+        )
         self.sessions[session.id] = session
         self._persist(session)
         return session.to_dict()
@@ -127,10 +158,59 @@ class SimulationEngine:
     def get(self, session_id: str) -> dict[str, Any]:
         return self._require(session_id).to_dict()
 
+    def list_recent(self, limit: int = 20) -> list[dict[str, Any]]:
+        """Recent persisted simulations for replay."""
+        try:
+            from database.db import SessionLocal, SimulationRecord
+
+            db = SessionLocal()
+            try:
+                rows = (
+                    db.query(SimulationRecord)
+                    .order_by(SimulationRecord.created_at.desc())
+                    .limit(limit)
+                    .all()
+                )
+                items = []
+                for row in rows:
+                    items.append(
+                        {
+                            "session_id": row.session_id,
+                            "attack_type": row.attack_type,
+                            "state": row.state,
+                            "created_at": row.created_at.isoformat() if row.created_at else None,
+                        }
+                    )
+                return items
+            finally:
+                db.close()
+        except Exception as exc:
+            import logging
+
+            logging.getLogger("aegis.simulation").warning("list_recent failed: %s", exc)
+            return [
+                {
+                    "session_id": s.id,
+                    "attack_type": s.attack_type,
+                    "state": s.state,
+                    "created_at": s.created_at,
+                }
+                for s in list(self.sessions.values())[-limit:]
+            ]
+
     def advance(self, session_id: str, action: str | None = None) -> dict[str, Any]:
         s = self._require(session_id)
         if action == "reset":
-            return self.start(s.attack_type, s.confidence, s.incident_id, s.risk_score, s.severity, s.recommendation)
+            return self.start(
+                s.attack_type,
+                s.confidence,
+                s.incident_id,
+                s.risk_score,
+                s.severity,
+                s.recommendation,
+                traffic_intensity=s.metrics.get("configured_intensity"),
+                asset_criticality=s.metrics.get("asset_criticality"),
+            )
         if action == "defend" and s.state in ("detected", "recommended", "attack_impact"):
             if s.state != "recommended":
                 self._to_recommended(s)
@@ -166,19 +246,26 @@ class SimulationEngine:
         return s.to_dict()
 
     def _defense_effectiveness(self, s: SimulationSession) -> float:
-        """Simulation assumption: defense efficacy from confidence + risk context."""
-        base = {
-            "DDoS": 0.82,
-            "DoS": 0.78,
-            "PortScan": 0.85,
-            "BruteForce": 0.88,
-            "WebAttack": 0.90,
-            "Bot": 0.92,
-        }.get(s.attack_type, 0.75)
+        """Simulation assumption: defense efficacy from config + confidence + risk."""
+        try:
+            from ids_config import load_config
+
+            cfg_base = load_config().get("simulation", {}).get("defense_effectiveness", {})
+            base = float(cfg_base.get(s.attack_type, 0.75))
+        except Exception:
+            base = {
+                "DDoS": 0.82,
+                "DoS": 0.78,
+                "PortScan": 0.85,
+                "BruteForce": 0.88,
+                "WebAttack": 0.90,
+                "Bot": 0.92,
+            }.get(s.attack_type, 0.75)
         conf_boost = 0.08 * max(0.0, min(1.0, s.confidence))
         risk_factor = max(0.0, min(1.0, s.risk_score / 100.0))
-        # Higher risk / harder incidents slightly reduce effectiveness
-        return float(max(0.45, min(0.97, base + conf_boost - 0.12 * risk_factor)))
+        intensity = float(s.metrics.get("configured_intensity") or s.metrics.get("peak_traffic") or 0.5)
+        # Higher risk / intensity slightly reduce effectiveness (harder incidents)
+        return float(max(0.45, min(0.97, base + conf_boost - 0.10 * risk_factor - 0.05 * intensity)))
 
     def _persist(self, s: SimulationSession) -> None:
         try:
@@ -263,7 +350,8 @@ class SimulationEngine:
     def _to_attack_start(self, s: SimulationSession) -> None:
         fn = START.get(s.attack_type, apply_generic_start)
         detail = fn(s)
-        intensity = 0.55 + 0.4 * max(0.0, min(1.0, s.confidence))
+        configured = float(s.metrics.get("configured_intensity") or 0.55)
+        intensity = min(0.99, configured * (0.85 + 0.15 * max(0.0, min(1.0, s.confidence))))
         s.metrics["peak_traffic"] = round(intensity, 3)
         s.metrics["attack_start_s"] = 2.0
         s.timeline.append({"event": "attack_start", "state": "attack_start", "detail": detail})
@@ -273,13 +361,24 @@ class SimulationEngine:
         fn = IMPACT.get(s.attack_type, apply_generic_impact)
         detail = fn(s)
         intensity = float(s.metrics.get("peak_traffic", 0.85))
-        risk = compute_risk(s.attack_type, s.confidence, True, traffic_intensity=min(1.0, intensity + 0.1))
+        crit = s.metrics.get("asset_criticality")
+        risk = compute_risk(
+            s.attack_type,
+            s.confidence,
+            True,
+            traffic_intensity=min(1.0, intensity + 0.1),
+            asset_criticality=float(crit) if crit is not None else None,
+        )
         s.risk_score = risk["risk_score"]
         s.severity = risk["severity"]
-        s.metrics["peak_traffic"] = round(min(0.99, intensity + 0.1), 3)
-        s.metrics["server_stress"] = round(min(0.98, 0.5 + 0.45 * intensity), 3)
+        s.metrics["peak_traffic"] = round(min(0.99, intensity + 0.08), 3)
+        s.metrics["server_stress"] = round(min(0.98, 0.45 + 0.5 * intensity), 3)
         s.metrics["attack_server_stress"] = s.metrics["server_stress"]
         s.metrics["attack_risk"] = s.risk_score
+        # Counterfactual: if no defense is applied, stress/risk remain at attack peak
+        s.metrics["no_defense_peak_traffic"] = s.metrics["peak_traffic"]
+        s.metrics["no_defense_server_stress"] = s.metrics["server_stress"]
+        s.metrics["no_defense_risk"] = s.risk_score
         s.timeline.append({"event": "impact", "state": "attack_impact", "detail": detail})
         s.narrative.append(detail)
 

@@ -63,6 +63,8 @@ def predict(body: PredictRequest, db: Session = Depends(get_db)):
             persist=body.persist,
             allow_missing_features=body.allow_missing_features,
             asset_criticality=body.asset_criticality,
+            source_ref=body.source_ref,
+            asset_id=body.asset_id,
         )
         return PredictResponse(**result)
     except FeatureValidationError as exc:
@@ -153,7 +155,27 @@ def recommendation(body: RecommendationRequest):
 
 @router.post("/simulation/start")
 def simulation_start(body: SimulationStartRequest):
-    return simulation_engine.start(body.attack_type, body.confidence, incident_id=body.incident_id)
+    return simulation_engine.start(
+        body.attack_type,
+        body.confidence,
+        incident_id=body.incident_id,
+        risk_score=body.risk_score,
+        severity=body.severity,
+        traffic_intensity=body.traffic_intensity,
+        asset_criticality=body.asset_criticality,
+    )
+
+
+@router.get("/simulation")
+def simulation_list(limit: int = 20):
+    return {"items": simulation_engine.list_recent(limit=limit)}
+
+
+@router.get("/assets")
+def assets_list():
+    from security.assets import list_assets
+
+    return {"items": list_assets()}
 
 
 @router.post("/simulation/from-prediction")

@@ -19,6 +19,12 @@ class PredictRequest(BaseModel):
         le=5.0,
         description="Affected asset criticality 0–1 or 1–5",
     )
+    source_ref: str | None = Field(
+        None,
+        max_length=128,
+        description="Optional source/target fingerprint for incident deduplication",
+    )
+    asset_id: str | None = Field(None, max_length=64, description="Asset inventory id")
 
 
 class PredictResponse(BaseModel):
@@ -34,6 +40,8 @@ class PredictResponse(BaseModel):
     certainty: str | None = None
     threshold: float | None = None
     risk_factors: dict[str, Any] | None = None
+    deduplicated: bool | None = None
+    source_ref: str | None = None
 
 
 class BatchPredictRequest(BaseModel):
@@ -77,6 +85,13 @@ class SimulationStartRequest(BaseModel):
     attack_type: str = "DDoS"
     confidence: float = Field(0.96, ge=0.0, le=1.0)
     incident_id: str | None = None
+    traffic_intensity: float | None = Field(
+        None, ge=0.0, le=1.0, description="Configured attack intensity 0–1 (simulation)"
+    )
+    asset_criticality: float | None = Field(None, ge=0.0, le=5.0)
+    risk_score: float | None = Field(None, ge=0.0, le=100.0)
+    severity: str | None = None
+    source_ref: str | None = Field(None, max_length=128)
 
 
 class SimulationFromPredictionRequest(BaseModel):

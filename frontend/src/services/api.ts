@@ -79,8 +79,14 @@ export type SimSession = {
   metrics?: Record<string, number>;
   phase_guide?: Array<{ t: string; label: string; state: string }>;
   comparison?: {
-    without_defense: { peak_traffic: number; server_stress: number; risk: number };
-    with_defense: { peak_traffic: number; server_stress: number; risk: number; traffic_blocked: number };
+    without_defense: { peak_traffic: number; server_stress: number; risk: number; threat?: string };
+    with_defense: {
+      peak_traffic: number;
+      server_stress: number;
+      risk: number;
+      traffic_blocked: number;
+      threat?: string;
+    };
   };
   incident_id?: string | null;
   disclaimer?: string;
@@ -94,6 +100,7 @@ export const api = {
     request<Record<string, unknown>>(`/api/incidents/${encodeURIComponent(incident_id)}`),
   models: () => request<Record<string, unknown>>("/api/models"),
   modelsComparison: () => request<Record<string, unknown>>("/api/models/comparison"),
+  assets: () => request<{ items: Array<Record<string, unknown>> }>("/api/assets"),
   analytics: () =>
     request<{ total_incidents: number; by_severity: Record<string, number>; by_attack_type: Record<string, number> }>(
       "/api/analytics"
@@ -123,11 +130,18 @@ export const api = {
     request<{ features: Record<string, number>; label: string | null }>(
       `/api/demo/flow${attackType ? `?attack_type=${encodeURIComponent(attackType)}` : ""}`
     ),
-  startSim: (attack_type: string, confidence = 0.96, incident_id?: string) =>
+  startSim: (
+    attack_type: string,
+    confidence = 0.96,
+    incident_id?: string,
+    extras?: { traffic_intensity?: number; asset_criticality?: number; risk_score?: number; severity?: string }
+  ) =>
     request<SimSession>("/api/simulation/start", {
       method: "POST",
-      body: JSON.stringify({ attack_type, confidence, incident_id }),
+      body: JSON.stringify({ attack_type, confidence, incident_id, ...extras }),
     }),
+  listSims: (limit = 20) =>
+    request<{ items: Array<Record<string, unknown>> }>(`/api/simulation?limit=${limit}`),
   simulateIncident: (incident_id: string) =>
     request<SimSession>(`/api/incidents/${encodeURIComponent(incident_id)}/simulate`, {
       method: "POST",

@@ -92,10 +92,20 @@ incident:
     - Monitoring
     - Resolved
     - FalsePositive
+  # Same attack_type (+ source_ref when present) within window updates existing incident
+  dedup_window_minutes: 5
 
 simulation:
   default_topology: "enterprise_simple"
   tick_ms: 800
+  # Assumed defense efficacy by attack family (visualization assumptions)
+  defense_effectiveness:
+    DDoS: 0.82
+    DoS: 0.78
+    PortScan: 0.85
+    BruteForce: 0.88
+    WebAttack: 0.90
+    Bot: 0.92
 
 api:
   host: "0.0.0.0"
