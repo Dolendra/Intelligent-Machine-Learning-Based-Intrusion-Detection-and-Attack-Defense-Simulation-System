@@ -1,0 +1,12 @@
+MachineLearningCVE/
+TrafficLabelling/
+frontend/node_modules/
+frontend/dist/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.git/
+database/*.db
+.pytest_cache/
+notebooks/.ipynb_checkpoints/

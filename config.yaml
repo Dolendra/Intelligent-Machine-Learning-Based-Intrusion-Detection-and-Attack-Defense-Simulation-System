@@ -1,0 +1,68 @@
+# Intelligent ML-Based IDS Platform — central configuration
+project:
+  name: "Intelligent IDS Platform"
+  version: "1.0.0"
+
+data:
+  # Primary ML-ready CICIDS2017 flows (use MachineLearningCVE, not TrafficLabelling)
+  raw_dir: "MachineLearningCVE"
+  processed_dir: "data/processed"
+  # Fraction of rows to sample for faster iteration (1.0 = full dataset)
+  sample_frac: 1.0
+  random_state: 42
+  test_size: 0.2
+  val_size: 0.1
+  # Drop attack families with fewer than this many rows (stabilizes multiclass metrics)
+  min_class_count: 50
+  # Drop identifier-like / leakage-prone columns if present
+  drop_columns:
+    - "Flow ID"
+    - "Source IP"
+    - "Destination IP"
+    - "Timestamp"
+    - "Source Port"
+
+features:
+  # Max features after selection (SelectKBest / importance)
+  max_features: 40
+  scale: true
+
+models:
+  output_dir: "models/trained_models"
+  binary:
+    algorithms: ["logistic_regression", "decision_tree", "random_forest", "xgboost"]
+  multiclass:
+    algorithms: ["random_forest", "xgboost"]
+
+risk:
+  # Configurable severity bands (documented; not universal standards)
+  bands:
+    low: [0, 30]
+    medium: [31, 60]
+    high: [61, 80]
+    critical: [81, 100]
+  # Base severity by attack family (0–100 contribution)
+  attack_base:
+    BENIGN: 0
+    DoS: 70
+    DDoS: 90
+    PortScan: 45
+    BruteForce: 65
+    WebAttack: 75
+    Bot: 80
+    Infiltration: 85
+    Heartbleed: 95
+    Other: 50
+
+simulation:
+  default_topology: "enterprise_simple"
+  tick_ms: 800
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://127.0.0.1:5173"
+    - "http://localhost:80"
+    - "http://127.0.0.1:80"
