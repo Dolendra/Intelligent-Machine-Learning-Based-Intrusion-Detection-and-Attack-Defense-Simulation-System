@@ -14,7 +14,7 @@ from database.db import Incident, IncidentEvent
 from explainability.shap_engine import ExplanationEngine
 from explainability.lime_engine import LimeExplanationEngine
 from ids_config import load_config, resolve_path
-from ml.features.intensity import intensity_from_features
+from ml.features.intensity import intensity_from_features, intensity_report
 from ml.prediction.predictor import FeatureValidationError, IDSPredictor, PredictionResult
 from security.assets import criticality_for
 from security.correlation import (
@@ -168,7 +168,8 @@ def _enrich_prediction(
     asset_criticality: float | None = None,
 ) -> dict[str, Any]:
     confidence = pred.multiclass_confidence if pred.is_attack else pred.binary_confidence
-    intensity = _intensity_from_features(features)
+    intensity_meta = intensity_report(features)
+    intensity = intensity_meta["value"]
     risk = compute_risk(
         pred.attack_type,
         confidence,
@@ -184,6 +185,8 @@ def _enrich_prediction(
         certainty=pred.certainty,
         is_attack=pred.is_attack,
     )
+    factors = dict(risk.get("factors") or {})
+    factors["intensity_method"] = intensity_meta["method"]
     return {
         "is_attack": pred.is_attack,
         "attack_type": pred.attack_type,
@@ -192,23 +195,21 @@ def _enrich_prediction(
         "class_probabilities": pred.class_probabilities,
         "risk_score": risk["risk_score"],
         "severity": risk["severity"],
-        "risk_factors": risk.get("factors"),
+        "risk_factors": factors,
         "recommendation": rec,
         "certainty": pred.certainty,
         "threshold": pred.threshold,
+        "uncertainty_lower": pred.uncertainty_lower,
+        "uncertainty_upper": pred.uncertainty_upper,
+        "intensity_method": intensity_meta["method"],
     }
 
 
 def _flow_source_ref(features: dict[str, float], explicit: str | None = None) -> str | None:
+    """Return explicit source fingerprint only — never invent from Destination Port."""
     if explicit:
         return explicit[:128]
-    port = features.get("Destination Port")
-    if port is None:
-        return None
-    try:
-        return f"dstport:{int(float(port))}"
-    except (TypeError, ValueError):
-        return None
+    return None
 
 
 def _find_duplicate_incident(
@@ -216,22 +217,24 @@ def _find_duplicate_incident(
     attack_type: str,
     source_ref: str | None,
 ) -> Incident | None:
+    """Dedup only when an explicit source_ref is present (never Destination Port)."""
+    if not source_ref:
+        return None
     cfg = load_config()
     window = int(cfg.get("incident", {}).get("dedup_window_minutes", 5))
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=window)
     closed = ("Resolved", "FalsePositive")
-    q = (
+    return (
         db.query(Incident)
         .filter(
             Incident.attack_type == attack_type,
+            Incident.source_ref == source_ref,
             Incident.created_at >= cutoff,
             ~Incident.status.in_(closed),
         )
         .order_by(Incident.created_at.desc())
+        .first()
     )
-    if source_ref:
-        q = q.filter(Incident.source_ref == source_ref)
-    return q.first()
 
 
 def run_prediction(

@@ -107,18 +107,23 @@ def main() -> None:
                     model = load_model(model_path)
                     X_df, y, info = _prepare(raw, list(bundle.feature_names))
                     report["schema"] = info
-                    if info["overlap_ratio"] < 0.5:
+                    if info["overlap_ratio"] < 1.0:
                         report["status"] = "partial"
+                        report["compatibility"] = "PARTIALLY_COMPATIBLE"
                         report["reason"] = (
-                            f"Feature overlap too low ({info['overlap_ratio']}) for a reliable external score"
+                            f"Feature overlap {info['overlap_ratio']} < 1.0 — "
+                            "missing features would require fabrication; official metrics withheld"
                         )
                     elif y is None:
                         report["status"] = "partial"
+                        report["compatibility"] = "PARTIALLY_COMPATIBLE"
                         report["reason"] = "No Label column — cannot compute supervised metrics"
                     elif len(X_df) < 100:
                         report["status"] = "partial"
+                        report["compatibility"] = "PARTIALLY_COMPATIBLE"
                         report["reason"] = "Too few usable external rows after cleaning"
                     else:
+                        report["compatibility"] = "EXACT_COMPATIBLE"
                         X = bundle.transform(X_df, task="binary")
                         if hasattr(model, "predict_proba"):
                             proba = model.predict_proba(X)

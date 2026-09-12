@@ -1,25 +1,28 @@
 # Implementation status (honest inventory)
 
-Last updated after final polish (Alembic, decision trace, structured logging).
+Last updated after Phase-1 correctness pass (attack-only multiclass, SHAP shapes, severity, dedup, thresholds).
 
 ## Implemented
 
-- Full Aegis loop: prepare → train/select → predict → XAI → risk → rules → recommend → incident → simulate → dashboard
-- Research experiments: HPO/calibration, threshold, risk sensitivity, scenario-aware eval, XAI agreement, drift, cross-dataset scoring (when data present)
-- Incident intelligence: lifecycle, events, dedup, escalation, campaigns, decision trace
-- Simulation: per-attack modules, dynamic metrics, config/replay, before/after
-- Engineering: vectorized batch, strict CSV, optional rate-limit/API-key, structured request logs, Alembic migrations, Vitest, CI (pytest + frontend + docker build)
+- Stage-2 multiclass trained on **attack rows only** with `attack_label_encoder` (BENIGN excluded)
+- SHAP class extraction handles `(samples, features, classes)` and `(classes, samples, features)` with feature-count checks
+- Incident dedup/campaign require **explicit** `source_ref` (no Destination Port fingerprint)
+- Risk severity uses lower-bound cuts (fractional 30.5/60.5/80.5 handled correctly)
+- Uncertainty bands derived by `scripts/15_threshold_optimization.py` → `threshold_operating_point.json`
+- Intensity reports `percentile_reference` vs `legacy_scale`
+- Cross-dataset official metrics only when feature overlap is **100%**
+- `DEMO_MODE` defaults to **false**; `/api/predict` ignores `allow_missing_features` unless DEMO_MODE
+- Full Aegis loop + research scripts + SOC/sim UI as previously documented
 
 ## Partially implemented
 
-- External CSE-CIC-IDS2018 results require placing compatible CSVs
+- Retrain required for production artifacts to pick up attack-only multiclass encoder
+- External CSE-CIC-IDS2018 needs compatible CSVs on disk
 - Intensity reference / calibrated binary need training/script runs
-- Compose-up smoke is local (`scripts/19_…`); CI builds images
 
 ## Not implemented (do not claim)
 
 - Live packet capture / auto-mitigation / OAuth SSO
-- Guaranteed external-dataset metrics without data on disk
 
 ## Academic wording
 

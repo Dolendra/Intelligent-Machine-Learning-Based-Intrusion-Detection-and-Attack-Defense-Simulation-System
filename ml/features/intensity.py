@@ -76,6 +76,12 @@ def _rank_vs_percentiles(value: float, percentiles: dict[str, float]) -> float:
 
 def intensity_from_features(features: dict[str, float]) -> float | None:
     """Return 0–1 intensity; prefer percentile reference, else legacy fallback."""
+    report = intensity_report(features)
+    return report["value"]
+
+
+def intensity_report(features: dict[str, float]) -> dict[str, Any]:
+    """Return intensity with an explicit method tag for traceability."""
     ref = load_intensity_reference()
     scores: list[float] = []
     if ref and ref.get("features"):
@@ -83,9 +89,14 @@ def intensity_from_features(features: dict[str, float]) -> float | None:
             if col in features:
                 scores.append(_rank_vs_percentiles(float(features[col]), stats["percentiles"]))
         if scores:
-            return float(min(1.0, max(scores)))
-    # Legacy fallback
+            return {
+                "value": float(min(1.0, max(scores))),
+                "method": "percentile_reference",
+            }
     for key in REF_KEYS:
         if key in features:
-            return float(min(1.0, abs(float(features[key])) / 1e5))
-    return None
+            return {
+                "value": float(min(1.0, abs(float(features[key])) / 1e5)),
+                "method": "legacy_scale",
+            }
+    return {"value": None, "method": "unavailable"}

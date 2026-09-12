@@ -26,9 +26,10 @@ class FeatureBundle:
     label_encoder: LabelEncoder
     binary_positive: str = "ATTACK"
     # Optional task-specific selector for attack-family classification.
-    # Older artifacts omit this field — joblib load still works; we fall back to `selector`.
     multiclass_selector: SelectKBest | None = None
     selected_features_multiclass: list[str] = field(default_factory=list)
+    # Attack-family encoder (BENIGN excluded). Older artifacts may omit this.
+    attack_label_encoder: LabelEncoder | None = None
 
     def _selector_for(self, task: Task) -> SelectKBest | None:
         if task == "multiclass" and self.multiclass_selector is not None:
@@ -48,11 +49,27 @@ class FeatureBundle:
             X = sel.transform(X)
         return X
 
+    def _family_encoder(self) -> LabelEncoder:
+        if self.attack_label_encoder is not None:
+            return self.attack_label_encoder
+        return self.label_encoder
+
     def encode_labels(self, labels: pd.Series | np.ndarray) -> np.ndarray:
+        """Encode full Label column (includes BENIGN) via the dataset label encoder."""
         return self.label_encoder.transform(labels)
 
     def decode_labels(self, encoded: np.ndarray) -> np.ndarray:
         return self.label_encoder.inverse_transform(encoded)
+
+    def encode_attack_labels(self, labels: pd.Series | np.ndarray) -> np.ndarray:
+        return self._family_encoder().transform(labels)
+
+    def decode_attack_labels(self, encoded: np.ndarray) -> np.ndarray:
+        return self._family_encoder().inverse_transform(encoded)
+
+    def attack_class_names(self) -> list[str]:
+        names = [str(c) for c in self._family_encoder().classes_]
+        return [n for n in names if n != "BENIGN"]
 
     def save(self, path: Path | str) -> None:
         path = Path(path)
@@ -62,11 +79,20 @@ class FeatureBundle:
     @staticmethod
     def load(path: Path | str) -> "FeatureBundle":
         bundle = joblib.load(path)
-        # Backward compatibility for artifacts saved before dual selectors
         if getattr(bundle, "multiclass_selector", None) is None:
             bundle.multiclass_selector = None
         if not getattr(bundle, "selected_features_multiclass", None):
             bundle.selected_features_multiclass = list(bundle.selected_features)
+        if getattr(bundle, "attack_label_encoder", None) is None:
+            # Backward compat: derive attack-only encoder from full label_encoder if possible
+            full = bundle.label_encoder
+            attack_classes = [c for c in full.classes_ if str(c) != "BENIGN"]
+            if attack_classes:
+                enc = LabelEncoder()
+                enc.fit(attack_classes)
+                bundle.attack_label_encoder = enc
+            else:
+                bundle.attack_label_encoder = full
         return bundle
 
 
@@ -78,10 +104,8 @@ def fit_feature_pipeline(
 ) -> tuple[FeatureBundle, np.ndarray, np.ndarray, np.ndarray]:
     """Fit scaler + SelectKBest on training data only (no leakage).
 
-    By default fits:
-    - binary selector on is_attack
-    - multiclass selector on Label (when dual_selectors enabled in config)
-    Returns binary-selected X_train for stage-1 training.
+    Multiclass selector and attack_label_encoder are fit on **attack rows only**.
+    Returns binary-selected X_train and binary y for stage-1 training.
     """
     cfg = load_config()
     max_features = max_features or cfg["features"]["max_features"]
@@ -91,7 +115,7 @@ def fit_feature_pipeline(
     feature_names = get_feature_columns(train_df)
     X = train_df[feature_names].astype(float).values
     y_binary = train_df["is_attack"].values
-    y_multi = train_df["Label"].values
+    y_multi_all = train_df["Label"].values
 
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
@@ -102,14 +126,23 @@ def fit_feature_pipeline(
     mask = selector.get_support()
     selected_features = [f for f, m in zip(feature_names, mask) if m]
 
+    # Full encoder kept for dataset audits / backward compatibility
     label_encoder = LabelEncoder()
-    y_multi_enc = label_encoder.fit_transform(y_multi)
+    label_encoder.fit(y_multi_all)
+
+    attack_mask = train_df["is_attack"].to_numpy() == 1
+    attack_labels = train_df.loc[attack_mask, "Label"]
+    if attack_labels.empty:
+        raise ValueError("Training set has no attack rows for multiclass stage")
+    attack_label_encoder = LabelEncoder()
+    attack_label_encoder.fit(attack_labels)
+    y_attack_enc = attack_label_encoder.transform(attack_labels)
 
     multiclass_selector = None
     selected_features_multiclass = list(selected_features)
     if dual_selectors:
         multiclass_selector = SelectKBest(score_func=f_classif, k=k)
-        multiclass_selector.fit(X_scaled, y_multi_enc)
+        multiclass_selector.fit(X_scaled[attack_mask], y_attack_enc)
         mask_m = multiclass_selector.get_support()
         selected_features_multiclass = [f for f, m in zip(feature_names, mask_m) if m]
 
@@ -121,8 +154,10 @@ def fit_feature_pipeline(
         label_encoder=label_encoder,
         multiclass_selector=multiclass_selector,
         selected_features_multiclass=selected_features_multiclass,
+        attack_label_encoder=attack_label_encoder,
     )
-    return bundle, X_selected, y_binary, y_multi_enc
+    # Third return kept for callers; prefer transform_attack_split for multiclass y
+    return bundle, X_selected, y_binary, y_attack_enc
 
 
 def transform_split(
@@ -130,10 +165,31 @@ def transform_split(
     df: pd.DataFrame,
     task: Task = "binary",
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transform a split. For multiclass task, encodes Label with attack encoder (BENIGN rows will error)."""
     X = bundle.transform(df, task=task)
     y_binary = df["is_attack"].values
-    y_multi = bundle.encode_labels(df["Label"].values)
+    if task == "multiclass":
+        y_multi = bundle.encode_attack_labels(df["Label"].values)
+    else:
+        # Binary path still returns attack-family encodings for attack rows only when possible
+        try:
+            y_multi = bundle.encode_attack_labels(df["Label"].values)
+        except Exception:
+            y_multi = bundle.label_encoder.transform(df["Label"].values)
     return X, y_binary, y_multi
+
+
+def transform_attack_split(
+    bundle: FeatureBundle,
+    df: pd.DataFrame,
+) -> tuple[np.ndarray, np.ndarray, pd.DataFrame]:
+    """Stage-2 transform: attack rows only, attack-family labels."""
+    attacks = df[df["is_attack"] == 1].reset_index(drop=True)
+    if attacks.empty:
+        raise ValueError("No attack rows in split for multiclass transform")
+    X = bundle.transform(attacks, task="multiclass")
+    y = bundle.encode_attack_labels(attacks["Label"].values)
+    return X, y, attacks
 
 
 def default_bundle_path() -> Path:

@@ -56,12 +56,17 @@ def models_comparison():
 
 @router.post("/predict", response_model=PredictResponse)
 def predict(body: PredictRequest, db: Session = Depends(get_db)):
+    import os
+
+    # Strict by default; allow_missing only when DEMO_MODE explicitly enables demos
+    demo = os.getenv("DEMO_MODE", "false").lower() in {"1", "true", "yes"}
+    allow_missing = bool(body.allow_missing_features) and demo
     try:
         result = svc.run_prediction(
             body.features,
             db=db,
             persist=body.persist,
-            allow_missing_features=body.allow_missing_features,
+            allow_missing_features=allow_missing,
             asset_criticality=body.asset_criticality,
             source_ref=body.source_ref,
             asset_id=body.asset_id,

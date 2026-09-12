@@ -7,13 +7,26 @@ from ids_config import load_config
 
 
 def severity_label(score: float) -> str:
+    """Map score to severity using lower-bound cuts (handles fractional scores).
+
+    Config bands like low:[0,30], medium:[31,60] become:
+    score < 31 → LOW, < 61 → MEDIUM, < 81 → HIGH, else CRITICAL.
+    """
     cfg = load_config()
     bands = cfg["risk"]["bands"]
     score = max(0.0, min(100.0, float(score)))
-    for name, (lo, hi) in bands.items():
-        if lo <= score <= hi:
-            return name.upper()
-    return "MEDIUM"
+    ordered: list[tuple[str, float]] = []
+    for name in ("low", "medium", "high", "critical"):
+        if name in bands:
+            ordered.append((name, float(bands[name][0])))
+    if not ordered:
+        ordered = [("low", 0.0), ("medium", 31.0), ("high", 61.0), ("critical", 81.0)]
+    ordered.sort(key=lambda x: x[1])
+    label = ordered[0][0]
+    for name, lo in ordered:
+        if score >= lo:
+            label = name
+    return label.upper()
 
 
 def compute_risk(

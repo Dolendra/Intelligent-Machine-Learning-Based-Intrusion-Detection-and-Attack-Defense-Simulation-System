@@ -59,6 +59,9 @@ class ExplanationEngine:
         contributions, actual_method, fallback_used = self._explain_values(
             model, X, class_index=class_index, feature_names=feature_names
         )
+        if len(contributions) != len(feature_names):
+            # Hard fail into honest fallback rather than misaligned SHAP vectors
+            contributions, actual_method, fallback_used = self._importance_fallback(model, X, feature_names)
 
         ranked = sorted(contributions.items(), key=lambda kv: abs(kv[1]), reverse=True)[:top_k]
         positives = [(f, v) for f, v in ranked if v >= 0][:3]
@@ -82,21 +85,32 @@ class ExplanationEngine:
         classes = list(getattr(model, "classes_", []))
         if not classes:
             return 1 if pred.is_attack else 0
-        # Binary attack index
         if not pred.is_attack:
             if 0 in classes:
                 return classes.index(0)
             return 0
-        # Multiclass: map attack_type label to encoded class
         try:
-            encoded = int(self.bundle.label_encoder.transform([pred.attack_type])[0])
+            encoded = int(self.bundle.encode_attack_labels([pred.attack_type])[0])
             if encoded in classes:
-                return classes.index(encoded)
+                return list(classes).index(encoded)
         except Exception:
             pass
+        # String class labels
+        if pred.attack_type in classes:
+            return list(classes).index(pred.attack_type)
         if 1 in classes and len(classes) == 2:
-            return classes.index(1)
-        return int(np.argmax(list(pred.class_probabilities.values())))
+            return list(classes).index(1)
+        probs = list(pred.class_probabilities.values())
+        return int(np.argmax(probs)) if probs else 0
+
+    def _importance_fallback(self, model: Any, X: np.ndarray, names: list[str]) -> tuple[dict[str, float], str, bool]:
+        if hasattr(model, "feature_importances_"):
+            imp = model.feature_importances_
+            n = min(len(names), len(imp))
+            return {names[i]: float(imp[i]) for i in range(n)}, "feature_importance", True
+        row = X[0]
+        n = min(len(names), len(row))
+        return {names[i]: float(abs(row[i])) for i in range(n)}, "abs_scaled_values", True
 
     def _explain_values(
         self, model: Any, X: np.ndarray, class_index: int, feature_names: list[str] | None = None
@@ -106,7 +120,9 @@ class ExplanationEngine:
             try:
                 explainer = shap.TreeExplainer(model)
                 sv = explainer.shap_values(X)
-                values = self._select_class_shap(sv, class_index)
+                values = self._select_class_shap(sv, class_index, n_features=len(names))
+                if len(values) != len(names):
+                    raise ValueError(f"SHAP length {len(values)} != features {len(names)}")
                 return {n: float(v) for n, v in zip(names, values)}, "TreeExplainer", False
             except Exception:
                 try:
@@ -114,33 +130,59 @@ class ExplanationEngine:
                     bg = shap.sample(bg, min(50, len(bg)))
                     explainer = shap.KernelExplainer(model.predict_proba, bg)
                     sv = explainer.shap_values(X)
-                    values = self._select_class_shap(sv, class_index)
+                    values = self._select_class_shap(sv, class_index, n_features=len(names))
+                    if len(values) != len(names):
+                        raise ValueError(f"SHAP length {len(values)} != features {len(names)}")
                     return {n: float(v) for n, v in zip(names, values)}, "KernelExplainer", False
                 except Exception:
                     pass
 
-        if hasattr(model, "feature_importances_"):
-            imp = model.feature_importances_
-            return {n: float(v) for n, v in zip(names, imp)}, "feature_importance", True
-        row = X[0]
-        return {n: float(abs(v)) for n, v in zip(names, row)}, "abs_scaled_values", True
+        return self._importance_fallback(model, X, names)
 
     @staticmethod
-    def _select_class_shap(sv: Any, class_index: int) -> np.ndarray:
+    def _select_class_shap(sv: Any, class_index: int, n_features: int | None = None) -> np.ndarray:
+        """Extract per-feature SHAP row for the predicted class.
+
+        Handles list-of-arrays and ndarray layouts:
+        - (n_samples, n_features, n_classes)
+        - (n_classes, n_samples, n_features)
+        """
         if isinstance(sv, list):
             idx = min(max(class_index, 0), len(sv) - 1)
-            return np.array(sv[idx])[0]
-        arr = np.array(sv)
-        if arr.ndim == 3:
-            # (n_samples, n_features, n_classes) or (n_classes, n_samples, n_features)
-            if arr.shape[0] < arr.shape[-1] and arr.shape[0] <= 20:
-                idx = min(class_index, arr.shape[0] - 1)
-                return arr[idx][0]
-            idx = min(class_index, arr.shape[-1] - 1)
-            return arr[0, :, idx]
+            row = np.asarray(sv[idx], dtype=float)
+            if row.ndim == 1:
+                return row
+            return row[0]
+
+        arr = np.asarray(sv, dtype=float)
+        if arr.ndim == 1:
+            return arr
         if arr.ndim == 2:
             return arr[0]
-        return arr.reshape(-1)[: arr.size]
+        if arr.ndim != 3:
+            return arr.reshape(-1)
+
+        # Prefer matching n_features when provided
+        if n_features is not None:
+            if arr.shape[1] == n_features:
+                # (samples, features, classes)
+                idx = min(max(class_index, 0), arr.shape[2] - 1)
+                return arr[0, :, idx]
+            if arr.shape[2] == n_features:
+                # (classes, samples, features)
+                idx = min(max(class_index, 0), arr.shape[0] - 1)
+                return arr[idx, 0, :]
+
+        # Heuristic: middle dim is usually features for TreeExplainer multiclass
+        if arr.shape[1] >= arr.shape[0] and arr.shape[1] >= arr.shape[2]:
+            idx = min(max(class_index, 0), arr.shape[2] - 1)
+            return arr[0, :, idx]
+        # (classes, samples, features) when first dim is small class count
+        if arr.shape[0] <= 32:
+            idx = min(max(class_index, 0), arr.shape[0] - 1)
+            return arr[idx, 0, :]
+        idx = min(max(class_index, 0), arr.shape[-1] - 1)
+        return arr[0, :, idx]
 
     @staticmethod
     def _narrative(

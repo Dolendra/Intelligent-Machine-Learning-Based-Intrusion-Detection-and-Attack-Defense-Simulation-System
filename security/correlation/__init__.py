@@ -31,18 +31,26 @@ def find_related_campaign(
     source_ref: str | None,
     now: datetime | None = None,
 ) -> Incident | None:
-    """Find an open incident that should share a campaign_id with this detection."""
+    """Find an open incident that should share a campaign_id with this detection.
+
+    Requires source_ref so unrelated flows are not glued together.
+    """
+    if not source_ref:
+        return None
     now = now or datetime.now(timezone.utc)
     cutoff = now - timedelta(minutes=campaign_window_minutes())
     closed = ("Resolved", "FalsePositive")
-    q = (
+    candidates = (
         db.query(Incident)
-        .filter(Incident.created_at >= cutoff, ~Incident.status.in_(closed))
+        .filter(
+            Incident.source_ref == source_ref,
+            Incident.created_at >= cutoff,
+            ~Incident.status.in_(closed),
+        )
         .order_by(Incident.created_at.desc())
+        .limit(50)
+        .all()
     )
-    if source_ref:
-        q = q.filter(Incident.source_ref == source_ref)
-    candidates = q.limit(50).all()
     for row in candidates:
         if row.attack_type == attack_type:
             return row

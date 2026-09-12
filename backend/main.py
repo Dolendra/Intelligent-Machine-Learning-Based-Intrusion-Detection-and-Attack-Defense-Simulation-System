@@ -29,7 +29,7 @@ async def lifespan(_app: FastAPI):
     import os
 
     init_db()
-    demo_mode = os.getenv("DEMO_MODE", "true").lower() in {"1", "true", "yes"}
+    demo_mode = os.getenv("DEMO_MODE", "false").lower() in {"1", "true", "yes"}
     if demo_mode:
         n = seed_demo_incidents()
         if n:

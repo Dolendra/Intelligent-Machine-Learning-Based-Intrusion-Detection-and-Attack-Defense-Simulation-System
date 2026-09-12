@@ -26,8 +26,15 @@ def test_risk_ddos_high():
 
 def test_severity_bands():
     assert severity_label(10) == "LOW"
+    assert severity_label(30.0) == "LOW"
+    assert severity_label(30.9) == "LOW"
+    assert severity_label(31.0) == "MEDIUM"
     assert severity_label(50) == "MEDIUM"
+    assert severity_label(60.9) == "MEDIUM"
+    assert severity_label(61.0) == "HIGH"
     assert severity_label(70) == "HIGH"
+    assert severity_label(80.9) == "HIGH"
+    assert severity_label(81.0) == "CRITICAL"
     assert severity_label(90) == "CRITICAL"
 
 

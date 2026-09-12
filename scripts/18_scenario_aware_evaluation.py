@@ -55,9 +55,9 @@ def _score_slice(bundle, binary_model, multi_model, df: pd.DataFrame, threshold:
         X_m = bundle.transform(df.loc[attack_mask], task="multiclass")
         if X_m.shape[1] != getattr(multi_model, "n_features_in_", X_m.shape[1]):
             X_m = bundle.transform(df.loc[attack_mask], task="binary")
-        y_true = bundle.label_encoder.transform(df.loc[attack_mask, "Label"])
+        y_true = bundle.encode_attack_labels(df.loc[attack_mask, "Label"])
         y_pred = multi_model.predict(X_m)
-        labels = list(bundle.label_encoder.classes_)
+        labels = bundle.attack_class_names()
         multi_metrics = evaluate_multiclass(y_true, y_pred, labels=labels)
         # Keep compact per-class F1 from report if present
         if "report" in multi_metrics and isinstance(multi_metrics["report"], dict):

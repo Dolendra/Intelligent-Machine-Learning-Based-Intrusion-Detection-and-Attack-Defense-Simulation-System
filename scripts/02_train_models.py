@@ -13,7 +13,7 @@ from ids_config import load_config, resolve_path
 from ml.evaluation.metrics import evaluate_binary, evaluate_multiclass
 from ml.evaluation.selection import binary_selection_score, multiclass_selection_score
 from ml.features.intensity import build_intensity_reference, save_intensity_reference
-from ml.features.pipeline import fit_feature_pipeline, transform_split
+from ml.features.pipeline import fit_feature_pipeline, transform_attack_split, transform_split
 from ml.models.factory import build_model, save_model
 from ml.preprocessing.dataset import load_processed
 
@@ -36,18 +36,18 @@ def main() -> None:
     test = load_processed("test")
 
     print("Fitting feature pipeline on train only...")
-    bundle, X_train, y_bin_train, y_multi_train = fit_feature_pipeline(train)
+    bundle, X_train, y_bin_train, _ = fit_feature_pipeline(train)
     X_val, y_bin_val, _ = transform_split(bundle, val, task="binary")
     X_test, y_bin_test, _ = transform_split(bundle, test, task="binary")
-    X_train_m, _, y_multi_train = transform_split(bundle, train, task="multiclass")
-    X_val_m, _, y_multi_val = transform_split(bundle, val, task="multiclass")
-    X_test_m, _, y_multi_test = transform_split(bundle, test, task="multiclass")
+    X_train_m, y_multi_train, _ = transform_attack_split(bundle, train)
+    X_val_m, y_multi_val, _ = transform_attack_split(bundle, val)
+    X_test_m, y_multi_test, _ = transform_attack_split(bundle, test)
     bundle.save(out_dir / "feature_bundle.joblib")
     overlap = set(bundle.selected_features) & set(bundle.selected_features_multiclass)
     print(
         f"Selected {len(bundle.selected_features)} binary features; "
         f"{len(bundle.selected_features_multiclass)} multiclass features; "
-        f"overlap={len(overlap)}"
+        f"overlap={len(overlap)}; attack_classes={bundle.attack_class_names()}"
     )
     intensity_ref = build_intensity_reference(train)
     save_intensity_reference(intensity_ref, out_dir / "intensity_reference.json")
@@ -78,9 +78,8 @@ def main() -> None:
         pr = metrics.get("pr_auc")
         pr_s = f"{pr:.4f}" if pr is not None else "n/a"
         print(
-            f"  {name}: score={score:.4f} F1={metrics['f1']:.4f} Recall={metrics['recall']:.4f} "
-            f"Prec={metrics['precision']:.4f} PR-AUC={pr_s} "
-            f"FPR={metrics.get('fpr', float('nan')):.4f} FNR={metrics.get('fnr', float('nan')):.4f}"
+            f"  {name}: score={score:.4f} F1={metrics['f1']:.4f} recall={metrics['recall']:.4f} "
+            f"PR-AUC={pr_s} FPR={metrics['fpr']:.4f}"
         )
         if score > best_binary_score:
             best_binary_score = score
@@ -90,14 +89,13 @@ def main() -> None:
     save_model(best_binary_model, out_dir / "binary_best.joblib")
     print(f"Best binary model: {best_binary_name} (multi-objective selection_score={best_binary_score:.4f})")
 
-    # Multiclass: train on all rows (including benign) so labels stay consistent
     multi_results = {}
     best_multi_name = None
     best_multi_f1 = -1.0
     best_multi_model = None
-    class_names = list(bundle.label_encoder.classes_)
+    class_names = bundle.attack_class_names()
 
-    print("\n=== Stage 2: Attack-family classification ===")
+    print("\n=== Stage 2: Attack-family classification (attack rows only) ===")
     for name in cfg["models"]["multiclass"]["algorithms"]:
         model = build_model(name, cfg["data"]["random_state"])
         t0 = time.perf_counter()
@@ -122,7 +120,6 @@ def main() -> None:
     save_model(best_multi_model, out_dir / "multiclass_best.joblib")
     print(f"Best multiclass model: {best_multi_name}")
 
-    # Final test evaluation with best models
     bin_test_pred = best_binary_model.predict(X_test)
     bin_test_proba = _predict_proba_pos(best_binary_model, X_test)
     multi_test_pred = best_multi_model.predict(X_test_m)
@@ -130,8 +127,9 @@ def main() -> None:
     report = {
         "selection_criteria": {
             "binary": "multi-objective: recall/F1/PR-AUC/FPR/latency (see models.selection_weights)",
-            "multiclass": "0.7*macro-F1 + 0.3*weighted-F1",
+            "multiclass": "0.7*macro-F1 + 0.3*weighted-F1 on attack-only rows",
             "features": "dual SelectKBest (binary vs multiclass) when features.dual_selectors=true",
+            "stage2": "attack_label_encoder excludes BENIGN",
         },
         "selected_features": bundle.selected_features,
         "selected_features_multiclass": bundle.selected_features_multiclass,
@@ -144,6 +142,9 @@ def main() -> None:
         "multiclass": {
             "best": best_multi_name,
             "classes": class_names,
+            "n_train_attack": int(len(y_multi_train)),
+            "n_val_attack": int(len(y_multi_val)),
+            "n_test_attack": int(len(y_multi_test)),
             "validation": {k: {kk: vv for kk, vv in v.items() if kk != "report"} for k, v in multi_results.items()},
             "test": {
                 k: v
@@ -153,10 +154,11 @@ def main() -> None:
         },
     }
     (out_dir / "training_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
-    # Persist a small SHAP background sample
     import numpy as np
 
-    bg_idx = np.random.RandomState(cfg["data"]["random_state"]).choice(len(X_train), size=min(200, len(X_train)), replace=False)
+    bg_idx = np.random.RandomState(cfg["data"]["random_state"]).choice(
+        len(X_train), size=min(200, len(X_train)), replace=False
+    )
     np.save(out_dir / "shap_background.npy", X_train[bg_idx])
 
     import importlib.util
@@ -170,7 +172,12 @@ def main() -> None:
         (out_dir / "model_metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
     print(f"\nArtifacts written to {out_dir}")
-    print(json.dumps({"binary_test": report["binary"]["test"], "multiclass_test": report["multiclass"]["test"]}, indent=2))
+    print(
+        json.dumps(
+            {"binary_test": report["binary"]["test"], "multiclass_test": report["multiclass"]["test"]},
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":
