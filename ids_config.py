@@ -37,6 +37,12 @@ def load_config(path: Path | str | None = None) -> dict[str, Any]:
         cfg.setdefault("api", {})["host"] = os.environ["IDS_API_HOST"]
     if os.getenv("IDS_API_PORT"):
         cfg.setdefault("api", {})["port"] = int(os.environ["IDS_API_PORT"])
+    if os.getenv("IDS_USE_CALIBRATED_BINARY"):
+        cfg.setdefault("models", {})["use_calibrated_binary"] = os.environ["IDS_USE_CALIBRATED_BINARY"].lower() in {
+            "1",
+            "true",
+            "yes",
+        }
     return cfg
 
 

@@ -21,6 +21,14 @@ def test_health():
     assert body["status"] == "ok"
 
 
+def test_models_endpoint():
+    r = client.get("/api/models")
+    assert r.status_code == 200
+    body = r.json()
+    assert "application_version" in body
+    assert "models_loaded" in body
+
+
 def test_recommendation_endpoint():
     r = client.post("/api/recommendation", json={"attack_type": "PortScan", "severity": "MEDIUM"})
     assert r.status_code == 200

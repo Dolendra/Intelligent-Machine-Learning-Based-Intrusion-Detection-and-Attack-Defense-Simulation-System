@@ -146,6 +146,17 @@ def main() -> None:
 
     bg_idx = np.random.RandomState(cfg["data"]["random_state"]).choice(len(X_train), size=min(200, len(X_train)), replace=False)
     np.save(out_dir / "shap_background.npy", X_train[bg_idx])
+
+    import importlib.util
+
+    meta_path = ROOT / "scripts" / "13_write_model_metadata.py"
+    spec = importlib.util.spec_from_file_location("write_model_metadata", meta_path)
+    if spec and spec.loader:
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        meta = mod.build_metadata()
+        (out_dir / "model_metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+
     print(f"\nArtifacts written to {out_dir}")
     print(json.dumps({"binary_test": report["binary"]["test"], "multiclass_test": report["multiclass"]["test"]}, indent=2))
 

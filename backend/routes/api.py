@@ -41,6 +41,11 @@ def health():
     )
 
 
+@router.get("/models")
+def models():
+    return svc.model_info()
+
+
 @router.post("/predict", response_model=PredictResponse)
 def predict(body: PredictRequest, db: Session = Depends(get_db)):
     try:

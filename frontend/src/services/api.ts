@@ -87,7 +87,9 @@ export type SimSession = {
 };
 
 export const api = {
-  health: () => request<{ status: string; models_loaded: boolean; version: string }>("/api/health"),
+  health: () =>
+    request<{ status: string; models_loaded: boolean; version: string }>("/api/health"),
+  models: () => request<Record<string, unknown>>("/api/models"),
   analytics: () =>
     request<{ total_incidents: number; by_severity: Record<string, number>; by_attack_type: Record<string, number> }>(
       "/api/analytics"

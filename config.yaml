@@ -1,7 +1,7 @@
 # Intelligent ML-Based IDS Platform — central configuration
 project:
   name: "Intelligent IDS Platform"
-  version: "1.0.0"
+  version: "1.1.0"
 
 data:
   # Primary ML-ready CICIDS2017 flows (use MachineLearningCVE, not TrafficLabelling)
@@ -31,7 +31,10 @@ features:
 
 models:
   output_dir: "models/trained_models"
+  model_version: "1.1.0"
   binary_threshold: 0.5
+  # Prefer binary_calibrated.joblib when true and the artifact exists
+  use_calibrated_binary: false
   binary:
     algorithms: ["logistic_regression", "decision_tree", "random_forest", "xgboost"]
   multiclass:

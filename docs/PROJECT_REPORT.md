@@ -188,9 +188,13 @@ Or `docker compose up --build` after artifacts exist.
 ## 12. Limitations & future work
 
 - CICIDS2017 is dated relative to modern traffic; concept drift possible  
-- Simulation is pedagogical, not a network emulator  
-- Recommendations are rule-mapped, not learned policies  
-- Future: online flow export from PCAP, PostgreSQL, analyst feedback loop, deeper class rebalancing for Bot/WebAttack  
+- Simulation is pedagogical visualization, not a network emulator or live IDS  
+- Recommendations are rule/playbook-mapped decision support, not learned policies or auto-mitigation  
+- Calibration and HPO experiments in-repo are sample-based research artifacts unless production wrappers are explicitly enabled  
+- Cross-dataset evaluation (e.g. CSE-CIC-IDS2018) is scaffolded and requires an external compatible dataset  
+- Future: PCAP → flow feature export, analyst feedback loop, deeper rare-class handling, Alembic migrations  
+
+See also `docs/IMPLEMENTATION_STATUS.md` for Implemented / Partial / Not implemented.
 
 ---
 

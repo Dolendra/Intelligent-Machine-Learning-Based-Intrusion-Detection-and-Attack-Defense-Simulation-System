@@ -105,6 +105,9 @@ Feature-selector research experiment (optional):
 python scripts/10_feature_selector_experiment.py
 python scripts/11_calibration_hpo_experiment.py
 python scripts/12_cross_dataset_status.py
+python scripts/13_write_model_metadata.py
+# optional calibrated wrapper:
+# python scripts/14_fit_calibrated_binary.py  # then models.use_calibrated_binary: true
 ```
 
 

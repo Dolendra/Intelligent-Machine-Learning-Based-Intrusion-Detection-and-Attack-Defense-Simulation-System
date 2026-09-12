@@ -32,6 +32,7 @@ export function DashboardPage() {
   const [liveMode, setLiveMode] = useState<"websocket" | "polling" | "off">("off");
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
+  const [modelVersion, setModelVersion] = useState<string | null>(null);
   const pollRef = useRef<number | null>(null);
 
   const applySnapshot = useCallback(
@@ -55,6 +56,10 @@ export function DashboardPage() {
       setError(e instanceof Error ? e.message : String(e));
       setLoading(false);
     });
+    api
+      .models()
+      .then((m) => setModelVersion(String(m.model_version ?? m.application_version ?? "")))
+      .catch(() => undefined);
   }, [refreshOnce]);
 
   useEffect(() => {
@@ -120,6 +125,7 @@ export function DashboardPage() {
           <h2>Security Overview</h2>
           <p>
             Incident analytics from the IDS decision-support pipeline (demo/prototype — not live packet capture).
+            {modelVersion && <span className="mono muted"> · model v{modelVersion}</span>}
             {lastUpdate && (
               <span className="mono muted">
                 {" "}

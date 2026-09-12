@@ -1,6 +1,7 @@
 """Application services wrapping ML + security engines."""
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import datetime, timezone
 from functools import lru_cache
@@ -68,6 +69,28 @@ def get_lime_explainer() -> LimeExplanationEngine | None:
 
 def models_ready() -> bool:
     return get_predictor() is not None
+
+
+def model_info() -> dict[str, Any]:
+    cfg = load_config()
+    model_dir = resolve_path(cfg["models"]["output_dir"])
+    meta_path = model_dir / "model_metadata.json"
+    predictor = get_predictor()
+    info: dict[str, Any] = {
+        "models_loaded": predictor is not None,
+        "application_version": cfg["project"]["version"],
+        "model_version": cfg.get("models", {}).get("model_version", "unknown"),
+        "binary_threshold": cfg.get("models", {}).get("binary_threshold", 0.5),
+        "use_calibrated_binary_config": bool(cfg.get("models", {}).get("use_calibrated_binary", False)),
+        "calibrated_binary_active": bool(getattr(predictor, "calibrated_binary", False)) if predictor else False,
+        "metadata_available": meta_path.exists(),
+    }
+    if meta_path.exists():
+        try:
+            info["metadata"] = json.loads(meta_path.read_text(encoding="utf-8"))
+        except Exception:
+            info["metadata"] = None
+    return info
 
 
 def _intensity_from_features(features: dict[str, float]) -> float | None:

@@ -47,16 +47,24 @@ class IDSPredictor:
         self.multiclass_model = multiclass_model
         self.binary_threshold = binary_threshold
         self.allow_missing_features = allow_missing_features
+        self.calibrated_binary = False
 
     @classmethod
     def from_artifacts(cls, model_dir: Path | str | None = None) -> "IDSPredictor":
         cfg = load_config()
         directory = Path(model_dir) if model_dir else resolve_path(cfg["models"]["output_dir"])
         bundle = FeatureBundle.load(directory / "feature_bundle.joblib")
-        binary = load_model(directory / "binary_best.joblib")
+        use_cal = bool(cfg.get("models", {}).get("use_calibrated_binary", False))
+        cal_path = directory / "binary_calibrated.joblib"
+        if use_cal and cal_path.exists():
+            binary = load_model(cal_path)
+        else:
+            binary = load_model(directory / "binary_best.joblib")
         multi = load_model(directory / "multiclass_best.joblib")
         threshold = float(cfg.get("models", {}).get("binary_threshold", 0.5))
-        return cls(bundle, binary, multi, binary_threshold=threshold)
+        pred = cls(bundle, binary, multi, binary_threshold=threshold)
+        pred.calibrated_binary = bool(use_cal and cal_path.exists())
+        return pred
 
     def _attack_class_index(self, model: Any) -> int:
         classes = list(getattr(model, "classes_", [0, 1]))

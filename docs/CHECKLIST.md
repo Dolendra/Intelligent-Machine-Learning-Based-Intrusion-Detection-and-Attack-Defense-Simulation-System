@@ -4,19 +4,22 @@
 - [ ] API running (`uvicorn backend.main:app --port 8000`)
 - [ ] UI running (`cd frontend && npm run dev` or `npm run preview`)
 - [ ] Models present in `models/trained_models/`
-- [ ] Walkthrough rehearsed from `docs/DEMO.md`
-- [ ] Dashboard shows seeded incidents
+- [ ] Walkthrough rehearsed from `docs/DEMO.md` (Detect → Simulate this incident → Play)
+- [ ] Dashboard shows incidents (seeded if `DEMO_MODE=true`)
 
 ## Report package
 - [ ] `docs/PROJECT_REPORT.md` reviewed by all members
+- [ ] `docs/IMPLEMENTATION_STATUS.md` matches claims in slides/report
 - [ ] `docs/Aegis_IDS_Project_Report.docx` generated (`python scripts/06_export_report_docx.py`)
-- [ ] Figures attached / embedded from `models/trained_models/figures/`
-- [ ] Metrics match `models/trained_models/model_comparison.md`
-- [ ] Citations added in Related Work section
+- [ ] Figures from `models/trained_models/figures/`
+- [ ] Metrics match `models/trained_models/training_report.json` / `model_comparison.md`
+- [ ] Optional research: `python scripts/11_calibration_hpo_experiment.py` + notebook 07
+- [ ] `python scripts/13_write_model_metadata.py` for reproducibility metadata
 
 ## Presentation
-- [ ] Slides built from `docs/PRESENTATION.md`
+- [ ] Slides from `docs/PRESENTATION.md` / PowerPoint
 - [ ] Each member can explain full pipeline (not only their module)
+- [ ] Safety line rehearsed: no real attacks / no auto-mitigation
 
 ## Code hygiene
 - [ ] `pytest -q` passes
@@ -24,6 +27,6 @@
 - [ ] README quick start works on a clean machine (or Docker)
 
 ## Optional
-- [ ] GitHub: `gh auth login` then `powershell -File scripts\push_github.ps1`
-- [ ] `docker compose up --build`
-- [ ] Full-dataset note in report if using `sample_frac: 1.0`
+- [ ] `python scripts/14_fit_calibrated_binary.py` then set `models.use_calibrated_binary: true`
+- [ ] `docker compose up --build` (API healthcheck gates frontend)
+- [ ] GitHub push via HTTPS / `scripts/push_github.ps1`

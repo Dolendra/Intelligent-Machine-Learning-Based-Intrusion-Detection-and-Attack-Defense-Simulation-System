@@ -1,4 +1,4 @@
-# Aegis IDS — Demo & Viva Script (~2 minutes)
+# Aegis IDS — Demo & Viva Script (~2–3 minutes)
 
 ## One-sentence answer
 
@@ -6,32 +6,42 @@
 
 ## Live demo flow (follow exactly)
 
-1. Open **http://127.0.0.1:5173/** — Dashboard shows seeded incidents.
+1. Open **http://127.0.0.1:5173/** — Dashboard shows incident analytics.
+   - Mention auto-refresh (WebSocket / polling) updates the overview — still **not** live packet capture.
 2. Go to **Detection**
    - Demo flow type: `DDoS` → **Load sample flow** → **Detect & classify**
-   - Point to: verdict, confidence, risk/severity, recommendation
-   - Scroll to **Why? (SHAP)** — name the top 2 features
+   - Point to: verdict, confidence, certainty band, risk/severity, recommendation, **rules fired**
+   - Scroll to **Why?** — show SHAP (and that fallback is labeled if used)
+   - Click **Simulate this incident** (hands off to Simulation with that session)
+   - Optional: **Batch sample** or **Upload CSV** for multi-flow analytics
 3. Go to **Simulation**
-   - New scenario `DDoS` → press **Next state** through attack → detection
-   - **Apply defense** → show blocked edge / recovered service
-   - Say: “This is a controlled visualization, not a real attack tool.”
-4. Go to **Reports** — show logged / seeded incidents
+   - Press **Play** (or Step) through attack → detection → recommendation → defense → recovery
+   - Point to attack-specific topology / narrative / without-vs-with defense metrics
+   - Say: “Controlled visualization only — not a real attack tool.”
+4. Go to **Reports**
+   - Show severity / lifecycle charts and incident status updates
+   - Optional: **Export CSV / JSON / PDF**
 
 ## Likely viva questions
 
 | Question | Answer cue |
 |----------|------------|
 | Why two-stage ML? | Binary detection first, then attack-family classification — clearer academically and operationally |
-| Why not accuracy alone? | Class imbalance; we prioritize recall/precision/F1 on attacks |
-| Why SHAP? | Turns “model said attack” into feature-level decision support |
+| Why not accuracy alone? | Class imbalance; we report recall/precision/F1, PR-AUC, FPR/FNR |
+| Why SHAP? | Turns “model said attack” into feature-level decision support; LIME is secondary |
 | Do you auto-block traffic? | No — recommendations are advisory only |
 | Dataset? | CICIDS2017 (`MachineLearningCVE`), cleaned, rare classes filtered, stratified split |
-| Novelty? | Integration: ML + XAI + risk + recommendation + simulation — not a new algorithm claim |
+| Confidence vs risk? | Confidence is model certainty; risk is impact-oriented scoring (attack family + confidence + intensity + asset criticality) |
+| Novelty? | Integration: ML + XAI + risk + rules + recommendation + simulation — not a new algorithm claim |
 
 ## Team talking points
 
-- **Member 1:** data prep, features, model comparison, metrics in `training_report.json`
-- **Member 2:** SHAP, risk bands, recommendation mapping, incidents DB
-- **Member 3:** FastAPI, React UI, React Flow simulation
+- **Member 1:** data prep, dual feature selection, model comparison, calibration/HPO experiments
+- **Member 2:** SHAP/LIME, risk bands, rule engine, recommendations, incidents lifecycle
+- **Member 3:** FastAPI, React UI, React Flow simulation, WebSocket dashboard, exports
 
 Everyone should still be able to narrate the full pipeline end-to-end.
+
+## Honest wording (use these)
+
+Prefer: **ML-based intrusion detection prototype**, **controlled attack–defense simulation**, **decision-support recommendations**.
