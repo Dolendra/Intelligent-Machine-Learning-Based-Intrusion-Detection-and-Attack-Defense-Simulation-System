@@ -86,6 +86,7 @@ pytest -q
 | [`docs/DEMO.md`](docs/DEMO.md) | 2-minute viva demo |
 | [`docs/PROJECT_REPORT.md`](docs/PROJECT_REPORT.md) | Full report draft |
 | [`docs/Aegis_IDS_Project_Report.docx`](docs/Aegis_IDS_Project_Report.docx) | Word export |
+| [`docs/Aegis_IDS_Viva_Presentation.pptx`](docs/Aegis_IDS_Viva_Presentation.pptx) | Viva PowerPoint |
 | [`docs/PRESENTATION.md`](docs/PRESENTATION.md) | Slide outline |
 | [`docs/CHECKLIST.md`](docs/CHECKLIST.md) | Submission checklist |
 | [`notebooks/01_data_analysis.ipynb`](notebooks/01_data_analysis.ipynb) | EDA |

@@ -15,3 +15,4 @@
 | [PRESENTATION.md](PRESENTATION.md) | Viva slide outline |
 | [CHECKLIST.md](CHECKLIST.md) | Submission checklist |
 | [Aegis_IDS_Project_Report.docx](Aegis_IDS_Project_Report.docx) | Word report export |
+| [Aegis_IDS_Viva_Presentation.pptx](Aegis_IDS_Viva_Presentation.pptx) | Viva PowerPoint (12 slides) |
