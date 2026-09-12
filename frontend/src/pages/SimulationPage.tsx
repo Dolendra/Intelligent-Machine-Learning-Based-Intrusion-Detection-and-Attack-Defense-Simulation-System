@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { NetworkTopology } from "../components/NetworkTopology";
 import { api, SimSession } from "../services/api";
 
@@ -15,10 +16,36 @@ const STEPS = [
 ];
 
 export function SimulationPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [attackType, setAttackType] = useState("DDoS");
   const [session, setSession] = useState<SimSession | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sid = searchParams.get("session");
+    if (!sid) return;
+    let cancelled = false;
+    setBusy(true);
+    api
+      .getSim(sid)
+      .then((s) => {
+        if (!cancelled) {
+          setSession(s);
+          setAttackType(s.attack_type);
+          setError(null);
+        }
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => {
+        if (!cancelled) setBusy(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams]);
 
   async function createSession() {
     setBusy(true);
@@ -26,6 +53,7 @@ export function SimulationPage() {
     try {
       const s = await api.startSim(attackType);
       setSession(s);
+      setSearchParams({ session: s.id });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -82,7 +110,10 @@ export function SimulationPage() {
 
       {!session && (
         <div className="panel">
-          <p className="muted">Create a scenario to play the attack → detection → defense lifecycle.</p>
+          <p className="muted">
+            Create a scenario, or open one from Detection via{" "}
+            <span className="mono">Simulate this incident</span>.
+          </p>
           <ol className="muted">
             {STEPS.map((s) => (
               <li key={s}>{s}</li>
@@ -100,6 +131,7 @@ export function SimulationPage() {
               <span className="mono">State: {session.state}</span>
               <span className="mono muted">Risk {session.risk_score}</span>
               <span className="mono muted">{session.attack_type}</span>
+              {session.incident_id && <span className="mono muted">{session.incident_id}</span>}
             </div>
           </section>
           <section className="panel stack">
@@ -112,6 +144,27 @@ export function SimulationPage() {
                 </li>
               ))}
             </ul>
+            {session.narrative && session.narrative.length > 0 && (
+              <div>
+                <h4>Attack narrative</h4>
+                <ol>
+                  {session.narrative.map((n, i) => (
+                    <li key={i}>{n}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+            {session.metrics && (
+              <div className="mono muted">
+                Metrics (simulated): peak={session.metrics.peak_traffic ?? "—"} stress=
+                {session.metrics.server_stress ?? "—"} blocked={session.metrics.traffic_blocked ?? "—"}
+              </div>
+            )}
+            {session.disclaimer && (
+              <p className="muted" style={{ fontSize: "0.85rem" }}>
+                {session.disclaimer}
+              </p>
+            )}
             <div>
               <h4>Recommendation</h4>
               <p style={{ marginTop: 0 }}>{session.recommendation.primary}</p>

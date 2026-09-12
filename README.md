@@ -92,6 +92,7 @@ pytest -q
 | [`docs/Aegis_IDS_Viva_Presentation.pptx`](docs/Aegis_IDS_Viva_Presentation.pptx) | Viva PowerPoint |
 | [`docs/PRESENTATION.md`](docs/PRESENTATION.md) | Slide outline |
 | [`docs/CHECKLIST.md`](docs/CHECKLIST.md) | Submission checklist |
+| [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) | Honest Implemented / Partial / Not implemented |
 | [`notebooks/01_data_analysis.ipynb`](notebooks/01_data_analysis.ipynb) | EDA |
 | [`notebooks/03_explainability_demo.ipynb`](notebooks/03_explainability_demo.ipynb) | SHAP/LIME demo |
 | [`notebooks/05_model_evaluation.ipynb`](notebooks/05_model_evaluation.ipynb) | Evaluation figures |

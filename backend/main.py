@@ -23,10 +23,14 @@ cfg = load_config()
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    import os
+
     init_db()
-    n = seed_demo_incidents()
-    if n:
-        print(f"Seeded {n} demo incidents")
+    demo_mode = os.getenv("DEMO_MODE", "true").lower() in {"1", "true", "yes"}
+    if demo_mode:
+        n = seed_demo_incidents()
+        if n:
+            print(f"Seeded {n} demo incidents (DEMO_MODE=true)")
     yield
 
 

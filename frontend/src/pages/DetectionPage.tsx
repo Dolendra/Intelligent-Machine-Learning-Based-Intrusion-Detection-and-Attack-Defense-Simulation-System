@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api, ExplainResult, PredictResult } from "../services/api";
 
 const ATTACK_OPTIONS = ["DDoS", "DoS", "PortScan", "BruteForce", "WebAttack", "Bot", "BENIGN"];
 
 export function DetectionPage() {
+  const navigate = useNavigate();
   const [attackHint, setAttackHint] = useState("DDoS");
   const [label, setLabel] = useState<string | null>(null);
   const [features, setFeatures] = useState<Record<string, number> | null>(null);
@@ -129,8 +131,31 @@ export function DetectionPage() {
                   </div>
                 </div>
               </div>
+              {result.certainty && (
+                <p className="mono muted">
+                  Certainty band: {result.certainty}
+                  {result.certainty === "uncertain" ? " — analyst review recommended" : ""}
+                </p>
+              )}
               {result.incident_id && (
                 <p className="mono muted">Logged as {result.incident_id}</p>
+              )}
+              {result.is_attack && (
+                <button
+                  className="btn btn-amber"
+                  onClick={async () => {
+                    try {
+                      const session = result.incident_id
+                        ? await api.simulateIncident(result.incident_id)
+                        : await api.startSim(result.attack_type, result.confidence, result.incident_id ?? undefined);
+                      navigate(`/simulation?session=${encodeURIComponent(session.id)}`);
+                    } catch (e) {
+                      setError(e instanceof Error ? e.message : String(e));
+                    }
+                  }}
+                >
+                  Simulate this incident
+                </button>
               )}
               <div>
                 <h4>Recommended defense</h4>
@@ -175,7 +200,8 @@ export function DetectionPage() {
           {activeExplain && (
             <>
               <p className="muted mono" style={{ fontSize: "0.78rem" }}>
-                Method: {(activeExplain.method ?? xaiTab).toUpperCase()}
+                  Method: {(activeExplain.actual_method ?? activeExplain.method ?? xaiTab).toUpperCase()}
+                  {activeExplain.fallback_used ? " (fallback — not pure SHAP)" : ""}
               </p>
               <p>{activeExplain.explanation}</p>
               {activeExplain.top_features.map((f) => (

@@ -3,31 +3,94 @@ import { api } from "../services/api";
 
 export function ReportsPage() {
   const [incidents, setIncidents] = useState<Array<Record<string, unknown>>>([]);
-  const [analytics, setAnalytics] = useState<Record<string, unknown> | null>(null);
+  const [analytics, setAnalytics] = useState<{
+    total_incidents: number;
+    by_severity: Record<string, number>;
+    by_attack_type: Record<string, number>;
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([api.incidents(), api.analytics()]).then(([i, a]) => {
-      setIncidents(i.items);
-      setAnalytics(a as unknown as Record<string, unknown>);
-    });
+    Promise.all([api.incidents(), api.analytics()])
+      .then(([i, a]) => {
+        setIncidents(i.items);
+        setAnalytics(a);
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : String(e)));
   }, []);
+
+  const total = analytics?.total_incidents ?? 0;
 
   return (
     <div className="rise">
       <div className="page-header">
         <div>
           <h2>Reports & Analytics</h2>
-          <p>Persisted incident history and severity distribution.</p>
+          <p>Persisted incident history from the IDS decision-support pipeline (not live packet capture).</p>
         </div>
       </div>
 
-      <div className="panel" style={{ marginBottom: "1rem" }}>
-        <pre className="mono" style={{ margin: 0, whiteSpace: "pre-wrap" }}>
-          {JSON.stringify(analytics, null, 2)}
-        </pre>
+      {error && (
+        <div className="panel" style={{ marginBottom: "1rem", borderColor: "rgba(227,93,106,.4)" }}>
+          {error}
+        </div>
+      )}
+
+      <div className="grid-stats">
+        <div className="stat">
+          <div className="label">Incidents</div>
+          <div className="value">{total}</div>
+        </div>
+        <div className="stat">
+          <div className="label">Critical</div>
+          <div className="value" style={{ color: "var(--danger)" }}>
+            {analytics?.by_severity?.CRITICAL ?? 0}
+          </div>
+        </div>
+        <div className="stat">
+          <div className="label">High</div>
+          <div className="value" style={{ color: "#ff9d5c" }}>
+            {analytics?.by_severity?.HIGH ?? 0}
+          </div>
+        </div>
+        <div className="stat">
+          <div className="label">Attack families</div>
+          <div className="value">{Object.keys(analytics?.by_attack_type ?? {}).length}</div>
+        </div>
+      </div>
+
+      <div className="split" style={{ marginBottom: "1rem" }}>
+        <section className="panel">
+          <h3 style={{ marginTop: 0 }}>Attack distribution</h3>
+          {Object.entries(analytics?.by_attack_type ?? {}).length === 0 && (
+            <p className="muted">No classified attacks logged yet.</p>
+          )}
+          {Object.entries(analytics?.by_attack_type ?? {}).map(([k, v]) => (
+            <div className="feature-bar" key={k}>
+              <span>{k}</span>
+              <div className="track">
+                <div className="fill" style={{ width: `${Math.min(100, (v / Math.max(1, total)) * 100)}%` }} />
+              </div>
+              <span className="mono muted">{v}</span>
+            </div>
+          ))}
+        </section>
+        <section className="panel">
+          <h3 style={{ marginTop: 0 }}>Severity distribution</h3>
+          {Object.entries(analytics?.by_severity ?? {}).map(([k, v]) => (
+            <div className="feature-bar" key={k}>
+              <span>{k}</span>
+              <div className="track">
+                <div className="fill" style={{ width: `${Math.min(100, (v / Math.max(1, total)) * 100)}%` }} />
+              </div>
+              <span className="mono muted">{v}</span>
+            </div>
+          ))}
+        </section>
       </div>
 
       <div className="panel">
+        <h3 style={{ marginTop: 0 }}>Incident table</h3>
         <table className="table">
           <thead>
             <tr>

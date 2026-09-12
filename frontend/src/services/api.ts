@@ -29,10 +29,15 @@ export type PredictResult = {
     disclaimer?: string;
   };
   incident_id: string | null;
+  certainty?: string;
+  threshold?: number;
 };
 
 export type ExplainResult = {
   method?: string;
+  requested_method?: string;
+  actual_method?: string;
+  fallback_used?: boolean;
   prediction: string;
   is_attack: boolean;
   confidence: number;
@@ -52,6 +57,10 @@ export type SimSession = {
   nodes: { id: string; label: string; kind: string; status: string }[];
   edges: { id: string; source: string; target: string; traffic: string; intensity: number }[];
   timeline: { event: string; state: string; detail: string }[];
+  narrative?: string[];
+  metrics?: Record<string, number>;
+  incident_id?: string | null;
+  disclaimer?: string;
 };
 
 export const api = {
@@ -72,14 +81,32 @@ export const api = {
     request<{ features: Record<string, number>; label: string | null }>(
       `/api/demo/flow${attackType ? `?attack_type=${encodeURIComponent(attackType)}` : ""}`
     ),
-  startSim: (attack_type: string, confidence = 0.96) =>
+  startSim: (attack_type: string, confidence = 0.96, incident_id?: string) =>
     request<SimSession>("/api/simulation/start", {
       method: "POST",
-      body: JSON.stringify({ attack_type, confidence }),
+      body: JSON.stringify({ attack_type, confidence, incident_id }),
+    }),
+  simulateIncident: (incident_id: string) =>
+    request<SimSession>(`/api/incidents/${encodeURIComponent(incident_id)}/simulate`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    }),
+  simulateFromPrediction: (payload: {
+    incident_id?: string;
+    attack_type?: string;
+    confidence?: number;
+    risk_score?: number;
+    severity?: string;
+  }) =>
+    request<SimSession>("/api/simulation/from-prediction", {
+      method: "POST",
+      body: JSON.stringify(payload),
     }),
   advanceSim: (session_id: string, action?: string) =>
     request<SimSession>("/api/simulation/advance", {
       method: "POST",
       body: JSON.stringify({ session_id, action }),
     }),
+  getSim: (session_id: string) =>
+    request<SimSession>(`/api/simulation/${encodeURIComponent(session_id)}`),
 };

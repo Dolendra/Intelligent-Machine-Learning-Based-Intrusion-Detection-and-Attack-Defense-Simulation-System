@@ -14,10 +14,9 @@ from database.db import Incident
 from explainability.shap_engine import ExplanationEngine
 from explainability.lime_engine import LimeExplanationEngine
 from ids_config import load_config, resolve_path
-from ml.prediction.predictor import IDSPredictor, PredictionResult
+from ml.prediction.predictor import FeatureValidationError, IDSPredictor, PredictionResult
 from security.recommendations.engine import recommend
 from security.risk.engine import compute_risk
-from simulation.engine.core import simulation_engine
 
 
 @lru_cache(maxsize=1)
@@ -60,18 +59,21 @@ def models_ready() -> bool:
     return get_predictor() is not None
 
 
-def run_prediction(features: dict[str, float], db: Session | None = None, persist: bool = True) -> dict[str, Any]:
+def run_prediction(
+    features: dict[str, float],
+    db: Session | None = None,
+    persist: bool = True,
+    allow_missing_features: bool = False,
+) -> dict[str, Any]:
     predictor = get_predictor()
     if predictor is None:
         raise RuntimeError("Models not trained. Run scripts/01_prepare_data.py and scripts/02_train_models.py")
 
-    pred: PredictionResult = predictor.predict_row(features)
+    pred: PredictionResult = predictor.predict_row(features, allow_missing=allow_missing_features)
     confidence = pred.multiclass_confidence if pred.is_attack else pred.binary_confidence
-    # Rough intensity proxy from flow rates when present
     intensity = None
-    for key in ("Flow Packets/s", "Flow Bytes/s", "Flow Packets/s".strip()):
+    for key in ("Flow Packets/s", "Flow Bytes/s"):
         if key in features:
-            # Normalize loosely into 0–1 for risk blend
             intensity = min(1.0, abs(float(features[key])) / 1e5)
             break
     risk = compute_risk(pred.attack_type, confidence, pred.is_attack, intensity)
@@ -104,10 +106,17 @@ def run_prediction(features: dict[str, float], db: Session | None = None, persis
         "severity": risk["severity"],
         "recommendation": rec,
         "incident_id": incident_id,
+        "certainty": pred.certainty,
+        "threshold": pred.threshold,
     }
 
 
-def run_explain(features: dict[str, float], top_k: int = 10, method: str = "shap") -> dict[str, Any]:
+def run_explain(
+    features: dict[str, float],
+    top_k: int = 10,
+    method: str = "shap",
+    allow_missing_features: bool = False,
+) -> dict[str, Any]:
     method = (method or "shap").lower().strip()
     if method == "lime":
         explainer = get_lime_explainer()
@@ -117,9 +126,44 @@ def run_explain(features: dict[str, float], top_k: int = 10, method: str = "shap
     explainer = get_explainer()
     if explainer is None:
         raise RuntimeError("Explainability engine unavailable — train models first.")
-    result = explainer.explain(features, top_k=top_k)
-    result.setdefault("method", "shap")
-    return result
+    return explainer.explain(features, top_k=top_k, allow_missing=allow_missing_features)
+
+
+def get_incident(db: Session, incident_id: str) -> dict[str, Any] | None:
+    row = db.query(Incident).filter(Incident.incident_code == incident_id).first()
+    if not row:
+        return None
+    return {
+        "incident_id": row.incident_code,
+        "created_at": row.created_at.isoformat() if row.created_at else None,
+        "attack_type": row.attack_type,
+        "confidence": row.confidence,
+        "risk_score": row.risk_score,
+        "severity": row.severity,
+        "recommendation": row.recommendation,
+        "status": row.status,
+    }
+
+
+def start_simulation_from_incident(db: Session, incident_id: str) -> dict[str, Any]:
+    from simulation.engine.core import simulation_engine
+
+    incident = get_incident(db, incident_id)
+    if incident is None:
+        raise KeyError(f"Unknown incident: {incident_id}")
+    session = simulation_engine.start(
+        attack_type=incident["attack_type"],
+        confidence=float(incident["confidence"] or 0.9),
+        incident_id=incident_id,
+        risk_score=float(incident["risk_score"] or 0),
+        severity=incident["severity"],
+        recommendation={"primary": incident["recommendation"], "actions": [incident["recommendation"]], "advisory_only": True},
+    )
+    row = db.query(Incident).filter(Incident.incident_code == incident_id).first()
+    if row:
+        row.status = "Simulating"
+        db.commit()
+    return session
 
 
 def list_incidents(db: Session, limit: int = 50) -> list[dict[str, Any]]:

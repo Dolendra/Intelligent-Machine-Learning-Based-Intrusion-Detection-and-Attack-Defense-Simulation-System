@@ -29,6 +29,7 @@ features:
 
 models:
   output_dir: "models/trained_models"
+  binary_threshold: 0.5
   binary:
     algorithms: ["logistic_regression", "decision_tree", "random_forest", "xgboost"]
   multiclass:

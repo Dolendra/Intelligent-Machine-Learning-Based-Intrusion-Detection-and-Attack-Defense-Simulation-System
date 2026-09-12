@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import {
   ReactFlow,
   Background,
@@ -15,13 +15,20 @@ type SimEdge = { id: string; source: string; target: string; traffic: string; in
 
 const POS: Record<string, { x: number; y: number }> = {
   attacker: { x: 40, y: 160 },
+  attacker2: { x: 40, y: 60 },
+  attacker3: { x: 40, y: 260 },
+  attacker4: { x: 40, y: 340 },
   internet: { x: 220, y: 160 },
   firewall: { x: 400, y: 160 },
-  router: { x: 580, y: 160 },
+  waf: { x: 520, y: 80 },
+  router: { x: 580, y: 200 },
   ids: { x: 580, y: 40 },
   server: { x: 780, y: 80 },
-  pc01: { x: 780, y: 180 },
-  pc02: { x: 780, y: 280 },
+  auth: { x: 780, y: 40 },
+  ports: { x: 780, y: 200 },
+  pc01: { x: 780, y: 260 },
+  pc02: { x: 780, y: 340 },
+  c2: { x: 940, y: 260 },
 };
 
 function statusColor(status: string) {
@@ -50,7 +57,7 @@ export function NetworkTopology({
     () =>
       nodes.map((n) => ({
         id: n.id,
-        position: POS[n.id] ?? { x: 0, y: 0 },
+        position: POS[n.id] ?? { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 },
         data: { label: `${n.label}\n${n.status}` },
         sourcePosition: Position.Right,
         targetPosition: Position.Left,
@@ -88,10 +95,6 @@ export function NetworkTopology({
       })),
     [edges]
   );
-
-  useEffect(() => {
-    // ensure react-flow measures after mount animations
-  }, [nodes, edges]);
 
   return (
     <div className="sim-canvas">

@@ -37,7 +37,7 @@ export function DashboardPage() {
       <div className="page-header">
         <div>
           <h2>Security Overview</h2>
-          <p>Live incident analytics from the IDS decision pipeline.</p>
+          <p>Incident analytics from the IDS decision-support pipeline (demo/prototype — not live packet capture).</p>
         </div>
         <Link className="btn btn-primary" to="/detection">
           Run detection
