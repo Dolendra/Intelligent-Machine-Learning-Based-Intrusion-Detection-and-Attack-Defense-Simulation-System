@@ -98,6 +98,49 @@ def campaign_summary(db: Session, campaign_id: str) -> dict[str, Any]:
         "campaign_id": campaign_id,
         "incident_count": len(rows),
         "attack_types": sorted({r.attack_type for r in rows if r.attack_type}),
+        "progression": [r.attack_type for r in rows if r.attack_type],
         "max_risk": max((float(r.risk_score or 0) for r in rows), default=0.0),
-        "incidents": [r.incident_code for r in rows],
+        "max_severity": max((r.severity or "LOW" for r in rows), key=severity_rank, default="LOW"),
+        "incidents": [
+            {
+                "incident_id": r.incident_code,
+                "attack_type": r.attack_type,
+                "risk_score": r.risk_score,
+                "severity": r.severity,
+                "status": r.status,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+            }
+            for r in rows
+        ],
     }
+
+
+def list_campaigns(db: Session, limit: int = 30) -> list[dict[str, Any]]:
+    rows = (
+        db.query(Incident)
+        .filter(Incident.campaign_id.isnot(None))
+        .order_by(Incident.created_at.desc())
+        .limit(500)
+        .all()
+    )
+    by_id: dict[str, list[Incident]] = {}
+    for r in rows:
+        cid = r.campaign_id
+        if not cid:
+            continue
+        by_id.setdefault(cid, []).append(r)
+    items = []
+    for cid, group in by_id.items():
+        group_sorted = sorted(group, key=lambda x: x.created_at or datetime.min.replace(tzinfo=timezone.utc))
+        items.append(
+            {
+                "campaign_id": cid,
+                "incident_count": len(group_sorted),
+                "attack_types": sorted({g.attack_type for g in group_sorted if g.attack_type}),
+                "progression": [g.attack_type for g in group_sorted if g.attack_type],
+                "max_risk": max((float(g.risk_score or 0) for g in group_sorted), default=0.0),
+                "latest_at": group_sorted[-1].created_at.isoformat() if group_sorted[-1].created_at else None,
+            }
+        )
+    items.sort(key=lambda x: x.get("latest_at") or "", reverse=True)
+    return items[:limit]

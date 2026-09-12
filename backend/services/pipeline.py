@@ -196,6 +196,8 @@ def _enrich_prediction(
         "risk_score": risk["risk_score"],
         "severity": risk["severity"],
         "risk_factors": factors,
+        "risk_contributions": risk.get("contributions"),
+        "risk_why": risk.get("why"),
         "recommendation": rec,
         "certainty": pred.certainty,
         "threshold": pred.threshold,

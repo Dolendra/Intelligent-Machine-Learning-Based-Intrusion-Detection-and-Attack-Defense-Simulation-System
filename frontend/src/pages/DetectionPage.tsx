@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api, BatchPredictResult, ExplainResult, PredictResult } from "../services/api";
 
 const ATTACK_OPTIONS = ["DDoS", "DoS", "PortScan", "BruteForce", "WebAttack", "Bot", "BENIGN"];
@@ -249,8 +249,26 @@ export function DetectionPage() {
                   {result.certainty === "uncertain" ? " — analyst review recommended" : ""}
                 </p>
               )}
+              {result.risk_why && (
+                <div>
+                  <h4 style={{ marginBottom: "0.35rem" }}>Why this risk?</h4>
+                  <p style={{ marginTop: 0 }}>{result.risk_why}</p>
+                  {result.risk_contributions && (
+                    <ul className="muted" style={{ marginTop: 0 }}>
+                      {Object.entries(result.risk_contributions).map(([k, v]) => (
+                        <li key={k}>
+                          {k}: <span className="mono">{v}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
               {result.incident_id && (
-                <p className="mono muted">Logged as {result.incident_id}</p>
+                <p className="mono muted">
+                  Logged as{" "}
+                  <Link to={`/incidents/${encodeURIComponent(result.incident_id)}`}>{result.incident_id}</Link>
+                </p>
               )}
               {result.is_attack && (
                 <button

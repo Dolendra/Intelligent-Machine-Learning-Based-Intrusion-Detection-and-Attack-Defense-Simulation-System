@@ -69,6 +69,13 @@ def compute_risk(
                 "intensity": w_int,
                 "asset_criticality": w_asset,
             },
+            "contributions": {
+                "attack_severity": 0.0,
+                "confidence": 0.0,
+                "traffic_intensity": 0.0,
+                "asset_criticality": 0.0,
+            },
+            "why": "Risk 0 — traffic classified as BENIGN",
         }
 
     base_map = cfg["risk"]["attack_base"]
@@ -89,6 +96,12 @@ def compute_risk(
         + w_asset * (asset_01 * 100.0)
     )
     score = round(max(0.0, min(100.0, score)), 1)
+    contributions = {
+        "attack_severity": round(w_base * base, 1),
+        "confidence": round(w_conf * (conf * 100.0), 1),
+        "traffic_intensity": round(w_int * (intensity * 100.0), 1),
+        "asset_criticality": round(w_asset * (asset_01 * 100.0), 1),
+    }
 
     return {
         "risk_score": score,
@@ -105,4 +118,11 @@ def compute_risk(
             "intensity": w_int,
             "asset_criticality": w_asset,
         },
+        "contributions": contributions,
+        "why": (
+            f"Risk {score} = attack {contributions['attack_severity']} "
+            f"+ confidence {contributions['confidence']} "
+            f"+ intensity {contributions['traffic_intensity']} "
+            f"+ asset {contributions['asset_criticality']}"
+        ),
     }

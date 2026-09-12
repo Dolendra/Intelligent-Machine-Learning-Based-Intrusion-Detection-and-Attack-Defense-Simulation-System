@@ -10,6 +10,8 @@ export function IncidentDetailPage() {
     title: string;
     steps: Array<{ stage: string; title: string; detail: string; timestamp?: string }>;
   } | null>(null);
+  const [notes, setNotes] = useState("");
+  const [defense, setDefense] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -21,6 +23,8 @@ export function IncidentDetailPage() {
     ]);
     setItem(data);
     setTrace(tr);
+    setNotes(String(data.analyst_notes ?? ""));
+    setDefense(String(data.defense_action ?? ""));
   }
 
   useEffect(() => {
@@ -32,10 +36,30 @@ export function IncidentDetailPage() {
     setBusy(true);
     setError(null);
     try {
-      const updated = await api.updateIncident(incidentId, status);
+      const updated = await api.updateIncident(incidentId, status, {
+        analyst_notes: notes || undefined,
+        defense_action: defense || undefined,
+      });
       setItem(updated);
       const tr = await api.incidentTrace(incidentId).catch(() => null);
       setTrace(tr);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveInvestigation() {
+    if (!incidentId || !item) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const updated = await api.updateIncident(incidentId, String(item.status), {
+        analyst_notes: notes,
+        defense_action: defense,
+      });
+      setItem(updated);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -106,11 +130,40 @@ export function IncidentDetailPage() {
             </div>
             <p>
               <span className={`badge ${String(item.severity).toLowerCase()}`}>{String(item.severity)}</span>
-              {item.campaign_id ? <span className="mono muted"> · {String(item.campaign_id)}</span> : null}
+              {item.campaign_id ? (
+                <Link className="mono muted" to={`/campaigns/${encodeURIComponent(String(item.campaign_id))}`}>
+                  {" "}
+                  · {String(item.campaign_id)}
+                </Link>
+              ) : null}
             </p>
             <p>
               <strong>Recommendation:</strong> {String(item.recommendation)}
             </p>
+
+            <label className="muted">
+              Analyst notes
+              <textarea
+                className="select"
+                style={{ width: "100%", minHeight: "4.5rem", display: "block", marginTop: "0.35rem" }}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </label>
+            <label className="muted">
+              Defense action
+              <input
+                className="select"
+                style={{ width: "100%", display: "block", marginTop: "0.35rem" }}
+                value={defense}
+                onChange={(e) => setDefense(e.target.value)}
+                placeholder="e.g. rate-limit applied (advisory)"
+              />
+            </label>
+            <button className="btn btn-secondary" disabled={busy} onClick={() => void saveInvestigation()}>
+              Save investigation
+            </button>
+
             <div className="row">
               <button className="btn btn-amber" onClick={() => void simulate()} disabled={busy}>
                 Simulate

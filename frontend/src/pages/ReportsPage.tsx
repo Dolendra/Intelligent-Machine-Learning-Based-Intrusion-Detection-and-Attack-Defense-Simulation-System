@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../services/api";
 
@@ -12,6 +12,10 @@ export function ReportsPage() {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [sevFilter, setSevFilter] = useState("ALL");
+  const [attackFilter, setAttackFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [campaignFilter, setCampaignFilter] = useState("ALL");
 
   async function refresh() {
     const [i, a] = await Promise.all([api.incidents(), api.analytics()]);
@@ -35,6 +39,34 @@ export function ReportsPage() {
       setBusyId(null);
     }
   }
+
+  const attackOptions = useMemo(
+    () => Array.from(new Set(incidents.map((r) => String(r.attack_type)))).sort(),
+    [incidents]
+  );
+  const statusOptions = useMemo(
+    () => Array.from(new Set(incidents.map((r) => String(r.status)))).sort(),
+    [incidents]
+  );
+  const campaignOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(incidents.map((r) => String(r.campaign_id || "")).filter(Boolean))
+      ).sort(),
+    [incidents]
+  );
+
+  const filtered = useMemo(
+    () =>
+      incidents.filter((r) => {
+        if (sevFilter !== "ALL" && String(r.severity) !== sevFilter) return false;
+        if (attackFilter !== "ALL" && String(r.attack_type) !== attackFilter) return false;
+        if (statusFilter !== "ALL" && String(r.status) !== statusFilter) return false;
+        if (campaignFilter !== "ALL" && String(r.campaign_id || "") !== campaignFilter) return false;
+        return true;
+      }),
+    [incidents, sevFilter, attackFilter, statusFilter, campaignFilter]
+  );
 
   const total = analytics?.total_incidents ?? 0;
 
@@ -130,7 +162,46 @@ export function ReportsPage() {
       </div>
 
       <div className="panel">
-        <h3 style={{ marginTop: 0 }}>Incident table</h3>
+        <div className="row" style={{ justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem" }}>
+          <h3 style={{ margin: 0 }}>Incident table</h3>
+          <div className="row" style={{ flexWrap: "wrap" }}>
+            <select className="select" value={sevFilter} onChange={(e) => setSevFilter(e.target.value)}>
+              <option value="ALL">All severities</option>
+              {["CRITICAL", "HIGH", "MEDIUM", "LOW"].map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            <select className="select" value={attackFilter} onChange={(e) => setAttackFilter(e.target.value)}>
+              <option value="ALL">All attacks</option>
+              {attackOptions.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            <select className="select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="ALL">All statuses</option>
+              {statusOptions.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            <select className="select" value={campaignFilter} onChange={(e) => setCampaignFilter(e.target.value)}>
+              <option value="ALL">All campaigns</option>
+              {campaignOptions.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <p className="muted mono">
+          Showing {filtered.length} / {incidents.length}
+        </p>
         <table className="table">
           <thead>
             <tr>
@@ -139,26 +210,31 @@ export function ReportsPage() {
               <th>Attack</th>
               <th>Severity</th>
               <th>Risk</th>
+              <th>Campaign</th>
               <th>Recommendation</th>
               <th>Status</th>
               <th>Advance</th>
             </tr>
           </thead>
           <tbody>
-            {incidents.map((r) => {
+            {filtered.map((r) => {
               const id = String(r.incident_id);
               const next = (r.allowed_next_statuses as string[] | undefined) ?? [];
+              const camp = r.campaign_id ? String(r.campaign_id) : "";
               return (
                 <tr key={id}>
                   <td className="mono">
-                  <Link to={`/incidents/${id}`}>{id}</Link>
-                </td>
+                    <Link to={`/incidents/${id}`}>{id}</Link>
+                  </td>
                   <td className="mono muted">{String(r.created_at ?? "")}</td>
                   <td>{String(r.attack_type)}</td>
                   <td>
                     <span className={`badge ${String(r.severity).toLowerCase()}`}>{String(r.severity)}</span>
                   </td>
                   <td className="mono">{String(r.risk_score)}</td>
+                  <td className="mono">
+                    {camp ? <Link to={`/campaigns/${encodeURIComponent(camp)}`}>{camp}</Link> : "—"}
+                  </td>
                   <td>{String(r.recommendation)}</td>
                   <td>{String(r.status)}</td>
                   <td>

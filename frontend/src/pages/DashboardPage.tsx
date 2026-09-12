@@ -209,7 +209,11 @@ export function DashboardPage() {
               )}
               {incidents.slice(0, 8).map((row) => (
                 <tr key={String(row.incident_id)}>
-                  <td className="mono">{String(row.incident_id)}</td>
+                  <td className="mono">
+                    <Link to={`/incidents/${encodeURIComponent(String(row.incident_id))}`}>
+                      {String(row.incident_id)}
+                    </Link>
+                  </td>
                   <td>{String(row.attack_type)}</td>
                   <td>
                     <span className={`badge ${severityClass(String(row.severity))}`}>
@@ -221,10 +225,27 @@ export function DashboardPage() {
               ))}
             </tbody>
           </table>
+          <Link className="btn btn-secondary" to="/reports" style={{ marginTop: "0.75rem" }}>
+            View all incidents →
+          </Link>
         </section>
 
         <section className="panel stack">
-          <h3 style={{ marginTop: 0 }}>Attack mix</h3>
+          <h3 style={{ marginTop: 0 }}>Risk distribution</h3>
+          {(["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const).map((sev) => {
+            const v = analytics?.by_severity?.[sev] ?? 0;
+            const pct = Math.min(100, (v / Math.max(1, analytics?.total_incidents || 1)) * 100);
+            return (
+              <div key={sev} className="feature-bar">
+                <span>{sev}</span>
+                <div className="track">
+                  <div className="fill" style={{ width: `${pct}%` }} />
+                </div>
+                <span className="mono muted">{v}</span>
+              </div>
+            );
+          })}
+          <h3>Attack mix</h3>
           {Object.entries(analytics?.by_attack_type ?? {}).length === 0 && (
             <p className="muted">Waiting for classified attacks.</p>
           )}

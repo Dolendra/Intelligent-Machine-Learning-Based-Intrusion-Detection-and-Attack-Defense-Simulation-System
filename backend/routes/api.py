@@ -183,6 +183,13 @@ def assets_list():
     return {"items": list_assets()}
 
 
+@router.get("/campaigns")
+def campaigns_list(limit: int = 30, db: Session = Depends(get_db)):
+    from security.correlation import list_campaigns
+
+    return {"items": list_campaigns(db, limit=limit)}
+
+
 @router.get("/campaigns/{campaign_id}")
 def campaign_detail(campaign_id: str, db: Session = Depends(get_db)):
     from security.correlation import campaign_summary

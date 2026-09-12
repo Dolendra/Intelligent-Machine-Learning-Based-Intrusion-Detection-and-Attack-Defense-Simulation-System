@@ -27,6 +27,7 @@ export function AppLayout() {
           <NavLink to="/detection">Detection</NavLink>
           <NavLink to="/simulation">Simulation</NavLink>
           <NavLink to="/reports">Reports</NavLink>
+          <NavLink to="/campaigns">Campaigns</NavLink>
           <NavLink to="/models">Models</NavLink>
         </nav>
         <div className="status-pill" style={{ marginTop: "auto" }}>

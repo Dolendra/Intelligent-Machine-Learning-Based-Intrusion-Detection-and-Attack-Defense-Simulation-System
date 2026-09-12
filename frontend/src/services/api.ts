@@ -34,6 +34,8 @@ export type PredictResult = {
   certainty?: string;
   threshold?: number;
   risk_factors?: Record<string, number>;
+  risk_contributions?: Record<string, number>;
+  risk_why?: string;
   decision_trace?: {
     title: string;
     advisory_only?: boolean;
@@ -111,6 +113,9 @@ export const api = {
   models: () => request<Record<string, unknown>>("/api/models"),
   modelsComparison: () => request<Record<string, unknown>>("/api/models/comparison"),
   assets: () => request<{ items: Array<Record<string, unknown>> }>("/api/assets"),
+  campaigns: () => request<{ items: Array<Record<string, unknown>> }>("/api/campaigns"),
+  getCampaign: (campaign_id: string) =>
+    request<Record<string, unknown>>(`/api/campaigns/${encodeURIComponent(campaign_id)}`),
   analytics: () =>
     request<{ total_incidents: number; by_severity: Record<string, number>; by_attack_type: Record<string, number> }>(
       "/api/analytics"
