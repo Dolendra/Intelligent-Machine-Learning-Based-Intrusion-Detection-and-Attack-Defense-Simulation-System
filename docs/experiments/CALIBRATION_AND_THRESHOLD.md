@@ -8,13 +8,29 @@ Artifacts:
 - `models/trained_models/threshold_sweep.json`
 - `models/trained_models/calibration_hpo_experiment.json`
 
-## Threshold / uncertainty
+## Model performance vs operating point
+
+These are **separate** research products:
+
+1. **Model performance** — Decision Tree / Random Forest metrics in `training_report.json` under the evaluation protocol used during training/selection.
+2. **Operating point** — Threshold selected afterward from the validation probability sweep (`threshold_operating_point.json`). F1 numbers in the threshold section can therefore differ slightly from the training-report defaults.
+
+Do not treat every F1 figure in the report as interchangeable without checking which protocol produced it.
+
+## Threshold / confidence band
 
 1. Run `python scripts/15_threshold_optimization.py` **after** each binary retrain
 2. Selection rule:
    - Prefer validation thresholds with **recall ≥ 0.95**
    - Among those, maximize **F1**, then prefer lower **FPR**
 3. Predictor loads `threshold_operating_point.json` at startup (config.yaml is fallback only).
+
+Terminology used in the UI:
+
+- **Attack decision threshold** (0.85): `p >= threshold` → classified as attack
+- **Confidence band** [0.10, 0.95]: review semantics (`Likely benign` / `Ambiguous/review` / `High-confidence attack`)
+
+So an attack with p=0.90 can correctly show **ATTACK** + **Ambiguous/review**.
 
 ### Conclusion (post Stage-2 freeze retrain)
 

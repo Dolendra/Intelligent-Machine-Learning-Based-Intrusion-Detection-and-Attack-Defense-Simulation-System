@@ -31,6 +31,14 @@ from simulation.engine.core import simulation_engine
 router = APIRouter()
 
 
+def _demo_allow_missing(requested: bool) -> bool:
+    """Missing features are demo-only; never honor the flag outside DEMO_MODE."""
+    import os
+
+    demo = os.getenv("DEMO_MODE", "false").lower() in {"1", "true", "yes"}
+    return bool(requested) and demo
+
+
 @router.get("/health", response_model=HealthResponse)
 def health():
     cfg = load_config()
@@ -100,11 +108,8 @@ def drift():
 
 @router.post("/predict", response_model=PredictResponse)
 def predict(body: PredictRequest, db: Session = Depends(get_db)):
-    import os
-
     # Strict by default; allow_missing only when DEMO_MODE explicitly enables demos
-    demo = os.getenv("DEMO_MODE", "false").lower() in {"1", "true", "yes"}
-    allow_missing = bool(body.allow_missing_features) and demo
+    allow_missing = _demo_allow_missing(body.allow_missing_features)
     try:
         result = svc.run_prediction(
             body.features,
@@ -124,12 +129,13 @@ def predict(body: PredictRequest, db: Session = Depends(get_db)):
 
 @router.post("/predict/batch")
 def predict_batch(body: BatchPredictRequest, db: Session = Depends(get_db)):
+    allow_missing = _demo_allow_missing(body.allow_missing_features)
     try:
         return svc.run_prediction_batch(
             body.flows,
             db=db,
             persist=body.persist,
-            allow_missing_features=body.allow_missing_features,
+            allow_missing_features=allow_missing,
             asset_criticality=body.asset_criticality,
         )
     except FeatureValidationError as exc:
@@ -148,13 +154,14 @@ async def predict_batch_csv(
     db: Session = Depends(get_db),
 ):
     raw = await file.read()
+    allow_missing = _demo_allow_missing(allow_missing_features)
     try:
         flows = svc.parse_flows_csv(raw)
         return svc.run_prediction_batch(
             flows,
             db=db,
             persist=persist,
-            allow_missing_features=allow_missing_features,
+            allow_missing_features=allow_missing,
         )
     except FeatureValidationError as exc:
         raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
@@ -166,12 +173,13 @@ async def predict_batch_csv(
 
 @router.post("/explain")
 def explain(body: ExplainRequest):
+    allow_missing = _demo_allow_missing(body.allow_missing_features)
     try:
         return svc.run_explain(
             body.features,
             top_k=body.top_k,
             method=body.method,
-            allow_missing_features=body.allow_missing_features,
+            allow_missing_features=allow_missing,
         )
     except FeatureValidationError as exc:
         raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
@@ -181,10 +189,11 @@ def explain(body: ExplainRequest):
 
 @router.post("/explain/counterfactual")
 def explain_counterfactual(body: ExplainRequest):
+    allow_missing = _demo_allow_missing(body.allow_missing_features)
     try:
         return svc.run_counterfactual(
             body.features,
-            allow_missing_features=body.allow_missing_features,
+            allow_missing_features=allow_missing,
             max_edits=min(8, max(1, body.top_k)),
         )
     except FeatureValidationError as exc:

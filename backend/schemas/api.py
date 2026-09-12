@@ -38,13 +38,21 @@ class PredictResponse(BaseModel):
     recommendation: dict[str, Any]
     incident_id: str | None = None
     certainty: str | None = None
+    confidence_band: str | None = None
+    confidence_band_label: str | None = None
     threshold: float | None = None
+    uncertainty_lower: float | None = None
+    uncertainty_upper: float | None = None
+    threshold_note: str | None = None
     risk_factors: dict[str, Any] | None = None
+    risk_contributions: dict[str, Any] | None = None
+    risk_why: str | None = None
     deduplicated: bool | None = None
     source_ref: str | None = None
     campaign_id: str | None = None
     escalated: bool | None = None
     decision_trace: dict[str, Any] | None = None
+    intensity_method: str | None = None
 
 
 class BatchPredictRequest(BaseModel):

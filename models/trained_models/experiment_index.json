@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-12T19:05:51.932951+00:00",
-  "git_commit": "c99d2d3",
+  "generated_at": "2026-09-12T19:14:56.174373+00:00",
+  "git_commit": "98e5376",
   "model_version": "1.1.0",
   "experiments": [
     {
@@ -9,7 +9,7 @@
       "artifact": "training_report.json",
       "present": true,
       "path": "D:\\IDS-Project\\models\\trained_models\\training_report.json",
-      "intended_conclusion": "Model selection + test metrics"
+      "intended_conclusion": "Model selection + IID test metrics"
     },
     {
       "experiment_id": "EXP-002",
@@ -22,18 +22,18 @@
     {
       "experiment_id": "EXP-003",
       "name": "calibration_hpo",
-      "artifact": "calibration_hpo_report.json",
-      "present": false,
-      "path": null,
+      "artifact": "calibration_hpo_experiment.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\calibration_hpo_experiment.json",
       "intended_conclusion": "Calibration / HPO sample experiment"
     },
     {
       "experiment_id": "EXP-004",
       "name": "threshold",
-      "artifact": "threshold_sweep.json",
+      "artifact": "threshold_operating_point.json",
       "present": true,
-      "path": "D:\\IDS-Project\\models\\trained_models\\threshold_sweep.json",
-      "intended_conclusion": "Operating threshold + uncertainty bands"
+      "path": "D:\\IDS-Project\\models\\trained_models\\threshold_operating_point.json",
+      "intended_conclusion": "Operating threshold + confidence bands"
     },
     {
       "experiment_id": "EXP-005",
@@ -65,7 +65,7 @@
       "artifact": "drift_report.json",
       "present": true,
       "path": "D:\\IDS-Project\\models\\trained_models\\drift_report.json",
-      "intended_conclusion": "Feature/label drift vs train"
+      "intended_conclusion": "Feature/label drift vs train (IID)"
     },
     {
       "experiment_id": "EXP-009",
@@ -98,6 +98,38 @@
       "present": true,
       "path": "D:\\IDS-Project\\models\\trained_models\\global_shap_summary.json",
       "intended_conclusion": "Global + attack-specific importance"
+    },
+    {
+      "experiment_id": "EXP-013",
+      "name": "temporal_holdout",
+      "artifact": "temporal_holdout_report.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\temporal_holdout_report.json",
+      "intended_conclusion": "Day-aware Friday holdout vs IID"
+    },
+    {
+      "experiment_id": "EXP-014",
+      "name": "model_metadata",
+      "artifact": "model_metadata.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\model_metadata.json",
+      "intended_conclusion": "Git/config/package reproducibility metadata"
+    },
+    {
+      "experiment_id": "EXP-015",
+      "name": "intensity_reference",
+      "artifact": "intensity_reference.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\intensity_reference.json",
+      "intended_conclusion": "Train percentile intensity reference"
+    },
+    {
+      "experiment_id": "EXP-016",
+      "name": "experiment_index",
+      "artifact": "experiment_index.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\experiment_index.json",
+      "intended_conclusion": "Unified experiment catalog"
     }
   ],
   "note": "Index of research artifacts \u2014 run the corresponding scripts to populate missing files."

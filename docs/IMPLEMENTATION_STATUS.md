@@ -1,27 +1,30 @@
 # Implementation status (honest inventory)
 
-Last updated after **final freeze**: Stage-2 retrain (attack-only multiclass), deterministic simulation time, Research Results page, artifact consistency tests.
+Last updated after submission polish (README dataset honesty, DEMO_MODE batch gate, confidence-band wording, temporal holdout, requirements-lock).
 
-## Freeze package
+## Freeze + polish
 
-- Multiclass `classes_` / `attack_label_encoder`: **Bot, BruteForce, DDoS, DoS, PortScan, WebAttack** — **no BENIGN**
-- Binary best: **decision_tree**; Multiclass best: **random_forest**
-- Operating threshold **0.85**, uncertainty **[0.10, 0.95]** (regenerated after retrain)
-- Calibration remains **disabled** (prior research decision)
-- Simulation uses **deterministic `simulation_time`** (not wall-clock)
-- Research Results UI + experiment conclusions panels
-- Artifact consistency + SHAP alignment + golden-path E2E tests
+- Stage-2 attack-only multiclass (no BENIGN); Decision Tree + Random Forest
+- Threshold **0.85**, confidence band **[0.10, 0.95]** — UI distinguishes attack threshold vs review band
+- Calibration disabled (research decision)
+- README clarifies raw CICIDS2017 is **not** in Git
+- `/predict`, `/predict/batch`, `/predict/batch/csv` (and explain) honor `allow_missing` only under `DEMO_MODE`
+- Simulation disclaimer: defense effectiveness = **assumptions**, not measured rates
+- Temporal/day-aware holdout: `scripts/25_temporal_holdout_eval.py` → `temporal_holdout_report.json`
+- `requirements-lock.txt` pins freeze environment versions
+- Experiment index expanded through EXP-016
 
-## Partially / optional
+## Academic wording reminders
 
-- Browser Playwright journey (API golden-path already covers the loop)
-- CSE-CIC-IDS2018 external metrics require compatible CSVs
+- Report **IID stratified** metrics separately from **temporal/Friday holdout** metrics
+- Drift: no feature exceeded PSI ≥ 0.2 on train→IID test — not “no drift exists”
+- docker-compose uses `DEMO_MODE=true` for demos only
+
+## Optional leftovers
+
+- Playwright browser journeys
+- CSE-CIC-IDS2018 external validation (needs compatible CSVs)
 
 ## Not implemented (do not claim)
 
 - Live packet capture / auto-mitigation / OAuth SSO
-
-## Academic wording
-
-Prefer: **ML-based intrusion detection prototype**, **controlled attack–defense simulation**, **decision-support recommendations**.  
-For drift: state that **no feature exceeded PSI ≥ 0.2 on the train→IID test split** — not “there is no data drift.”

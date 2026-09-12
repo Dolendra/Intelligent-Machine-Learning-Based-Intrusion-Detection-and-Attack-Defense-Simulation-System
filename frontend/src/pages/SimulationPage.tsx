@@ -442,6 +442,10 @@ export function SimulationPage() {
                   {session.disclaimer}
                 </p>
               )}
+              <p className="muted" style={{ fontSize: "0.85rem" }}>
+                Defense effectiveness values are <strong>simulation assumptions</strong> for comparative
+                visualization, not empirically measured real-world mitigation rates.
+              </p>
               <div>
                 <h4>Recommendation</h4>
                 <p style={{ marginTop: 0 }}>{session.recommendation.primary}</p>

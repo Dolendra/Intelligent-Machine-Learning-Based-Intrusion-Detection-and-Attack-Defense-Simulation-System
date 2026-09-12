@@ -200,10 +200,21 @@ def _enrich_prediction(
         "risk_why": risk.get("why"),
         "recommendation": rec,
         "certainty": pred.certainty,
+        "confidence_band": pred.certainty,
+        "confidence_band_label": {
+            "likely_benign": "Likely benign",
+            "uncertain": "Ambiguous / review",
+            "likely_attack": "High-confidence attack",
+        }.get(pred.certainty, pred.certainty),
         "threshold": pred.threshold,
         "uncertainty_lower": pred.uncertainty_lower,
         "uncertainty_upper": pred.uncertainty_upper,
         "intensity_method": intensity_meta["method"],
+        "threshold_note": (
+            "Attack decision uses operating threshold; "
+            "confidence_band is a separate review band and may mark ATTACK rows as Ambiguous/review "
+            "when probability is between the band edges."
+        ),
     }
 
 

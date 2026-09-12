@@ -122,7 +122,9 @@ class SimulationSession:
             "advisory_only": True,
             "disclaimer": (
                 "Controlled visualization only — not a real attack or live network control. "
-                "Phase timings use deterministic simulation_time (not wall-clock)."
+                "Phase timings use deterministic simulation_time (not wall-clock). "
+                "Defense effectiveness values are simulation assumptions for comparative "
+                "visualization, not empirically measured real-world mitigation rates."
             ),
         }
 

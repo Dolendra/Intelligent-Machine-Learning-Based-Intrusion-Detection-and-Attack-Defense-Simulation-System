@@ -6,20 +6,32 @@
 
 [![CI](https://github.com/Dolendra/Intelligent-Machine-Learning-Based-Intrusion-Detection-and-Attack-Defense-Simulation-System/actions/workflows/ci.yml/badge.svg)](https://github.com/Dolendra/Intelligent-Machine-Learning-Based-Intrusion-Detection-and-Attack-Defense-Simulation-System/actions/workflows/ci.yml)
 
-## Dataset already in this repo
+## Dataset (not shipped in Git)
 
-| Folder | Role |
-|--------|------|
-| `MachineLearningCVE/` | **Primary** — CICIDS2017 flow features for ML |
-| `TrafficLabelling/` | Alternate labelled export (not required for training) |
+**Dataset:** CICIDS2017 (MachineLearningCVE flow CSVs).
 
-Default training uses **full dataset** (`sample_frac: 1.0`) and drops rare classes (`min_class_count: 50`).
+Raw CICIDS2017 files are **intentionally excluded** from this repository (size / distribution considerations). `.gitignore` excludes `MachineLearningCVE/` and `TrafficLabelling/`. Processed Parquet under `data/processed/` is also ignored except `.gitkeep`.
+
+**Before preprocessing / training:**
+
+1. Download the official CICIDS2017 **MachineLearningCVE** CSV exports.
+2. Place them in `MachineLearningCVE/` at the repo root (filenames like `Monday-WorkingHours.pcap_ISCX.csv`, …).
+3. Then run:
+
+```bash
+python scripts/01_prepare_data.py
+python scripts/02_train_models.py
+```
+
+Default training uses the full prepared dataset (`sample_frac: 1.0`) and drops rare classes (`min_class_count: 50`). Trained joblibs under `models/trained_models/` are included for demos when present.
 
 ## Quick start (local)
 
 ```bash
 python -m pip install -r requirements.txt
-python scripts/01_prepare_data.py      # once (full CICIDS2017)
+# For freeze-reproducible installs matching metadata package versions:
+# python -m pip install -r requirements-lock.txt
+python scripts/01_prepare_data.py      # once (requires MachineLearningCVE/ CSVs)
 python scripts/02_train_models.py      # once
 python scripts/05_plot_evaluation.py   # report figures → models/trained_models/figures/
 
@@ -39,6 +51,8 @@ cd frontend && npm install && npm run dev
 - Optional env overrides: copy `.env.example` → `.env`
 
 ### Docker (after models are trained)
+
+`docker-compose.yml` is a **demonstration** configuration (`DEMO_MODE=true` for convenience). Production-like runs should leave `DEMO_MODE=false` (API default) and prefer `.env` / hardened settings from `.env.example`.
 
 ```bash
 docker compose up --build

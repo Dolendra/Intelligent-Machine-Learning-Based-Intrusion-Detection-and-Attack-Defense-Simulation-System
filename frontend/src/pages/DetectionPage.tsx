@@ -200,7 +200,7 @@ export function DetectionPage() {
                 <th>Confidence</th>
                 <th>Risk</th>
                 <th>Severity</th>
-                <th>Certainty</th>
+                <th>Confidence band</th>
               </tr>
             </thead>
             <tbody>
@@ -213,7 +213,7 @@ export function DetectionPage() {
                   <td>
                     <span className={`badge ${r.severity.toLowerCase()}`}>{r.severity}</span>
                   </td>
-                  <td className="mono muted">{r.certainty ?? "—"}</td>
+                  <td className="mono muted">{r.confidence_band_label ?? r.certainty ?? "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -249,24 +249,46 @@ export function DetectionPage() {
                   </div>
                 </div>
               </div>
-              {result.certainty && (
-                <p className="mono muted">
-                  Certainty band: {result.certainty}
-                  {result.certainty === "uncertain" ? " — analyst review recommended" : ""}
-                </p>
+              {(result.confidence_band_label || result.certainty) && (
+                <div>
+                  <p className="mono muted" style={{ marginBottom: "0.25rem" }}>
+                    Confidence band: {result.confidence_band_label ?? result.certainty}
+                    {(result.confidence_band ?? result.certainty) === "uncertain"
+                      ? " — analyst review recommended"
+                      : ""}
+                  </p>
+                  <p className="mono muted" style={{ fontSize: "0.78rem", marginTop: 0 }}>
+                    Attack decision threshold: {result.threshold ?? "—"} · Band: [
+                    {result.uncertainty_lower ?? "—"}, {result.uncertainty_upper ?? "—"}]
+                  </p>
+                  {result.threshold_note ? (
+                    <p className="muted" style={{ fontSize: "0.8rem" }}>
+                      {result.threshold_note}
+                    </p>
+                  ) : null}
+                </div>
               )}
               {result.risk_why && (
                 <div>
                   <h4 style={{ marginBottom: "0.35rem" }}>Why this risk?</h4>
                   <p style={{ marginTop: 0 }}>{result.risk_why}</p>
                   {result.risk_contributions && (
-                    <ul className="muted" style={{ marginTop: 0 }}>
-                      {Object.entries(result.risk_contributions).map(([k, v]) => (
-                        <li key={k}>
-                          {k}: <span className="mono">{v}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>Component</th>
+                          <th>Contribution</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(result.risk_contributions).map(([k, v]) => (
+                          <tr key={k}>
+                            <td>{k}</td>
+                            <td className="mono">{v}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   )}
                 </div>
               )}

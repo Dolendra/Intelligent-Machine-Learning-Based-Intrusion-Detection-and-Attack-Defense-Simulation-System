@@ -77,7 +77,7 @@ export function ResearchPage() {
           </div>
         </div>
         <div className="stat">
-          <div className="label">Uncertainty</div>
+          <div className="label">Confidence band</div>
           <div className="value" style={{ fontSize: "1.05rem" }}>
             [{String(meta.uncertainty_lower ?? "0.10")}, {String(meta.uncertainty_upper ?? "0.95")}]
           </div>
@@ -127,6 +127,63 @@ export function ResearchPage() {
           </p>
         </section>
       </div>
+
+      <section className="panel" style={{ marginBottom: "1rem" }}>
+        <h3 style={{ marginTop: 0 }}>Final experimental decisions</h3>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Decision</th>
+              <th>Final choice</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Dataset</td>
+              <td>CICIDS2017</td>
+              <td>Standard labeled flow dataset (raw CSVs not shipped in Git)</td>
+            </tr>
+            <tr>
+              <td>Binary model</td>
+              <td>{String(meta.binary_model ?? cmp?.binary_best ?? "decision_tree")}</td>
+              <td>Best multi-objective selection score</td>
+            </tr>
+            <tr>
+              <td>Multiclass model</td>
+              <td>{String(meta.multiclass_model ?? cmp?.multiclass_best ?? "random_forest")}</td>
+              <td>Best attack-family selection score</td>
+            </tr>
+            <tr>
+              <td>Stage-2 classes</td>
+              <td>6 attack families</td>
+              <td>BENIGN handled by Stage-1</td>
+            </tr>
+            <tr>
+              <td>Threshold</td>
+              <td>{String(info?.binary_threshold ?? "0.85")}</td>
+              <td>Validation operating-point optimization</td>
+            </tr>
+            <tr>
+              <td>Confidence band</td>
+              <td>
+                [{String(meta.uncertainty_lower ?? "0.10")}, {String(meta.uncertainty_upper ?? "0.95")}]
+              </td>
+              <td>Separate review band (not the attack decision itself)</td>
+            </tr>
+            <tr>
+              <td>Calibration</td>
+              <td>Disabled</td>
+              <td>Isotonic worsened Brier/recall</td>
+            </tr>
+            <tr>
+              <td>Simulation</td>
+              <td>Deterministic state machine</td>
+              <td>Safe controlled visualization; efficacy values are assumptions</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
 
       <section className="panel" style={{ marginBottom: "1rem" }}>
         <h3 style={{ marginTop: 0 }}>Research decisions</h3>

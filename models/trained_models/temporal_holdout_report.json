@@ -1,0 +1,188 @@
+{
+  "experiment": "temporal_day_holdout",
+  "status": "ok",
+  "note": "Scores frozen joblibs on day-aware CSV samples. IID metrics are copied from training_report for comparison. This is deployment-domain style validation, not a claim of production drift absence.",
+  "operating_threshold": 0.85,
+  "days_present": [
+    "Friday",
+    "Monday",
+    "Thursday",
+    "Tuesday",
+    "Wednesday"
+  ],
+  "samples": {
+    "early_mon_thu": 60000,
+    "friday_temporal": 36000,
+    "per_file_cap": 12000
+  },
+  "early_mon_thu": {
+    "binary": {
+      "accuracy": 0.99725,
+      "precision": 0.9863147605083089,
+      "recall": 0.9737032569360675,
+      "f1": 0.9799684351098701,
+      "specificity": 0.9989974039924805,
+      "fpr": 0.00100259600751947,
+      "fnr": 0.026296743063932447,
+      "mcc": 0.9785155142075653,
+      "confusion_matrix": [
+        [
+          55799,
+          56
+        ],
+        [
+          109,
+          4036
+        ]
+      ],
+      "true_negatives": 55799,
+      "false_positives": 56,
+      "false_negatives": 109,
+      "true_positives": 4036,
+      "roc_auc": 0.9989412358101535,
+      "pr_auc": 0.9966952166166736,
+      "brier_score": 0.0024974826707715404,
+      "ece": 0.002649056818611769,
+      "n": 60000,
+      "attack_rate": 0.06908333333333333
+    },
+    "multiclass": {
+      "n": 4145,
+      "skipped": true,
+      "reason": "y contains previously unseen labels: 'Infiltration'"
+    }
+  },
+  "friday_temporal_holdout": {
+    "binary": {
+      "accuracy": 0.9984444444444445,
+      "precision": 0.999010961839611,
+      "recall": 0.9963830661734484,
+      "f1": 0.9976952835624331,
+      "specificity": 0.9994965387035871,
+      "fpr": 0.0005034612964128383,
+      "fnr": 0.0036169338265515825,
+      "mcc": 0.9965233004935905,
+      "confusion_matrix": [
+        [
+          23823,
+          12
+        ],
+        [
+          44,
+          12121
+        ]
+      ],
+      "true_negatives": 23823,
+      "false_positives": 12,
+      "false_negatives": 44,
+      "true_positives": 12121,
+      "roc_auc": 0.9998278098907658,
+      "pr_auc": 0.9995609932877398,
+      "brier_score": 0.002133055066292514,
+      "ece": 0.002331582944584477,
+      "n": 36000,
+      "attack_rate": 0.33791666666666664
+    },
+    "multiclass": {
+      "accuracy": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "precision_weighted": 1.0,
+      "recall_weighted": 1.0,
+      "f1_weighted": 1.0,
+      "confusion_matrix": [
+        [
+          108,
+          0,
+          0
+        ],
+        [
+          0,
+          6915,
+          0
+        ],
+        [
+          0,
+          0,
+          5142
+        ]
+      ],
+      "report": {
+        "0": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 108.0
+        },
+        "2": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 6915.0
+        },
+        "4": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5142.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 12165.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 12165.0
+        }
+      },
+      "n": 12165
+    }
+  },
+  "iid_stratified_from_training_report": {
+    "binary_test": {
+      "accuracy": 0.9967628746149467,
+      "precision": 0.984036818492714,
+      "recall": 0.9970048978728903,
+      "f1": 0.9904784130688448,
+      "specificity": 0.9967136979370519,
+      "fpr": 0.003286302062948078,
+      "fnr": 0.0029951021271097853,
+      "mcc": 0.9885592091703885,
+      "confusion_matrix": [
+        [
+          417635,
+          1377
+        ],
+        [
+          255,
+          84884
+        ]
+      ],
+      "true_negatives": 417635,
+      "false_positives": 1377,
+      "false_negatives": 255,
+      "true_positives": 84884,
+      "roc_auc": 0.9991563202362416,
+      "pr_auc": 0.9974366596551231,
+      "brier_score": 0.0022855331175206566,
+      "ece": 0.00241754208811584
+    },
+    "multiclass_test": {
+      "accuracy": 0.9997885810263216,
+      "precision_macro": 0.9976189044681245,
+      "recall_macro": 0.9986392234757974,
+      "f1_macro": 0.9981270442352507,
+      "precision_weighted": 0.9997890696738475,
+      "recall_weighted": 0.9997885810263216,
+      "f1_weighted": 0.999788756170181
+    }
+  },
+  "interpretation": "Compare friday_temporal_holdout.binary with iid_stratified_from_training_report.binary_test. A drop under day/scenario holdout indicates limited generalization beyond the stratified IID split and should be discussed honestly in the report/viva.",
+  "delta_f1_iid_minus_friday": -0.0072
+}

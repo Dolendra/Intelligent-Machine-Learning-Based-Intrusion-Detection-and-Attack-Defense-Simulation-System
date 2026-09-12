@@ -32,7 +32,12 @@ export type PredictResult = {
   };
   incident_id: string | null;
   certainty?: string;
+  confidence_band?: string;
+  confidence_band_label?: string;
   threshold?: number;
+  uncertainty_lower?: number;
+  uncertainty_upper?: number;
+  threshold_note?: string;
   risk_factors?: Record<string, number>;
   risk_contributions?: Record<string, number>;
   risk_why?: string;
