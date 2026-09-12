@@ -10,10 +10,11 @@ from typing import Any
 import numpy as np
 from sqlalchemy.orm import Session
 
-from database.db import Incident
+from database.db import Incident, IncidentEvent
 from explainability.shap_engine import ExplanationEngine
 from explainability.lime_engine import LimeExplanationEngine
 from ids_config import load_config, resolve_path
+from ml.features.intensity import intensity_from_features
 from ml.prediction.predictor import FeatureValidationError, IDSPredictor, PredictionResult
 from security.recommendations.engine import recommend
 from security.risk.engine import compute_risk
@@ -75,6 +76,7 @@ def model_info() -> dict[str, Any]:
     cfg = load_config()
     model_dir = resolve_path(cfg["models"]["output_dir"])
     meta_path = model_dir / "model_metadata.json"
+    report_path = model_dir / "training_report.json"
     predictor = get_predictor()
     info: dict[str, Any] = {
         "models_loaded": predictor is not None,
@@ -84,6 +86,7 @@ def model_info() -> dict[str, Any]:
         "use_calibrated_binary_config": bool(cfg.get("models", {}).get("use_calibrated_binary", False)),
         "calibrated_binary_active": bool(getattr(predictor, "calibrated_binary", False)) if predictor else False,
         "metadata_available": meta_path.exists(),
+        "training_report_available": report_path.exists(),
     }
     if meta_path.exists():
         try:
@@ -93,11 +96,63 @@ def model_info() -> dict[str, Any]:
     return info
 
 
+def training_comparison() -> dict[str, Any]:
+    cfg = load_config()
+    path = resolve_path(cfg["models"]["output_dir"]) / "training_report.json"
+    if not path.exists():
+        raise FileNotFoundError("training_report.json not found — train models first")
+    report = json.loads(path.read_text(encoding="utf-8"))
+    binary_val = report.get("binary", {}).get("validation", {})
+    multi_val = report.get("multiclass", {}).get("validation", {})
+    binary_rows = []
+    for name, m in binary_val.items():
+        binary_rows.append(
+            {
+                "model": name,
+                "precision": m.get("precision"),
+                "recall": m.get("recall"),
+                "f1": m.get("f1"),
+                "pr_auc": m.get("pr_auc"),
+                "fpr": m.get("fpr"),
+                "selection_score": m.get("selection_score"),
+                "infer_seconds_val": m.get("infer_seconds_val"),
+            }
+        )
+    multi_rows = []
+    for name, m in multi_val.items():
+        multi_rows.append(
+            {
+                "model": name,
+                "f1_macro": m.get("f1_macro"),
+                "f1_weighted": m.get("f1_weighted"),
+                "selection_score": m.get("selection_score"),
+            }
+        )
+    per_class = {}
+    test_report = report.get("multiclass", {}).get("test", {})
+    # per-class lives in validation report blobs if present
+    for name, m in multi_val.items():
+        if isinstance(m.get("report"), dict):
+            per_class[name] = {
+                k: v
+                for k, v in m["report"].items()
+                if isinstance(v, dict) and k not in {"accuracy", "macro avg", "weighted avg"}
+            }
+    return {
+        "selection_criteria": report.get("selection_criteria"),
+        "binary_best": report.get("binary", {}).get("best"),
+        "multiclass_best": report.get("multiclass", {}).get("best"),
+        "binary_validation": binary_rows,
+        "multiclass_validation": multi_rows,
+        "binary_test": report.get("binary", {}).get("test"),
+        "multiclass_test": {k: v for k, v in test_report.items() if k != "confusion_matrix"},
+        "per_class_validation": per_class,
+        "classes": report.get("multiclass", {}).get("classes"),
+    }
+
+
 def _intensity_from_features(features: dict[str, float]) -> float | None:
-    for key in ("Flow Packets/s", "Flow Bytes/s"):
-        if key in features:
-            return min(1.0, abs(float(features[key])) / 1e5)
-    return None
+    return intensity_from_features(features)
 
 
 def _enrich_prediction(
@@ -168,6 +223,8 @@ def run_prediction(
             asset_criticality=asset_criticality,
         )
         db.add(row)
+        db.flush()
+        _record_incident_event(db, incident_id, None, "Detected", actor="system", notes="Created from prediction")
         db.commit()
         try:
             from backend.services.events import notify_sync
@@ -200,16 +257,28 @@ def run_prediction_batch(
     if len(rows) > 500:
         raise ValueError("Batch size limited to 500 flows per request")
 
+    predictor = get_predictor()
+    if predictor is None:
+        raise RuntimeError("Models not trained. Run scripts/01_prepare_data.py and scripts/02_train_models.py")
+
+    import pandas as pd
+
+    df = pd.DataFrame(rows)
+    preds = predictor.predict_many_vectorized(df, allow_missing=allow_missing_features)
     results: list[dict[str, Any]] = []
-    for i, features in enumerate(rows):
-        item = run_prediction(
-            features,
-            db=db,
-            persist=persist,
-            allow_missing_features=allow_missing_features,
-            asset_criticality=asset_criticality,
-        )
+    for i, (pred, features) in enumerate(zip(preds, rows)):
+        item = _enrich_prediction(pred, features, asset_criticality=asset_criticality)
         item["flow_index"] = i
+        item["incident_id"] = None
+        if persist and db is not None and pred.is_attack:
+            single = run_prediction(
+                features,
+                db=db,
+                persist=True,
+                allow_missing_features=True,
+                asset_criticality=asset_criticality,
+            )
+            item["incident_id"] = single.get("incident_id")
         results.append(item)
 
     attacks = [r for r in results if r["is_attack"]]
@@ -257,8 +326,30 @@ def run_explain(
     return explainer.explain(features, top_k=top_k, allow_missing=allow_missing_features)
 
 
-def _incident_dict(row: Incident) -> dict[str, Any]:
-    return {
+def _record_incident_event(
+    db: Session,
+    incident_code: str,
+    old_status: str | None,
+    new_status: str,
+    *,
+    actor: str = "system",
+    notes: str | None = None,
+    action: str | None = None,
+) -> None:
+    db.add(
+        IncidentEvent(
+            incident_code=incident_code,
+            old_status=old_status,
+            new_status=new_status,
+            actor=actor,
+            notes=notes,
+            action=action,
+        )
+    )
+
+
+def _incident_dict(row: Incident, events: list[IncidentEvent] | None = None) -> dict[str, Any]:
+    payload = {
         "incident_id": row.incident_code,
         "created_at": row.created_at.isoformat() if row.created_at else None,
         "attack_type": row.attack_type,
@@ -273,13 +364,32 @@ def _incident_dict(row: Incident) -> dict[str, Any]:
         "asset_criticality": getattr(row, "asset_criticality", None),
         "allowed_next_statuses": sorted(INCIDENT_TRANSITIONS.get(row.status or "Detected", set())),
     }
+    if events is not None:
+        payload["events"] = [
+            {
+                "timestamp": e.timestamp.isoformat() if e.timestamp else None,
+                "old_status": e.old_status,
+                "new_status": e.new_status,
+                "actor": e.actor,
+                "notes": e.notes,
+                "action": e.action,
+            }
+            for e in events
+        ]
+    return payload
 
 
 def get_incident(db: Session, incident_id: str) -> dict[str, Any] | None:
     row = db.query(Incident).filter(Incident.incident_code == incident_id).first()
     if not row:
         return None
-    return _incident_dict(row)
+    events = (
+        db.query(IncidentEvent)
+        .filter(IncidentEvent.incident_code == incident_id)
+        .order_by(IncidentEvent.timestamp.asc())
+        .all()
+    )
+    return _incident_dict(row, events)
 
 
 def update_incident_status(
@@ -305,8 +415,17 @@ def update_incident_status(
         row.defense_action = defense_action
     if target in {"Resolved", "FalsePositive"}:
         row.resolved_at = datetime.now(timezone.utc)
+    _record_incident_event(
+        db,
+        incident_id,
+        current,
+        target,
+        actor="analyst",
+        notes=analyst_notes,
+        action=defense_action,
+    )
     db.commit()
-    return _incident_dict(row)
+    return get_incident(db, incident_id) or _incident_dict(row)
 
 
 def start_simulation_from_incident(db: Session, incident_id: str) -> dict[str, Any]:
@@ -328,19 +447,14 @@ def start_simulation_from_incident(db: Session, incident_id: str) -> dict[str, A
         },
     )
     row = db.query(Incident).filter(Incident.incident_code == incident_id).first()
-    if row and (row.status or "Detected") in INCIDENT_TRANSITIONS and "Simulating" in INCIDENT_TRANSITIONS.get(
-        row.status or "Detected", set()
-    ):
-        row.status = "Simulating"
-        db.commit()
-    elif row:
-        # Allow force-set when already simulating / from Detected path
-        if row.status != "Simulating":
-            try:
-                update_incident_status(db, incident_id, "Simulating")
-            except ValueError:
-                row.status = "Simulating"
-                db.commit()
+    if row and row.status != "Simulating":
+        try:
+            update_incident_status(db, incident_id, "Simulating")
+        except ValueError:
+            current = row.status
+            row.status = "Simulating"
+            _record_incident_event(db, incident_id, current, "Simulating", actor="system", notes="Simulation started")
+            db.commit()
     return session
 
 
@@ -427,8 +541,9 @@ def load_demo_flows(attack_hint: str | None = None, n: int = 10) -> dict[str, An
 
 
 def parse_flows_csv(content: str | bytes, *, max_rows: int = 500) -> list[dict[str, float]]:
-    """Parse a CSV of flow features into dict rows (schema-validated later by predictor)."""
+    """Parse CSV with strict numeric validation and schema checks against trained features when available."""
     import io
+    import math
 
     import pandas as pd
 
@@ -438,21 +553,48 @@ def parse_flows_csv(content: str | bytes, *, max_rows: int = 500) -> list[dict[s
         raise ValueError("CSV contains no rows")
     if len(df) > max_rows:
         raise ValueError(f"CSV limited to {max_rows} rows (got {len(df)})")
-    # Drop non-feature helper columns if present
+    if df.columns.duplicated().any():
+        dups = df.columns[df.columns.duplicated()].tolist()
+        raise ValueError(f"Duplicate columns in CSV: {dups}")
+
     drop = [c for c in ("Label", "is_attack", "Flow ID", "Timestamp") if c in df.columns]
     df = df.drop(columns=drop, errors="ignore")
+    if df.shape[1] == 0:
+        raise ValueError("CSV has no feature columns after dropping metadata")
+
+    predictor = get_predictor()
+    expected = list(predictor.bundle.feature_names) if predictor else None
+    if expected:
+        missing_cols = [c for c in expected if c not in df.columns]
+        if missing_cols:
+            raise ValueError(
+                f"CSV missing {len(missing_cols)} required feature columns "
+                f"(e.g. {', '.join(missing_cols[:8])}{'...' if len(missing_cols) > 8 else ''})"
+            )
+        # Keep expected order; allow extra columns but warn via details in message if many
+        extras = [c for c in df.columns if c not in expected]
+        df = df[expected]
+    else:
+        extras = []
+
     rows: list[dict[str, float]] = []
-    for _, row in df.iterrows():
+    for i, row in df.iterrows():
         features: dict[str, float] = {}
         for k, v in row.items():
+            col = str(k).strip()
+            if pd.isna(v):
+                raise ValueError(f"Row {int(i) + 2}: column '{col}' is NaN/empty")
             try:
-                features[str(k).strip()] = float(v)
-            except (TypeError, ValueError):
-                continue
-        if features:
-            rows.append(features)
-    if not rows:
-        raise ValueError("No numeric feature rows found in CSV")
+                num = float(v)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"Row {int(i) + 2}: column '{col}' invalid numeric value: {v!r}") from exc
+            if math.isinf(num):
+                raise ValueError(f"Row {int(i) + 2}: column '{col}' is Inf")
+            features[col] = num
+        rows.append(features)
+    if extras and len(extras) > 20:
+        # Not fatal — extras already dropped when expected schema known
+        pass
     return rows
 
 

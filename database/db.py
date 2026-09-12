@@ -47,6 +47,19 @@ class SimulationRecord(Base):
     payload = Column(Text)
 
 
+class IncidentEvent(Base):
+    __tablename__ = "incident_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    incident_code = Column(String(32), index=True)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    old_status = Column(String(32), nullable=True)
+    new_status = Column(String(32))
+    actor = Column(String(64), default="system")
+    notes = Column(Text, nullable=True)
+    action = Column(String(64), nullable=True)
+
+
 def init_db() -> None:
     (ROOT / "database").mkdir(parents=True, exist_ok=True)
     Base.metadata.create_all(bind=engine)

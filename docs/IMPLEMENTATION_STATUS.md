@@ -1,34 +1,33 @@
 # Implementation status (honest inventory)
 
-Last updated with polish pass: model metadata, optional calibration wrapper, Docker healthchecks, docs sync. App version **1.1.0**.
+Last updated after must-do research/integration pass (selection, intensity, dynamic sim, incident events/UI).
 
-## Implemented
+## Implemented (including recent review items)
 
-- CICIDS2017 pipeline, two-stage ML, dual feature-selector support
-- Prediction validation, certainty bands, SHAP/LIME honesty
-- Risk + rule-driven recommendations + incident lifecycle
-- Attack-specific simulation with Play/Pause/Step + comparison metrics
-- Batch JSON/CSV prediction; Reports CSV/JSON/PDF export
-- Dashboard auto-refresh (WebSocket + polling fallback)
-- Calibration metrics (Brier/ECE) + sample HPO / calibration scripts
-- Cross-dataset status scaffold
-- `model_metadata.json` reproducibility writer (`scripts/13_write_model_metadata.py`)
-- Optional calibrated binary wrapper (`scripts/14_fit_calibrated_binary.py`)
-- Docker healthchecks; frontend `npm ci`
-- CI (pytest + frontend build); notebooks 01–07
+- Dual feature selectors; prediction validation; certainty bands
+- Multi-objective binary model selection weights (config-driven)
+- PR-AUC/FPR/FNR/MCC/Brier/ECE; threshold sweep + risk sensitivity scripts
+- Percentile-based traffic intensity (with legacy fallback)
+- Rule-driven recommendations; risk with asset criticality
+- Attack-specific simulation + **dynamic** metrics (detection delay, defense efficacy)
+- Incident lifecycle + **event history** + Incident detail UI
+- Model Lab page (comparison from training_report)
+- Vectorized batch prediction; strict CSV validation
+- WebSocket dashboard refresh; PDF/CSV/JSON export
+- Docker healthchecks; frontend CI build; docs honesty
 
 ## Partially implemented
 
-- Production dual-selector / calibrated models require retrain or script 14 + config flag
-- HPO/calibration experiments are sample-based (not full Optuna on entire CICIDS)
-- Cross-dataset scoring awaits external dataset on disk
-- WebSocket refreshes analytics — not packet-level live IDS
+- Production dual-selector/calibrated artifacts need retrain / script 14
+- Intensity reference requires training run (or falls back to 1e5 scale)
+- Scenario modules still consolidated in `behaviors.py` (split recommended later)
+- Cross-dataset scoring awaits external data
 
 ## Not implemented (do not claim)
 
-- Live packet capture / automatic network mitigation
-- Completed CSE-CIC-IDS2018 evaluation without that dataset
-- Alembic migrations / multi-tenant production SOC
+- Live packet capture / auto-mitigation
+- Full Optuna on entire CICIDS; completed CSE-CIC-2018 eval
+- Auth/rate-limit production hardening; Alembic
 
 ## Academic wording
 

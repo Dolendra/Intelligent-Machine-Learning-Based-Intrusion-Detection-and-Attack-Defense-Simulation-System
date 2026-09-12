@@ -138,8 +138,13 @@ class SimulationEngine:
             detail = apply_defense(s)
             s.timeline.append({"event": "defense_applied", "state": "defended", "detail": detail})
             s.narrative.append(detail)
-            s.metrics["traffic_blocked"] = 0.84
-            s.metrics["server_stress"] = max(0.1, s.metrics.get("server_stress", 0.9) * 0.28)
+            eff = self._defense_effectiveness(s)
+            peak = float(s.metrics.get("peak_traffic", 0.9))
+            s.metrics["defense_effectiveness"] = round(eff, 3)
+            s.metrics["traffic_blocked"] = round(eff, 3)
+            s.metrics["remaining_malicious"] = round(peak * (1.0 - eff), 3)
+            s.metrics["server_stress"] = max(0.08, float(s.metrics.get("server_stress", 0.9)) * (1.0 - 0.75 * eff))
+            s.metrics["defense_delay_s"] = round(1.2 + (1.0 - s.confidence) * 2.5, 2)
             s.state = "defended"
             self._persist(s)
             return s.to_dict()
@@ -159,6 +164,21 @@ class SimulationEngine:
         s.state = _next
         self._persist(s)
         return s.to_dict()
+
+    def _defense_effectiveness(self, s: SimulationSession) -> float:
+        """Simulation assumption: defense efficacy from confidence + risk context."""
+        base = {
+            "DDoS": 0.82,
+            "DoS": 0.78,
+            "PortScan": 0.85,
+            "BruteForce": 0.88,
+            "WebAttack": 0.90,
+            "Bot": 0.92,
+        }.get(s.attack_type, 0.75)
+        conf_boost = 0.08 * max(0.0, min(1.0, s.confidence))
+        risk_factor = max(0.0, min(1.0, s.risk_score / 100.0))
+        # Higher risk / harder incidents slightly reduce effectiveness
+        return float(max(0.45, min(0.97, base + conf_boost - 0.12 * risk_factor)))
 
     def _persist(self, s: SimulationSession) -> None:
         try:
@@ -181,11 +201,14 @@ class SimulationEngine:
                     row.state = s.state
                     row.payload = payload
                 db.commit()
+                s.metrics["persistence"] = "ok"
             finally:
                 db.close()
-        except Exception:
-            # Persistence is best-effort for prototype; in-memory session remains source of truth for active process
-            pass
+        except Exception as exc:
+            import logging
+
+            logging.getLogger("aegis.simulation").warning("Simulation persistence failed: %s", exc)
+            s.metrics["persistence"] = "degraded"
 
     def _require(self, session_id: str) -> SimulationSession:
         if session_id not in self.sessions:
@@ -218,8 +241,12 @@ class SimulationEngine:
                         return session
                 finally:
                     db.close()
-            except Exception:
-                pass
+            except Exception as exc:
+                import logging
+
+                logging.getLogger("aegis.simulation").warning(
+                    "Simulation restore failed for %s: %s", session_id, exc
+                )
             raise KeyError(f"Unknown simulation session: {session_id}")
         return self.sessions[session_id]
 
@@ -236,19 +263,22 @@ class SimulationEngine:
     def _to_attack_start(self, s: SimulationSession) -> None:
         fn = START.get(s.attack_type, apply_generic_start)
         detail = fn(s)
-        s.metrics["peak_traffic"] = 0.85
+        intensity = 0.55 + 0.4 * max(0.0, min(1.0, s.confidence))
+        s.metrics["peak_traffic"] = round(intensity, 3)
+        s.metrics["attack_start_s"] = 2.0
         s.timeline.append({"event": "attack_start", "state": "attack_start", "detail": detail})
         s.narrative.append(detail)
 
     def _to_attack_impact(self, s: SimulationSession) -> None:
         fn = IMPACT.get(s.attack_type, apply_generic_impact)
         detail = fn(s)
-        risk = compute_risk(s.attack_type, s.confidence, True, traffic_intensity=0.95)
+        intensity = float(s.metrics.get("peak_traffic", 0.85))
+        risk = compute_risk(s.attack_type, s.confidence, True, traffic_intensity=min(1.0, intensity + 0.1))
         s.risk_score = risk["risk_score"]
         s.severity = risk["severity"]
-        s.metrics["peak_traffic"] = 0.95
-        s.metrics["server_stress"] = 0.91
-        s.metrics["attack_server_stress"] = 0.91
+        s.metrics["peak_traffic"] = round(min(0.99, intensity + 0.1), 3)
+        s.metrics["server_stress"] = round(min(0.98, 0.5 + 0.45 * intensity), 3)
+        s.metrics["attack_server_stress"] = s.metrics["server_stress"]
         s.metrics["attack_risk"] = s.risk_score
         s.timeline.append({"event": "impact", "state": "attack_impact", "detail": detail})
         s.narrative.append(detail)
@@ -257,7 +287,15 @@ class SimulationEngine:
         for n in s.nodes:
             if n.id == "ids":
                 n.status = "alert"
-        detail = f"IDS detected {s.attack_type} (confidence {s.confidence:.0%})"
+        # Simulated detection latency: lower confidence → slower alert
+        detect_at = round(4.0 + (1.0 - s.confidence) * 3.0, 2)
+        start_at = float(s.metrics.get("attack_start_s", 2.0))
+        s.metrics["detection_at_s"] = detect_at
+        s.metrics["detection_delay_s"] = round(max(0.2, detect_at - start_at), 2)
+        detail = (
+            f"IDS detected {s.attack_type} (confidence {s.confidence:.0%}); "
+            f"simulated detection delay {s.metrics['detection_delay_s']}s"
+        )
         s.timeline.append({"event": "ids_alert", "state": "detected", "detail": detail})
         s.narrative.append(detail)
 
@@ -269,8 +307,13 @@ class SimulationEngine:
 
     def _to_defended(self, s: SimulationSession) -> None:
         detail = apply_defense(s)
-        s.metrics["traffic_blocked"] = 0.84
-        s.metrics["server_stress"] = 0.25
+        eff = self._defense_effectiveness(s)
+        peak = float(s.metrics.get("peak_traffic", 0.9))
+        s.metrics["defense_effectiveness"] = round(eff, 3)
+        s.metrics["traffic_blocked"] = round(eff, 3)
+        s.metrics["remaining_malicious"] = round(peak * (1.0 - eff), 3)
+        s.metrics["server_stress"] = round(max(0.08, float(s.metrics.get("server_stress", 0.9)) * (1.0 - 0.75 * eff)), 3)
+        s.metrics["defense_delay_s"] = round(1.2 + (1.0 - s.confidence) * 2.5, 2)
         s.timeline.append({"event": "defense_applied", "state": "defended", "detail": detail})
         s.narrative.append(detail)
 
@@ -283,10 +326,19 @@ class SimulationEngine:
         for e in s.edges:
             if e.traffic == "malicious":
                 e.traffic = "blocked"
-        s.risk_score = max(5.0, s.risk_score * 0.15)
+        s.risk_score = max(5.0, s.risk_score * (1.0 - 0.7 * float(s.metrics.get("defense_effectiveness", 0.8))))
         s.severity = "LOW"
         s.metrics["server_stress"] = 0.12
-        detail = "Service restored; threat mitigated (simulated)"
+        detect_at = float(s.metrics.get("detection_at_s", 6.0))
+        defense_delay = float(s.metrics.get("defense_delay_s", 2.0))
+        s.metrics["recovery_time_s"] = round(2.0 + defense_delay * 0.5, 2)
+        s.metrics["risk_reduction"] = round(
+            max(0.0, float(s.metrics.get("attack_risk", s.risk_score)) - s.risk_score), 1
+        )
+        detail = (
+            f"Service restored; threat mitigated (simulated). "
+            f"Recovery≈{s.metrics['recovery_time_s']}s after defense"
+        )
         s.timeline.append({"event": "recovered", "state": "recovered", "detail": detail})
         s.narrative.append(detail)
 

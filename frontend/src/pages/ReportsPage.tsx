@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../services/api";
 
 export function ReportsPage() {
@@ -149,7 +150,9 @@ export function ReportsPage() {
               const next = (r.allowed_next_statuses as string[] | undefined) ?? [];
               return (
                 <tr key={id}>
-                  <td className="mono">{id}</td>
+                  <td className="mono">
+                  <Link to={`/incidents/${id}`}>{id}</Link>
+                </td>
                   <td className="mono muted">{String(r.created_at ?? "")}</td>
                   <td>{String(r.attack_type)}</td>
                   <td>

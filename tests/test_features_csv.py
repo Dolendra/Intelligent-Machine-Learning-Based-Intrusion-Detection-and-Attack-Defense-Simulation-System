@@ -1,13 +1,24 @@
 """Tests for CSV parsing and dual feature-selector helpers."""
 from ml.features.pipeline import FeatureBundle
-from backend.services.pipeline import parse_flows_csv
+from backend.services.pipeline import models_ready, parse_flows_csv, sample_feature_template
 
 
 def test_parse_flows_csv_basic():
-    csv = "Flow Duration,Total Fwd Packets\n1.0,2.0\n3.5,4.0\n"
-    rows = parse_flows_csv(csv)
-    assert len(rows) == 2
-    assert rows[0]["Flow Duration"] == 1.0
+    if models_ready():
+        feats = sample_feature_template()
+        header = ",".join(feats.keys())
+        row1 = ",".join("1.0" for _ in feats)
+        row2 = ",".join("2.0" for _ in feats)
+        csv = f"{header}\n{row1}\n{row2}\n"
+        rows = parse_flows_csv(csv)
+        assert len(rows) == 2
+        first_key = next(iter(feats))
+        assert rows[0][first_key] == 1.0
+    else:
+        csv = "Flow Duration,Total Fwd Packets\n1.0,2.0\n3.5,4.0\n"
+        rows = parse_flows_csv(csv)
+        assert len(rows) == 2
+        assert rows[0]["Flow Duration"] == 1.0
 
 
 def test_feature_bundle_selected_for_fallback():

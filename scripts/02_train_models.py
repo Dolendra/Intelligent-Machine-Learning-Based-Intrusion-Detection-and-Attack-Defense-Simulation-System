@@ -11,6 +11,8 @@ sys.path.insert(0, str(ROOT))
 
 from ids_config import load_config, resolve_path
 from ml.evaluation.metrics import evaluate_binary, evaluate_multiclass
+from ml.evaluation.selection import binary_selection_score, multiclass_selection_score
+from ml.features.intensity import build_intensity_reference, save_intensity_reference
 from ml.features.pipeline import fit_feature_pipeline, transform_split
 from ml.models.factory import build_model, save_model
 from ml.preprocessing.dataset import load_processed
@@ -47,11 +49,15 @@ def main() -> None:
         f"{len(bundle.selected_features_multiclass)} multiclass features; "
         f"overlap={len(overlap)}"
     )
+    intensity_ref = build_intensity_reference(train)
+    save_intensity_reference(intensity_ref, out_dir / "intensity_reference.json")
+    print("Wrote intensity_reference.json (train percentiles)")
 
     binary_results = {}
     best_binary_name = None
-    best_binary_f1 = -1.0
+    best_binary_score = -1.0
     best_binary_model = None
+    selection_weights = cfg.get("models", {}).get("selection_weights")
 
     print("\n=== Stage 1: Binary classification (BENIGN vs ATTACK) ===")
     for name in cfg["models"]["binary"]["algorithms"]:
@@ -66,22 +72,23 @@ def main() -> None:
         metrics = evaluate_binary(y_bin_val, pred, proba)
         metrics["train_seconds"] = round(train_time, 3)
         metrics["infer_seconds_val"] = round(infer, 4)
+        score = binary_selection_score(metrics, selection_weights)
+        metrics["selection_score"] = round(score, 6)
         binary_results[name] = metrics
         pr = metrics.get("pr_auc")
         pr_s = f"{pr:.4f}" if pr is not None else "n/a"
         print(
-            f"  {name}: F1={metrics['f1']:.4f} Recall={metrics['recall']:.4f} "
+            f"  {name}: score={score:.4f} F1={metrics['f1']:.4f} Recall={metrics['recall']:.4f} "
             f"Prec={metrics['precision']:.4f} PR-AUC={pr_s} "
             f"FPR={metrics.get('fpr', float('nan')):.4f} FNR={metrics.get('fnr', float('nan')):.4f}"
         )
-        # Primary selection: F1; PR-AUC logged for imbalance-aware reporting
-        if metrics["f1"] > best_binary_f1:
-            best_binary_f1 = metrics["f1"]
+        if score > best_binary_score:
+            best_binary_score = score
             best_binary_name = name
             best_binary_model = model
 
     save_model(best_binary_model, out_dir / "binary_best.joblib")
-    print(f"Best binary model: {best_binary_name} (selected by validation F1; see PR-AUC/FPR/FNR in report)")
+    print(f"Best binary model: {best_binary_name} (multi-objective selection_score={best_binary_score:.4f})")
 
     # Multiclass: train on all rows (including benign) so labels stay consistent
     multi_results = {}
@@ -101,9 +108,14 @@ def main() -> None:
         metrics["train_seconds"] = round(train_time, 3)
         multi_results[name] = {k: v for k, v in metrics.items() if k != "report"}
         multi_results[name]["report"] = metrics["report"]
-        print(f"  {name}: macro-F1={metrics['f1_macro']:.4f} weighted-F1={metrics['f1_weighted']:.4f}")
-        if metrics["f1_macro"] > best_multi_f1:
-            best_multi_f1 = metrics["f1_macro"]
+        score = multiclass_selection_score(metrics)
+        multi_results[name]["selection_score"] = round(score, 6)
+        print(
+            f"  {name}: score={score:.4f} macro-F1={metrics['f1_macro']:.4f} "
+            f"weighted-F1={metrics['f1_weighted']:.4f}"
+        )
+        if score > best_multi_f1:
+            best_multi_f1 = score
             best_multi_name = name
             best_multi_model = model
 
@@ -117,8 +129,8 @@ def main() -> None:
 
     report = {
         "selection_criteria": {
-            "binary": "validation F1 (primary); PR-AUC, FPR, FNR reported for IDS imbalance analysis",
-            "multiclass": "validation macro-F1",
+            "binary": "multi-objective: recall/F1/PR-AUC/FPR/latency (see models.selection_weights)",
+            "multiclass": "0.7*macro-F1 + 0.3*weighted-F1",
             "features": "dual SelectKBest (binary vs multiclass) when features.dual_selectors=true",
         },
         "selected_features": bundle.selected_features,

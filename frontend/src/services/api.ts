@@ -89,12 +89,15 @@ export type SimSession = {
 export const api = {
   health: () =>
     request<{ status: string; models_loaded: boolean; version: string }>("/api/health"),
+  incidents: () => request<{ items: Array<Record<string, unknown>> }>("/api/incidents"),
+  getIncident: (incident_id: string) =>
+    request<Record<string, unknown>>(`/api/incidents/${encodeURIComponent(incident_id)}`),
   models: () => request<Record<string, unknown>>("/api/models"),
+  modelsComparison: () => request<Record<string, unknown>>("/api/models/comparison"),
   analytics: () =>
     request<{ total_incidents: number; by_severity: Record<string, number>; by_attack_type: Record<string, number> }>(
       "/api/analytics"
     ),
-  incidents: () => request<{ items: Array<Record<string, unknown>> }>("/api/incidents"),
   predict: (features: Record<string, number>) =>
     request<PredictResult>("/api/predict", { method: "POST", body: JSON.stringify({ features, persist: true }) }),
   predictBatch: (flows: Record<string, number>[], persist = false) =>

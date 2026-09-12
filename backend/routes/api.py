@@ -46,6 +46,14 @@ def models():
     return svc.model_info()
 
 
+@router.get("/models/comparison")
+def models_comparison():
+    try:
+        return svc.training_comparison()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail={"code": "NO_REPORT", "message": str(exc)}) from exc
+
+
 @router.post("/predict", response_model=PredictResponse)
 def predict(body: PredictRequest, db: Session = Depends(get_db)):
     try:

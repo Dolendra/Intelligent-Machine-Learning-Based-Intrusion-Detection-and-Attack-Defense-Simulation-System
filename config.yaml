@@ -35,6 +35,13 @@ models:
   binary_threshold: 0.5
   # Prefer binary_calibrated.joblib when true and the artifact exists
   use_calibrated_binary: false
+  # Multi-objective binary selection weights (project-justified)
+  selection_weights:
+    recall: 0.30
+    f1: 0.25
+    pr_auc: 0.20
+    fpr: 0.15
+    latency: 0.10
   binary:
     algorithms: ["logistic_regression", "decision_tree", "random_forest", "xgboost"]
   multiclass:

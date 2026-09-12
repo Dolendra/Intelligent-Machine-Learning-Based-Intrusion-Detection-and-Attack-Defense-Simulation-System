@@ -183,4 +183,85 @@ class IDSPredictor:
         )
 
     def predict_many(self, df: pd.DataFrame) -> list[PredictionResult]:
-        return [self.predict_row(df.iloc[[i]]) for i in range(len(df))]
+        return self.predict_many_vectorized(df, allow_missing=True)
+
+    def predict_many_vectorized(
+        self,
+        df: pd.DataFrame,
+        *,
+        allow_missing: bool | None = None,
+    ) -> list[PredictionResult]:
+        """Batch transform + predict (one scaler/selector pass) then per-row result objects."""
+        allow_missing = self.allow_missing_features if allow_missing is None else allow_missing
+        work = df.copy()
+        expected = list(self.bundle.feature_names)
+        missing = [c for c in expected if c not in work.columns]
+        if missing and not allow_missing:
+            raise FeatureValidationError(
+                f"Invalid batch feature matrix: missing {len(missing)} columns "
+                f"({', '.join(missing[:8])}{'...' if len(missing) > 8 else ''})."
+            )
+        for col in missing:
+            work[col] = 0.0
+        work = work[expected]
+        X_bin = self.bundle.transform(work, task="binary")
+        attack_proba = self._proba_attack(self.binary_model, X_bin)
+        is_attack = attack_proba >= self.binary_threshold
+
+        X_multi = None
+        multi_proba = None
+        classes: list[str] = []
+        if np.any(is_attack):
+            X_multi = self.bundle.transform(work, task="multiclass")
+            if X_multi.shape[1] != getattr(self.multiclass_model, "n_features_in_", X_multi.shape[1]):
+                X_multi = X_bin
+            multi_proba = self.multiclass_model.predict_proba(X_multi)
+            if hasattr(self.multiclass_model, "classes_"):
+                raw_classes = list(self.multiclass_model.classes_)
+                if raw_classes and isinstance(raw_classes[0], (int, np.integer)):
+                    classes = list(self.bundle.label_encoder.inverse_transform(raw_classes))
+                else:
+                    classes = [str(c) for c in raw_classes]
+            else:
+                classes = list(self.bundle.label_encoder.classes_)
+
+        results: list[PredictionResult] = []
+        for i in range(len(work)):
+            p_atk = float(attack_proba[i])
+            certainty = self._certainty(p_atk)
+            if not bool(is_attack[i]):
+                results.append(
+                    PredictionResult(
+                        is_attack=False,
+                        attack_type="BENIGN",
+                        binary_confidence=float(1.0 - p_atk),
+                        multiclass_confidence=float(1.0 - p_atk),
+                        binary_proba_attack=p_atk,
+                        class_probabilities={"BENIGN": float(1.0 - p_atk), "ATTACK": p_atk},
+                        certainty=certainty,
+                        threshold=self.binary_threshold,
+                        missing_features=missing,
+                    )
+                )
+                continue
+            row_proba = multi_proba[i]
+            class_probs = {cls: float(p) for cls, p in zip(classes, row_proba)}
+            ranked = sorted(class_probs.items(), key=lambda kv: kv[1], reverse=True)
+            attack_type = ranked[0][0]
+            if attack_type == "BENIGN" and len(ranked) > 1:
+                attack_type = ranked[1][0]
+            multi_conf = float(class_probs.get(attack_type, 0.0))
+            results.append(
+                PredictionResult(
+                    is_attack=True,
+                    attack_type=attack_type,
+                    binary_confidence=p_atk,
+                    multiclass_confidence=multi_conf,
+                    binary_proba_attack=p_atk,
+                    class_probabilities=class_probs,
+                    certainty=certainty,
+                    threshold=self.binary_threshold,
+                    missing_features=missing,
+                )
+            )
+        return results
