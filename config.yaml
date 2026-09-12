@@ -80,6 +80,7 @@ xai:
 research:
   experiment_sample_rows: 60000
   hpo_n_iter: 8
+  external_dataset_dir: "CSE-CIC-IDS2018"
 
 incident:
   statuses:
@@ -126,3 +127,8 @@ api:
       - "/api/predict"
       - "/api/predict/batch"
       - "/api/predict/batch/csv"
+  auth:
+    enabled: false
+    # Prefer env AEGIS_API_KEY when enabling; config value is a fallback for demos only
+    api_key: ""
+    header: "X-API-Key"
