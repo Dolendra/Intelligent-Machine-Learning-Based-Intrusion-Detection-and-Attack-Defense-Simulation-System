@@ -17,6 +17,11 @@ from ids_config import load_config, resolve_path
 from ml.features.intensity import intensity_from_features
 from ml.prediction.predictor import FeatureValidationError, IDSPredictor, PredictionResult
 from security.assets import criticality_for
+from security.correlation import (
+    escalate_severity,
+    find_related_campaign,
+    new_campaign_id,
+)
 from security.recommendations.engine import recommend
 from security.risk.engine import compute_risk
 
@@ -250,33 +255,54 @@ def run_prediction(
     flow_ref = _flow_source_ref(features, source_ref)
     payload["source_ref"] = flow_ref
     payload["deduplicated"] = False
+    payload["campaign_id"] = None
+    payload["escalated"] = False
 
     incident_id = None
     if persist and db is not None and pred.is_attack:
         existing = _find_duplicate_incident(db, pred.attack_type, flow_ref)
         if existing is not None:
             incident_id = existing.incident_code
+            hits = int(getattr(existing, "hit_count", 1) or 1) + 1
+            existing.hit_count = hits
             existing.confidence = max(float(existing.confidence or 0), float(payload["confidence"]))
             if float(payload["risk_score"]) >= float(existing.risk_score or 0):
                 existing.risk_score = payload["risk_score"]
-                existing.severity = payload["severity"]
                 existing.recommendation = payload["recommendation"]["primary"]
+            old_sev = existing.severity
+            new_sev = escalate_severity(existing.severity, payload["severity"], hit_count=hits)
+            existing.severity = new_sev
+            payload["severity"] = new_sev
+            payload["escalated"] = severity_changed(old_sev, new_sev)
             if asset_criticality is not None:
                 existing.asset_criticality = asset_criticality
             if flow_ref and not existing.source_ref:
                 existing.source_ref = flow_ref
+            payload["campaign_id"] = getattr(existing, "campaign_id", None)
+            notes = f"Deduplicated prediction (hit_count={hits})"
+            if payload["escalated"]:
+                notes += f"; severity {old_sev} → {new_sev}"
             _record_incident_event(
                 db,
                 incident_id,
                 existing.status,
                 existing.status,
                 actor="system",
-                notes="Deduplicated prediction (same attack within window)",
-                action="dedup",
+                notes=notes,
+                action="escalate" if payload["escalated"] else "dedup",
             )
             db.commit()
             payload["deduplicated"] = True
         else:
+            related = find_related_campaign(db, attack_type=pred.attack_type, source_ref=flow_ref)
+            campaign_id = (
+                related.campaign_id
+                if related is not None and getattr(related, "campaign_id", None)
+                else (related.incident_code.replace("INC-", "CMP-") if related is not None else new_campaign_id())
+            )
+            if related is not None and not getattr(related, "campaign_id", None):
+                related.campaign_id = campaign_id
+
             incident_id = f"INC-{uuid.uuid4().hex[:6].upper()}"
             row = Incident(
                 incident_code=incident_id,
@@ -290,11 +316,17 @@ def run_prediction(
                 status="Detected",
                 asset_criticality=asset_criticality,
                 source_ref=flow_ref,
+                campaign_id=campaign_id,
+                hit_count=1,
             )
             db.add(row)
             db.flush()
-            _record_incident_event(db, incident_id, None, "Detected", actor="system", notes="Created from prediction")
+            note = "Created from prediction"
+            if related is not None:
+                note = f"Created; linked campaign {campaign_id} (related {related.incident_code})"
+            _record_incident_event(db, incident_id, None, "Detected", actor="system", notes=note, action="create")
             db.commit()
+            payload["campaign_id"] = campaign_id
             try:
                 from backend.services.events import notify_sync
 
@@ -305,6 +337,7 @@ def run_prediction(
                         "attack_type": pred.attack_type,
                         "severity": payload["severity"],
                         "risk_score": payload["risk_score"],
+                        "campaign_id": campaign_id,
                     }
                 )
             except Exception:
@@ -312,6 +345,12 @@ def run_prediction(
 
     payload["incident_id"] = incident_id
     return payload
+
+
+def severity_changed(old: str | None, new: str | None) -> bool:
+    from security.correlation import severity_rank
+
+    return severity_rank(new) > severity_rank(old)
 
 
 def run_prediction_batch(
@@ -431,6 +470,9 @@ def _incident_dict(row: Incident, events: list[IncidentEvent] | None = None) -> 
         "defense_action": getattr(row, "defense_action", None),
         "resolved_at": row.resolved_at.isoformat() if getattr(row, "resolved_at", None) else None,
         "asset_criticality": getattr(row, "asset_criticality", None),
+        "source_ref": getattr(row, "source_ref", None),
+        "campaign_id": getattr(row, "campaign_id", None),
+        "hit_count": getattr(row, "hit_count", 1),
         "allowed_next_statuses": sorted(INCIDENT_TRANSITIONS.get(row.status or "Detected", set())),
     }
     if events is not None:

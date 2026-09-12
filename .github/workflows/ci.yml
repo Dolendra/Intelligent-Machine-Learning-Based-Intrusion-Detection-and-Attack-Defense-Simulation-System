@@ -26,12 +26,13 @@ jobs:
       - name: Unit tests (no raw CICIDS required)
         env:
           MPLBACKEND: Agg
+          DISABLE_RATE_LIMIT: "true"
         run: |
           python -m pytest tests -q --tb=short
 
       - name: Smoke modules import
         run: |
-          python -c "from security.risk.engine import compute_risk; from security.rules import evaluate_rules; from simulation.engine.core import SimulationEngine; print('ok')"
+          python -c "from security.risk.engine import compute_risk; from security.rules import evaluate_rules; from security.correlation import escalate_severity; from simulation.engine.core import SimulationEngine; print('ok')"
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -45,9 +46,17 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install and build
+      - name: Install, test, typecheck, build
         working-directory: frontend
         run: |
           npm ci
-          npx tsc --noEmit
+          npm run test
+          npm run typecheck
           npm run build
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build compose images
+        run: docker compose build

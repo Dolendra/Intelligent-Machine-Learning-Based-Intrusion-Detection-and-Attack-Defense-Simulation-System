@@ -34,6 +34,8 @@ class Incident(Base):
     defense_action = Column(String(128), nullable=True)
     resolved_at = Column(DateTime, nullable=True)
     asset_criticality = Column(Float, nullable=True)
+    campaign_id = Column(String(32), nullable=True, index=True)
+    hit_count = Column(Integer, default=1)
 
 
 class SimulationRecord(Base):
@@ -75,6 +77,10 @@ def init_db() -> None:
             alters.append("ALTER TABLE incidents ADD COLUMN resolved_at DATETIME")
         if "asset_criticality" not in cols:
             alters.append("ALTER TABLE incidents ADD COLUMN asset_criticality FLOAT")
+        if "campaign_id" not in cols:
+            alters.append("ALTER TABLE incidents ADD COLUMN campaign_id VARCHAR(32)")
+        if "hit_count" not in cols:
+            alters.append("ALTER TABLE incidents ADD COLUMN hit_count INTEGER DEFAULT 1")
         for stmt in alters:
             conn.exec_driver_sql(stmt)
         if alters:

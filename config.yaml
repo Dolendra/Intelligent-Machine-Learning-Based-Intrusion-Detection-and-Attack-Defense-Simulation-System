@@ -94,6 +94,8 @@ incident:
     - FalsePositive
   # Same attack_type (+ source_ref when present) within window updates existing incident
   dedup_window_minutes: 5
+  # Related detections (same source / kill-chain adjacency) share a campaign_id
+  campaign_window_minutes: 30
 
 simulation:
   default_topology: "enterprise_simple"
@@ -115,3 +117,12 @@ api:
     - "http://127.0.0.1:5173"
     - "http://localhost:80"
     - "http://127.0.0.1:80"
+  # Off by default for local demos; enable for hardening demos
+  rate_limit:
+    enabled: false
+    requests_per_window: 100
+    window_seconds: 60
+    paths:
+      - "/api/predict"
+      - "/api/predict/batch"
+      - "/api/predict/batch/csv"

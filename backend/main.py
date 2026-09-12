@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
 
 from backend.routes.api import router
 from backend.services.seed import seed_demo_incidents
+from backend.middleware.rate_limit import attach_rate_limit
 from database.db import init_db
 from ids_config import load_config
 
@@ -53,6 +54,7 @@ app.add_middleware(
 )
 
 app.include_router(router, prefix="/api")
+attach_rate_limit(app)
 
 
 @app.get("/")

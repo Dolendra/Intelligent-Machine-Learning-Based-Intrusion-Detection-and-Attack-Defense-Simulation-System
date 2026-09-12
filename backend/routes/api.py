@@ -178,6 +178,16 @@ def assets_list():
     return {"items": list_assets()}
 
 
+@router.get("/campaigns/{campaign_id}")
+def campaign_detail(campaign_id: str, db: Session = Depends(get_db)):
+    from security.correlation import campaign_summary
+
+    summary = campaign_summary(db, campaign_id)
+    if summary["incident_count"] == 0:
+        raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "Unknown campaign"})
+    return summary
+
+
 @router.post("/simulation/from-prediction")
 def simulation_from_prediction(body: SimulationFromPredictionRequest, db: Session = Depends(get_db)):
     try:

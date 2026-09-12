@@ -42,6 +42,8 @@ class PredictResponse(BaseModel):
     risk_factors: dict[str, Any] | None = None
     deduplicated: bool | None = None
     source_ref: str | None = None
+    campaign_id: str | None = None
+    escalated: bool | None = None
 
 
 class BatchPredictRequest(BaseModel):
