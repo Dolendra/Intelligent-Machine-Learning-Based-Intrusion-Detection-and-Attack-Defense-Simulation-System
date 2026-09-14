@@ -7,22 +7,18 @@
 
 | Phase | Focus | Status |
 |-------|--------|--------|
-| P0–P6 | Baseline → PCAP → response → adapters → auth → API security → persistence | ✅ |
-| **P7** | Observability | ✅ Complete |
-| P8 | Performance / load | Next |
+| P0–P7 | Baseline → … → observability | ✅ |
+| **P8** | Performance / load | ✅ Complete |
+| P9 | Failure recovery / DR | Next |
 
-## P7 deliverables
+## P8 deliverables
 
-- JSON structured operational logs (`aegis.ops`) with correlation fields
-- `request_id` / `job_id` / `incident_id` / `action_id` via contextvars
-- Domain metrics: API, detection, queue, PCAP, response, security
-- `/api/health` = liveness; `/api/ready` = DB + models + filesystem (503 `NOT_READY`, no path leakage)
-- `/api/ops/status` + System UI (`/system`) for operator dashboard
-- In-process alert thresholds (queue backlog, auth spike, 5xx rate, …)
-- Sensitive-field redaction (passwords, tokens, Authorization, api_key)
-- Retention notes linking P6 audit retention + process log rotation
-- Suite: `tests/test_productionization_p7_observability.py`
+- Harness: `performance/harness.py` → JSON under `results/performance/`
+- Scripts: `30`–`37` prediction / batch / SHAP / API / queue / DB / stages / envelope
+- Scenarios: normal, high, saturation (queue-full)
+- SHAP vs ML-only comparison; stage breakdown
+- Concurrent response approve claim under load
+- Docs: `docs/PERFORMANCE.md` + `operating_envelope_latest.json`
+- CI: shape-only `tests/test_productionization_p8_performance.py` (no heavy benches)
 
-**Completion criterion:** an operator can answer what happened, which model/schema handled it, which request/job created it, who acted, how long stages took, and whether response succeeded — via logs + metrics + ops status.
-
-No Prometheus/Grafana/OpenTelemetry in this phase. ML artifacts untouched.
+**Completion criterion:** measured operating envelope with flows/sec, p50/p95, error rate, and saturation behavior — not a vague “scalable” claim. ML artifacts untouched.

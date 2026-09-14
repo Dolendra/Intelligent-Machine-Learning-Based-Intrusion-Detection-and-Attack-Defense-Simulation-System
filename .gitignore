@@ -39,3 +39,8 @@ Thumbs.db
 .idea/
 .vscode/
 *.log
+
+# P8 performance outputs (keep latest envelope + gitkeep)
+results/performance/*
+!results/performance/.gitkeep
+!results/performance/operating_envelope_latest.json

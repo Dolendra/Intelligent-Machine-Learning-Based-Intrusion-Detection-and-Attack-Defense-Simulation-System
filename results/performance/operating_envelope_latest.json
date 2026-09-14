@@ -1,0 +1,183 @@
+{
+  "schema_version": "p8.1",
+  "experiment_id": "perf-d70652fba7",
+  "timestamp": "2026-09-14T19:07:47.322793+00:00",
+  "commit": "2d74bfb",
+  "phase": "P8",
+  "workload": "operating_envelope",
+  "scenario": "baseline",
+  "configuration": {
+    "quick": false,
+    "api": false,
+    "commit": "2d74bfb"
+  },
+  "environment": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python": "3.11.9",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "cpu_count": 20,
+    "aegis_env": "development",
+    "cpu_percent_sample": null,
+    "memory": {
+      "note": "psutil optional \u2014 not required for P8"
+    }
+  },
+  "metrics": {
+    "envelope": {
+      "prediction": {
+        "p50_ms": 14.7624,
+        "p95_ms": 16.2651,
+        "flows_per_sec": 67.935,
+        "error_rate": 0.0
+      },
+      "batch": {
+        "100": {
+          "mode": "pipeline_batch",
+          "api_batch_limit": 500,
+          "latency": {
+            "count": 3,
+            "mean_ms": 887.3793,
+            "p50_ms": 875.0857,
+            "p95_ms": 996.1595,
+            "p99_ms": 1006.9216,
+            "min_ms": 777.4402,
+            "max_ms": 1009.6121
+          },
+          "flows_per_sec": 112.691
+        },
+        "500": {
+          "mode": "pipeline_batch",
+          "api_batch_limit": 500,
+          "latency": {
+            "count": 3,
+            "mean_ms": 4001.2662,
+            "p50_ms": 4005.2994,
+            "p95_ms": 4097.0521,
+            "p99_ms": 4105.2079,
+            "min_ms": 3891.2525,
+            "max_ms": 4107.2468
+          },
+          "flows_per_sec": 124.96
+        },
+        "1000": {
+          "mode": "predictor_vectorized",
+          "api_batch_limit": 500,
+          "latency": {
+            "count": 3,
+            "mean_ms": 64.6451,
+            "p50_ms": 65.0308,
+            "p95_ms": 65.794,
+            "p99_ms": 65.8618,
+            "min_ms": 63.0256,
+            "max_ms": 65.8788
+          },
+          "flows_per_sec": 15469.077
+        },
+        "5000": {
+          "mode": "predictor_vectorized",
+          "api_batch_limit": 500,
+          "latency": {
+            "count": 3,
+            "mean_ms": 229.1537,
+            "p50_ms": 220.8461,
+            "p95_ms": 258.7296,
+            "p99_ms": 262.097,
+            "min_ms": 203.6761,
+            "max_ms": 262.9389
+          },
+          "flows_per_sec": 21819.416
+        }
+      },
+      "shap_ratio": 0.73,
+      "queue": {
+        "jobs_submitted": 51,
+        "jobs_submit_errors": 1,
+        "submit_jobs_per_sec": 4949.87,
+        "jobs_completed": 51,
+        "jobs_failed": 0,
+        "flows_processed": 510,
+        "avg_detect_latency_ms": 72.563,
+        "drain_seconds": 4.09
+      },
+      "db_approve_ok": 1,
+      "stages": {
+        "pcap_validation_ms": 0.7851,
+        "pcap_validation_ok": true,
+        "pcap_extractor_available": false,
+        "pcap_extraction_ms": null,
+        "pcap_extraction_note": "skipped_extractor_not_installed",
+        "ml_predict_enrich_ms": 29.4123,
+        "ml_predict_persist_ms": 14.4395,
+        "shap_ms": 16.7022,
+        "shap_ok": true
+      }
+    },
+    "run_returncodes": {
+      "30_benchmark_prediction.py": 0,
+      "31_benchmark_batch.py": 0,
+      "32_benchmark_shap.py": 0,
+      "36_benchmark_stages.py": 0,
+      "35_benchmark_db.py": 0,
+      "34_benchmark_queue.py": 0
+    }
+  },
+  "throughput": {},
+  "stages_ms": {},
+  "error_rate": null,
+  "prototype_only": true,
+  "not_a_capacity_claim": true,
+  "ml_baseline_untouched": true,
+  "notes": [
+    "Aggregated measured operating point for this host/config.",
+    "Not a production SLA. Saturation behavior recorded separately when queue-full.",
+    "DT/RF research baseline untouched."
+  ],
+  "resources": {
+    "cpu_count": 20,
+    "cpu_percent": null,
+    "ram_percent": null,
+    "disk": {
+      "total_gb": 200.0,
+      "free_gb": 108.92,
+      "percent_used": 45.54
+    },
+    "db_size_mb": 0.492
+  },
+  "child_runs": [
+    {
+      "script": "30_benchmark_prediction.py",
+      "returncode": 0,
+      "wrote": "D:\\IDS-Project\\results\\performance\\prediction_single_20260914T190706Z_perf-1186118d6d.json"
+    },
+    {
+      "script": "31_benchmark_batch.py",
+      "returncode": 0,
+      "wrote": "D:\\IDS-Project\\results\\performance\\prediction_batch_20260914T190726Z_perf-44624621b7.json"
+    },
+    {
+      "script": "32_benchmark_shap.py",
+      "returncode": 0,
+      "wrote": "D:\\IDS-Project\\results\\performance\\shap_vs_ml_20260914T190730Z_perf-4dc4053162.json"
+    },
+    {
+      "script": "36_benchmark_stages.py",
+      "returncode": 0,
+      "wrote": "D:\\IDS-Project\\results\\performance\\stage_breakdown_20260914T190733Z_perf-e17fed0727.json"
+    },
+    {
+      "script": "35_benchmark_db.py",
+      "returncode": 0,
+      "wrote": "D:\\IDS-Project\\results\\performance\\database_response_20260914T190735Z_perf-dc84a3431e.json"
+    },
+    {
+      "script": "34_benchmark_queue.py",
+      "returncode": 0,
+      "wrote": "D:\\IDS-Project\\results\\performance\\ingest_queue_20260914T190739Z_perf-af4ae7c2ce.json"
+    },
+    {
+      "script": "34_benchmark_queue.py",
+      "returncode": 0,
+      "wrote": "D:\\IDS-Project\\results\\performance\\ingest_queue_20260914T190746Z_perf-e4c5743780.json"
+    }
+  ]
+}

@@ -98,18 +98,17 @@ Honest limits: no firewall/WAF/agent connectors; in-process rate limits (not Red
 
 Ephemeral by design: ingest queue, WS clients, rate-limit counters. Full backup/DR is P9.
 
-### Phase E — Observability (P7 complete on `productionization`)
+### Phase E — Observability (P7) + Performance (P8)
 
 | Item | Status |
 |------|--------|
-| Structured JSON request/ops logs | `aegis.ops` + correlation IDs |
-| Domain metrics | `/api/metrics` embeds detection/queue/PCAP/response/security |
-| Health vs ready | Liveness `/api/health`; readiness `/api/ready` checks DB/models/FS |
-| Ops dashboard | `/api/ops/status` + UI `/system` |
-| Alerts | In-process thresholds (no external paging) |
-| Privacy | Redact passwords/tokens; no raw PCAP in logs |
+| Structured JSON logs + correlation | P7 |
+| `/api/ops/status` + System UI | P7 |
+| Performance harness | `performance/` + `scripts/30–37_*` |
+| Operating envelope | `docs/PERFORMANCE.md`, `results/performance/operating_envelope_latest.json` |
+| CI | Fast functional only; benches are manual/local |
 
-Honest limits: **not** Prometheus/Grafana/OpenTelemetry; metrics reset on process restart.
+Honest limits: single-process measurements; not multi-node capacity or SLA.
 
 ### Phase F — Cyber-range simulation validation + docs (started)
 
