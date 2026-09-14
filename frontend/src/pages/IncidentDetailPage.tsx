@@ -15,6 +15,18 @@ export function IncidentDetailPage() {
   const [defense, setDefense] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [responseActions, setResponseActions] = useState<Array<Record<string, unknown>>>([]);
+  const [activeResponse, setActiveResponse] = useState<Record<string, unknown> | null>(null);
+  const [canPropose, setCanPropose] = useState(true);
+  const [canApprove, setCanApprove] = useState(true);
+
+  async function loadResponses() {
+    if (!incidentId) return;
+    const list = await api.listIncidentResponses(incidentId);
+    setResponseActions(list.items);
+    const pending = list.items.find((a) => a.pending_approval) || list.items[0] || null;
+    setActiveResponse(pending);
+  }
 
   async function load() {
     if (!incidentId) return;
@@ -26,10 +38,28 @@ export function IncidentDetailPage() {
     setTrace(tr);
     setNotes(String(data.analyst_notes ?? ""));
     setDefense(String(data.defense_action ?? ""));
+    await loadResponses().catch(() => {
+      setResponseActions([]);
+      setActiveResponse(null);
+    });
   }
 
   useEffect(() => {
     load().catch((e) => setError(e instanceof Error ? e.message : String(e)));
+  }, [incidentId]);
+
+  useEffect(() => {
+    api
+      .authMe()
+      .then((me) => {
+        const perms = new Set(me.permissions || []);
+        setCanPropose(perms.has("write_response") || perms.has("admin") || me.auth_enabled === false);
+        setCanApprove(perms.has("approve_response") || perms.has("admin") || me.auth_enabled === false);
+      })
+      .catch(() => {
+        setCanPropose(false);
+        setCanApprove(false);
+      });
   }, [incidentId]);
 
   async function advance(status: string) {
@@ -81,15 +111,96 @@ export function IncidentDetailPage() {
     }
   }
 
+  async function proposeResponse() {
+    if (!incidentId) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const action = await api.proposeIncidentResponse(incidentId);
+      setActiveResponse(action);
+      await loadResponses();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function dryRunActive() {
+    if (!activeResponse?.action_id) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const out = await api.dryRunResponse(String(activeResponse.action_id));
+      setActiveResponse(out.action as Record<string, unknown>);
+      await loadResponses();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function approveActive() {
+    if (!activeResponse?.action_id) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const out = await api.approveResponse(String(activeResponse.action_id));
+      setActiveResponse(out.action as Record<string, unknown>);
+      await loadResponses();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function rejectActive() {
+    if (!activeResponse?.action_id) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const out = await api.rejectResponse(String(activeResponse.action_id), "Rejected from incident UI");
+      setActiveResponse(out.action as Record<string, unknown>);
+      await loadResponses();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function rollbackActive() {
+    if (!activeResponse?.action_id) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const out = await api.rollbackResponse(String(activeResponse.action_id));
+      setActiveResponse(out.action as Record<string, unknown>);
+      await loadResponses();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const next = (item?.allowed_next_statuses as string[] | undefined) ?? [];
   const events = (item?.events as Array<Record<string, unknown>> | undefined) ?? [];
+  const pending = Boolean(activeResponse?.pending_approval);
+  const canRollback =
+    Boolean(activeResponse) &&
+    activeResponse?.reversible !== false &&
+    ["ACTIVE", "VERIFIED", "SUCCEEDED"].includes(String(activeResponse?.status)) &&
+    canApprove;
 
   return (
     <div className="rise">
       <div className="page-header">
         <div>
           <h2>Incident {incidentId}</h2>
-          <p>Analyst workspace — review evidence, advance lifecycle, simulate defense (advisory only).</p>
+          <p>Analyst workspace — review evidence, dry-run response, approve or reject (no live mitigation).</p>
         </div>
         <div className="row">
           <Link className="btn btn-secondary" to="/reports">
@@ -142,6 +253,104 @@ export function IncidentDetailPage() {
               ))}
             </div>
           </div>
+
+          <section className="panel panel-interactive" style={{ marginBottom: "1rem" }}>
+            <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <h3 style={{ marginTop: 0, marginBottom: "0.35rem" }}>Controlled response (P3)</h3>
+                <p className="muted" style={{ margin: 0 }}>
+                  Adapters: <strong>DRY_RUN</strong> / <strong>CONTROLLED</strong> test plane — no live firewall/EDR.
+                </p>
+              </div>
+              <button className="btn btn-primary" disabled={busy || !canPropose} onClick={() => void proposeResponse()}>
+                Propose response
+              </button>
+            </div>
+
+            {activeResponse ? (
+              <div style={{ marginTop: "1rem" }}>
+                <div style={{ fontSize: "1.1rem", fontWeight: 650 }}>
+                  {String(item.severity)} — {String(item.attack_type)}
+                </div>
+                <div className="muted">Risk: {String(item.risk_score)}</div>
+                <p style={{ marginBottom: "0.35rem" }}>
+                  <strong>Recommended action</strong>
+                  <br />
+                  <span className="mono">{String(activeResponse.action_type)}</span> →{" "}
+                  <span className="mono">{String(activeResponse.target)}</span>
+                </p>
+                <p className="muted" style={{ marginTop: 0 }}>
+                  {String(activeResponse.dry_run_preview || activeResponse.result || activeResponse.reason)}
+                </p>
+                <div className="row" style={{ marginBottom: "0.75rem" }}>
+                  <span className="live-chip off">{String(activeResponse.mode || "DRY_RUN")}</span>
+                  <span className="badge">{String(activeResponse.approval_status || activeResponse.status)}</span>
+                  <span className="muted mono" style={{ fontSize: "0.8rem" }}>
+                    {String(activeResponse.adapter || "dry_run")} · {String(activeResponse.action_id)}
+                  </span>
+                </div>
+                <div className="row">
+                  <button className="btn btn-secondary" disabled={busy || !canPropose} onClick={() => void dryRunActive()}>
+                    Dry run
+                  </button>
+                  <button className="btn btn-primary" disabled={busy || !pending || !canApprove} onClick={() => void approveActive()}>
+                    Approve
+                  </button>
+                  <button className="btn btn-secondary" disabled={busy || !pending || !canApprove} onClick={() => void rejectActive()}>
+                    Reject
+                  </button>
+                  <button className="btn btn-secondary" disabled={busy || !canRollback} onClick={() => void rollbackActive()}>
+                    Rollback
+                  </button>
+                </div>
+                {Array.isArray(activeResponse.audit) && (activeResponse.audit as unknown[]).length > 0 && (
+                  <ul className="timeline" style={{ marginTop: "1rem" }}>
+                    {(activeResponse.audit as Array<Record<string, unknown>>).slice(-6).map((ev, idx) => (
+                      <li key={idx}>
+                        <strong>{String(ev.event)}</strong>
+                        <div className="muted mono">
+                          {String(ev.timestamp ?? "")} · {String(ev.actor ?? "system")}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ) : (
+              <p className="muted" style={{ marginBottom: 0, marginTop: "0.75rem" }}>
+                No response action yet. Propose one to open the dry-run / approval gate.
+              </p>
+            )}
+
+            {responseActions.length > 1 && (
+              <div style={{ marginTop: "1rem" }}>
+                <div className="muted" style={{ marginBottom: "0.35rem" }}>
+                  Prior actions for this incident
+                </div>
+                <ul style={{ margin: 0, paddingLeft: "1.1rem" }}>
+                  {responseActions.map((a) => (
+                    <li key={String(a.action_id)}>
+                      <button
+                        type="button"
+                        className="mono"
+                        style={{
+                          background: "none",
+                          border: "none",
+                          padding: 0,
+                          cursor: "pointer",
+                          color: "inherit",
+                          textDecoration: "underline",
+                        }}
+                        onClick={() => setActiveResponse(a)}
+                      >
+                        {String(a.action_type)} · {String(a.status)} · {String(a.action_id)}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
 
           <div className="split">
             <section className="panel panel-interactive stack">
@@ -207,7 +416,9 @@ export function IncidentDetailPage() {
               {events.length === 0 && (
                 <div className="empty-state">
                   <strong>No events yet</strong>
-                  <p className="muted" style={{ margin: 0 }}>Advance the status to build the audit trail.</p>
+                  <p className="muted" style={{ margin: 0 }}>
+                    Advance the status to build the audit trail.
+                  </p>
                 </div>
               )}
               <ul className="timeline">

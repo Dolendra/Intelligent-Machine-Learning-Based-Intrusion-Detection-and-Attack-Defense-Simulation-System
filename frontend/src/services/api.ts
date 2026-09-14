@@ -1,9 +1,36 @@
 const API_BASE = import.meta.env.VITE_API_BASE ?? "";
+const TOKEN_KEY = "aegis_access_token";
+
+export function getAccessToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setAccessToken(token: string | null) {
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getAccessToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(options?.headers ?? {}) },
     ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+      ...(options?.headers ?? {}),
+    },
   });
   if (!res.ok) {
     const detail = await res.text();
@@ -215,7 +242,7 @@ export const api = {
     form.append("file", file);
     const res = await fetch(
       `${API_BASE}/api/predict/batch/csv?persist=${persist ? "true" : "false"}`,
-      { method: "POST", body: form }
+      { method: "POST", body: form, headers: authHeaders() }
     );
     if (!res.ok) throw new Error((await res.text()) || res.statusText);
     return res.json() as Promise<BatchPredictResult>;
@@ -226,7 +253,17 @@ export const api = {
     form.append("file", file);
     const res = await fetch(
       `${API_BASE}/api/ingest/flows/csv?predict=${predict ? "true" : "false"}&persist=${persist ? "true" : "false"}`,
-      { method: "POST", body: form }
+      { method: "POST", body: form, headers: authHeaders() }
+    );
+    if (!res.ok) throw new Error((await res.text()) || res.statusText);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  ingestPcap: async (file: File, predict = false, persist = false) => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(
+      `${API_BASE}/api/ingest/pcap?predict=${predict ? "true" : "false"}&persist=${persist ? "true" : "false"}`,
+      { method: "POST", body: form, headers: authHeaders() }
     );
     if (!res.ok) throw new Error((await res.text()) || res.statusText);
     return res.json() as Promise<Record<string, unknown>>;
@@ -235,14 +272,98 @@ export const api = {
   ingestQueueSubmit: async (file: File) => {
     const form = new FormData();
     form.append("file", file);
-    const res = await fetch(`${API_BASE}/api/ingest/queue/submit`, { method: "POST", body: form });
+    const res = await fetch(`${API_BASE}/api/ingest/queue/submit`, {
+      method: "POST",
+      body: form,
+      headers: authHeaders(),
+    });
+    if (!res.ok) throw new Error((await res.text()) || res.statusText);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  ingestQueueSubmitPcap: async (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${API_BASE}/api/ingest/queue/submit-pcap`, {
+      method: "POST",
+      body: form,
+      headers: authHeaders(),
+    });
     if (!res.ok) throw new Error((await res.text()) || res.statusText);
     return res.json() as Promise<Record<string, unknown>>;
   },
   ingestQueueJob: (jobId: string) =>
     request<Record<string, unknown>>(`/api/ingest/queue/${encodeURIComponent(jobId)}`),
+  authStatus: () => request<Record<string, unknown>>("/api/auth/status"),
+  authLogin: async (username: string, password: string) => {
+    const out = await request<{
+      access_token: string;
+      user: { username: string; role: string; permissions: string[] };
+    }>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+    setAccessToken(out.access_token);
+    return out;
+  },
+  authLogout: async () => {
+    try {
+      await request("/api/auth/logout", { method: "POST", body: "{}" });
+    } finally {
+      setAccessToken(null);
+    }
+  },
+  authMe: () =>
+    request<{
+      authenticated: boolean;
+      auth_enabled?: boolean;
+      username?: string;
+      role?: string;
+      permissions?: string[];
+      note?: string;
+    }>("/api/auth/me"),
+  securityStatus: () => request<Record<string, unknown>>("/api/security/status"),
+  opsStatus: () => request<Record<string, unknown>>("/api/ops/status"),
+  metrics: () => request<Record<string, unknown>>("/api/metrics"),
+  ready: () => request<Record<string, unknown>>("/api/ready"),
+  responseCapabilities: () => request<Record<string, unknown>>("/api/response/capabilities"),
+  proposeResponse: (body: Record<string, unknown>) =>
+    request<Record<string, unknown>>("/api/response/actions/propose", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  proposeIncidentResponse: (incidentId: string) =>
+    request<Record<string, unknown>>(
+      `/api/incidents/${encodeURIComponent(incidentId)}/response/propose`,
+      { method: "POST", body: "{}" }
+    ),
+  listIncidentResponses: (incidentId: string) =>
+    request<{ incident_id: string; items: Array<Record<string, unknown>> }>(
+      `/api/incidents/${encodeURIComponent(incidentId)}/response/actions`
+    ),
+  dryRunResponse: (actionId: string) =>
+    request<Record<string, unknown>>(`/api/response/actions/${encodeURIComponent(actionId)}/dry-run`, {
+      method: "POST",
+      body: "{}",
+    }),
+  approveResponse: (actionId: string) =>
+    request<Record<string, unknown>>(`/api/response/actions/${encodeURIComponent(actionId)}/approve`, {
+      method: "POST",
+      body: "{}",
+    }),
+  rejectResponse: (actionId: string, reason?: string) =>
+    request<Record<string, unknown>>(`/api/response/actions/${encodeURIComponent(actionId)}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }),
+  rollbackResponse: (actionId: string) =>
+    request<Record<string, unknown>>(`/api/response/actions/${encodeURIComponent(actionId)}/rollback`, {
+      method: "POST",
+      body: "{}",
+    }),
+  getResponseAction: (actionId: string) =>
+    request<Record<string, unknown>>(`/api/response/actions/${encodeURIComponent(actionId)}`),
   downloadExport: async (kind: "incidents.csv" | "incidents.json" | "analytics.json" | "report.pdf") => {
-    const res = await fetch(`${API_BASE}/api/export/${kind}`);
+    const res = await fetch(`${API_BASE}/api/export/${kind}`, { headers: authHeaders() });
     if (!res.ok) throw new Error((await res.text()) || res.statusText);
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);

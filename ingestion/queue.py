@@ -115,6 +115,12 @@ class IngestDetectQueue:
             self._pending.append(job.job_id)
             self._metrics["submitted"] += 1
             self._cv.notify()
+            try:
+                from backend.observability.registry import domain_metrics
+
+                domain_metrics.incr("queue.jobs_submitted")
+            except Exception:  # noqa: BLE001
+                pass
             return job
 
     def get(self, job_id: str) -> QueueJob | None:
@@ -182,6 +188,35 @@ class IngestDetectQueue:
                     job.finished_at = time.time()
                     self._metrics["failed"] += 1
                     self._done.append(job.job_id)
+                try:
+                    from backend.observability.events import log_event
+                    from backend.observability.registry import domain_metrics
+
+                    domain_metrics.incr("queue.jobs_failed")
+                    log_event(
+                        "queue_job_failed",
+                        level="error",
+                        error_code="QUEUE_JOB_FAILED",
+                        job_id=job.job_id,
+                        message=type(exc).__name__,
+                    )
+                except Exception:  # noqa: BLE001
+                    pass
+                continue
+            try:
+                from backend.observability.events import log_event
+                from backend.observability.registry import domain_metrics
+
+                domain_metrics.incr("queue.jobs_completed")
+                log_event(
+                    "queue_job_completed",
+                    duration_ms=job.latency_ms,
+                    job_id=job.job_id,
+                    status="done",
+                    flow_count=len(job.flows),
+                )
+            except Exception:  # noqa: BLE001
+                pass
 
 
 # Process-wide singleton for the API

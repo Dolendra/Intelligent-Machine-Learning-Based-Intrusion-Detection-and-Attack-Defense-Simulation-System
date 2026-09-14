@@ -39,3 +39,21 @@ Thumbs.db
 .idea/
 .vscode/
 *.log
+
+# P8 performance outputs (keep latest envelope + gitkeep)
+results/performance/*
+!results/performance/.gitkeep
+!results/performance/operating_envelope_latest.json
+
+# P11 empirical mitigation outputs (keep latest report)
+results/empirical/*
+!results/empirical/.gitkeep
+!results/empirical/empirical_mitigation_latest.json
+
+# P12 final validation report lives in reports/ (committed)
+reports/*
+!reports/.gitkeep
+!reports/final_security_validation_report.json
+
+# P9 backup drill artifacts
+backups/

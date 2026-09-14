@@ -27,10 +27,13 @@ def test_ingest_capabilities_endpoint():
     r = client.get("/api/ingest/capabilities")
     assert r.status_code == 200
     body = r.json()
-    assert body["stage"] == "2-phase-b"
+    assert body["stage"] == "productionization-p1"
+    assert body["baseline"] == "v1.1-research"
     assert body["schema"]["schema_version"] == "1.1.0"
     assert body["flows_csv"]["available"] is True
     assert "pcap" in body
+    assert body["pcap"]["live_capture"] is False
+    assert "max_bytes" in body["pcap"]
 
 
 def test_ingest_flows_csv_roundtrip():
@@ -64,11 +67,22 @@ def test_ingest_flows_csv_api():
     assert body["schema"]["schema_version"] == "1.1.0"
 
 
+def _minimal_pcap_bytes() -> bytes:
+    """Classic libpcap global header only (valid magic; no packets)."""
+    return (
+        b"\xd4\xc3\xb2\xa1"  # magic LE
+        + b"\x02\x00"  # major
+        + b"\x04\x00"  # minor
+        + b"\x00" * 16  # thiszone, sigfigs, snaplen, network
+    )
+
+
 def test_ingest_pcap_returns_not_implemented():
     r = client.post(
         "/api/ingest/pcap",
-        files={"file": ("sample.pcap", b"\xd4\xc3\xb2\xa1not-a-real-pcap", "application/vnd.tcpdump.pcap")},
+        files={"file": ("sample.pcap", _minimal_pcap_bytes(), "application/vnd.tcpdump.pcap")},
     )
     assert r.status_code == 501
     detail = r.json()["detail"]
     assert detail["code"] in {"PCAP_EXTRACTOR_NOT_CONFIGURED", "PCAP_EXTRACTOR_NOT_WIRED", "PCAP_NOT_AVAILABLE"}
+    assert "upload" in detail

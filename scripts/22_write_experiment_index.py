@@ -31,6 +31,10 @@ EXPERIMENTS = [
     ("EXP-014", "model_metadata", "model_metadata.json", "Git/config/package reproducibility metadata"),
     ("EXP-015", "intensity_reference", "intensity_reference.json", "Train percentile intensity reference"),
     ("EXP-016", "experiment_index", "experiment_index.json", "Unified experiment catalog"),
+    ("EXP-017", "generalization_p10", "generalization_report.json", "P10 IID vs temporal generalization (frozen)"),
+    ("EXP-018", "empirical_mitigation_ddos", "empirical_mitigation_report.json", "P11 measured mitigation DDoS BLOCK_SOURCE (CONTROLLED)"),
+    ("EXP-019", "empirical_mitigation_dos", "empirical_mitigation_report.json", "P11 measured mitigation DoS RATE_LIMIT (CONTROLLED)"),
+    ("EXP-020", "final_security_validation", "final_security_validation_report.json", "P12 final security validation gate"),
 ]
 
 

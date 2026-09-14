@@ -78,5 +78,6 @@ def test_capabilities_reports_phase_b_queue():
     r = client.get("/api/ingest/capabilities")
     assert r.status_code == 200
     body = r.json()
-    assert body["stage"] == "2-phase-b"
+    assert body["stage"] == "productionization-p1"
+    assert body["stage2_scaffold"] == "2-phase-b"
     assert body["queue"]["available"] is True

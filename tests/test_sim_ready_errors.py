@@ -15,7 +15,8 @@ def test_ready_endpoint_shape():
     body = r.json()
     if r.status_code == 200:
         assert body["status"] == "ready"
-        assert body["models_loaded"] is True
+        assert body["ready"] is True
+        assert body["dependencies"]["models"]["status"] == "ok"
     else:
         assert body["detail"]["code"] == "MODEL_NOT_READY"
 

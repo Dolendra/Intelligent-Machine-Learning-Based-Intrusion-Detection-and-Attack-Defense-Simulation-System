@@ -18,6 +18,7 @@ from backend.services.seed import seed_demo_incidents
 from backend.middleware.rate_limit import attach_rate_limit
 from backend.middleware.api_auth import attach_api_auth
 from backend.middleware.security_headers import attach_security_headers
+from backend.middleware.request_limits import attach_request_limits
 from backend.middleware.metrics_mw import attach_metrics
 from backend.middleware.logging_mw import attach_request_logging
 from backend.middleware.errors import attach_error_handlers
@@ -61,6 +62,17 @@ async def lifespan(_app: FastAPI):
         n = seed_demo_incidents()
         if n:
             print(f"Seeded {n} demo incidents (DEMO_MODE=true)")
+
+    # P9: reclaim in-flight response states left by process crash
+    try:
+        from backend.recovery import run_startup_recovery
+
+        summary = run_startup_recovery()
+        if summary.get("reclaimed_executing") or summary.get("reclaimed_approved"):
+            logging.getLogger("aegis.api").warning("Startup recovery: %s", summary)
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger("aegis.api").warning("Startup recovery skipped: %s", exc)
+
     yield
     try:
         from ingestion.queue import ingest_queue
@@ -80,16 +92,39 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+import os as _os
+
+_cors_origins = list(cfg["api"].get("cors_origins") or ["http://localhost:5173"])
+_cors_strict = bool(cfg["api"].get("cors_strict", False)) or _os.getenv("AEGIS_CORS_STRICT", "").lower() in {
+    "1",
+    "true",
+    "yes",
+}
+if _cors_strict:
+    _cors_methods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    _cors_headers = [
+        "Authorization",
+        "Content-Type",
+        "X-API-Key",
+        "X-Request-ID",
+        "X-Aegis-Role",
+    ]
+else:
+    # Local Vite demo convenience — enable AEGIS_CORS_STRICT=true for production posture
+    _cors_methods = ["*"]
+    _cors_headers = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cfg["api"]["cors_origins"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=_cors_methods,
+    allow_headers=_cors_headers,
 )
 
 app.include_router(router, prefix="/api")
 attach_error_handlers(app)
+attach_request_limits(app)
 attach_rate_limit(app)
 attach_api_auth(app)
 attach_security_headers(app)

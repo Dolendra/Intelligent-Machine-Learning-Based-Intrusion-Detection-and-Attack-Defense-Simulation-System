@@ -1,0 +1,540 @@
+{
+  "experiment_id": "EXP-017",
+  "experiment": "generalization_p10",
+  "phase": "P10",
+  "status": "ok",
+  "generated_at": "2026-09-14T19:20:46.830490+00:00",
+  "git_commit": "130ffd9",
+  "model_version": "1.1.0",
+  "feature_selector": {
+    "dual_selectors": true,
+    "feature_count_binary": 40,
+    "feature_count_multiclass": 40,
+    "artifact_hashes": {
+      "binary_best": "9b0158aacd2cde3c",
+      "multiclass_best": "d6da28dae45ca4c0",
+      "feature_bundle": "008dfe62ef5e663d",
+      "binary_calibrated": null,
+      "processed_train": "0da591e1bf851241"
+    }
+  },
+  "dataset": {
+    "name": "CICIDS2017",
+    "source": "MachineLearningCVE",
+    "split_definition": {
+      "iid": "stratified train/val/test from processed CICIDS2017 (see training_report / model_metadata)",
+      "temporal": "day-named CSV samples; Friday = temporal holdout; Mon\u2013Thu = early reference",
+      "per_file_cap": 12000
+    },
+    "random_state": 42
+  },
+  "frozen_models": {
+    "binary": "decision_tree",
+    "multiclass": "random_forest",
+    "binary_threshold": 0.85,
+    "artifacts": [
+      "binary_best.joblib",
+      "multiclass_best.joblib",
+      "feature_bundle.joblib"
+    ],
+    "no_retrain": true,
+    "no_tuning_on_temporal_holdout": true,
+    "training_git_commit": "c99d2d3"
+  },
+  "environment": {
+    "python_version": "3.11.9",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "packages": {
+      "scikit-learn": "1.9.0",
+      "xgboost": "3.2.0",
+      "shap": "0.51.0",
+      "numpy": "2.4.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "sources": {
+    "training_report": "training_report.json",
+    "temporal_holdout_report": "temporal_holdout_report.json",
+    "drift_report_iid": "drift_report.json",
+    "cross_dataset_status": "cross_dataset_status.json",
+    "model_metadata": "model_metadata.json"
+  },
+  "comparison": {
+    "binary": {
+      "iid_test": {
+        "f1": 0.9904784130688448,
+        "recall": 0.9970048978728903,
+        "precision": 0.984036818492714,
+        "pr_auc": 0.9974366596551231,
+        "roc_auc": 0.9991563202362416
+      },
+      "friday_temporal": {
+        "f1": 0.9976952835624331,
+        "recall": 0.9963830661734484,
+        "precision": 0.999010961839611,
+        "pr_auc": 0.9995609932877398,
+        "roc_auc": 0.9998278098907658,
+        "n": 36000,
+        "attack_rate": 0.33791666666666664
+      },
+      "early_mon_thu": {
+        "f1": 0.9799684351098701,
+        "recall": 0.9737032569360675,
+        "precision": 0.9863147605083089,
+        "pr_auc": 0.9966952166166736,
+        "n": 60000,
+        "attack_rate": 0.06908333333333333
+      },
+      "degradation_iid_minus_friday": {
+        "f1": -0.00722,
+        "recall": 0.00062,
+        "precision": -0.01497,
+        "pr_auc": -0.00212,
+        "note": "Positive \u0394 = temporal worse than IID; negative \u0394 = temporal better. Do not hide either direction."
+      },
+      "degradation_iid_minus_early": {
+        "f1": 0.01051,
+        "recall": 0.0233
+      }
+    },
+    "multiclass": {
+      "iid_test_six_class": {
+        "accuracy": 0.9997885810263216,
+        "f1_macro": 0.9981270442352507,
+        "recall_macro": 0.9986392234757974
+      },
+      "friday_temporal_subset": {
+        "accuracy": 1.0,
+        "f1_macro": 1.0,
+        "recall_macro": 1.0,
+        "n": 12165,
+        "families_present": [
+          "Bot",
+          "DDoS",
+          "PortScan"
+        ],
+        "families_absent": [
+          "BruteForce",
+          "DoS",
+          "WebAttack"
+        ],
+        "note": "Friday multiclass covers only families present in the sample \u2014 not a full six-class temporal evaluation."
+      },
+      "degradation_note": "Aggregate multiclass \u0394 is not directly comparable (6-class IID vs 3-class Friday subset)."
+    }
+  },
+  "class_wise": {
+    "iid_multiclass": [
+      {
+        "attack_type": "Bot",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 389.0
+      },
+      {
+        "attack_type": "BruteForce",
+        "precision": 1.0,
+        "recall": 0.999454,
+        "f1": 0.999727,
+        "support": 1830.0
+      },
+      {
+        "attack_type": "DDoS",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 25603.0
+      },
+      {
+        "attack_type": "DoS",
+        "precision": 0.999768,
+        "recall": 0.999871,
+        "f1": 0.999819,
+        "support": 38749.0
+      },
+      {
+        "attack_type": "PortScan",
+        "precision": 0.999835,
+        "recall": 0.999504,
+        "f1": 0.999669,
+        "support": 18139.0
+      },
+      {
+        "attack_type": "WebAttack",
+        "precision": 0.986111,
+        "recall": 0.993007,
+        "f1": 0.989547,
+        "support": 429.0
+      }
+    ],
+    "friday_temporal": [
+      {
+        "attack_type": "Bot",
+        "present_in_friday_sample": true,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 108.0
+      },
+      {
+        "attack_type": "BruteForce",
+        "present_in_friday_sample": false,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "support": 0,
+        "note": "Family absent from Friday sample \u2014 no temporal class-wise score."
+      },
+      {
+        "attack_type": "DDoS",
+        "present_in_friday_sample": true,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 6915.0
+      },
+      {
+        "attack_type": "DoS",
+        "present_in_friday_sample": false,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "support": 0,
+        "note": "Family absent from Friday sample \u2014 no temporal class-wise score."
+      },
+      {
+        "attack_type": "PortScan",
+        "present_in_friday_sample": true,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 5142.0
+      },
+      {
+        "attack_type": "WebAttack",
+        "present_in_friday_sample": false,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "support": 0,
+        "note": "Family absent from Friday sample \u2014 no temporal class-wise score."
+      }
+    ]
+  },
+  "confusion": {
+    "iid_multiclass_off_diagonal": [
+      {
+        "true": "PortScan",
+        "predicted": "DoS",
+        "count": 6
+      },
+      {
+        "true": "DoS",
+        "predicted": "WebAttack",
+        "count": 3
+      },
+      {
+        "true": "PortScan",
+        "predicted": "WebAttack",
+        "count": 3
+      },
+      {
+        "true": "DoS",
+        "predicted": "PortScan",
+        "count": 2
+      },
+      {
+        "true": "WebAttack",
+        "predicted": "DoS",
+        "count": 2
+      },
+      {
+        "true": "BruteForce",
+        "predicted": "DoS",
+        "count": 1
+      },
+      {
+        "true": "WebAttack",
+        "predicted": "PortScan",
+        "count": 1
+      }
+    ],
+    "friday_temporal_off_diagonal": [],
+    "friday_temporal_matrix": [
+      [
+        108,
+        0,
+        0
+      ],
+      [
+        0,
+        6915,
+        0
+      ],
+      [
+        0,
+        0,
+        5142
+      ]
+    ],
+    "friday_temporal_labels": [
+      "Bot",
+      "DDoS",
+      "PortScan"
+    ],
+    "note": "Only list relationships present in results. Friday subset CM is Bot/DDoS/PortScan when those are the only families present."
+  },
+  "drift": {
+    "iid_train_to_test": {
+      "features_compared": 78,
+      "flagged_psi_ge_0.2_count": 0,
+      "max_psi_listed": 0,
+      "citation": "No feature exceeded the selected PSI threshold (0.2) in the tested IID train\u2192test comparison.",
+      "not_a_claim_of": "absence of temporal, live, or cross-dataset drift"
+    },
+    "temporal_train_to_friday": {
+      "status": "ok",
+      "ref": "processed_train",
+      "current": "friday_day_sample",
+      "n_ref_used": 108000,
+      "n_friday": 36000,
+      "per_file_cap": 12000,
+      "random_state": 42,
+      "feature_drift": {
+        "n_ref": 108000,
+        "n_cur": 36000,
+        "features_compared": 78,
+        "flagged_psi_ge_0.2": [
+          {
+            "feature": "Fwd Header Length",
+            "psi": 0.2354,
+            "mean_shift_z": 0.0023
+          },
+          {
+            "feature": "Fwd Header Length.1",
+            "psi": 0.2354,
+            "mean_shift_z": 0.0023
+          }
+        ],
+        "top_psi": [
+          {
+            "feature": "Fwd Header Length",
+            "psi": 0.2354,
+            "mean_shift_z": 0.0023
+          },
+          {
+            "feature": "Fwd Header Length.1",
+            "psi": 0.2354,
+            "mean_shift_z": 0.0023
+          },
+          {
+            "feature": "Bwd Header Length",
+            "psi": 0.1996,
+            "mean_shift_z": 0.0021
+          },
+          {
+            "feature": "Max Packet Length",
+            "psi": 0.1857,
+            "mean_shift_z": 0.1165
+          },
+          {
+            "feature": "Fwd Packet Length Max",
+            "psi": 0.1616,
+            "mean_shift_z": 0.0624
+          },
+          {
+            "feature": "Total Length of Fwd Packets",
+            "psi": 0.139,
+            "mean_shift_z": 0.0022
+          },
+          {
+            "feature": "Subflow Fwd Bytes",
+            "psi": 0.139,
+            "mean_shift_z": 0.0022
+          },
+          {
+            "feature": "Fwd Packet Length Mean",
+            "psi": 0.1306,
+            "mean_shift_z": 0.104
+          },
+          {
+            "feature": "Avg Fwd Segment Size",
+            "psi": 0.1306,
+            "mean_shift_z": 0.104
+          },
+          {
+            "feature": "Fwd Packet Length Std",
+            "psi": 0.12,
+            "mean_shift_z": 0.0766
+          },
+          {
+            "feature": "Bwd Packet Length Mean",
+            "psi": 0.0982,
+            "mean_shift_z": 0.0723
+          },
+          {
+            "feature": "Avg Bwd Segment Size",
+            "psi": 0.0982,
+            "mean_shift_z": 0.0723
+          },
+          {
+            "feature": "Bwd Packet Length Max",
+            "psi": 0.098,
+            "mean_shift_z": 0.0715
+          },
+          {
+            "feature": "Total Length of Bwd Packets",
+            "psi": 0.0862,
+            "mean_shift_z": -0.0067
+          },
+          {
+            "feature": "Subflow Bwd Bytes",
+            "psi": 0.0862,
+            "mean_shift_z": -0.0067
+          }
+        ],
+        "note": "PSI>=0.2 often treated as notable shift (heuristic, not a universal rule)."
+      },
+      "label_drift": {
+        "by_label": [
+          {
+            "label": "BENIGN",
+            "ref_pct": 82.83,
+            "cur_pct": 66.21,
+            "delta_pp": -16.62
+          },
+          {
+            "label": "DDoS",
+            "ref_pct": 5.06,
+            "cur_pct": 19.21,
+            "delta_pp": 14.14
+          },
+          {
+            "label": "PortScan",
+            "ref_pct": 3.65,
+            "cur_pct": 14.28,
+            "delta_pp": 10.63
+          },
+          {
+            "label": "DoS",
+            "ref_pct": 7.9,
+            "cur_pct": 0.0,
+            "delta_pp": -7.9
+          },
+          {
+            "label": "BruteForce",
+            "ref_pct": 0.39,
+            "cur_pct": 0.0,
+            "delta_pp": -0.39
+          },
+          {
+            "label": "Bot",
+            "ref_pct": 0.09,
+            "cur_pct": 0.3,
+            "delta_pp": 0.21
+          },
+          {
+            "label": "WebAttack",
+            "ref_pct": 0.08,
+            "cur_pct": 0.0,
+            "delta_pp": -0.08
+          }
+        ]
+      },
+      "summary": {
+        "features_compared": 78,
+        "flagged_psi_ge_0.2_count": 2,
+        "max_psi": 0.2354,
+        "top_psi": [
+          {
+            "feature": "Fwd Header Length",
+            "psi": 0.2354,
+            "mean_shift_z": 0.0023
+          },
+          {
+            "feature": "Fwd Header Length.1",
+            "psi": 0.2354,
+            "mean_shift_z": 0.0023
+          },
+          {
+            "feature": "Bwd Header Length",
+            "psi": 0.1996,
+            "mean_shift_z": 0.0021
+          },
+          {
+            "feature": "Max Packet Length",
+            "psi": 0.1857,
+            "mean_shift_z": 0.1165
+          },
+          {
+            "feature": "Fwd Packet Length Max",
+            "psi": 0.1616,
+            "mean_shift_z": 0.0624
+          },
+          {
+            "feature": "Total Length of Fwd Packets",
+            "psi": 0.139,
+            "mean_shift_z": 0.0022
+          },
+          {
+            "feature": "Subflow Fwd Bytes",
+            "psi": 0.139,
+            "mean_shift_z": 0.0022
+          },
+          {
+            "feature": "Fwd Packet Length Mean",
+            "psi": 0.1306,
+            "mean_shift_z": 0.104
+          },
+          {
+            "feature": "Avg Fwd Segment Size",
+            "psi": 0.1306,
+            "mean_shift_z": 0.104
+          },
+          {
+            "feature": "Fwd Packet Length Std",
+            "psi": 0.12,
+            "mean_shift_z": 0.0766
+          }
+        ]
+      },
+      "interpretation": "Non-zero temporal PSI is expected under day/scenario composition shift. This does not invalidate IID metrics; it contextualizes them."
+    }
+  },
+  "external_dataset": {
+    "status": "skipped",
+    "reason": "External dataset directory not found",
+    "train_dataset": "CICIDS2017",
+    "external_dataset_dir": "D:\\IDS-Project\\CSE-CIC-IDS2018",
+    "conclusion": "External-dataset validation remains future work.",
+    "rule": "Do not retrain on an external set and call that cross-dataset generalization."
+  },
+  "unknown_zero_day": {
+    "status": "out_of_scope",
+    "statement": "This phase does not claim zero-day / unknown-attack detection. Held-out unknown behavior would be a separate experiment and must not modify the frozen classifier."
+  },
+  "research_vs_production": {
+    "research_validation": "Dataset \u2192 frozen DT/RF \u2192 IID stratified test + temporal day holdout \u2192 metrics in this report",
+    "production_pipeline": "PCAP \u2192 flow extraction \u2192 feature extraction \u2192 validation \u2192 frozen models",
+    "inheritance": "The production PCAP pipeline does not automatically inherit research IID/temporal metrics. Reported scores apply only under the documented experimental setup."
+  },
+  "limitations": [
+    "Day slices are capped samples, not exhaustive day populations.",
+    "Attack-rate composition differs across slices; headline F1 can move with prevalence.",
+    "Friday multiclass perfect scores apply only to families present (Bot/DDoS/PortScan).",
+    "BruteForce, DoS, and WebAttack lack Friday temporal class-wise evidence in this sample.",
+    "Mon\u2013Thu multiclass may skip when unseen labels (e.g. Infiltration) appear.",
+    "IID PSI\u22480 is expected under stratified same-corpus splits \u2014 not live drift absence.",
+    "No compatible external dataset was scored under frozen preprocessing.",
+    "No zero-day / unknown-class claim is made.",
+    "Models were not retuned on the temporal holdout (holdout remains evaluation-only)."
+  ],
+  "conclusions": [
+    "Under the Friday temporal holdout sample, binary F1/PR-AUC remain high relative to the IID test; \u0394(IID\u2212Friday) F1 is negative (temporal slightly higher on this slice).",
+    "Mon\u2013Thu early-day binary F1 is lower than IID (positive degradation), illustrating sensitivity to day composition / attack prevalence.",
+    "Temporal multiclass generalization is only evidenced for Bot, DDoS, and PortScan in the Friday sample; three attack families remain unevaluated temporally.",
+    "IID train\u2192test PSI flagged zero features at the 0.2 heuristic; temporal train\u2192Friday PSI is reported separately when computable and must not be collapsed into 'no drift'.",
+    "External-dataset and zero-day validation remain future / separate work."
+  ]
+}

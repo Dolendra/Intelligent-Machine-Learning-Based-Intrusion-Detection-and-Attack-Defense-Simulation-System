@@ -259,6 +259,9 @@ def run_prediction(
     source_ref: str | None = None,
     asset_id: str | None = None,
 ) -> dict[str, Any]:
+    import time
+
+    _t0 = time.perf_counter()
     predictor = get_predictor()
     if predictor is None:
         raise RuntimeError("Models not trained. Run scripts/01_prepare_data.py and scripts/02_train_models.py")
@@ -363,7 +366,44 @@ def run_prediction(
     from backend.services.decision_trace import build_trace_from_prediction
 
     payload["decision_trace"] = build_trace_from_prediction(payload)
+    _observe_prediction(payload, duration_ms=(time.perf_counter() - _t0) * 1000, source="single")
     return payload
+
+
+def _observe_prediction(payload: dict[str, Any], *, duration_ms: float, source: str) -> None:
+    """Operational metrics + JSON log for a prediction (no raw feature dump)."""
+    try:
+        from backend.observability.context import bind_correlation
+        from backend.observability.events import log_event
+        from backend.observability.registry import domain_metrics
+
+        is_attack = bool(payload.get("is_attack"))
+        domain_metrics.incr("detection.flows_processed_total")
+        domain_metrics.incr("detection.detections_total")
+        if is_attack:
+            domain_metrics.incr("detection.attacks_detected_total")
+        else:
+            domain_metrics.incr("detection.normal_flows_total")
+        domain_metrics.observe_ms("detection.prediction_latency_ms", duration_ms)
+        with bind_correlation(incident_id=payload.get("incident_id")):
+            log_event(
+                "prediction",
+                duration_ms=duration_ms,
+                status="ok",
+                prediction=payload.get("attack_type"),
+                attack_family=payload.get("attack_type"),
+                confidence=payload.get("confidence"),
+                risk_score=payload.get("risk_score"),
+                incident_id=payload.get("incident_id"),
+                campaign_id=payload.get("campaign_id"),
+                model_version="v1.1-research",
+                feature_schema_version="1.1.0",
+                preprocessing_version="cicids2017_v1_1",
+                source=source,
+                is_attack=is_attack,
+            )
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def severity_changed(old: str | None, new: str | None) -> bool:
@@ -379,6 +419,9 @@ def run_prediction_batch(
     allow_missing_features: bool = False,
     asset_criticality: float | None = None,
 ) -> dict[str, Any]:
+    import time
+
+    _t0 = time.perf_counter()
     if not rows:
         raise ValueError("Batch must contain at least one feature vector")
     if len(rows) > 500:
@@ -413,6 +456,35 @@ def run_prediction_batch(
     for r in attacks:
         by_type[r["attack_type"]] = by_type.get(r["attack_type"], 0) + 1
     highest = max(results, key=lambda r: r["risk_score"]) if results else None
+
+    duration_ms = (time.perf_counter() - _t0) * 1000
+    try:
+        from backend.observability.events import log_event
+        from backend.observability.registry import domain_metrics
+
+        for r in results:
+            # Avoid double-count when persist path already observed via run_prediction
+            if r.get("incident_id"):
+                continue
+            domain_metrics.incr("detection.flows_processed_total")
+            domain_metrics.incr("detection.detections_total")
+            if r.get("is_attack"):
+                domain_metrics.incr("detection.attacks_detected_total")
+            else:
+                domain_metrics.incr("detection.normal_flows_total")
+        domain_metrics.observe_ms("detection.prediction_latency_ms", duration_ms)
+        log_event(
+            "prediction_batch",
+            duration_ms=duration_ms,
+            status="ok",
+            total_flows=len(results),
+            attack_flows=len(attacks),
+            model_version="v1.1-research",
+            feature_schema_version="1.1.0",
+            source="batch",
+        )
+    except Exception:  # noqa: BLE001
+        pass
 
     return {
         "total_flows": len(results),

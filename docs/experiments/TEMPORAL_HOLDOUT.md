@@ -38,3 +38,8 @@ Do **not** claim equivalent production generalization from IID numbers alone.
 Do **not** claim full six-class temporal multiclass success from the Friday subset.
 
 External-dataset validation was not performed within the current experimental scope and is identified as future work for assessing cross-dataset generalization.
+
+## P10 consolidation
+
+Full generalization write-up (IID vs temporal degradation, class-wise, temporal PSI, research vs production):  
+**`docs/GENERALIZATION.md`** · artifact `generalization_report.json` (EXP-017) · `scripts/41_generalization_report.py`

@@ -25,7 +25,15 @@ Do **not** claim live capture, automatic mitigation, or OAuth SSO until those pi
 |--------|------|---------|
 | GET | `/api/ingest/capabilities` | Schema version + extractor status |
 | POST | `/api/ingest/flows/csv` | Offline CSV → validated feature rows (+ optional predict) |
-| POST | `/api/ingest/pcap` | Offline PCAP via cicflowmeter when installed; else 501 |
+| POST | `/api/ingest/pcap` | Offline PCAP (P1: size/magic/extension validation + audit); cicflowmeter when installed; else 501 |
+| POST | `/api/ingest/queue/submit-pcap` | Same detect queue as CSV after PCAP→flow extract; 501 without cicflowmeter |
+| POST | `/api/response/actions/propose` | P2: propose abstract DRY_RUN action (pending approval) |
+| POST | `/api/response/actions/{id}/approve` | Approve → adapter execute + verify (DRY_RUN or CONTROLLED) |
+| POST | `/api/response/actions/{id}/reject` | Reject with audit; no execution |
+| POST | `/api/response/actions/{id}/rollback` | P3: reverse reversible actions via adapter |
+| GET | `/api/response/adapters` | dry_run / test_network / live_forbidden (live disabled) |
+
+> **Productionization (post `v1.1-research`):** see `docs/PRODUCTIONIZATION.md`. Branch `productionization` hardens offline PCAP (P1) and adds dry-run/approval response gate (P2) without changing frozen DT/RF artifacts. Live NIC capture and live firewall/EDR adapters remain out of scope until later phases.
 
 ### CLI examples
 
@@ -50,40 +58,68 @@ In-process FIFO queue (single API worker):
 
 Honest limits: **not** Redis/Kafka, **not** multi-node. Useful for staging batches and measuring detect latency on one process.
 
-### Phase C — Database + auth/RBAC scaffolding (started)
+### Phase C — Database + auth/RBAC (P4 complete on `productionization`)
 
 | Item | Status |
 |------|--------|
 | SQLite default | unchanged (research baseline) |
 | PostgreSQL via `IDS_DB_URL` | URL + pool kwargs ready; install driver separately |
-| `/api/security/status` | auth/rate-limit/DB/RBAC summary (public) |
-| API key auth | still **disabled by default**; enable `api.auth.enabled` + `AEGIS_API_KEY` |
-| RBAC roles | `admin` / `analyst` / `viewer` / `ml_research` via `X-Aegis-Role` |
+| `/api/security/status` | auth/rate-limit/DB/RBAC/request-limits summary (public) |
+| Password login + Bearer tokens | P4 — enable `AEGIS_AUTH_ENABLED=true` |
+| Server RBAC | Roles from directory/token; forged body/header ignored |
+| API key auth | optional alongside Bearer; still off unless enabled |
 
-Not included yet: OAuth/SSO, user tables, password login, full SOC analyst accounts.
+Not included yet: OAuth/SSO. Persistence of users/actions across restarts is **P6** (complete on `productionization`).
 
-### Phase D — API hardening + controlled response (started)
+### Phase D — API hardening (P5 complete on `productionization`)
 
 | Item | Status |
 |------|--------|
-| Rate-limit path coverage | Prefixes include `/api/ingest`, `/api/response`, `/api/simulation`, … (still **off** by default) |
-| Security headers | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `X-Aegis-Live-Mitigation: false` |
+| Rate limiting | **ON by default** for login/predict/ingest/response/… (`DISABLE_RATE_LIMIT` for CI) |
+| Request-size limits | JSON/CSV/PCAP/multipart Content-Length caps |
+| Security headers | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, … |
+| Error sanitization | No stack/`input`/secret leakage; correlation `request_id` |
+| WebSocket auth | `/api/ws/events` requires Bearer/token when auth enabled |
+| Upload safety | Basename-only filenames; PCAP magic/size/extension |
 | `POST /api/response/plan` | Advisory playbook + optional simulation preview |
-| Live mitigation | **Not implemented** — response remains decision-support / sim |
+| Live mitigation | **Not implemented** — response remains decision-support / controlled dry-run |
 
-Honest limits: no firewall/WAF/agent connectors; `defense_action` on incidents is an analyst note, not an executed control.
+Honest limits: no firewall/WAF/agent connectors; in-process rate limits (not Redis); CORS remains localhost allowlist unless `AEGIS_CORS_STRICT`.
 
-### Phase E — Observability / CI-CD / load tests (started)
+### Phase persistence (P6 complete on `productionization`)
 
 | Item | Status |
 |------|--------|
-| `GET /api/metrics` | In-process request counters + p50/p95 latency samples |
-| Request logging | Existing `StructuredLoggingMiddleware` + `X-Request-ID` |
-| Load smoke | `python scripts/26_api_load_smoke.py` (health/ready/metrics only) |
-| CI | Runs on `main` **and** `stage2/productionization`; `stage2-gate` job |
-| Docker image | `Dockerfile.api` copies `ingestion/` for Stage-2 APIs |
+| Alembic `002_p6_persistence` | users, response_actions, response/security audit, model refs |
+| Response store | DB-backed; append-only audit; atomic approve/reject |
+| Users | Durable seed directory |
+| Retention | Documented in `database.retention` (not silent audit wipe) |
+| Restart tests | `tests/test_productionization_p6_persistence.py` |
 
-Honest limits: **not** Prometheus/Grafana/OpenTelemetry; metrics reset on process restart; load smoke is **not** a capacity/SLA claim.
+Ephemeral by design: ingest queue, WS clients, rate-limit counters. Full backup/DR is P9.
+
+### Phase E — Observability (P7) + Performance (P8)
+
+| Item | Status |
+|------|--------|
+| Structured JSON logs + correlation | P7 |
+| `/api/ops/status` + System UI | P7 |
+| Performance harness | `performance/` + `scripts/30–37_*` |
+| Operating envelope | `docs/PERFORMANCE.md`, `results/performance/operating_envelope_latest.json` |
+| CI | Fast functional only; benches are manual/local |
+
+Honest limits: single-process measurements; not multi-node capacity or SLA.
+
+### Phase F — Failure recovery (P9 complete on `productionization`)
+
+| Item | Status |
+|------|--------|
+| Startup reclaim | Stale EXECUTING/APPROVED → FAILED |
+| Backup/restore | `scripts/40_db_backup_restore.py` (+ disaster-drill) |
+| Docs | `docs/FAILURE_RECOVERY.md` failure matrix + measured RPO/RTO |
+| Tests | `tests/test_productionization_p9_recovery.py` |
+
+Honest limits: in-process queue not durable; not enterprise offsite DR.
 
 ### Phase F — Cyber-range simulation validation + docs (started)
 

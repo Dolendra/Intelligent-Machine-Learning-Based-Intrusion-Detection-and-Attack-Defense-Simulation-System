@@ -10,6 +10,7 @@ import { IncidentDetailPage } from "./pages/IncidentDetailPage";
 import { ModelsPage } from "./pages/ModelsPage";
 import { CampaignPage } from "./pages/CampaignPage";
 import { ResearchPage } from "./pages/ResearchPage";
+import { SystemPage } from "./pages/SystemPage";
 import "./styles/global.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -26,6 +27,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <Route path="/incidents/:incidentId" element={<IncidentDetailPage />} />
           <Route path="/models" element={<ModelsPage />} />
           <Route path="/research" element={<ResearchPage />} />
+          <Route path="/system" element={<SystemPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

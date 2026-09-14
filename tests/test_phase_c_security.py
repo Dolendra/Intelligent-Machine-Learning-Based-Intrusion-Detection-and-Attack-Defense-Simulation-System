@@ -70,6 +70,8 @@ def test_api_key_rbac_forbids_viewer_predict():
         api_key="secret",
         enforce_rbac=True,
         default_role="viewer",
+        allow_role_header=True,  # legacy demo mode for this Stage-2 test
+        api_key_role="viewer",
     )
     c = StarletteTestClient(app_s)
     denied = c.post("/api/predict", headers={"X-API-Key": "secret", "X-Aegis-Role": "viewer"})

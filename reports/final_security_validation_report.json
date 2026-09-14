@@ -1,0 +1,359 @@
+{
+  "phase": "P12",
+  "experiment": "final_security_validation",
+  "generated_at": "2026-09-14T19:41:55.393098+00:00",
+  "overall": "PASS",
+  "categories": {
+    "Authentication/RBAC": {
+      "status": "PASS",
+      "checks": [
+        {
+          "id": "rbac_operation_matrix",
+          "status": "PASS",
+          "detail": "viewer/analyst/responder/admin boundaries match"
+        },
+        {
+          "id": "token_expiry",
+          "status": "PASS",
+          "detail": "expired token rejected"
+        },
+        {
+          "id": "token_hmac",
+          "status": "PASS",
+          "detail": "tampered signature rejected"
+        },
+        {
+          "id": "rbac_direct_api",
+          "status": "PASS",
+          "detail": "viewer/analyst/responder HTTP boundaries enforced"
+        }
+      ],
+      "failed_count": 0,
+      "passed_count": 4
+    },
+    "Response safety": {
+      "status": "PASS",
+      "checks": [
+        {
+          "id": "live_mode_forbidden",
+          "status": "PASS",
+          "detail": "LIVE_MODE_DISABLED"
+        },
+        {
+          "id": "live_adapter_forbidden",
+          "status": "PASS",
+          "detail": "LiveNetworkAdapter raises"
+        },
+        {
+          "id": "dry_run_no_network",
+          "status": "PASS",
+          "detail": "DRY_RUN approve leaves test adapter empty"
+        },
+        {
+          "id": "approval_mandatory",
+          "status": "PASS",
+          "detail": "unapproved execute blocked"
+        },
+        {
+          "id": "controlled_adapter_only",
+          "status": "PASS",
+          "detail": "CONTROLLED uses test_network + rollback"
+        },
+        {
+          "id": "verify_fail_no_verified",
+          "status": "PASS",
+          "detail": "VERIFY_FAILED; status=ROLLED_BACK"
+        },
+        {
+          "id": "duplicate_approve",
+          "status": "PASS",
+          "detail": "second approve rejected"
+        },
+        {
+          "id": "reclaim_no_replay",
+          "status": "PASS",
+          "detail": "EXECUTING->FAILED; reclaimed=1"
+        }
+      ],
+      "failed_count": 0,
+      "passed_count": 8
+    },
+    "API/input security": {
+      "status": "PASS",
+      "checks": [
+        {
+          "id": "path_traversal",
+          "status": "PASS",
+          "detail": "traversal basename rejected"
+        },
+        {
+          "id": "pcap_magic",
+          "status": "PASS",
+          "detail": "code=PCAP_TOO_SHORT"
+        },
+        {
+          "id": "cors_allowlist_local",
+          "status": "PASS",
+          "detail": "ACA-Origin=http://localhost:5173"
+        },
+        {
+          "id": "cors_rejects_foreign",
+          "status": "PASS",
+          "detail": "foreign Origin not reflected ('')"
+        },
+        {
+          "id": "security_headers",
+          "status": "PASS",
+          "detail": "X-Content-Type-Options + X-Frame-Options present"
+        },
+        {
+          "id": "request_size_or_validation",
+          "status": "PASS",
+          "detail": "status=413"
+        },
+        {
+          "id": "safe_errors",
+          "status": "PASS",
+          "detail": "status=404, no traceback"
+        },
+        {
+          "id": "rate_limit_configured",
+          "status": "PASS",
+          "detail": "enabled=True"
+        }
+      ],
+      "failed_count": 0,
+      "passed_count": 8
+    },
+    "Persistence/recovery": {
+      "status": "PASS",
+      "checks": [
+        {
+          "id": "audit_append_only_grows",
+          "status": "PASS",
+          "detail": "audit 7\u21928"
+        },
+        {
+          "id": "backup_script_present",
+          "status": "PASS",
+          "detail": "40_db_backup_restore.py"
+        },
+        {
+          "id": "recovery_no_auto_replay_policy",
+          "status": "PASS",
+          "detail": "startup recovery documents no auto-replay"
+        }
+      ],
+      "failed_count": 0,
+      "passed_count": 3
+    },
+    "Model-serving safety": {
+      "status": "PASS",
+      "checks": [
+        {
+          "id": "batch_limit_500",
+          "status": "PASS",
+          "detail": "max_length=500 enforced"
+        },
+        {
+          "id": "artifact_hashes",
+          "status": "PASS",
+          "detail": "binary/multiclass/feature_bundle hashes match"
+        },
+        {
+          "id": "frozen_research_metrics",
+          "status": "PASS",
+          "detail": "binary F1=0.9904784130688448"
+        },
+        {
+          "id": "metadata_non_enterprise_note",
+          "status": "PASS",
+          "detail": "model_metadata notes present"
+        },
+        {
+          "id": "invalid_predict_safe",
+          "status": "PASS",
+          "detail": "status=422"
+        }
+      ],
+      "failed_count": 0,
+      "passed_count": 5
+    },
+    "Simulation isolation": {
+      "status": "PASS",
+      "checks": [
+        {
+          "id": "sim_assumptions_flagged",
+          "status": "PASS",
+          "detail": "efficacy_are_assumptions=true, not live range"
+        },
+        {
+          "id": "sim_no_test_adapter",
+          "status": "PASS",
+          "detail": "simulation did not apply TestNetworkAdapter controls"
+        },
+        {
+          "id": "security_status_no_live",
+          "status": "PASS",
+          "detail": "security/status denies live mitigation"
+        },
+        {
+          "id": "security_status_sim_isolated",
+          "status": "PASS",
+          "detail": "cyber_range not live"
+        },
+        {
+          "id": "sim_priors_preserved",
+          "status": "PASS",
+          "detail": "DDoS=0.82 DoS=0.78 still assumptions"
+        }
+      ],
+      "failed_count": 0,
+      "passed_count": 5
+    },
+    "Empirical mitigation": {
+      "status": "PASS",
+      "checks": [
+        {
+          "id": "exp_ids",
+          "status": "PASS",
+          "detail": "EXP-018 and EXP-019 present"
+        },
+        {
+          "id": "sim_preserved_flag",
+          "status": "PASS",
+          "detail": "simulation_preserved=true"
+        },
+        {
+          "id": "controlled_lab_flags",
+          "status": "PASS",
+          "detail": "CONTROLLED + approval, no live EDR"
+        },
+        {
+          "id": "measured_ddos_1_00",
+          "status": "PASS",
+          "detail": "measured BLOCK_SOURCE effectiveness=1.00 (lab)"
+        },
+        {
+          "id": "measured_dos_0_80",
+          "status": "PASS",
+          "detail": "measured RATE_LIMIT effectiveness=0.80 (lab)"
+        },
+        {
+          "id": "assumption_ddos_0_82",
+          "status": "PASS",
+          "detail": "simulation prior DDoS=0.82 retained"
+        },
+        {
+          "id": "assumption_dos_0_78",
+          "status": "PASS",
+          "detail": "simulation prior DoS=0.78 retained"
+        },
+        {
+          "id": "delta_reported",
+          "status": "PASS",
+          "detail": "DDoS \u0394 measured\u2212sim=0.18"
+        }
+      ],
+      "failed_count": 0,
+      "passed_count": 8
+    },
+    "Audit integrity": {
+      "status": "PASS",
+      "checks": [
+        {
+          "id": "security_events_module",
+          "status": "PASS",
+          "detail": "security_event() records structured events"
+        },
+        {
+          "id": "response_audit_events",
+          "status": "PASS",
+          "detail": "events include proposed"
+        }
+      ],
+      "failed_count": 0,
+      "passed_count": 2
+    },
+    "Production boundary": {
+      "status": "PASS",
+      "checks": [
+        {
+          "id": "doc_EMPIRICAL_MITIGATION.md",
+          "status": "PASS",
+          "detail": "boundary language present"
+        },
+        {
+          "id": "doc_GENERALIZATION.md",
+          "status": "PASS",
+          "detail": "boundary language present"
+        },
+        {
+          "id": "doc_FAILURE_RECOVERY.md",
+          "status": "PASS",
+          "detail": "boundary language present"
+        },
+        {
+          "id": "doc_05-simulation.md",
+          "status": "PASS",
+          "detail": "boundary language present"
+        },
+        {
+          "id": "p12_doc_FINAL_SECURITY_VALIDATION.md",
+          "status": "PASS",
+          "detail": "present"
+        },
+        {
+          "id": "p12_doc_SECURITY_MODEL.md",
+          "status": "PASS",
+          "detail": "present"
+        },
+        {
+          "id": "p12_doc_PRODUCTION_READINESS.md",
+          "status": "PASS",
+          "detail": "present"
+        }
+      ],
+      "failed_count": 0,
+      "passed_count": 7
+    },
+    "Frozen research baseline": {
+      "status": "PASS",
+      "checks": [
+        {
+          "id": "artifact_hashes",
+          "status": "PASS",
+          "detail": "binary/multiclass/feature_bundle hashes match"
+        },
+        {
+          "id": "frozen_research_metrics",
+          "status": "PASS",
+          "detail": "binary F1=0.9904784130688448"
+        },
+        {
+          "id": "metadata_non_enterprise_note",
+          "status": "PASS",
+          "detail": "model_metadata notes present"
+        }
+      ],
+      "failed_count": 0,
+      "passed_count": 3
+    }
+  },
+  "git_commit": "dd54996",
+  "environment": {
+    "python_version": "3.11.9",
+    "platform": "Windows-10-10.0.26200-SP0"
+  },
+  "honesty": {
+    "live_firewall_edr": false,
+    "not_production_soc_claim": true,
+    "empirical_script": "scripts/42_empirical_mitigation_experiment.py",
+    "validation_script": "scripts/43_final_security_validation.py",
+    "new_features_in_p12": false
+  },
+  "artifact_hash_verification": {
+    "status": "PASS",
+    "detail": "binary/multiclass/feature_bundle hashes match"
+  }
+}

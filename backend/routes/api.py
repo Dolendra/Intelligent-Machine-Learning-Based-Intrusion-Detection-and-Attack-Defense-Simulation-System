@@ -1,7 +1,7 @@
 """FastAPI route handlers."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -14,6 +14,8 @@ from backend.schemas.api import (
     PredictRequest,
     PredictResponse,
     RecommendationRequest,
+    ResponseActionDecisionRequest,
+    ResponseActionProposeRequest,
     RiskRequest,
     SimulationAdvanceRequest,
     SimulationFromPredictionRequest,
@@ -53,7 +55,18 @@ def security_status():
     auth = cfg.get("api", {}).get("auth", {}) or {}
     rl = cfg.get("api", {}).get("rate_limit", {}) or {}
     key_configured = bool(os.getenv("AEGIS_API_KEY") or auth.get("api_key"))
+    enabled_env = os.getenv("AEGIS_AUTH_ENABLED")
+    if enabled_env is not None:
+        auth_enabled = enabled_env.lower() in {"1", "true", "yes"}
+    else:
+        auth_enabled = bool(auth.get("enabled", False))
+    rl_env = os.getenv("AEGIS_RATE_LIMIT_ENABLED")
+    if rl_env is not None:
+        rl_enabled = rl_env.lower() in {"1", "true", "yes"}
+    else:
+        rl_enabled = bool(rl.get("enabled", True))
     default_rl_paths = [
+        "/api/auth/login",
         "/api/predict",
         "/api/ingest",
         "/api/explain",
@@ -61,29 +74,50 @@ def security_status():
         "/api/response",
         "/api/simulation",
     ]
+    from backend.middleware.request_limits import request_limits_summary
+    from security.auth import auth_status
+
     return {
         "stage": "2-phase-f",
         "auth": {
-            "enabled": bool(auth.get("enabled", False)),
+            "enabled": auth_enabled,
             "api_key_configured": key_configured,
             "header": auth.get("header", "X-API-Key"),
             "role_header": auth.get("role_header", "X-Aegis-Role"),
             "default_role": auth.get("default_role", "analyst"),
+            "api_key_role": auth.get("api_key_role", "admin"),
+            "allow_role_header": bool(auth.get("allow_role_header", False)),
             "enforce_rbac": bool(auth.get("enforce_rbac", True)),
+            "login_endpoint": "/api/auth/login",
+            "bearer": True,
+            "phase": "P4",
         },
+        "auth_detail": auth_status(enabled=auth_enabled),
         "rate_limit": {
-            "enabled": bool(rl.get("enabled", False)),
+            "enabled": rl_enabled,
+            "default_on": True,
             "requests_per_window": rl.get("requests_per_window"),
             "window_seconds": rl.get("window_seconds"),
             "paths": list(rl.get("paths") or default_rl_paths),
+            "path_limits": rl.get("path_limits") or {},
+            "phase": "P5",
+        },
+        "request_limits": request_limits_summary(),
+        "cors": {
+            "origins": cfg.get("api", {}).get("cors_origins"),
+            "strict": bool(cfg.get("api", {}).get("cors_strict", False)),
         },
         "security_headers": security_headers_summary(),
         "observability": {
             "metrics_endpoint": "/api/metrics",
+            "ops_endpoint": "/api/ops/status",
             "request_logging": True,
+            "structured_json_logs": True,
+            "correlation_ids": True,
             "prometheus": False,
             "opentelemetry": False,
             "load_smoke_script": "scripts/26_api_load_smoke.py",
+            "phase": "P7",
         },
         "cyber_range_validation": {
             "live_cyber_range": False,
@@ -97,39 +131,69 @@ def security_status():
             "live_mitigation": False,
             "simulation": True,
             "advisory_only": True,
+            "dry_run_default": True,
+            "phase": "P3",
             "plan_endpoint": "/api/response/plan",
+            "actions_endpoint": "/api/response/actions",
+            "adapters_endpoint": "/api/response/adapters",
+            "approval_required": True,
+            "controlled_test_adapter": True,
+            "live_firewall_edr": False,
         },
-        "database": database_info(),
+        "database": {
+            **database_info(),
+            "persistence": __import__(
+                "database.retention", fromlist=["persistence_summary"]
+            ).persistence_summary(),
+        },
         "rbac": rbac_summary(),
         "notes": [
-            "Auth and rate limiting remain disabled by default for the research/demo baseline.",
-            "Enable api.auth.enabled and set AEGIS_API_KEY for Stage-2 hardening.",
-            "Enable api.rate_limit.enabled to protect predict/ingest/response surfaces.",
-            "Controlled response is advisory + simulation only — no live network mitigation.",
+            "P9: startup recovery reclaims stale EXECUTING/APPROVED; backup via scripts/40_db_backup_restore.py.",
+            "P7: structured JSON logs, correlation IDs, domain metrics, /api/ops/status.",
+            "P6: users, response actions, audit, incidents, and simulations survive restarts.",
+            "P5: rate limiting and request-size limits are ON by default for sensitive paths.",
+            "CI/local load tests may set DISABLE_RATE_LIMIT=true.",
+            "Enable api.auth.enabled or AEGIS_AUTH_ENABLED=true for P4 authentication/RBAC.",
+            "Login via POST /api/auth/login; send Authorization: Bearer <token>.",
+            "WebSocket /api/ws/events requires the same auth when AEGIS_AUTH_ENABLED=true.",
+            "P3: adapter contract + TestNetworkAdapter; LIVE firewall/EDR still forbidden.",
             "/api/metrics is in-process only (resets on restart); not a multi-node SRE stack.",
             "Cyber-range validation checks the simulation state machine — not a physical range or real defense efficacy.",
-            "PostgreSQL is optional via IDS_DB_URL; SQLite remains the default.",
+            "PostgreSQL is optional via IDS_DB_URL; SQLite remains the default. Backups are P9.",
         ],
     }
 
 
 @router.get("/metrics")
 def process_metrics_endpoint():
-    """Stage-2 Phase E: in-process request counters and latency samples (not Prometheus)."""
+    """P7: in-process request + domain counters (not Prometheus)."""
     from backend.middleware.metrics_mw import process_metrics
+    from backend.observability.registry import domain_metrics
 
     snap = process_metrics.snapshot()
+    snap["domain"] = domain_metrics.snapshot()
     try:
         from ingestion.queue import ingest_queue
 
         snap["ingest_queue"] = ingest_queue.status().get("metrics")
+        snap["queue_depth"] = ingest_queue.status().get("queued")
     except Exception:  # noqa: BLE001
         snap["ingest_queue"] = None
+    snap["phase"] = "P7"
     return snap
+
+
+@router.get("/ops/status")
+def ops_status():
+    """P7 operational snapshot for the System dashboard (no secrets)."""
+    from backend.observability.ops import ops_snapshot
+
+    return ops_snapshot()
 
 
 @router.get("/health", response_model=HealthResponse)
 def health():
+    """Liveness — process is up (does not imply workload readiness)."""
     cfg = load_config()
     return HealthResponse(
         status="ok",
@@ -140,23 +204,99 @@ def health():
 
 @router.get("/ready")
 def ready():
-    """Readiness probe — 503 until model artifacts are loadable."""
-    cfg = load_config()
-    if not svc.models_ready():
+    """Readiness — can Aegis serve required workload (DB + models + filesystem)?"""
+    from backend.observability.deps import readiness_report
+
+    report = readiness_report()
+    if not report["ready"]:
         raise HTTPException(
             status_code=503,
             detail={
-                "code": "MODEL_NOT_READY",
-                "message": "Model artifacts not loaded",
-                "models_loaded": False,
-                "version": cfg["project"]["version"],
+                "code": "NOT_READY",
+                "message": "Aegis is not ready to serve workload",
+                "missing": report.get("missing"),
+                "dependencies": report.get("dependencies"),
+                "version": report.get("version"),
             },
         )
-    return {
-        "status": "ready",
-        "models_loaded": True,
-        "version": cfg["project"]["version"],
-    }
+    return report
+
+
+@router.get("/auth/status")
+def auth_status_endpoint():
+    import os
+
+    from security.auth import auth_status
+
+    cfg = load_config().get("api", {}).get("auth", {}) or {}
+    enabled_env = os.getenv("AEGIS_AUTH_ENABLED")
+    if enabled_env is not None:
+        enabled = enabled_env.lower() in {"1", "true", "yes"}
+    else:
+        enabled = bool(cfg.get("enabled", False))
+    return auth_status(enabled=enabled)
+
+
+@router.post("/auth/login")
+def auth_login(body: dict):
+    from security.auth import AuthError, login
+
+    username = str((body or {}).get("username") or "")
+    password = str((body or {}).get("password") or "")
+    try:
+        return login(username, password)
+    except AuthError as exc:
+        raise HTTPException(
+            status_code=exc.http_status,
+            detail={"code": exc.code, "message": exc.message},
+        ) from exc
+
+
+@router.get("/auth/me")
+def auth_me(request: Request):
+    identity = getattr(request.state, "aegis_user", None)
+    if not identity or getattr(request.state, "aegis_role", None) == "anonymous":
+        # When auth is disabled, report demo identity
+        import os
+
+        from ids_config import load_config
+
+        cfg = load_config().get("api", {}).get("auth", {}) or {}
+        enabled_env = os.getenv("AEGIS_AUTH_ENABLED")
+        if enabled_env is not None:
+            enabled = enabled_env.lower() in {"1", "true", "yes"}
+        else:
+            enabled = bool(cfg.get("enabled", False))
+        if not enabled:
+            from security.rbac import permissions_for
+
+            return {
+                "authenticated": False,
+                "auth_enabled": False,
+                "role": "anonymous",
+                "permissions": sorted(permissions_for("admin")),
+                "note": "Auth disabled — demo open access (not a production posture).",
+            }
+        raise HTTPException(status_code=401, detail={"code": "UNAUTHORIZED", "message": "Not authenticated"})
+    return {"authenticated": True, "auth_enabled": True, **identity}
+
+
+@router.post("/auth/logout")
+def auth_logout():
+    """Client discards bearer token (stateless HMAC tokens — server-side revoke list not used in P4)."""
+    return {"ok": True, "message": "Discard the access token client-side"}
+
+
+@router.get("/auth/users")
+def auth_users_list(request: Request):
+    from security.auth.users import user_store
+    from security.rbac import has_permission
+
+    role = getattr(request.state, "aegis_role", None)
+    if role != "anonymous" and not has_permission(role, "admin"):
+        raise HTTPException(status_code=403, detail={"code": "FORBIDDEN", "message": "admin required"})
+    # When auth disabled, still allow for local demo introspection
+    return {"items": user_store.list_public()}
 
 
 @router.get("/models")
@@ -306,21 +446,62 @@ async def ingest_flows_csv(
     return payload
 
 
+def _pcap_temp_suffix(filename: str | None) -> str:
+    from pathlib import Path
+
+    from ingestion.upload_safety import UnsafeFilenameError, safe_upload_basename
+
+    try:
+        base = safe_upload_basename(filename, default="capture.pcap")
+    except UnsafeFilenameError:
+        base = "capture.pcap"
+    suffix = Path(base).suffix.lower()
+    if suffix not in {".pcap", ".pcapng", ".cap"}:
+        suffix = ".pcap"
+    return suffix
+
+
 @router.post("/ingest/pcap")
 async def ingest_pcap(
+    request: Request,
     file: UploadFile = File(...),
     predict: bool = False,
     persist: bool = False,
     db: Session = Depends(get_db),
 ):
-    """Offline PCAP upload — uses cicflowmeter when installed; otherwise 501."""
+    """Offline PCAP upload — validates file, then cicflowmeter when installed; otherwise 501."""
     import tempfile
     from pathlib import Path
 
+    from ingestion.audit import audit_ingest_event
+    from ingestion.pcap_validation import validate_pcap_upload
     from ingestion.pipeline import ingest_pcap as _ingest_pcap
 
-    suffix = Path(file.filename or "capture.pcap").suffix or ".pcap"
+    request_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID")
+    suffix = _pcap_temp_suffix(file.filename)
     raw = await file.read()
+    check = validate_pcap_upload(filename=file.filename, content=raw)
+    if not check.ok:
+        audit_ingest_event(
+            event="pcap_rejected",
+            source="pcap",
+            request_id=request_id,
+            filename=file.filename,
+            sha256=check.sha256,
+            size_bytes=check.size_bytes,
+            code=check.code,
+            predict=predict,
+        )
+        status = 413 if check.code == "PCAP_TOO_LARGE" else 422
+        raise HTTPException(
+            status_code=status,
+            detail={
+                "code": check.code,
+                "message": check.message,
+                "validation": check.as_dict(),
+            },
+        )
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(raw)
         tmp_path = Path(tmp.name)
@@ -332,6 +513,17 @@ async def ingest_pcap(
     if not result.ok:
         code = result.detail.get("code", "PCAP_NOT_AVAILABLE")
         status = 501 if code in {"PCAP_EXTRACTOR_NOT_CONFIGURED", "PCAP_EXTRACTOR_NOT_WIRED"} else 422
+        audit_ingest_event(
+            event="pcap_extract_failed",
+            source="pcap",
+            request_id=request_id,
+            filename=file.filename,
+            sha256=check.sha256,
+            size_bytes=check.size_bytes,
+            code=code,
+            schema_version=(result.schema or {}).get("schema_version"),
+            predict=predict,
+        )
         raise HTTPException(
             status_code=status,
             detail={
@@ -340,10 +532,24 @@ async def ingest_pcap(
                 "capabilities": result.detail,
                 "schema_version": (result.schema or {}).get("schema_version"),
                 "validation": result.validation,
+                "upload": check.as_dict(),
             },
         )
 
     payload = result.as_dict()
+    payload["upload"] = check.as_dict()
+    audit_ingest_event(
+        event="pcap_accepted",
+        source="pcap",
+        request_id=request_id,
+        filename=file.filename,
+        sha256=check.sha256,
+        size_bytes=check.size_bytes,
+        code="OK",
+        flow_count=len(result.flows),
+        schema_version=(result.schema or {}).get("schema_version"),
+        predict=predict,
+    )
     if predict:
         try:
             batch = svc.run_prediction_batch(result.flows, db=db, persist=persist, allow_missing_features=False)
@@ -356,6 +562,26 @@ async def ingest_pcap(
         payload["flows"] = payload["flows"][:5]
         payload["flows_truncated"] = True
     return payload
+
+
+def _ensure_ingest_queue_worker() -> None:
+    """Lazy-start the shared ingest→detect worker (CSV and PCAP use the same queue)."""
+    from ingestion.queue import ingest_queue
+
+    if ingest_queue.status().get("worker_alive"):
+        return
+    from backend.services import pipeline as _svc
+    from database.db import SessionLocal
+
+    def _predict_batch(flows: list[dict[str, float]]) -> dict:
+        db = SessionLocal()
+        try:
+            return _svc.run_prediction_batch(flows, db=db, persist=False, allow_missing_features=False)
+        finally:
+            db.close()
+
+    ingest_queue.set_predict_fn(_predict_batch)
+    ingest_queue.start()
 
 
 @router.get("/ingest/queue")
@@ -374,20 +600,7 @@ async def ingest_queue_submit(
     from ingestion.pipeline import ingest_flows_csv as _ingest
     from ingestion.queue import ingest_queue
 
-    if not ingest_queue.status().get("worker_alive"):
-        # Lazy-start for TestClient / cases where lifespan did not wire predict fn yet
-        from backend.services import pipeline as _svc
-        from database.db import SessionLocal
-
-        def _predict_batch(flows: list[dict[str, float]]) -> dict:
-            db = SessionLocal()
-            try:
-                return _svc.run_prediction_batch(flows, db=db, persist=False, allow_missing_features=False)
-            finally:
-                db.close()
-
-        ingest_queue.set_predict_fn(_predict_batch)
-        ingest_queue.start()
+    _ensure_ingest_queue_worker()
 
     raw = await file.read()
     result = _ingest(raw, fill_missing=False, max_rows=500)
@@ -405,6 +618,98 @@ async def ingest_queue_submit(
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail={"code": "QUEUE_FULL", "message": str(exc)}) from exc
     return {"ok": True, "job": job.as_dict()}
+
+
+@router.post("/ingest/queue/submit-pcap")
+async def ingest_queue_submit_pcap(
+    request: Request,
+    file: UploadFile = File(...),
+):
+    """Validate PCAP → cicflowmeter → enqueue flows on the *same* detect worker as CSV.
+
+    Does not invent a second prediction pipeline. Returns 501 when cicflowmeter is absent.
+    """
+    import tempfile
+    from pathlib import Path
+
+    from ingestion.audit import audit_ingest_event
+    from ingestion.pcap_validation import validate_pcap_upload
+    from ingestion.pipeline import ingest_pcap as _ingest_pcap
+    from ingestion.queue import ingest_queue
+
+    _ensure_ingest_queue_worker()
+
+    request_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID")
+    suffix = _pcap_temp_suffix(file.filename)
+    raw = await file.read()
+    check = validate_pcap_upload(filename=file.filename, content=raw)
+    if not check.ok:
+        audit_ingest_event(
+            event="pcap_queue_rejected",
+            source="pcap_queue",
+            request_id=request_id,
+            filename=file.filename,
+            sha256=check.sha256,
+            size_bytes=check.size_bytes,
+            code=check.code,
+        )
+        status = 413 if check.code == "PCAP_TOO_LARGE" else 422
+        raise HTTPException(
+            status_code=status,
+            detail={"code": check.code, "message": check.message, "validation": check.as_dict()},
+        )
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(raw)
+        tmp_path = Path(tmp.name)
+    try:
+        result = _ingest_pcap(tmp_path)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+    if not result.ok:
+        code = result.detail.get("code", "PCAP_NOT_AVAILABLE")
+        status = 501 if code in {"PCAP_EXTRACTOR_NOT_CONFIGURED", "PCAP_EXTRACTOR_NOT_WIRED"} else 422
+        audit_ingest_event(
+            event="pcap_queue_extract_failed",
+            source="pcap_queue",
+            request_id=request_id,
+            filename=file.filename,
+            sha256=check.sha256,
+            size_bytes=check.size_bytes,
+            code=code,
+            schema_version=(result.schema or {}).get("schema_version"),
+        )
+        raise HTTPException(
+            status_code=status,
+            detail={
+                "code": code,
+                "message": result.detail.get("message", "PCAP extraction failed"),
+                "capabilities": result.detail,
+                "schema_version": (result.schema or {}).get("schema_version"),
+                "validation": result.validation,
+                "upload": check.as_dict(),
+            },
+        )
+
+    try:
+        job = ingest_queue.submit(result.flows, source="pcap_upload")
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail={"code": "QUEUE_FULL", "message": str(exc)}) from exc
+
+    audit_ingest_event(
+        event="pcap_queue_submitted",
+        source="pcap_queue",
+        request_id=request_id,
+        filename=file.filename,
+        sha256=check.sha256,
+        size_bytes=check.size_bytes,
+        code="OK",
+        flow_count=len(result.flows),
+        schema_version=(result.schema or {}).get("schema_version"),
+        extra={"job_id": job.job_id},
+    )
+    return {"ok": True, "job": job.as_dict(), "upload": check.as_dict(), "flow_count": len(result.flows)}
 
 
 @router.get("/ingest/queue/{job_id}")
@@ -488,6 +793,193 @@ def response_plan(body: ControlledResponsePlanRequest):
         start_simulation=body.start_simulation,
         incident_id=body.incident_id,
     )
+
+
+def _response_http(exc) -> HTTPException:
+    from security.response import ResponseError
+
+    if isinstance(exc, ResponseError):
+        return HTTPException(
+            status_code=exc.http_status,
+            detail={"code": exc.code, "message": exc.message},
+        )
+    return HTTPException(status_code=500, detail={"code": "RESPONSE_ERROR", "message": str(exc)})
+
+
+@router.get("/response/capabilities")
+def response_capabilities_endpoint():
+    from security.response import response_capabilities
+
+    return response_capabilities()
+
+
+@router.get("/response/actions")
+def response_actions_list(incident_id: str | None = None, limit: int = 50):
+    from security.response import list_actions
+
+    return {"items": list_actions(incident_id=incident_id, limit=min(limit, 200))}
+
+
+@router.post("/response/actions/propose")
+def response_actions_propose(body: ResponseActionProposeRequest, request: Request):
+    from backend.middleware.api_auth import actor_from_request
+    from security.recommendations.engine import recommend
+    from security.response import ResponseError, propose_action
+
+    actor = actor_from_request(request)
+    try:
+        rec = recommend(
+            body.attack_type,
+            body.severity,
+            confidence=body.confidence,
+            is_attack=body.attack_type != "BENIGN",
+        )
+        return propose_action(
+            attack_type=body.attack_type,
+            incident_id=body.incident_id,
+            severity=body.severity,
+            risk_score=body.risk_score,
+            recommendation=rec,
+            source_ip=body.source_ip,
+            host=body.host,
+            target=body.target,
+            action_type=body.action_type,
+            reason=body.reason,
+            duration_minutes=body.duration_minutes,
+            mode=body.mode,
+            adapter=body.adapter,
+            actor=actor,
+        )
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.get("/response/actions/{action_id}")
+def response_actions_get(action_id: str):
+    from security.response import ResponseError, get_action
+
+    try:
+        return get_action(action_id)
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.get("/response/actions/{action_id}/audit")
+def response_actions_audit(action_id: str):
+    from security.response import ResponseError
+    from security.response.service import action_audit
+
+    try:
+        return {"action_id": action_id, "events": action_audit(action_id)}
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/{action_id}/dry-run")
+def response_actions_dry_run(action_id: str, request: Request):
+    from backend.middleware.api_auth import actor_from_request
+    from security.response import ResponseError, run_dry_run
+
+    try:
+        return run_dry_run(action_id, actor=actor_from_request(request))
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/{action_id}/approve")
+def response_actions_approve(action_id: str, request: Request, body: ResponseActionDecisionRequest | None = None):
+    from backend.middleware.api_auth import actor_from_request
+    from security.response import ResponseError, approve_action
+
+    # Identity always from auth context — ignore client-supplied actor (no privilege spoofing)
+    _ = body
+    try:
+        return approve_action(action_id, actor=actor_from_request(request))
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/{action_id}/reject")
+def response_actions_reject(action_id: str, request: Request, body: ResponseActionDecisionRequest | None = None):
+    from backend.middleware.api_auth import actor_from_request
+    from security.response import ResponseError, reject_action
+
+    reason = body.reason if body else None
+    try:
+        return reject_action(action_id, actor=actor_from_request(request), reason=reason)
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/{action_id}/execute")
+def response_actions_execute(action_id: str, request: Request):
+    """Explicit execute after approve — DRY_RUN or CONTROLLED adapter only."""
+    from backend.middleware.api_auth import actor_from_request
+    from security.response import ResponseError, execute_action
+
+    try:
+        return execute_action(action_id, actor=actor_from_request(request))
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/{action_id}/rollback")
+def response_actions_rollback(action_id: str, request: Request):
+    from backend.middleware.api_auth import actor_from_request
+    from security.response import ResponseError, rollback_action
+
+    try:
+        return rollback_action(action_id, actor=actor_from_request(request))
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/{action_id}/expire")
+def response_actions_expire(action_id: str, request: Request):
+    from backend.middleware.api_auth import actor_from_request
+    from security.response import ResponseError, expire_action
+
+    try:
+        return expire_action(action_id, actor=actor_from_request(request))
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/sweep-expired")
+def response_actions_sweep_expired(request: Request):
+    from backend.middleware.api_auth import actor_from_request
+    from security.response import sweep_expired
+
+    return sweep_expired(actor=actor_from_request(request))
+
+
+@router.get("/response/adapters")
+def response_adapters_list():
+    from security.response.adapters import list_adapters
+
+    return {"items": list_adapters(), "live_mitigation": False, "phase": "P3"}
+
+
+@router.post("/incidents/{incident_id}/response/propose")
+def incident_response_propose(incident_id: str, request: Request, db: Session = Depends(get_db)):
+    """Propose a response action from an existing incident (default DRY_RUN)."""
+    from backend.middleware.api_auth import actor_from_request
+    from security.response import ResponseError, propose_from_incident
+
+    incident = svc.get_incident(db, incident_id)
+    if incident is None:
+        raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "Unknown incident"})
+    try:
+        return propose_from_incident(incident, actor=actor_from_request(request))
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.get("/incidents/{incident_id}/response/actions")
+def incident_response_actions(incident_id: str, limit: int = 20):
+    from security.response import list_actions
+
+    return {"incident_id": incident_id, "items": list_actions(incident_id=incident_id, limit=min(limit, 100))}
 
 
 @router.post("/simulation/start")
@@ -666,12 +1158,63 @@ def export_report_pdf(db: Session = Depends(get_db)):
 
 @router.websocket("/ws/events")
 async def ws_events(websocket: WebSocket):
-    """Push analytics snapshots + incident notifications for dashboard refresh."""
+    """Push analytics snapshots + incident notifications — auth required when P4 auth is enabled."""
     import asyncio
+    import os
+
+    from security.rbac import has_permission
+    from security.security_events import security_event
+
+    cfg = load_config().get("api", {}).get("auth", {}) or {}
+    enabled_env = os.getenv("AEGIS_AUTH_ENABLED")
+    if enabled_env is not None:
+        auth_enabled = enabled_env.lower() in {"1", "true", "yes"}
+    else:
+        auth_enabled = bool(cfg.get("enabled", False))
+
+    role = "anonymous"
+    username = None
+    if auth_enabled and os.getenv("DISABLE_API_AUTH", "").lower() not in {"1", "true", "yes"}:
+        token = websocket.query_params.get("token") or ""
+        auth_hdr = websocket.headers.get("authorization") or websocket.headers.get("Authorization") or ""
+        if not token and auth_hdr.lower().startswith("bearer "):
+            token = auth_hdr.split(" ", 1)[1].strip()
+        if not token:
+            security_event("ws_unauthorized", path="/api/ws/events", code="UNAUTHORIZED")
+            await websocket.close(code=4401)
+            return
+        from security.auth.service import AuthError, identity_from_bearer
+
+        try:
+            identity = identity_from_bearer(token)
+        except AuthError as exc:
+            security_event("ws_unauthorized", path="/api/ws/events", code=exc.code)
+            await websocket.close(code=4401)
+            return
+        role = str(identity.get("role") or "viewer")
+        username = identity.get("username")
+        if not has_permission(role, "read_incidents"):
+            security_event(
+                "ws_forbidden",
+                path="/api/ws/events",
+                code="FORBIDDEN",
+                user=username,
+                role=role,
+            )
+            await websocket.close(code=4403)
+            return
 
     await event_hub.connect(websocket)
     try:
-        await websocket.send_json({"type": "connected", "message": "Aegis event stream"})
+        await websocket.send_json(
+            {
+                "type": "connected",
+                "message": "Aegis event stream",
+                "auth_required": auth_enabled,
+                "user": username,
+                "role": role if auth_enabled else "anonymous",
+            }
+        )
         while True:
             db = SessionLocal()
             try:

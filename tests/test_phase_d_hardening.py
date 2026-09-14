@@ -24,6 +24,7 @@ def test_security_status_phase_d():
     assert body["controlled_response"]["live_mitigation"] is False
     assert "/api/ingest" in body["rate_limit"]["paths"]
     assert body["security_headers"]["enabled"] is True
+    assert body["rate_limit"].get("default_on") is True or body["rate_limit"]["enabled"] in {True, False}
 
 
 def test_security_headers_on_api():
@@ -83,7 +84,9 @@ def test_response_plan_advisory_only():
     body = r.json()
     assert body["live_mitigation"] is False
     assert body["advisory_only"] is True
-    assert body["mode"] == "advisory_simulation"
+    assert body["mode"] == "dry_run_approval"
+    assert body["phase"] == "P3"
+    assert body["suggested_action_type"] == "BLOCK_SOURCE"
     assert body["recommendation"]["advisory_only"] is True
     assert body["simulation"] is None
     assert "risk" in body

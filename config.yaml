@@ -122,32 +122,72 @@ api:
     - "http://127.0.0.1:5173"
     - "http://localhost:80"
     - "http://127.0.0.1:80"
-  # Off by default for local demos; enable for hardening demos
+  # Set true (or AEGIS_CORS_STRICT=true) to restrict methods/headers for production
+  cors_strict: false
+  # P5: rate limiting ON by default for security-sensitive paths (CI sets DISABLE_RATE_LIMIT=true)
   rate_limit:
-    enabled: false
-    requests_per_window: 100
+    enabled: true
+    requests_per_window: 120
     window_seconds: 60
-    # Prefix match (path.startswith) — Stage-2 Phase D covers ingest + response surfaces
     paths:
+      - "/api/auth/login"
       - "/api/predict"
       - "/api/ingest"
       - "/api/explain"
       - "/api/recommendation"
       - "/api/response"
       - "/api/simulation"
+    path_limits:
+      "/api/auth/login":
+        requests_per_window: 10
+        window_seconds: 60
+  request_limits:
+    enabled: true
+    max_json_bytes: 1048576
+    max_csv_bytes: 10485760
+    max_pcap_bytes: 26214400
+    max_multipart_bytes: 31457280
+    max_body_bytes: 2097152
   security_headers:
     enabled: true
   auth:
     enabled: false
-    # Prefer env AEGIS_API_KEY when enabling; config value is a fallback for demos only
+    # Prefer env AEGIS_API_KEY / AEGIS_AUTH_SECRET when enabling
     api_key: ""
+    api_key_role: admin
+    # P4: do not trust client X-Aegis-Role unless explicitly enabled for legacy demos
+    allow_role_header: false
     header: "X-API-Key"
     role_header: "X-Aegis-Role"
     default_role: "analyst"
     enforce_rbac: true
 
-# Stage-2 Phase C: optional durable DB. Default empty → local SQLite file.
+# Stage-2 Phase C / P6: durable DB. Default empty → local SQLite file.
 # Example: postgresql+psycopg://aegis:aegis@localhost:5432/aegis
 database:
   url: ""
   dialect_note: "sqlite default for research baseline; set IDS_DB_URL for PostgreSQL"
+  # Retention rationale: audit/incidents are security evidence (long);
+  # simulations are operational (shorter); raw PCAP is filesystem TTL (short).
+  retention:
+    audit_days: 365
+    incidents_days: 365
+    alerts_days: 365
+    simulations_days: 90
+    raw_pcap_hours: 24
+    temp_files_hours: 1
+
+# P7 observability — structured logs + in-process metrics (not Prometheus/OTel)
+observability:
+  environment: development
+  log_level: INFO
+  log_retention_days: 14  # process/container log driver responsibility
+  alerts:
+    queue_depth_warn: 25
+    queue_depth_critical: 80
+    error_5xx_rate_warn: 0.05
+    min_requests_for_error_rate: 20
+    auth_failures_warn: 20
+    rate_limit_hits_warn: 50
+    pcap_extract_failures_warn: 5
+    response_verify_failures_warn: 3

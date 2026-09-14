@@ -115,7 +115,7 @@ Confidence = model certainty. Risk = weighted blend (50% attack base, 25% confid
 ## Security / engineering (honest)
 
 ### How is the API protected?
-Optional API-key auth + RBAC scaffolding and rate-limit middleware exist — **disabled by default** for local/demo. Enable for hardening demos (`api.auth.enabled`, `AEGIS_API_KEY`).
+P4 password login + server RBAC and P5 rate limits / request-size limits are in place on `productionization`. Auth remains **off by default** for local demo (`AEGIS_AUTH_ENABLED`); **rate limiting and request-size limits are ON by default** (CI sets `DISABLE_RATE_LIMIT`). Optional API-key path still available via `api.auth.enabled` / `AEGIS_API_KEY`.
 
 ### Input validation?
 Feature schema / CSV ingest validation; standardized error envelopes; `/api/ready` when models missing.
