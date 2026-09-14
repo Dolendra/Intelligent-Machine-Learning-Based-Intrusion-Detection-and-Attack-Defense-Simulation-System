@@ -150,6 +150,26 @@ See `data/processed/summary.json` and `models/trained_models/model_metadata.json
 | Macro F1 | **0.99813** |
 | Weighted F1 | **0.99979** |
 
+### Model selection rationale (algorithm comparison)
+
+Candidates share the same preprocessing / `f_classif` k=40 pipeline — this is an **algorithm ablation**, not an architecture search.
+
+**Binary multi-objective weights** (`config.yaml`): recall 0.30 · F1 0.25 · PR-AUC 0.20 · FPR 0.15 · latency 0.10.
+
+| Model | Val recall | Val F1 | Val FPR | Infer(s) | selection_score |
+|-------|----------:|-------:|--------:|---------:|----------------:|
+| logistic_regression | 0.9706 | 0.8272 | 0.0765 | 0.015 | 0.9239 |
+| **decision_tree** | **0.9966** | 0.9905 | 0.0032 | 0.030 | **0.9940** |
+| random_forest | 0.9961 | 0.9912 | 0.0028 | 0.169 | 0.9877 |
+| xgboost | 0.9899 | **0.9930** | **0.0008** | 0.066 | 0.9918 |
+
+**Why Decision Tree over XGBoost?** XGBoost wins raw F1, but Decision Tree has **higher attack recall**. Under an IDS-oriented policy that prioritizes catching attacks, the selection score prefers Decision Tree. Random Forest is competitive on F1 but slower on validation inference, which the latency term penalizes.
+
+**Multiclass:** score ≈ `0.7·macro-F1 + 0.3·weighted-F1` → Random Forest (0.9988) over XGBoost (0.9980).
+
+Figures: `model_binary_selection_scores.png`, `model_binary_f1_vs_recall.png`, `model_binary_metric_bars.png`, `model_multiclass_selection.png`, `model_selection_summary.png`  
+Details: `docs/experiments/MODEL_COMPARISON.md`
+
 ### Why these numbers are not deployment guarantees
 
 CICIDS2017 is a labelled **benchmark**. IID stratified splits overstate similarity to future live traffic. Temporal holdout and drift analyses in-repo explore generalization limits; treat high F1 as evidence of strong in-dataset discrimination, not as a promise of production IDS performance.
@@ -357,6 +377,7 @@ Rendered with React Flow. Evaluated qualitatively by whether each scenario reach
 | Simulation | `simulation/engine/core.py` |
 | Temporal eval | `scripts/25_temporal_holdout_eval.py`, `scripts/28_plot_temporal_generalization.py` |
 | Drift / errors | `scripts/20_data_drift_report.py`, `scripts/23_error_analysis.py`, `scripts/29_plot_drift_and_errors.py` |
+| Model comparison | `scripts/04_export_comparison.py`, `scripts/30_plot_model_comparison.py` |
 | API | `backend/` |
 | UI | `frontend/` |
 

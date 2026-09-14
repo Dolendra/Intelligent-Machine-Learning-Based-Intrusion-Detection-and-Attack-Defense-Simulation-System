@@ -125,6 +125,11 @@ def main() -> None:
         ("error_binary_fp_fn_counts.png", "Figure C12. Binary FP/FN residual counts (IID test)"),
         ("error_multiclass_top_confusions.png", "Figure C13. Top multiclass residual confusions"),
         ("drift_error_research_summary.png", "Figure C14. Drift + error research summary card"),
+        ("model_binary_selection_scores.png", "Figure C15. Binary multi-objective selection scores"),
+        ("model_binary_f1_vs_recall.png", "Figure C16. Binary F1 vs recall trade-off (why DT over XGB)"),
+        ("model_binary_metric_bars.png", "Figure C17. Binary validation metric bars"),
+        ("model_multiclass_selection.png", "Figure C18. Multiclass RF vs XGB selection"),
+        ("model_selection_summary.png", "Figure C19. Model selection summary card"),
     ]:
         path = figures / name
         if path.exists():

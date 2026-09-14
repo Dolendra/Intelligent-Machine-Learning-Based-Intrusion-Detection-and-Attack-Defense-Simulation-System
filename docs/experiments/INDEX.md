@@ -5,7 +5,7 @@ Git commit: `98e5376`
 
 | ID | Name | Artifact | Present | Focus |
 |----|------|----------|---------|-------|
-| EXP-001 | baseline_training | `training_report.json` | yes | Model selection + IID test metrics |
+| EXP-001 | baseline_training | `training_report.json` | yes | Model selection + IID test metrics — see `MODEL_COMPARISON.md` |
 | EXP-002 | feature_selector | `feature_selector_experiment.json` | no | Dual vs shared SelectKBest |
 | EXP-003 | calibration_hpo | `calibration_hpo_experiment.json` | yes | Calibration / HPO sample experiment |
 | EXP-004 | threshold | `threshold_operating_point.json` | yes | Operating threshold + confidence bands |

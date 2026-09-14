@@ -35,10 +35,11 @@ Use this as a PowerPoint/Google Slides skeleton. Keep each slide sparse; demo li
 - Test (multiclass): macro-F1 **0.99813** · weighted-F1 **0.99979**
 - Note: benchmark IID metrics ≠ live-deployment guarantees
 
-## Slide 7 — Why metrics matter
+## Slide 7 — Why metrics & selection matter
 - Imbalanced data → recall/precision/F1 over accuracy
-- Multi-objective binary selection (not raw F1 alone)
-- Show confusion matrix + ROC figures
+- Multi-objective binary selection (recall 0.30 …) — **not raw F1 alone**
+- XGBoost can win F1; Decision Tree wins **recall** → selected
+- Show `model_binary_f1_vs_recall.png` + confusion / ROC figures
 
 ## Slide 8 — Temporal generalization **[RESEARCH]**
 - Protocol: score **frozen** DT/RF on day-named CSV samples (no retrain)
