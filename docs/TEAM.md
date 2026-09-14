@@ -23,5 +23,7 @@ Everyone should understand the **full pipeline** for viva. Suggested ownership:
 - Docker / `start_all.ps1`
 - Talking point: live demo of Detection + Simulation pages
 
-## Shared demo script
-Follow [`DEMO.md`](DEMO.md) together at least once before the viva.
+## Shared demo & viva prep
+- Timed demo: [`DEMO.md`](DEMO.md) (rehearse once end-to-end)
+- Q&A pack: [`VIVA_QA.md`](VIVA_QA.md) (memorize the numbers card)
+- Freeze: Binary **Decision Tree @ 0.85** · Multiclass **Random Forest** (attack-only)
