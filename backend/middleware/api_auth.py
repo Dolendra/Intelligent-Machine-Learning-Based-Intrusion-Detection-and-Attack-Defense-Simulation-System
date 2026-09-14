@@ -59,7 +59,7 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
         self.enforce_rbac = enforce_rbac
 
     def _is_public(self, path: str) -> bool:
-        if path in {"/", "/docs", "/openapi.json", "/redoc", "/api/health", "/api/ready", "/api/security/status"}:
+        if path in {"/", "/docs", "/openapi.json", "/redoc", "/api/health", "/api/ready", "/api/security/status", "/api/metrics"}:
             return True
         if path.startswith("/api/ws"):
             return True
