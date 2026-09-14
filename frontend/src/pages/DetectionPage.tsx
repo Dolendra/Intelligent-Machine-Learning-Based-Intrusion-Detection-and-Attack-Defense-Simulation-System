@@ -262,6 +262,51 @@ export function DetectionPage() {
             }}
           />
         </label>
+        <label
+          className="btn btn-secondary"
+          style={{ cursor: busy ? "not-allowed" : "pointer" }}
+          title="P1: PCAP → extract → same detect queue as CSV"
+        >
+          Queue PCAP (P1)
+          <input
+            type="file"
+            accept=".pcap,.pcapng,.cap,application/vnd.tcpdump.pcap"
+            hidden
+            disabled={busy}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              setBusy(true);
+              setError(null);
+              setQueueJob(null);
+              try {
+                const submitted = await api.ingestQueueSubmitPcap(file);
+                const job = submitted.job as Record<string, unknown>;
+                setQueueJob(job);
+                const jobId = String(job.job_id);
+                for (let i = 0; i < 60; i++) {
+                  await new Promise((r) => setTimeout(r, 150));
+                  const cur = await api.ingestQueueJob(jobId);
+                  setQueueJob(cur);
+                  if (cur.status === "done" || cur.status === "error") {
+                    const summary = cur.result_summary as Record<string, unknown> | undefined;
+                    if (cur.status === "done" && summary) {
+                      setLabel(
+                        `PCAP queue ${String(summary.total_flows ?? "?")} flows · ${String(cur.latency_ms ?? "?")} ms`
+                      );
+                    }
+                    break;
+                  }
+                }
+              } catch (err) {
+                setError(err instanceof Error ? err.message : String(err));
+              } finally {
+                setBusy(false);
+              }
+            }}
+          />
+        </label>
         {busy && <span className="muted mono">Working…</span>}
         {label && (
           <span className="muted mono">

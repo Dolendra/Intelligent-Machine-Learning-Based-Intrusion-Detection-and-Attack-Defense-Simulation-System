@@ -249,6 +249,13 @@ export const api = {
     if (!res.ok) throw new Error((await res.text()) || res.statusText);
     return res.json() as Promise<Record<string, unknown>>;
   },
+  ingestQueueSubmitPcap: async (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${API_BASE}/api/ingest/queue/submit-pcap`, { method: "POST", body: form });
+    if (!res.ok) throw new Error((await res.text()) || res.statusText);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
   ingestQueueJob: (jobId: string) =>
     request<Record<string, unknown>>(`/api/ingest/queue/${encodeURIComponent(jobId)}`),
   downloadExport: async (kind: "incidents.csv" | "incidents.json" | "analytics.json" | "report.pdf") => {

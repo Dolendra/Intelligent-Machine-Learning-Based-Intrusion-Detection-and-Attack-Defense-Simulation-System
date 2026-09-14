@@ -409,6 +409,26 @@ async def ingest_pcap(
     return payload
 
 
+def _ensure_ingest_queue_worker() -> None:
+    """Lazy-start the shared ingest→detect worker (CSV and PCAP use the same queue)."""
+    from ingestion.queue import ingest_queue
+
+    if ingest_queue.status().get("worker_alive"):
+        return
+    from backend.services import pipeline as _svc
+    from database.db import SessionLocal
+
+    def _predict_batch(flows: list[dict[str, float]]) -> dict:
+        db = SessionLocal()
+        try:
+            return _svc.run_prediction_batch(flows, db=db, persist=False, allow_missing_features=False)
+        finally:
+            db.close()
+
+    ingest_queue.set_predict_fn(_predict_batch)
+    ingest_queue.start()
+
+
 @router.get("/ingest/queue")
 def ingest_queue_status():
     """Stage-2 Phase B: in-process queue depth + latency metrics."""
@@ -425,20 +445,7 @@ async def ingest_queue_submit(
     from ingestion.pipeline import ingest_flows_csv as _ingest
     from ingestion.queue import ingest_queue
 
-    if not ingest_queue.status().get("worker_alive"):
-        # Lazy-start for TestClient / cases where lifespan did not wire predict fn yet
-        from backend.services import pipeline as _svc
-        from database.db import SessionLocal
-
-        def _predict_batch(flows: list[dict[str, float]]) -> dict:
-            db = SessionLocal()
-            try:
-                return _svc.run_prediction_batch(flows, db=db, persist=False, allow_missing_features=False)
-            finally:
-                db.close()
-
-        ingest_queue.set_predict_fn(_predict_batch)
-        ingest_queue.start()
+    _ensure_ingest_queue_worker()
 
     raw = await file.read()
     result = _ingest(raw, fill_missing=False, max_rows=500)
@@ -456,6 +463,98 @@ async def ingest_queue_submit(
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail={"code": "QUEUE_FULL", "message": str(exc)}) from exc
     return {"ok": True, "job": job.as_dict()}
+
+
+@router.post("/ingest/queue/submit-pcap")
+async def ingest_queue_submit_pcap(
+    request: Request,
+    file: UploadFile = File(...),
+):
+    """Validate PCAP → cicflowmeter → enqueue flows on the *same* detect worker as CSV.
+
+    Does not invent a second prediction pipeline. Returns 501 when cicflowmeter is absent.
+    """
+    import tempfile
+    from pathlib import Path
+
+    from ingestion.audit import audit_ingest_event
+    from ingestion.pcap_validation import validate_pcap_upload
+    from ingestion.pipeline import ingest_pcap as _ingest_pcap
+    from ingestion.queue import ingest_queue
+
+    _ensure_ingest_queue_worker()
+
+    request_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID")
+    suffix = Path(file.filename or "capture.pcap").suffix or ".pcap"
+    raw = await file.read()
+    check = validate_pcap_upload(filename=file.filename, content=raw)
+    if not check.ok:
+        audit_ingest_event(
+            event="pcap_queue_rejected",
+            source="pcap_queue",
+            request_id=request_id,
+            filename=file.filename,
+            sha256=check.sha256,
+            size_bytes=check.size_bytes,
+            code=check.code,
+        )
+        status = 413 if check.code == "PCAP_TOO_LARGE" else 422
+        raise HTTPException(
+            status_code=status,
+            detail={"code": check.code, "message": check.message, "validation": check.as_dict()},
+        )
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(raw)
+        tmp_path = Path(tmp.name)
+    try:
+        result = _ingest_pcap(tmp_path)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+    if not result.ok:
+        code = result.detail.get("code", "PCAP_NOT_AVAILABLE")
+        status = 501 if code in {"PCAP_EXTRACTOR_NOT_CONFIGURED", "PCAP_EXTRACTOR_NOT_WIRED"} else 422
+        audit_ingest_event(
+            event="pcap_queue_extract_failed",
+            source="pcap_queue",
+            request_id=request_id,
+            filename=file.filename,
+            sha256=check.sha256,
+            size_bytes=check.size_bytes,
+            code=code,
+            schema_version=(result.schema or {}).get("schema_version"),
+        )
+        raise HTTPException(
+            status_code=status,
+            detail={
+                "code": code,
+                "message": result.detail.get("message", "PCAP extraction failed"),
+                "capabilities": result.detail,
+                "schema_version": (result.schema or {}).get("schema_version"),
+                "validation": result.validation,
+                "upload": check.as_dict(),
+            },
+        )
+
+    try:
+        job = ingest_queue.submit(result.flows, source="pcap_upload")
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail={"code": "QUEUE_FULL", "message": str(exc)}) from exc
+
+    audit_ingest_event(
+        event="pcap_queue_submitted",
+        source="pcap_queue",
+        request_id=request_id,
+        filename=file.filename,
+        sha256=check.sha256,
+        size_bytes=check.size_bytes,
+        code="OK",
+        flow_count=len(result.flows),
+        schema_version=(result.schema or {}).get("schema_version"),
+        extra={"job_id": job.job_id},
+    )
+    return {"ok": True, "job": job.as_dict(), "upload": check.as_dict(), "flow_count": len(result.flows)}
 
 
 @router.get("/ingest/queue/{job_id}")

@@ -123,13 +123,16 @@ def ingestion_capabilities() -> dict[str, Any]:
             "endpoint": "/api/ingest/queue",
             "mode": "in_process",
             "status": ingest_queue.status(),
-            "accepts": ["flows_csv"],
+            "accepts": ["flows_csv", "pcap"],
+            "submit_csv": "/api/ingest/queue/submit",
+            "submit_pcap": "/api/ingest/queue/submit-pcap",
         },
         "notes": [
             "v1.1 research baseline remains frozen on MachineLearningCVE flow features.",
             "CSV alias normalization maps common CICFlowMeter abbreviations onto schema v1.1.",
             "P1 hardens offline PCAP upload (size/magic/extension + audit); cicflowmeter still required for extract.",
+            "PCAP queue path reuses the same ingest→detect worker as CSV (no second ML pipeline).",
             "Live NIC capture is not implemented — do not claim production packet capture.",
-            "Queue currently accepts CSV; PCAP uses synchronous /api/ingest/pcap.",
+            "Without cicflowmeter on PATH, PCAP endpoints return 501 (honest capability reporting).",
         ],
     }
