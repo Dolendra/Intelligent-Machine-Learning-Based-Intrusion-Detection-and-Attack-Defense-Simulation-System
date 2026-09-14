@@ -86,6 +86,21 @@ class RecommendationRequest(BaseModel):
     is_attack: bool | None = None
 
 
+class ControlledResponsePlanRequest(BaseModel):
+    """Stage-2 Phase D controlled-response plan (advisory / simulation only)."""
+
+    attack_type: str
+    severity: str | None = None
+    confidence: float | None = Field(None, ge=0.0, le=1.0)
+    traffic_intensity: float | None = Field(None, ge=0.0, le=1.0)
+    certainty: str | None = None
+    is_attack: bool | None = None
+    asset_criticality: float | None = Field(None, ge=0.0, le=5.0)
+    risk_score: float | None = Field(None, ge=0.0, le=100.0)
+    start_simulation: bool = False
+    incident_id: str | None = None
+
+
 class IncidentUpdateRequest(BaseModel):
     status: str
     analyst_notes: str | None = None

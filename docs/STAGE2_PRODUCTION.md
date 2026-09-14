@@ -62,9 +62,19 @@ Honest limits: **not** Redis/Kafka, **not** multi-node. Useful for staging batch
 
 Not included yet: OAuth/SSO, user tables, password login, full SOC analyst accounts.
 
+### Phase D — API hardening + controlled response (started)
+
+| Item | Status |
+|------|--------|
+| Rate-limit path coverage | Prefixes include `/api/ingest`, `/api/response`, `/api/simulation`, … (still **off** by default) |
+| Security headers | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `X-Aegis-Live-Mitigation: false` |
+| `POST /api/response/plan` | Advisory playbook + optional simulation preview |
+| Live mitigation | **Not implemented** — response remains decision-support / sim |
+
+Honest limits: no firewall/WAF/agent connectors; `defense_action` on incidents is an analyst note, not an executed control.
+
 ### Still later
 
-- **D** API hardening + controlled response
 - **E** Observability / CI-CD / load tests
 - **F** Cyber-range simulation validation + docs
 

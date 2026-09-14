@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from backend.schemas.api import (
     BatchPredictRequest,
+    ControlledResponsePlanRequest,
     ExplainRequest,
     HealthResponse,
     IncidentUpdateRequest,
@@ -41,9 +42,10 @@ def _demo_allow_missing(requested: bool) -> bool:
 
 @router.get("/security/status")
 def security_status():
-    """Stage-2 Phase C: auth/RBAC + database dialect status (no secrets)."""
+    """Stage-2 Phase D: auth/RBAC + rate-limit paths + controlled-response honesty (no secrets)."""
     import os
 
+    from backend.middleware.security_headers import security_headers_summary
     from database.url import database_info
     from security.rbac import rbac_summary
 
@@ -51,8 +53,16 @@ def security_status():
     auth = cfg.get("api", {}).get("auth", {}) or {}
     rl = cfg.get("api", {}).get("rate_limit", {}) or {}
     key_configured = bool(os.getenv("AEGIS_API_KEY") or auth.get("api_key"))
+    default_rl_paths = [
+        "/api/predict",
+        "/api/ingest",
+        "/api/explain",
+        "/api/recommendation",
+        "/api/response",
+        "/api/simulation",
+    ]
     return {
-        "stage": "2-phase-c",
+        "stage": "2-phase-d",
         "auth": {
             "enabled": bool(auth.get("enabled", False)),
             "api_key_configured": key_configured,
@@ -65,12 +75,22 @@ def security_status():
             "enabled": bool(rl.get("enabled", False)),
             "requests_per_window": rl.get("requests_per_window"),
             "window_seconds": rl.get("window_seconds"),
+            "paths": list(rl.get("paths") or default_rl_paths),
+        },
+        "security_headers": security_headers_summary(),
+        "controlled_response": {
+            "live_mitigation": False,
+            "simulation": True,
+            "advisory_only": True,
+            "plan_endpoint": "/api/response/plan",
         },
         "database": database_info(),
         "rbac": rbac_summary(),
         "notes": [
             "Auth and rate limiting remain disabled by default for the research/demo baseline.",
             "Enable api.auth.enabled and set AEGIS_API_KEY for Stage-2 hardening.",
+            "Enable api.rate_limit.enabled to protect predict/ingest/response surfaces.",
+            "Controlled response is advisory + simulation only — no live network mitigation.",
             "PostgreSQL is optional via IDS_DB_URL; SQLite remains the default.",
         ],
     }
@@ -416,6 +436,25 @@ def recommendation(body: RecommendationRequest):
         traffic_intensity=body.traffic_intensity,
         certainty=body.certainty,
         is_attack=body.is_attack,
+    )
+
+
+@router.post("/response/plan")
+def response_plan(body: ControlledResponsePlanRequest):
+    """Stage-2 Phase D: advisory playbook + optional simulation preview (not live mitigation)."""
+    from backend.services.controlled_response import build_response_plan
+
+    return build_response_plan(
+        attack_type=body.attack_type,
+        severity=body.severity,
+        confidence=body.confidence,
+        traffic_intensity=body.traffic_intensity,
+        certainty=body.certainty,
+        is_attack=body.is_attack,
+        asset_criticality=body.asset_criticality,
+        risk_score=body.risk_score,
+        start_simulation=body.start_simulation,
+        incident_id=body.incident_id,
     )
 
 

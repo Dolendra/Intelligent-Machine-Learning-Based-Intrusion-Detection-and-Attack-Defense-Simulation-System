@@ -17,6 +17,7 @@ from backend.routes.api import router
 from backend.services.seed import seed_demo_incidents
 from backend.middleware.rate_limit import attach_rate_limit
 from backend.middleware.api_auth import attach_api_auth
+from backend.middleware.security_headers import attach_security_headers
 from backend.middleware.logging_mw import attach_request_logging
 from backend.middleware.errors import attach_error_handlers
 from database.db import init_db
@@ -90,6 +91,7 @@ app.include_router(router, prefix="/api")
 attach_error_handlers(app)
 attach_rate_limit(app)
 attach_api_auth(app)
+attach_security_headers(app)
 attach_request_logging(app)
 
 

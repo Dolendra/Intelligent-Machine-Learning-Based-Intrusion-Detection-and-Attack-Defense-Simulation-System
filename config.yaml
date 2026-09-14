@@ -127,10 +127,16 @@ api:
     enabled: false
     requests_per_window: 100
     window_seconds: 60
+    # Prefix match (path.startswith) — Stage-2 Phase D covers ingest + response surfaces
     paths:
       - "/api/predict"
-      - "/api/predict/batch"
-      - "/api/predict/batch/csv"
+      - "/api/ingest"
+      - "/api/explain"
+      - "/api/recommendation"
+      - "/api/response"
+      - "/api/simulation"
+  security_headers:
+    enabled: true
   auth:
     enabled: false
     # Prefer env AEGIS_API_KEY when enabling; config value is a fallback for demos only
