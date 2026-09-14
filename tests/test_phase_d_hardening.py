@@ -20,7 +20,7 @@ def test_security_status_phase_d():
     r = client.get("/api/security/status")
     assert r.status_code == 200
     body = r.json()
-    assert body["stage"] == "2-phase-e"
+    assert body["stage"] == "2-phase-f"
     assert body["controlled_response"]["live_mitigation"] is False
     assert "/api/ingest" in body["rate_limit"]["paths"]
     assert body["security_headers"]["enabled"] is True

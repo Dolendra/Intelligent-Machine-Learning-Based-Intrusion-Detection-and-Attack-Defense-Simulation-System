@@ -26,7 +26,7 @@ def test_security_status_phase_e_observability():
     r = client.get("/api/security/status")
     assert r.status_code == 200
     body = r.json()
-    assert body["stage"] == "2-phase-e"
+    assert body["stage"] == "2-phase-f"
     assert body["observability"]["metrics_endpoint"] == "/api/metrics"
     assert body["observability"]["prometheus"] is False
     assert body["controlled_response"]["live_mitigation"] is False

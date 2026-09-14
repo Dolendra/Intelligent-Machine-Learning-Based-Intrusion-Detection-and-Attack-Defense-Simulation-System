@@ -42,7 +42,7 @@ def _demo_allow_missing(requested: bool) -> bool:
 
 @router.get("/security/status")
 def security_status():
-    """Stage-2 Phase E: auth/RBAC + rate-limit + observability honesty (no secrets)."""
+    """Stage-2 Phase F: auth/RBAC + observability + cyber-range validation honesty (no secrets)."""
     import os
 
     from backend.middleware.security_headers import security_headers_summary
@@ -62,7 +62,7 @@ def security_status():
         "/api/simulation",
     ]
     return {
-        "stage": "2-phase-e",
+        "stage": "2-phase-f",
         "auth": {
             "enabled": bool(auth.get("enabled", False)),
             "api_key_configured": key_configured,
@@ -85,6 +85,14 @@ def security_status():
             "opentelemetry": False,
             "load_smoke_script": "scripts/26_api_load_smoke.py",
         },
+        "cyber_range_validation": {
+            "live_cyber_range": False,
+            "live_mitigation": False,
+            "efficacy_are_assumptions": True,
+            "mode": "controlled_visualization",
+            "script": "scripts/27_cyber_range_sim_validate.py",
+            "module": "simulation.validation",
+        },
         "controlled_response": {
             "live_mitigation": False,
             "simulation": True,
@@ -99,6 +107,7 @@ def security_status():
             "Enable api.rate_limit.enabled to protect predict/ingest/response surfaces.",
             "Controlled response is advisory + simulation only — no live network mitigation.",
             "/api/metrics is in-process only (resets on restart); not a multi-node SRE stack.",
+            "Cyber-range validation checks the simulation state machine — not a physical range or real defense efficacy.",
             "PostgreSQL is optional via IDS_DB_URL; SQLite remains the default.",
         ],
     }

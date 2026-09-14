@@ -61,11 +61,18 @@ jobs:
             tests/test_phase_c_security.py \
             tests/test_phase_d_hardening.py \
             tests/test_phase_e_observability.py \
+            tests/test_phase_f_simulation_validation.py \
             -q --tb=short
 
-      - name: Stage-2 import smoke (ingestion + metrics)
+      - name: Stage-2 import smoke (ingestion + metrics + sim validation)
         run: |
-          python -c "from ingestion.queue import ingest_queue; from backend.middleware.metrics_mw import process_metrics; print('stage2 ok', process_metrics.snapshot()['scope'])"
+          python -c "from ingestion.queue import ingest_queue; from backend.middleware.metrics_mw import process_metrics; from simulation.validation import validate_families; r=validate_families(('DDoS',)); assert r['all_ok']; print('stage2 ok')"
+
+      - name: Cyber-range sim validate script
+        env:
+          MPLBACKEND: Agg
+        run: |
+          python scripts/27_cyber_range_sim_validate.py
 
   build-frontend:
     runs-on: ubuntu-latest

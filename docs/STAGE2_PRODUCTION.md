@@ -85,9 +85,21 @@ Honest limits: no firewall/WAF/agent connectors; `defense_action` on incidents i
 
 Honest limits: **not** Prometheus/Grafana/OpenTelemetry; metrics reset on process restart; load smoke is **not** a capacity/SLA claim.
 
-### Still later
+### Phase F — Cyber-range simulation validation + docs (started)
 
-- **F** Cyber-range simulation validation + docs
+| Item | Status |
+|------|--------|
+| Validation module | `simulation/validation.py` — lifecycle + advisory framing checks |
+| CLI | `python scripts/27_cyber_range_sim_validate.py` |
+| Families covered | DDoS, DoS, PortScan, BruteForce, WebAttack, Bot |
+| Efficacy table | From `config.yaml` `simulation.defense_effectiveness` (**assumptions**) |
+| CI | Included in `stage2-gate` |
+
+Honest limits: **not** a physical cyber range; **not** measured real-world mitigation rates; simulation timings are deterministic visualization clocks.
+
+### Stage-2 complete (branch scaffolding)
+
+Phases A–F on `stage2/productionization` provide productionization scaffolding on top of the v1.1 research baseline. Merge to `main` only when intentionally promoting Stage-2.
 
 
 ## Safety rules
