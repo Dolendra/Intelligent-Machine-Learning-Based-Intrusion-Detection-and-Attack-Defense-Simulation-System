@@ -80,7 +80,7 @@ Use this as a PowerPoint/Google Slides skeleton. Keep each slide sparse; demo li
 - Research baseline frozen; Stage-2 productionization is a separate track
 
 ## Slide 15 — Q&A
-- Point to `docs/DEMO.md` talking points
+- Point to `docs/DEMO.md` + `docs/VIVA_QA.md`
 - Frozen artifacts: `model_metadata.json` / `training_report.json` / `temporal_holdout_report.json` / `drift_report.json`
 
 ---
