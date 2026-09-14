@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../services/api";
 
@@ -13,12 +13,13 @@ function wsUrl(): string {
   }
   const proto = window.location.protocol === "https:" ? "wss" : "ws";
   const host = window.location.host;
-  // Dev: UI on 5173, API on 8000
   if (host.includes("5173")) {
     return `${proto}://127.0.0.1:8000/api/ws/events`;
   }
   return `${proto}://${host}/api/ws/events`;
 }
+
+type SevFilter = "ALL" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 
 export function DashboardPage() {
   const [analytics, setAnalytics] = useState<{
@@ -33,10 +34,14 @@ export function DashboardPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
   const [modelVersion, setModelVersion] = useState<string | null>(null);
+  const [sevFilter, setSevFilter] = useState<SevFilter>("ALL");
   const pollRef = useRef<number | null>(null);
 
   const applySnapshot = useCallback(
-    (a: { total_incidents: number; by_severity: Record<string, number>; by_attack_type: Record<string, number> }, items: Array<Record<string, unknown>>) => {
+    (
+      a: { total_incidents: number; by_severity: Record<string, number>; by_attack_type: Record<string, number> },
+      items: Array<Record<string, unknown>>
+    ) => {
       setAnalytics(a);
       setIncidents(items);
       setLastUpdate(new Date().toLocaleTimeString());
@@ -117,6 +122,16 @@ export function DashboardPage() {
   const critical = analytics?.by_severity?.CRITICAL ?? 0;
   const high = analytics?.by_severity?.HIGH ?? 0;
   const medium = analytics?.by_severity?.MEDIUM ?? 0;
+  const low = analytics?.by_severity?.LOW ?? 0;
+
+  const filteredIncidents = useMemo(() => {
+    if (sevFilter === "ALL") return incidents;
+    return incidents.filter((row) => String(row.severity).toUpperCase() === sevFilter);
+  }, [incidents, sevFilter]);
+
+  function toggleSev(sev: SevFilter) {
+    setSevFilter((cur) => (cur === sev ? "ALL" : sev));
+  }
 
   return (
     <div className="rise">
@@ -124,18 +139,16 @@ export function DashboardPage() {
         <div>
           <h2>Security Overview</h2>
           <p>
-            Incident analytics from the IDS decision-support pipeline (demo/prototype — not live packet capture).
+            Live decision-support console for the Aegis IDS prototype — detect, triage, and simulate defenses.
             {modelVersion && <span className="mono muted"> · model v{modelVersion}</span>}
-            {lastUpdate && (
-              <span className="mono muted">
-                {" "}
-                · updated {lastUpdate}
-                {liveMode !== "off" ? ` · ${liveMode}` : ""}
-              </span>
-            )}
+            {lastUpdate && <span className="mono muted"> · updated {lastUpdate}</span>}
           </p>
         </div>
         <div className="row">
+          <span className={`live-chip ${liveMode === "off" ? "off" : ""}`}>
+            <span className={`status-dot ${liveMode !== "off" ? "on" : ""}`} />
+            {liveMode === "websocket" ? "Live · websocket" : liveMode === "polling" ? "Live · polling" : "Paused"}
+          </span>
           <button
             className={`btn ${autoRefresh ? "btn-amber" : "btn-secondary"}`}
             onClick={() => setAutoRefresh((v) => !v)}
@@ -151,9 +164,37 @@ export function DashboardPage() {
         </div>
       </div>
 
+      <div className="quick-launch rise rise-delay-1">
+        <Link className="launch-tile" to="/detection">
+          <span className="kicker">Action</span>
+          <strong>Detection Lab</strong>
+          <span>Load a demo flow, classify, and open SHAP evidence.</span>
+        </Link>
+        <Link className="launch-tile" to="/simulation">
+          <span className="kicker">Replay</span>
+          <strong>Attack simulation</strong>
+          <span>Walk attack → defense → recovery on the topology.</span>
+        </Link>
+        <Link className="launch-tile" to="/reports">
+          <span className="kicker">Registry</span>
+          <strong>Incident reports</strong>
+          <span>Filter, export, and advance lifecycle statuses.</span>
+        </Link>
+        <Link className="launch-tile" to="/campaigns">
+          <span className="kicker">Correlate</span>
+          <strong>Campaigns</strong>
+          <span>Group related detections into investigation threads.</span>
+        </Link>
+      </div>
+
       {loading && (
-        <div className="panel" style={{ marginBottom: "1rem" }}>
-          <span className="muted mono">Loading analytics…</span>
+        <div className="grid-stats rise-delay-2">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="stat">
+              <div className="skeleton" style={{ width: "40%" }} />
+              <div className="skeleton lg" style={{ width: "55%", marginTop: "0.7rem" }} />
+            </div>
+          ))}
         </div>
       )}
       {error && (
@@ -162,87 +203,136 @@ export function DashboardPage() {
         </div>
       )}
 
-      <div className="grid-stats">
-        <div className="stat">
-          <div className="label">Incidents</div>
-          <div className="value">{analytics?.total_incidents ?? 0}</div>
+      {!loading && (
+        <div className="grid-stats rise rise-delay-2">
+          <button
+            type="button"
+            className={`stat is-clickable ${sevFilter === "ALL" ? "is-active" : ""}`}
+            onClick={() => setSevFilter("ALL")}
+          >
+            <div className="label">Incidents</div>
+            <div className="value">{analytics?.total_incidents ?? 0}</div>
+          </button>
+          <button
+            type="button"
+            className={`stat is-clickable ${sevFilter === "CRITICAL" ? "is-active" : ""}`}
+            onClick={() => toggleSev("CRITICAL")}
+          >
+            <div className="label">Critical</div>
+            <div className="value" style={{ color: "var(--danger)" }}>
+              {critical}
+            </div>
+          </button>
+          <button
+            type="button"
+            className={`stat is-clickable ${sevFilter === "HIGH" ? "is-active" : ""}`}
+            onClick={() => toggleSev("HIGH")}
+          >
+            <div className="label">High</div>
+            <div className="value" style={{ color: "#ff9d5c" }}>
+              {high}
+            </div>
+          </button>
+          <button
+            type="button"
+            className={`stat is-clickable ${sevFilter === "MEDIUM" ? "is-active" : ""}`}
+            onClick={() => toggleSev("MEDIUM")}
+          >
+            <div className="label">Medium</div>
+            <div className="value" style={{ color: "var(--amber)" }}>
+              {medium}
+            </div>
+          </button>
         </div>
-        <div className="stat">
-          <div className="label">Critical</div>
-          <div className="value" style={{ color: "var(--danger)" }}>
-            {critical}
-          </div>
-        </div>
-        <div className="stat">
-          <div className="label">High</div>
-          <div className="value" style={{ color: "#ff9d5c" }}>
-            {high}
-          </div>
-        </div>
-        <div className="stat">
-          <div className="label">Medium</div>
-          <div className="value" style={{ color: "var(--amber)" }}>
-            {medium}
-          </div>
-        </div>
-      </div>
+      )}
 
-      <div className="split">
-        <section className="panel">
-          <h3 style={{ marginTop: 0 }}>Recent incidents</h3>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Attack</th>
-                <th>Severity</th>
-                <th>Confidence</th>
-              </tr>
-            </thead>
-            <tbody>
-              {incidents.length === 0 && (
+      <div className="split rise rise-delay-3">
+        <section className="panel panel-interactive">
+          <div className="row" style={{ justifyContent: "space-between", marginBottom: "0.35rem" }}>
+            <h3 style={{ margin: 0 }}>Recent incidents</h3>
+            {sevFilter !== "ALL" && (
+              <button className="btn btn-secondary" type="button" onClick={() => setSevFilter("ALL")}>
+                Clear {sevFilter} filter
+              </button>
+            )}
+          </div>
+          {filteredIncidents.length === 0 ? (
+            <div className="empty-state">
+              <strong>{incidents.length === 0 ? "No incidents yet" : `No ${sevFilter} incidents`}</strong>
+              <p className="muted" style={{ margin: "0 0 0.85rem" }}>
+                {incidents.length === 0
+                  ? "Run a demo detection to populate the console."
+                  : "Try another severity tile or clear the filter."}
+              </p>
+              <Link className="btn btn-primary" to="/detection">
+                Open Detection Lab
+              </Link>
+            </div>
+          ) : (
+            <table className="table">
+              <thead>
                 <tr>
-                  <td colSpan={4} className="muted">
-                    No incidents yet — run a detection on a demo flow.
-                  </td>
+                  <th>ID</th>
+                  <th>Attack</th>
+                  <th>Severity</th>
+                  <th>Confidence</th>
                 </tr>
-              )}
-              {incidents.slice(0, 8).map((row) => (
-                <tr key={String(row.incident_id)}>
-                  <td className="mono">
-                    <Link to={`/incidents/${encodeURIComponent(String(row.incident_id))}`}>
-                      {String(row.incident_id)}
-                    </Link>
-                  </td>
-                  <td>{String(row.attack_type)}</td>
-                  <td>
-                    <span className={`badge ${severityClass(String(row.severity))}`}>
-                      {String(row.severity)}
-                    </span>
-                  </td>
-                  <td className="mono">{(Number(row.confidence) * 100).toFixed(0)}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <Link className="btn btn-secondary" to="/reports" style={{ marginTop: "0.75rem" }}>
+              </thead>
+              <tbody>
+                {filteredIncidents.slice(0, 8).map((row) => (
+                  <tr key={String(row.incident_id)}>
+                    <td className="mono">
+                      <Link to={`/incidents/${encodeURIComponent(String(row.incident_id))}`}>
+                        {String(row.incident_id)}
+                      </Link>
+                    </td>
+                    <td>{String(row.attack_type)}</td>
+                    <td>
+                      <span className={`badge ${severityClass(String(row.severity))}`}>
+                        {String(row.severity)}
+                      </span>
+                    </td>
+                    <td className="mono">{(Number(row.confidence) * 100).toFixed(0)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <Link className="btn btn-secondary" to="/reports" style={{ marginTop: "0.85rem" }}>
             View all incidents →
           </Link>
         </section>
 
-        <section className="panel stack">
+        <section className="panel panel-interactive stack">
           <h3 style={{ marginTop: 0 }}>Risk distribution</h3>
           {(["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const).map((sev) => {
-            const v = analytics?.by_severity?.[sev] ?? 0;
+            const v =
+              sev === "CRITICAL" ? critical : sev === "HIGH" ? high : sev === "MEDIUM" ? medium : low;
             const pct = Math.min(100, (v / Math.max(1, analytics?.total_incidents || 1)) * 100);
             return (
-              <div key={sev} className="feature-bar">
+              <button
+                key={sev}
+                type="button"
+                className="feature-bar"
+                style={{
+                  width: "100%",
+                  background: "transparent",
+                  border: "none",
+                  color: "inherit",
+                  cursor: "pointer",
+                  padding: 0,
+                  textAlign: "left",
+                  opacity: sevFilter === "ALL" || sevFilter === sev ? 1 : 0.35,
+                }}
+                onClick={() => toggleSev(sev)}
+                title={`Filter ${sev}`}
+              >
                 <span>{sev}</span>
                 <div className="track">
                   <div className="fill" style={{ width: `${pct}%` }} />
                 </div>
                 <span className="mono muted">{v}</span>
-              </div>
+              </button>
             );
           })}
           <h3>Attack mix</h3>

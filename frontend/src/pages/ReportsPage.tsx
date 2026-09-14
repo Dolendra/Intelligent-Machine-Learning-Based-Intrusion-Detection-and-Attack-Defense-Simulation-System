@@ -75,7 +75,7 @@ export function ReportsPage() {
       <div className="page-header">
         <div>
           <h2>Reports & Analytics</h2>
-          <p>Persisted incident history from the IDS decision-support pipeline (not live packet capture).</p>
+          <p>Filter, triage, and export the incident registry from the decision-support pipeline.</p>
         </div>
         <div className="row">
           <button
@@ -105,7 +105,7 @@ export function ReportsPage() {
         </div>
       )}
 
-      <div className="grid-stats">
+      <div className="grid-stats rise-delay-1">
         <div className="stat">
           <div className="label">Incidents</div>
           <div className="value">{total}</div>
@@ -128,32 +128,67 @@ export function ReportsPage() {
         </div>
       </div>
 
-      <div className="split" style={{ marginBottom: "1rem" }}>
-        <section className="panel">
+      <div className="split rise-delay-2" style={{ marginBottom: "1rem" }}>
+        <section className="panel panel-interactive">
           <h3 style={{ marginTop: 0 }}>Attack distribution</h3>
           {Object.entries(analytics?.by_attack_type ?? {}).length === 0 && (
-            <p className="muted">No classified attacks logged yet.</p>
+            <div className="empty-state">
+              <strong>No classified attacks yet</strong>
+              <p className="muted" style={{ margin: 0 }}>Run Detection Lab to populate this chart.</p>
+            </div>
           )}
           {Object.entries(analytics?.by_attack_type ?? {}).map(([k, v]) => (
-            <div className="feature-bar" key={k}>
+            <button
+              key={k}
+              type="button"
+              className="feature-bar"
+              style={{
+                width: "100%",
+                background: "transparent",
+                border: "none",
+                color: "inherit",
+                cursor: "pointer",
+                padding: 0,
+                textAlign: "left",
+                opacity: attackFilter === "ALL" || attackFilter === k ? 1 : 0.35,
+              }}
+              onClick={() => setAttackFilter((cur) => (cur === k ? "ALL" : k))}
+              title={`Filter ${k}`}
+            >
               <span>{k}</span>
               <div className="track">
                 <div className="fill" style={{ width: `${Math.min(100, (v / Math.max(1, total)) * 100)}%` }} />
               </div>
               <span className="mono muted">{v}</span>
-            </div>
+            </button>
           ))}
         </section>
-        <section className="panel">
+        <section className="panel panel-interactive">
           <h3 style={{ marginTop: 0 }}>Lifecycle status</h3>
           {Object.entries(analytics?.by_status ?? {}).map(([k, v]) => (
-            <div className="feature-bar" key={k}>
+            <button
+              key={k}
+              type="button"
+              className="feature-bar"
+              style={{
+                width: "100%",
+                background: "transparent",
+                border: "none",
+                color: "inherit",
+                cursor: "pointer",
+                padding: 0,
+                textAlign: "left",
+                opacity: statusFilter === "ALL" || statusFilter === k ? 1 : 0.35,
+              }}
+              onClick={() => setStatusFilter((cur) => (cur === k ? "ALL" : k))}
+              title={`Filter ${k}`}
+            >
               <span>{k}</span>
               <div className="track">
                 <div className="fill" style={{ width: `${Math.min(100, (v / Math.max(1, total)) * 100)}%` }} />
               </div>
               <span className="mono muted">{v}</span>
-            </div>
+            </button>
           ))}
           {Object.keys(analytics?.by_status ?? {}).length === 0 && (
             <p className="muted">No status data yet.</p>
@@ -161,7 +196,7 @@ export function ReportsPage() {
         </section>
       </div>
 
-      <div className="panel">
+      <div className="panel panel-interactive">
         <div className="row" style={{ justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem" }}>
           <h3 style={{ margin: 0 }}>Incident table</h3>
           <div className="row" style={{ flexWrap: "wrap" }}>
@@ -199,9 +234,31 @@ export function ReportsPage() {
             </select>
           </div>
         </div>
-        <p className="muted mono">
-          Showing {filtered.length} / {incidents.length}
-        </p>
+        <div className="row" style={{ justifyContent: "space-between", marginBottom: "0.35rem" }}>
+          <p className="muted mono" style={{ margin: 0 }}>
+            Showing {filtered.length} / {incidents.length}
+          </p>
+          {(sevFilter !== "ALL" || attackFilter !== "ALL" || statusFilter !== "ALL" || campaignFilter !== "ALL") && (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => {
+                setSevFilter("ALL");
+                setAttackFilter("ALL");
+                setStatusFilter("ALL");
+                setCampaignFilter("ALL");
+              }}
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+        {filtered.length === 0 ? (
+          <div className="empty-state">
+            <strong>No matching incidents</strong>
+            <p className="muted" style={{ margin: 0 }}>Adjust filters or run a new detection.</p>
+          </div>
+        ) : (
         <table className="table">
           <thead>
             <tr>
@@ -265,6 +322,7 @@ export function ReportsPage() {
             })}
           </tbody>
         </table>
+        )}
       </div>
     </div>
   );

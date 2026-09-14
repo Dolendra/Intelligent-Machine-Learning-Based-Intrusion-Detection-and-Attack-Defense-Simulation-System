@@ -40,7 +40,7 @@ function SeriesBars({
 }) {
   if (!labels.length) return null;
   return (
-    <div className="panel" style={{ marginBottom: "1rem" }}>
+    <div className="panel panel-interactive" style={{ marginBottom: "1rem" }}>
       <h4 style={{ marginTop: 0 }}>{title}</h4>
       <p className="muted" style={{ marginTop: 0, fontSize: "0.85rem" }}>
         With defense vs no-defense counterfactual (simulated).
@@ -214,11 +214,17 @@ export function SimulationPage() {
       <div className="page-header">
         <div>
           <h2>Attack–Defense Simulation</h2>
-          <p>Controlled visualization only — no real attacks are launched.</p>
+          <p>Interactive cyber-range visualization — attack → detect → defend → recover (no real traffic).</p>
         </div>
+        {session && (
+          <span className={`live-chip ${playing ? "" : "off"}`}>
+            <span className={`status-dot ${playing ? "on" : ""}`} />
+            {playing ? "Playing" : session.state === "recovered" ? "Recovered" : `State · ${session.state}`}
+          </span>
+        )}
       </div>
 
-      <div className="panel stack" style={{ marginBottom: "1rem" }}>
+      <div className="panel panel-interactive stack" style={{ marginBottom: "1rem" }}>
         <div className="row" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
           <label className="muted">
             Attack{" "}
@@ -282,14 +288,15 @@ export function SimulationPage() {
         </div>
       </div>
 
-      {error && <div className="panel" style={{ marginBottom: "1rem" }}>{error}</div>}
+      {error && <div className="panel" style={{ marginBottom: "1rem", borderColor: "rgba(227,93,106,.4)" }}>{error}</div>}
 
       {!session && (
-        <div className="panel">
-          <p className="muted">
+        <div className="empty-state" style={{ marginBottom: "1rem" }}>
+          <strong>Ready to simulate</strong>
+          <p className="muted" style={{ margin: "0 0 0.85rem" }}>
             Configure attack intensity and confidence, then run — or replay a saved session below.
           </p>
-          <ol className="muted">
+          <ol className="muted" style={{ textAlign: "left", display: "inline-block", margin: 0 }}>
             {STEPS.map((s) => (
               <li key={s}>{s}</li>
             ))}
@@ -298,13 +305,13 @@ export function SimulationPage() {
       )}
 
       {history.length > 0 && (
-        <div className="panel" style={{ marginBottom: "1rem" }}>
+        <div className="panel panel-interactive" style={{ marginBottom: "1rem" }}>
           <h3 style={{ marginTop: 0 }}>Simulation history</h3>
           <div className="row" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
             {history.map((h) => (
               <button
                 key={String(h.session_id)}
-                className="btn btn-secondary"
+                className={`btn ${session?.id === String(h.session_id) ? "btn-primary" : "btn-secondary"}`}
                 type="button"
                 onClick={() => replay(String(h.session_id))}
               >

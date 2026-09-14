@@ -89,11 +89,18 @@ export function IncidentDetailPage() {
       <div className="page-header">
         <div>
           <h2>Incident {incidentId}</h2>
-          <p>Analyst lifecycle workspace — advisory decision support only.</p>
+          <p>Analyst workspace — review evidence, advance lifecycle, simulate defense (advisory only).</p>
         </div>
-        <Link className="btn btn-secondary" to="/reports">
-          Back to reports
-        </Link>
+        <div className="row">
+          <Link className="btn btn-secondary" to="/reports">
+            Back to reports
+          </Link>
+          {item && (
+            <button className="btn btn-amber" onClick={() => void simulate()} disabled={busy}>
+              Simulate this incident
+            </button>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -102,7 +109,12 @@ export function IncidentDetailPage() {
         </div>
       )}
 
-      {!item && !error && <div className="panel">Loading…</div>}
+      {!item && !error && (
+        <div className="panel">
+          <div className="skeleton lg" style={{ width: "40%", marginBottom: "0.75rem" }} />
+          <div className="skeleton" style={{ width: "70%" }} />
+        </div>
+      )}
 
       {item && (
         <>
@@ -112,16 +124,27 @@ export function IncidentDetailPage() {
               <div className="muted">
                 <span className={`badge ${String(item.severity).toLowerCase()}`}>{String(item.severity)}</span>
                 {" · "}Risk {String(item.risk_score)}
-                {item.campaign_id ? ` · ${String(item.campaign_id)}` : ""}
+                {item.campaign_id ? (
+                  <>
+                    {" · "}
+                    <Link to={`/campaigns/${encodeURIComponent(String(item.campaign_id))}`}>
+                      {String(item.campaign_id)}
+                    </Link>
+                  </>
+                ) : null}
               </div>
             </div>
-            <button className="btn btn-amber" onClick={() => void simulate()} disabled={busy}>
-              Simulate this incident
-            </button>
+            <div className="row">
+              {next.slice(0, 3).map((s) => (
+                <button key={s} className="btn btn-secondary" disabled={busy} onClick={() => void advance(s)}>
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="split">
-            <section className="panel stack">
+            <section className="panel panel-interactive stack">
               <div className="grid-stats">
                 <div className="stat">
                   <div className="label">Attack</div>
@@ -167,11 +190,10 @@ export function IncidentDetailPage() {
                   placeholder="e.g. rate-limit applied (advisory)"
                 />
               </label>
-              <button className="btn btn-secondary" disabled={busy} onClick={() => void saveInvestigation()}>
-                Save investigation
-              </button>
-
               <div className="row">
+                <button className="btn btn-primary" disabled={busy} onClick={() => void saveInvestigation()}>
+                  Save investigation
+                </button>
                 {next.map((s) => (
                   <button key={s} className="btn btn-secondary" disabled={busy} onClick={() => void advance(s)}>
                     {s}
@@ -180,9 +202,14 @@ export function IncidentDetailPage() {
               </div>
               {trace ? <DecisionTraceTimeline title={trace.title} steps={trace.steps} /> : null}
             </section>
-            <section className="panel">
+            <section className="panel panel-interactive">
               <h3 style={{ marginTop: 0 }}>Lifecycle events</h3>
-              {events.length === 0 && <p className="muted">No events recorded yet.</p>}
+              {events.length === 0 && (
+                <div className="empty-state">
+                  <strong>No events yet</strong>
+                  <p className="muted" style={{ margin: 0 }}>Advance the status to build the audit trail.</p>
+                </div>
+              )}
               <ul className="timeline">
                 {events.map((e, idx) => (
                   <li key={idx}>

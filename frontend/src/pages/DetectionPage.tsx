@@ -102,11 +102,11 @@ export function DetectionPage() {
       <div className="page-header">
         <div>
           <h2>Detection Lab</h2>
-          <p>Two-stage ML: binary detection → attack-family classification → risk → recommendation.</p>
+          <p>Interactive two-stage pipeline: binary detection → attack-family classification → risk → recommendation.</p>
         </div>
       </div>
 
-      <div className="panel row" style={{ marginBottom: "1rem" }}>
+      <div className="panel panel-interactive row" style={{ marginBottom: "1rem" }}>
         <label className="muted">Demo flow type</label>
         <select className="select" value={attackHint} onChange={(e) => setAttackHint(e.target.value)}>
           {ATTACK_OPTIONS.map((a) => (
@@ -343,20 +343,24 @@ export function DetectionPage() {
         <section className="panel">
           <div className="row" style={{ justifyContent: "space-between", marginBottom: "0.5rem" }}>
             <h3 style={{ margin: 0 }}>Why?</h3>
-            <div className="row">
+            <div className="tab-row" role="tablist" aria-label="Explanation method">
               <button
-                className={`btn ${xaiTab === "shap" ? "btn-primary" : "btn-secondary"}`}
-                style={{ padding: "0.35rem 0.7rem" }}
+                type="button"
+                role="tab"
+                className={`tab-btn ${xaiTab === "shap" ? "active" : ""}`}
                 onClick={() => setXaiTab("shap")}
                 disabled={!explain}
+                aria-selected={xaiTab === "shap"}
               >
                 SHAP
               </button>
               <button
-                className={`btn ${xaiTab === "lime" ? "btn-primary" : "btn-secondary"}`}
-                style={{ padding: "0.35rem 0.7rem" }}
+                type="button"
+                role="tab"
+                className={`tab-btn ${xaiTab === "lime" ? "active" : ""}`}
                 onClick={() => setXaiTab("lime")}
                 disabled={!lime}
+                aria-selected={xaiTab === "lime"}
               >
                 LIME
               </button>

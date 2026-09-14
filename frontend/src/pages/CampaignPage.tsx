@@ -50,8 +50,11 @@ export function CampaignPage() {
       <div className="page-header">
         <div>
           <h2>Attack Campaigns</h2>
-          <p>Correlated incidents sharing an explicit source fingerprint (controlled SOC view).</p>
+          <p>Correlated investigations sharing a source fingerprint — select a campaign to drill in.</p>
         </div>
+        <Link className="btn btn-secondary" to="/detection">
+          New detection
+        </Link>
       </div>
 
       {error && (
@@ -61,26 +64,46 @@ export function CampaignPage() {
       )}
 
       <div className="split">
-        <section className="panel">
+        <section className="panel panel-interactive">
           <h3 style={{ marginTop: 0 }}>Campaign list</h3>
-          {list.length === 0 && <p className="muted">No campaigns yet — need detections with source_ref.</p>}
+          {list.length === 0 && (
+            <div className="empty-state">
+              <strong>No campaigns yet</strong>
+              <p className="muted" style={{ margin: 0 }}>
+                Detections need an explicit <span className="mono">source_ref</span> to correlate.
+              </p>
+            </div>
+          )}
           <ul className="timeline">
-            {list.map((c) => (
-              <li key={String(c.campaign_id)}>
-                <Link className="mono" to={`/campaigns/${encodeURIComponent(String(c.campaign_id))}`}>
-                  {String(c.campaign_id)}
-                </Link>
-                <div className="muted">
-                  {String((c.progression as string[] | undefined)?.join(" → ") || "—")} · n=
-                  {String(c.incident_count)} · max risk {String(c.max_risk)}
-                </div>
-              </li>
-            ))}
+            {list.map((c) => {
+              const id = String(c.campaign_id);
+              const active = campaignId === id;
+              return (
+                <li key={id} style={{ opacity: campaignId && !active ? 0.45 : 1 }}>
+                  <Link
+                    className="mono"
+                    to={`/campaigns/${encodeURIComponent(id)}`}
+                    style={{ color: active ? "var(--cyan-bright)" : undefined }}
+                  >
+                    {id}
+                  </Link>
+                  <div className="muted">
+                    {String((c.progression as string[] | undefined)?.join(" → ") || "—")} · n=
+                    {String(c.incident_count)} · max risk {String(c.max_risk)}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </section>
 
-        <section className="panel stack">
-          {!campaignId && <p className="muted">Select a campaign to view progression.</p>}
+        <section className="panel panel-interactive stack">
+          {!campaignId && (
+            <div className="empty-state">
+              <strong>Select a campaign</strong>
+              <p className="muted" style={{ margin: 0 }}>View progression, linked incidents, and run a campaign simulation.</p>
+            </div>
+          )}
           {detail && (
             <>
               <h3 style={{ marginTop: 0 }}>{String(detail.campaign_id)}</h3>
@@ -92,11 +115,14 @@ export function CampaignPage() {
                 Simulate campaign progression
               </button>
               <h4>Attack progression</h4>
-              <ol>
+              <div className="phase-strip">
                 {progression.map((p, i) => (
-                  <li key={`${p}-${i}`}>{p}</li>
+                  <div key={`${p}-${i}`} className="phase-chip done" style={{ opacity: 1 }}>
+                    <span className="mono muted">#{i + 1}</span>
+                    <strong>{p}</strong>
+                  </div>
                 ))}
-              </ol>
+              </div>
               <h4>Incidents</h4>
               <table className="table">
                 <thead>
