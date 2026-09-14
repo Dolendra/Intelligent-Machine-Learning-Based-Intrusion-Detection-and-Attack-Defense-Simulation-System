@@ -60,21 +60,32 @@ def build_response_plan(
             asset_criticality=asset_criticality,
         )
 
+    from security.response.planner import plan_action_type
+
+    suggested = plan_action_type(
+        attack_type,
+        rule_actions=list(recommendation.get("rule_actions") or []),
+        severity=recommendation.get("severity") or severity,
+    )
+
     return {
-        "mode": "advisory_simulation",
+        "mode": "dry_run_approval",
         "live_mitigation": False,
         "advisory_only": True,
+        "phase": "P2",
         "attack_type": attack_type,
         "recommendation": recommendation,
         "risk": risk,
         "simulation": simulation,
+        "suggested_action_type": suggested.value,
         "next_steps": [
             "Review recommendation with an analyst (decision support).",
+            "Propose a response via POST /api/response/actions/propose (DRY_RUN default).",
+            "Run dry-run, then APPROVE or REJECT — approval never touches a live firewall in P2.",
             "Optionally run /api/simulation/* to visualize assumed defense efficacy.",
-            "Record chosen defense_action on the incident as an analyst note — not an executed control.",
         ],
         "disclaimer": (
-            "Controlled response in Stage-2 is advisory and simulation-backed only. "
+            "P2 controlled response uses dry-run + human approval only. "
             "Aegis IDS does not automatically apply firewall, WAF, or host isolation actions."
         ),
     }

@@ -83,7 +83,9 @@ def test_response_plan_advisory_only():
     body = r.json()
     assert body["live_mitigation"] is False
     assert body["advisory_only"] is True
-    assert body["mode"] == "advisory_simulation"
+    assert body["mode"] == "dry_run_approval"
+    assert body["phase"] == "P2"
+    assert body["suggested_action_type"] == "BLOCK_SOURCE"
     assert body["recommendation"]["advisory_only"] is True
     assert body["simulation"] is None
     assert "risk" in body

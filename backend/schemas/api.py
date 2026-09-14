@@ -101,6 +101,28 @@ class ControlledResponsePlanRequest(BaseModel):
     incident_id: str | None = None
 
 
+class ResponseActionProposeRequest(BaseModel):
+    """P2: propose an abstract dry-run response action (pending approval)."""
+
+    attack_type: str
+    incident_id: str | None = None
+    severity: str | None = None
+    risk_score: float | None = Field(None, ge=0.0, le=100.0)
+    confidence: float | None = Field(None, ge=0.0, le=1.0)
+    source_ip: str | None = Field(None, max_length=128)
+    host: str | None = Field(None, max_length=256)
+    target: str | None = Field(None, max_length=256)
+    action_type: str | None = None
+    reason: str | None = Field(None, max_length=2000)
+    duration_minutes: int | None = Field(None, ge=0, le=1440)
+    mode: str = "DRY_RUN"
+
+
+class ResponseActionDecisionRequest(BaseModel):
+    reason: str | None = Field(None, max_length=2000)
+    actor: str | None = Field(None, max_length=128)
+
+
 class IncidentUpdateRequest(BaseModel):
     status: str
     analyst_notes: str | None = None

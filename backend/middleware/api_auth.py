@@ -27,6 +27,15 @@ def _permission_for_request(method: str, path: str) -> str | None:
             return "read_health"
         return "read_health"
     # Mutations
+    if path.startswith("/api/response/actions"):
+        # Approve / reject require elevated permission when RBAC is on
+        if method == "POST" and (
+            path.endswith("/approve") or path.endswith("/reject") or path.endswith("/execute")
+        ):
+            return "approve_response"
+        if method == "GET":
+            return "read_incidents"
+        return "write_response"
     if path.startswith("/api/predict") or path.startswith("/api/explain") or path.startswith("/api/risk") or path.startswith("/api/recommendation") or path.startswith("/api/response"):
         return "write_detect"
     if path.startswith("/api/incidents") or path.startswith("/api/campaigns"):

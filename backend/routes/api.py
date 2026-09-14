@@ -14,6 +14,8 @@ from backend.schemas.api import (
     PredictRequest,
     PredictResponse,
     RecommendationRequest,
+    ResponseActionDecisionRequest,
+    ResponseActionProposeRequest,
     RiskRequest,
     SimulationAdvanceRequest,
     SimulationFromPredictionRequest,
@@ -97,7 +99,11 @@ def security_status():
             "live_mitigation": False,
             "simulation": True,
             "advisory_only": True,
+            "dry_run_default": True,
+            "phase": "P2",
             "plan_endpoint": "/api/response/plan",
+            "actions_endpoint": "/api/response/actions",
+            "approval_required": True,
         },
         "database": database_info(),
         "rbac": rbac_summary(),
@@ -105,7 +111,7 @@ def security_status():
             "Auth and rate limiting remain disabled by default for the research/demo baseline.",
             "Enable api.auth.enabled and set AEGIS_API_KEY for Stage-2 hardening.",
             "Enable api.rate_limit.enabled to protect predict/ingest/response surfaces.",
-            "Controlled response is advisory + simulation only — no live network mitigation.",
+            "P2 controlled response: propose → dry-run → approve/reject; no live firewall/EDR.",
             "/api/metrics is in-process only (resets on restart); not a multi-node SRE stack.",
             "Cyber-range validation checks the simulation state machine — not a physical range or real defense efficacy.",
             "PostgreSQL is optional via IDS_DB_URL; SQLite remains the default.",
@@ -638,6 +644,152 @@ def response_plan(body: ControlledResponsePlanRequest):
         start_simulation=body.start_simulation,
         incident_id=body.incident_id,
     )
+
+
+def _response_http(exc) -> HTTPException:
+    from security.response import ResponseError
+
+    if isinstance(exc, ResponseError):
+        return HTTPException(
+            status_code=exc.http_status,
+            detail={"code": exc.code, "message": exc.message},
+        )
+    return HTTPException(status_code=500, detail={"code": "RESPONSE_ERROR", "message": str(exc)})
+
+
+@router.get("/response/capabilities")
+def response_capabilities_endpoint():
+    from security.response import response_capabilities
+
+    return response_capabilities()
+
+
+@router.get("/response/actions")
+def response_actions_list(incident_id: str | None = None, limit: int = 50):
+    from security.response import list_actions
+
+    return {"items": list_actions(incident_id=incident_id, limit=min(limit, 200))}
+
+
+@router.post("/response/actions/propose")
+def response_actions_propose(body: ResponseActionProposeRequest, request: Request):
+    from security.recommendations.engine import recommend
+    from security.response import ResponseError, propose_action
+
+    actor = getattr(request.state, "aegis_role", None) or "analyst"
+    try:
+        rec = recommend(
+            body.attack_type,
+            body.severity,
+            confidence=body.confidence,
+            is_attack=body.attack_type != "BENIGN",
+        )
+        return propose_action(
+            attack_type=body.attack_type,
+            incident_id=body.incident_id,
+            severity=body.severity,
+            risk_score=body.risk_score,
+            recommendation=rec,
+            source_ip=body.source_ip,
+            host=body.host,
+            target=body.target,
+            action_type=body.action_type,
+            reason=body.reason,
+            duration_minutes=body.duration_minutes,
+            mode=body.mode,
+            actor=actor,
+        )
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.get("/response/actions/{action_id}")
+def response_actions_get(action_id: str):
+    from security.response import ResponseError, get_action
+
+    try:
+        return get_action(action_id)
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.get("/response/actions/{action_id}/audit")
+def response_actions_audit(action_id: str):
+    from security.response import ResponseError
+    from security.response.service import action_audit
+
+    try:
+        return {"action_id": action_id, "events": action_audit(action_id)}
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/{action_id}/dry-run")
+def response_actions_dry_run(action_id: str, request: Request):
+    from security.response import ResponseError, run_dry_run
+
+    actor = getattr(request.state, "aegis_role", None) or "analyst"
+    try:
+        return run_dry_run(action_id, actor=actor)
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/{action_id}/approve")
+def response_actions_approve(action_id: str, request: Request, body: ResponseActionDecisionRequest | None = None):
+    from security.response import ResponseError, approve_action
+
+    actor = (body.actor if body and body.actor else None) or getattr(request.state, "aegis_role", None) or "responder"
+    try:
+        return approve_action(action_id, actor=actor)
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/{action_id}/reject")
+def response_actions_reject(action_id: str, request: Request, body: ResponseActionDecisionRequest | None = None):
+    from security.response import ResponseError, reject_action
+
+    actor = (body.actor if body and body.actor else None) or getattr(request.state, "aegis_role", None) or "responder"
+    reason = body.reason if body else None
+    try:
+        return reject_action(action_id, actor=actor, reason=reason)
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/{action_id}/execute")
+def response_actions_execute(action_id: str, request: Request):
+    """Explicit execute after approve — still dry-run only in P2."""
+    from security.response import ResponseError, execute_action
+
+    actor = getattr(request.state, "aegis_role", None) or "responder"
+    try:
+        return execute_action(action_id, actor=actor)
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/incidents/{incident_id}/response/propose")
+def incident_response_propose(incident_id: str, request: Request, db: Session = Depends(get_db)):
+    """Propose a dry-run response action from an existing incident."""
+    from security.response import ResponseError, propose_from_incident
+
+    incident = svc.get_incident(db, incident_id)
+    if incident is None:
+        raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "Unknown incident"})
+    actor = getattr(request.state, "aegis_role", None) or "analyst"
+    try:
+        return propose_from_incident(incident, actor=actor)
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.get("/incidents/{incident_id}/response/actions")
+def incident_response_actions(incident_id: str, limit: int = 20):
+    from security.response import list_actions
+
+    return {"incident_id": incident_id, "items": list_actions(incident_id=incident_id, limit=min(limit, 100))}
 
 
 @router.post("/simulation/start")

@@ -258,6 +258,38 @@ export const api = {
   },
   ingestQueueJob: (jobId: string) =>
     request<Record<string, unknown>>(`/api/ingest/queue/${encodeURIComponent(jobId)}`),
+  responseCapabilities: () => request<Record<string, unknown>>("/api/response/capabilities"),
+  proposeResponse: (body: Record<string, unknown>) =>
+    request<Record<string, unknown>>("/api/response/actions/propose", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  proposeIncidentResponse: (incidentId: string) =>
+    request<Record<string, unknown>>(
+      `/api/incidents/${encodeURIComponent(incidentId)}/response/propose`,
+      { method: "POST", body: "{}" }
+    ),
+  listIncidentResponses: (incidentId: string) =>
+    request<{ incident_id: string; items: Array<Record<string, unknown>> }>(
+      `/api/incidents/${encodeURIComponent(incidentId)}/response/actions`
+    ),
+  dryRunResponse: (actionId: string) =>
+    request<Record<string, unknown>>(`/api/response/actions/${encodeURIComponent(actionId)}/dry-run`, {
+      method: "POST",
+      body: "{}",
+    }),
+  approveResponse: (actionId: string) =>
+    request<Record<string, unknown>>(`/api/response/actions/${encodeURIComponent(actionId)}/approve`, {
+      method: "POST",
+      body: "{}",
+    }),
+  rejectResponse: (actionId: string, reason?: string) =>
+    request<Record<string, unknown>>(`/api/response/actions/${encodeURIComponent(actionId)}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }),
+  getResponseAction: (actionId: string) =>
+    request<Record<string, unknown>>(`/api/response/actions/${encodeURIComponent(actionId)}`),
   downloadExport: async (kind: "incidents.csv" | "incidents.json" | "analytics.json" | "report.pdf") => {
     const res = await fetch(`${API_BASE}/api/export/${kind}`);
     if (!res.ok) throw new Error((await res.text()) || res.statusText);

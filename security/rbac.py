@@ -12,11 +12,24 @@ PERMISSIONS = {
     "write_incidents",
     "write_simulation",
     "write_ingest",
+    "write_response",
+    "approve_response",
     "admin",
 }
 
 ROLE_PERMISSIONS: dict[str, set[str]] = {
     "admin": set(PERMISSIONS),
+    "responder": {
+        "read_health",
+        "read_models",
+        "read_incidents",
+        "write_detect",
+        "write_incidents",
+        "write_simulation",
+        "write_ingest",
+        "write_response",
+        "approve_response",
+    },
     "analyst": {
         "read_health",
         "read_models",
@@ -25,6 +38,8 @@ ROLE_PERMISSIONS: dict[str, set[str]] = {
         "write_incidents",
         "write_simulation",
         "write_ingest",
+        "write_response",
+        # propose + dry-run only — cannot approve/reject without responder/admin
     },
     "viewer": {
         "read_health",
@@ -69,6 +84,7 @@ def rbac_summary() -> dict:
         "notes": [
             "RBAC is enforced only when api.auth.enabled=true (or AEGIS_API_KEY + enabled).",
             "Pass role via X-Aegis-Role when authenticated; defaults to analyst.",
+            "P2: write_response = propose/dry-run; approve_response = approve/reject (responder/admin).",
             "This is scaffolding for Stage-2 — not a full IdP/OAuth SSO implementation.",
         ],
     }
