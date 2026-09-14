@@ -73,9 +73,20 @@ Not included yet: OAuth/SSO, user tables, password login, full SOC analyst accou
 
 Honest limits: no firewall/WAF/agent connectors; `defense_action` on incidents is an analyst note, not an executed control.
 
+### Phase E — Observability / CI-CD / load tests (started)
+
+| Item | Status |
+|------|--------|
+| `GET /api/metrics` | In-process request counters + p50/p95 latency samples |
+| Request logging | Existing `StructuredLoggingMiddleware` + `X-Request-ID` |
+| Load smoke | `python scripts/26_api_load_smoke.py` (health/ready/metrics only) |
+| CI | Runs on `main` **and** `stage2/productionization`; `stage2-gate` job |
+| Docker image | `Dockerfile.api` copies `ingestion/` for Stage-2 APIs |
+
+Honest limits: **not** Prometheus/Grafana/OpenTelemetry; metrics reset on process restart; load smoke is **not** a capacity/SLA claim.
+
 ### Still later
 
-- **E** Observability / CI-CD / load tests
 - **F** Cyber-range simulation validation + docs
 
 

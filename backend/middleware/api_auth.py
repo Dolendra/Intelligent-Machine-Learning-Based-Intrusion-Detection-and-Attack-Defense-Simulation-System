@@ -14,7 +14,7 @@ from security.rbac import has_permission, normalize_role
 
 def _permission_for_request(method: str, path: str) -> str | None:
     """Map request to a coarse permission; None means allow when authenticated."""
-    if path in {"/", "/docs", "/openapi.json", "/redoc", "/api/health", "/api/ready", "/api/security/status"}:
+    if path in {"/", "/docs", "/openapi.json", "/redoc", "/api/health", "/api/ready", "/api/security/status", "/api/metrics"}:
         return None
     if path.startswith("/api/ws"):
         return None

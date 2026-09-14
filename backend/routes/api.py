@@ -42,7 +42,7 @@ def _demo_allow_missing(requested: bool) -> bool:
 
 @router.get("/security/status")
 def security_status():
-    """Stage-2 Phase D: auth/RBAC + rate-limit paths + controlled-response honesty (no secrets)."""
+    """Stage-2 Phase E: auth/RBAC + rate-limit + observability honesty (no secrets)."""
     import os
 
     from backend.middleware.security_headers import security_headers_summary
@@ -62,7 +62,7 @@ def security_status():
         "/api/simulation",
     ]
     return {
-        "stage": "2-phase-d",
+        "stage": "2-phase-e",
         "auth": {
             "enabled": bool(auth.get("enabled", False)),
             "api_key_configured": key_configured,
@@ -78,6 +78,13 @@ def security_status():
             "paths": list(rl.get("paths") or default_rl_paths),
         },
         "security_headers": security_headers_summary(),
+        "observability": {
+            "metrics_endpoint": "/api/metrics",
+            "request_logging": True,
+            "prometheus": False,
+            "opentelemetry": False,
+            "load_smoke_script": "scripts/26_api_load_smoke.py",
+        },
         "controlled_response": {
             "live_mitigation": False,
             "simulation": True,
@@ -91,9 +98,25 @@ def security_status():
             "Enable api.auth.enabled and set AEGIS_API_KEY for Stage-2 hardening.",
             "Enable api.rate_limit.enabled to protect predict/ingest/response surfaces.",
             "Controlled response is advisory + simulation only — no live network mitigation.",
+            "/api/metrics is in-process only (resets on restart); not a multi-node SRE stack.",
             "PostgreSQL is optional via IDS_DB_URL; SQLite remains the default.",
         ],
     }
+
+
+@router.get("/metrics")
+def process_metrics_endpoint():
+    """Stage-2 Phase E: in-process request counters and latency samples (not Prometheus)."""
+    from backend.middleware.metrics_mw import process_metrics
+
+    snap = process_metrics.snapshot()
+    try:
+        from ingestion.queue import ingest_queue
+
+        snap["ingest_queue"] = ingest_queue.status().get("metrics")
+    except Exception:  # noqa: BLE001
+        snap["ingest_queue"] = None
+    return snap
 
 
 @router.get("/health", response_model=HealthResponse)

@@ -22,7 +22,7 @@ def test_security_status_public():
     r = client.get("/api/security/status")
     assert r.status_code == 200
     body = r.json()
-    assert body["stage"] == "2-phase-d"
+    assert body["stage"] == "2-phase-e"
     assert "rbac" in body
     assert "database" in body
     assert body["auth"]["enabled"] is False

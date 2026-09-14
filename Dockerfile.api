@@ -15,6 +15,7 @@ COPY ml ./ml
 COPY explainability ./explainability
 COPY security ./security
 COPY simulation ./simulation
+COPY ingestion ./ingestion
 COPY backend ./backend
 COPY database ./database
 COPY alembic ./alembic
