@@ -27,8 +27,11 @@ Do **not** claim live capture, automatic mitigation, or OAuth SSO until those pi
 | POST | `/api/ingest/flows/csv` | Offline CSV → validated feature rows (+ optional predict) |
 | POST | `/api/ingest/pcap` | Offline PCAP (P1: size/magic/extension validation + audit); cicflowmeter when installed; else 501 |
 | POST | `/api/ingest/queue/submit-pcap` | Same detect queue as CSV after PCAP→flow extract; 501 without cicflowmeter |
+| POST | `/api/response/actions/propose` | P2: propose abstract DRY_RUN action (pending approval) |
+| POST | `/api/response/actions/{id}/approve` | P2: approve → dry execute + verify (no live network) |
+| POST | `/api/response/actions/{id}/reject` | P2: reject with audit; no execution |
 
-> **Productionization (post `v1.1-research`):** see `docs/PRODUCTIONIZATION.md`. Branch `productionization` hardens offline PCAP without changing frozen DT/RF artifacts. Live NIC capture remains out of scope until a later phase. CI uses `tests/fixtures/pcap/` with a mocked extractor only — the API never fakes success without cicflowmeter.
+> **Productionization (post `v1.1-research`):** see `docs/PRODUCTIONIZATION.md`. Branch `productionization` hardens offline PCAP (P1) and adds dry-run/approval response gate (P2) without changing frozen DT/RF artifacts. Live NIC capture and live firewall/EDR adapters remain out of scope until later phases.
 
 ### CLI examples
 
