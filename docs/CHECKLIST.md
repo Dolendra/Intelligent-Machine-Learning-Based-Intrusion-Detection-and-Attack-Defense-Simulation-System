@@ -4,8 +4,10 @@
 - [ ] API running (`uvicorn backend.main:app --port 8000`)
 - [ ] UI running (`cd frontend && npm run dev` or `npm run preview`)
 - [ ] Models present in `models/trained_models/`
-- [ ] Walkthrough rehearsed from `docs/DEMO.md` (5–10 min: Detect → Simulate → honesty line)
+- [ ] Walkthrough rehearsed from `docs/DEMO.md` (viva-day 17-step playbook; ≤5 min cut if needed)
+- [ ] Preflight: `/api/ready` + Detection DDoS sample + SHAP + Controlled response + Simulation recovered
 - [ ] Dashboard shows incidents (seeded if `DEMO_MODE=true`)
+- [ ] Fallback pack ready: PPTX + `PROJECT_REPORT.md` + P11/P12 JSON if UI fails
 - [ ] Skim `docs/VIVA_QA.md` numbers card (DT @ 0.85, RF, F1/ROC)
 
 ## Report package
