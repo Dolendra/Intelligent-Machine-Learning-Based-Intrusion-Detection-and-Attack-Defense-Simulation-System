@@ -62,6 +62,17 @@ async def lifespan(_app: FastAPI):
         n = seed_demo_incidents()
         if n:
             print(f"Seeded {n} demo incidents (DEMO_MODE=true)")
+
+    # P9: reclaim in-flight response states left by process crash
+    try:
+        from backend.recovery import run_startup_recovery
+
+        summary = run_startup_recovery()
+        if summary.get("reclaimed_executing") or summary.get("reclaimed_approved"):
+            logging.getLogger("aegis.api").warning("Startup recovery: %s", summary)
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger("aegis.api").warning("Startup recovery skipped: %s", exc)
+
     yield
     try:
         from ingestion.queue import ingest_queue

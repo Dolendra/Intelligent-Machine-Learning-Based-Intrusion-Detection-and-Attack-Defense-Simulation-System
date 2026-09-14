@@ -65,17 +65,25 @@ def ops_snapshot() -> dict[str, Any]:
         domain=domain,
         queue_depth=queue_depth,
     )
+    try:
+        from backend.recovery import recovery_summary
+
+        recovery = recovery_summary()
+    except Exception:  # noqa: BLE001
+        recovery = {"phase": "P9", "ran_at": None}
+
     cfg = load_config()
     obs = cfg.get("observability") or {}
     retention = (cfg.get("database") or {}).get("retention") or {}
 
     return {
-        "phase": "P7",
+        "phase": "P9",
         "service": "aegis-api",
         "environment": obs.get("environment") or "development",
         "liveness": {"status": "ok", "endpoint": "/api/health"},
         "readiness": ready,
         "dependencies": deps,
+        "recovery": recovery,
         "performance": {
             "requests_total": http.get("requests_total"),
             "p50_latency_ms": http.get("p50_latency_ms"),

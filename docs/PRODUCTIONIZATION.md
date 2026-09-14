@@ -7,18 +7,17 @@
 
 | Phase | Focus | Status |
 |-------|--------|--------|
-| P0–P7 | Baseline → … → observability | ✅ |
-| **P8** | Performance / load | ✅ Complete |
-| P9 | Failure recovery / DR | Next |
+| P0–P8 | Baseline → … → performance | ✅ |
+| **P9** | Failure recovery / DR | ✅ Complete |
+| P10 | Generalization | Next |
 
-## P8 deliverables
+## P9 deliverables
 
-- Harness: `performance/harness.py` → JSON under `results/performance/`
-- Scripts: `30`–`37` prediction / batch / SHAP / API / queue / DB / stages / envelope
-- Scenarios: normal, high, saturation (queue-full)
-- SHAP vs ML-only comparison; stage breakdown
-- Concurrent response approve claim under load
-- Docs: `docs/PERFORMANCE.md` + `operating_envelope_latest.json`
-- CI: shape-only `tests/test_productionization_p8_performance.py` (no heavy benches)
+- Startup reclaim of stale `EXECUTING` / orphan `APPROVED` → `FAILED` (no auto-replay)
+- Failure matrix + recovery states in `docs/FAILURE_RECOVERY.md`
+- SQLite backup/restore/verify + disaster drill: `scripts/40_db_backup_restore.py`
+- Measured drill RTO (~0.02s local) and drill RPO≈0 (schedule defines ops RPO)
+- Suite: `tests/test_productionization_p9_recovery.py`
+- `/api/ops/status.recovery` summary
 
-**Completion criterion:** measured operating envelope with flows/sec, p50/p95, error rate, and saturation behavior — not a vague “scalable” claim. ML artifacts untouched.
+**Completion criterion:** defined component failures fail safely, critical security state is preserved/reclaimed, and restore is tested — with honest non-enterprise limits.

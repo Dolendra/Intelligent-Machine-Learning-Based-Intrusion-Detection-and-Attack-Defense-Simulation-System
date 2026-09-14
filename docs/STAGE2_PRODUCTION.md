@@ -110,6 +110,17 @@ Ephemeral by design: ingest queue, WS clients, rate-limit counters. Full backup/
 
 Honest limits: single-process measurements; not multi-node capacity or SLA.
 
+### Phase F — Failure recovery (P9 complete on `productionization`)
+
+| Item | Status |
+|------|--------|
+| Startup reclaim | Stale EXECUTING/APPROVED → FAILED |
+| Backup/restore | `scripts/40_db_backup_restore.py` (+ disaster-drill) |
+| Docs | `docs/FAILURE_RECOVERY.md` failure matrix + measured RPO/RTO |
+| Tests | `tests/test_productionization_p9_recovery.py` |
+
+Honest limits: in-process queue not durable; not enterprise offsite DR.
+
 ### Phase F — Cyber-range simulation validation + docs (started)
 
 | Item | Status |

@@ -22,12 +22,14 @@ class TestNetworkAdapter(ResponseAdapter):
         # Test hooks (unit tests only)
         self.fail_next_execute = False
         self.fail_next_verify = False
+        self.fail_next_rollback = False
 
     def reset(self) -> None:
         with self._lock:
             self._controls.clear()
             self.fail_next_execute = False
             self.fail_next_verify = False
+            self.fail_next_rollback = False
 
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
@@ -132,6 +134,9 @@ class TestNetworkAdapter(ResponseAdapter):
         }
 
     def rollback(self, action: ResponseAction) -> dict[str, Any]:
+        if self.fail_next_rollback:
+            self.fail_next_rollback = False
+            raise AdapterError("ROLLBACK_FAILED", "TestNetworkAdapter simulated rollback failure")
         if not is_reversible(action.action_type):
             raise AdapterError(
                 "NOT_REVERSIBLE",

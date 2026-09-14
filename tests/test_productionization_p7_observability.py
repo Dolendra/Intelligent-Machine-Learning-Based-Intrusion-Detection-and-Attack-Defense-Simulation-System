@@ -122,7 +122,7 @@ def test_ops_status_shape():
     r = client.get("/api/ops/status")
     assert r.status_code == 200
     body = r.json()
-    assert body["phase"] == "P7"
+    assert body["phase"] in {"P7", "P9"}
     assert body["prometheus"] is False
     assert "dependencies" in body
     assert "performance" in body
@@ -130,6 +130,7 @@ def test_ops_status_shape():
     assert "response" in body
     assert "alerts" in body
     assert "retention" in body
+    assert "recovery" in body
 
 
 def test_metrics_includes_domain():

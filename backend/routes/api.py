@@ -148,6 +148,7 @@ def security_status():
         },
         "rbac": rbac_summary(),
         "notes": [
+            "P9: startup recovery reclaims stale EXECUTING/APPROVED; backup via scripts/40_db_backup_restore.py.",
             "P7: structured JSON logs, correlation IDs, domain metrics, /api/ops/status.",
             "P6: users, response actions, audit, incidents, and simulations survive restarts.",
             "P5: rate limiting and request-size limits are ON by default for sensitive paths.",
