@@ -18,8 +18,9 @@
 - [ ] `python scripts/13_write_model_metadata.py` for reproducibility metadata (if regenerating)
 
 ## Presentation
-- [ ] Slides from `docs/PRESENTATION.md` / regenerate PPTX: `python scripts/08_export_presentation_pptx.py`
+- [ ] Slides from `docs/PRESENTATION.md` / regenerate PPTX: `python scripts/08_export_presentation_pptx.py` (**18 slides**, v2.0)
 - [ ] Open `docs/Aegis_IDS_Viva_Presentation.pptx` and fill Team / College / Year on title slide
+- [ ] Cross-check every number against `docs/PROJECT_REPORT.md` (research vs sim vs P11)
 - [ ] Each member can explain full pipeline (not only their module)
 - [ ] Safety line rehearsed: no real attacks / no auto-mitigation
 - [ ] Trap questions from `docs/VIVA_QA.md` rehearsed once

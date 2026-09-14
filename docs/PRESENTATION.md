@@ -1,101 +1,128 @@
-# Aegis IDS — Viva / Presentation Outline (15 slides)
+# Aegis IDS — Final Presentation Outline (18 slides)
 
-Use this as a PowerPoint/Google Slides skeleton, or regenerate:
+**Source of truth:** `docs/PROJECT_REPORT.md` (aligned to `v2.0-aegis-productionized`).  
+**Generate PPTX:**
 
 ```bash
 python scripts/08_export_presentation_pptx.py
 # → docs/Aegis_IDS_Viva_Presentation.pptx
 ```
 
-**Frozen models (v1.1):** Binary **Decision Tree** @ **0.85** · Multiclass **Random Forest** (six attack families, no BENIGN).
+**Frozen research baseline (`v1.1-research`):** Binary **Decision Tree** @ **0.85** · Multiclass **Random Forest** (six attack families, no BENIGN).  
+**Productionized release:** tag **`v2.0-aegis-productionized`**.
+
+### Three measurement classes (say this once early)
+
+| Class | Example |
+|-------|---------|
+| Research (IID / temporal) | Binary F1 **0.99048** |
+| Simulation assumptions | DDoS efficacy **0.82** |
+| Controlled-lab (P11) | DDoS `BLOCK_SOURCE` **1.00** |
 
 ---
 
 ## Slide 1 — Title
 - **Aegis IDS**
 - Intelligent ML-Based Intrusion Detection & Attack–Defense Simulation
-- Team members · College · Year
+- `v1.1-research` → `v2.0-aegis-productionized`
+- Team · College · Year
 
 ## Slide 2 — Problem
 - Classic IDS: “Attack detected”
 - Analyst still needs: type · why · severity · action · visual understanding
+- Gap: detection alone ≠ security decision support
 
-## Slide 3 — Solution (one sentence)
-> Detect → Classify → Explain → Assess risk → Recommend → Simulate attack/defense
+## Slide 3 — Motivation & objectives
+- Bridge detection → decision support with human control
+- Objectives: detect · classify · explain · risk · recommend · simulate · controlled response · productionize safely
 
-## Slide 4 — Architecture
-- React UI ↔ FastAPI ↔ ML + Risk + Recs + Simulation ↔ CICIDS2017 / SQLite
-- Diagram from README
+## Slide 4 — Existing system limitations
+- High CICIDS accuracy without honest generalization
+- Opaque models; advisory actions missing
+- Simulation confused with real mitigation
+- Weak auth / audit / fail-safe story
 
-## Slide 5 — Dataset & prep
-- CICIDS2017 MachineLearningCVE
-- Clean · normalize labels · rare-class filter · stratified split
-- ~2.52M flows after cleaning
-- Features: StandardScaler + SelectKBest(**f_classif**, k=40)
+## Slide 5 — Proposed Aegis IDS
+> Detect → Classify → Explain → Risk → Recommend → Approve → CONTROLLED response → Simulate
+- Contribution: **integration + honest evaluation**, not a new algorithm claim
+- Hard boundary: **no live firewall/EDR · no unapproved auto-response**
 
-## Slide 6 — Two-stage ML (RQ1)
+## Slide 6 — Architecture
+- React UI ↔ FastAPI ↔ ML + Risk + XAI + Response + Simulation ↔ SQLite
+- Adapters: DRY_RUN | CONTROLLED | LIVE (forbidden)
+- Diagram: `docs/architecture.png` / README
+
+## Slide 7 — Dataset & preprocessing
+- CICIDS2017 MachineLearningCVE · ~2.52M flows after cleaning
+- Stratified 70/10/20 · `random_state=42`
+- StandardScaler + SelectKBest(**f_classif**, k=40) · dual selectors · train-only fit
+
+## Slide 8 — ML architecture
 - Stage 1: Benign vs Attack → **Decision Tree** (threshold **0.85**)
-- Stage 2: Attack family (attack-only) → **Random Forest**
+- Stage 2: Attack-only → **Random Forest**
 - Families: Bot · BruteForce · DDoS · DoS · PortScan · WebAttack
-- Test (binary): F1 **0.99048** · ROC-AUC **0.99916** · Recall **0.997**
-- Test (multiclass): macro-F1 **0.99813** · weighted-F1 **0.99979**
-- Note: benchmark IID metrics ≠ live-deployment guarantees
 
-## Slide 7 — Why metrics & selection matter
-- Imbalanced data → recall/precision/F1 over accuracy
-- Multi-objective binary selection (recall 0.30 …) — **not raw F1 alone**
-- XGBoost can win F1; Decision Tree wins **recall** → selected
-- Show `model_binary_f1_vs_recall.png` + confusion / ROC figures
+## Slide 9 — Model results (research IID)
+- Binary test: F1 **0.99048** · Recall **0.997** · PR-AUC **0.99744** · ROC-AUC **0.99916**
+- Multiclass test: macro-F1 **0.99813** · weighted-F1 **0.99979**
+- Message: **IID benchmark ≠ live guarantee**
+- Figures: confusion + ROC
 
-## Slide 8 — Temporal generalization **[RESEARCH]**
-- Protocol: score **frozen** DT/RF on day-named CSV samples (no retrain)
-- Friday holdout: n=36k, attack rate ≈34% → binary F1 **0.9977**
-- Mon–Thu sample: n=60k, attack rate ≈7% → binary F1 **0.9800** (mild drop)
-- Multiclass Friday: only **Bot / DDoS / PortScan** present — not a 6-class temporal claim
-- Figures: `temporal_binary_iid_vs_holdout.png`, `temporal_generalization_summary.png`
-- Message: IID strength ≠ automatic temporal / live generalization
+## Slide 10 — Why Decision Tree?
+- Multi-objective weights: recall 0.30 · F1 0.25 · PR-AUC 0.20 · FPR 0.15 · latency 0.10
+- XGBoost can win raw F1; DT wins **recall** → selected
+- Show `model_binary_f1_vs_recall.png`
 
-## Slide 9 — Drift & residual errors **[RESEARCH]**
-- IID train→test drift: **0** features with PSI ≥ 0.2 (expected under stratified same-corpus split)
-- Binary residuals: FP **1,377** · FN **255** (FPR 0.00329 / FNR 0.00300)
-- Multiclass: **18** errors / 85,139 attacks — mainly PortScan / DoS / WebAttack
-- Message: PSI≈0 ≠ live drift absence; residual family confusions remain
+## Slide 11 — XAI + Risk
+- SHAP primary · LIME secondary (decision support, not causality)
+- Risk: 50% attack · 25% confidence · 15% intensity · 10% asset
+- Recommendations are **advisory** until human approval
 
-## Slide 10 — Explainability (RQ2/RQ3)
-- SHAP primary · LIME secondary
-- Live: Detection → Why? tabs
+## Slide 12 — Attack–defense simulation
+- `idle → … → detected → recommended → defended → recovered`
+- Efficacy values in config are **simulation assumptions** (e.g. DDoS **0.82**, DoS **0.78**)
+- Visualization only — not measured mitigation
 
-## Slide 11 — Risk & recommendations (RQ4)
-- Risk weights: 50% attack · 25% confidence · 15% intensity · 10% asset
-- Advisory playbooks (not auto-blocking)
+## Slide 13 — Controlled response architecture
+- `propose → dry-run → approve → execute → verify → rollback`
+- DRY_RUN / CONTROLLED / LIVE(forbidden)
+- RBAC: viewer · analyst (propose) · responder/admin (approve)
 
-## Slide 12 — Simulation (RQ5) **[LIVE DEMO]**
-- Topology · attack surge · IDS alert · defense · recover
-- Safety: visualization only; efficacy values are assumptions
+## Slide 14 — P11 empirical mitigation
+| Scenario | Measured | Sim prior |
+|----------|---------:|----------:|
+| DDoS `BLOCK_SOURCE` | **1.00** | 0.82 |
+| DoS `RATE_LIMIT` | **0.80** | 0.78 |
+- CONTROLLED lab only · recommendation-only ≠ mitigation · priors **not** overwritten
 
-## Slide 13 — Limitations & threats to validity
-- CICIDS2017 age / scenario structure (not continuous enterprise traffic)
-- Temporal slices are capped samples; multiclass temporal coverage incomplete
-- IID drift check ≠ temporal/live/cross-dataset drift
-- Simulation efficacy = assumptions; recommendations = advisory
-- **External-dataset validation = future work** (not fabricated)
-- Not a claim of production IDS readiness
+## Slide 15 — P12 security validation
+- Ten categories · **Overall: PASS**
+- Frozen artifact hashes intact · LIVE still forbidden
+- Productionized **prototype**, not enterprise SOC claim
 
-## Slide 14 — Contribution
-- Contribution: **integration** + honest evaluation framing, not a new algorithm claim
-- Research baseline frozen; Stage-2 productionization is a separate track
+## Slide 16 — System demonstration
+- Point to live demo flow (`docs/DEMO.md`)
+- Detection → incident → propose → dry-run → approve → simulation → System/ops
 
-## Slide 15 — Q&A
-- Point to `docs/DEMO.md` + `docs/VIVA_QA.md`
-- Frozen artifacts: `model_metadata.json` / `training_report.json` / `temporal_holdout_report.json` / `drift_report.json`
+## Slide 17 — Limitations & future work
+- No zero-day claim · no external dataset yet · temporal multiclass incomplete
+- P11 ≠ real firewall · simulation ≠ measurement
+- Future: cross-dataset under frozen preprocess · broader temporal families · opt-in sandbox enforcement later
+
+## Slide 18 — Conclusion & Q&A
+- Defensible claim (one sentence from PRODUCTION_READINESS)
+- Tags: `v1.1-research` · `v2.0-aegis-productionized`
+- Questions → `docs/VIVA_QA.md` · `docs/PROJECT_REPORT.md`
 
 ---
 
-## Timing guide
-| Segment | Time |
-|---------|------|
-| Slides 1–7 | 3 min |
-| Slides 8–9 (temporal + drift/errors) | 1.5 min |
-| Live demo | 3–4 min |
-| Slides 13–15 | 1–2 min |
-| Buffer / questions | rest |
+## Timing guide (~10–12 min talk + demo)
+
+| Segment | Slides | Time |
+|---------|--------|------|
+| Problem → proposal | 1–5 | ~2 min |
+| Architecture → ML | 6–10 | ~3 min |
+| XAI · sim · response | 11–13 | ~2 min |
+| P11 · P12 · limits | 14–17 | ~2.5 min |
+| Close | 18 | ~0.5 min |
+| Live demo | — | 3–4 min |
