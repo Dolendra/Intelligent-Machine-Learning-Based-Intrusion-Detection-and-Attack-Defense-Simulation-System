@@ -218,8 +218,13 @@ async def ingest_flows_csv(
 
 
 @router.post("/ingest/pcap")
-async def ingest_pcap(file: UploadFile = File(...)):
-    """Offline PCAP upload — fails safely until an external extractor is wired."""
+async def ingest_pcap(
+    file: UploadFile = File(...),
+    predict: bool = False,
+    persist: bool = False,
+    db: Session = Depends(get_db),
+):
+    """Offline PCAP upload — uses cicflowmeter when installed; otherwise 501."""
     import tempfile
     from pathlib import Path
 
@@ -234,16 +239,34 @@ async def ingest_pcap(file: UploadFile = File(...)):
         result = _ingest_pcap(tmp_path)
     finally:
         tmp_path.unlink(missing_ok=True)
+
+    if not result.ok:
+        code = result.detail.get("code", "PCAP_NOT_AVAILABLE")
+        status = 501 if code in {"PCAP_EXTRACTOR_NOT_CONFIGURED", "PCAP_EXTRACTOR_NOT_WIRED"} else 422
+        raise HTTPException(
+            status_code=status,
+            detail={
+                "code": code,
+                "message": result.detail.get("message", "PCAP extraction failed"),
+                "capabilities": result.detail,
+                "schema_version": (result.schema or {}).get("schema_version"),
+                "validation": result.validation,
+            },
+        )
+
     payload = result.as_dict()
-    raise HTTPException(
-        status_code=501,
-        detail={
-            "code": result.detail.get("code", "PCAP_NOT_AVAILABLE"),
-            "message": result.detail.get("message", "PCAP extraction not configured"),
-            "capabilities": result.detail,
-            "schema_version": (result.schema or {}).get("schema_version"),
-        },
-    )
+    if predict:
+        try:
+            batch = svc.run_prediction_batch(result.flows, db=db, persist=persist, allow_missing_features=False)
+            payload["prediction"] = batch
+        except FeatureValidationError as exc:
+            raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
+    if not predict:
+        payload["flows"] = payload["flows"][:5]
+        payload["flows_truncated"] = True
+    return payload
 
 
 @router.post("/explain")

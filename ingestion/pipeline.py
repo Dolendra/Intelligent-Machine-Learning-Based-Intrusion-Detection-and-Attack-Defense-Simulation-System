@@ -66,15 +66,33 @@ def ingest_flows_csv(
     )
 
 
-def ingest_pcap(pcap_path: Path) -> IngestResult:
+def ingest_pcap(pcap_path: Path, *, fill_missing: bool = False, max_rows: int = 500) -> IngestResult:
     schema = schema_summary()
-    _df, status = extract_flows_from_pcap(pcap_path)
+    df, status = extract_flows_from_pcap(Path(pcap_path), fill_missing=fill_missing)
+    if df is None:
+        return IngestResult(
+            ok=False,
+            source="pcap",
+            schema=schema,
+            detail=status,
+            validation=status.get("validation") or {"ok": False, "message": status.get("message", "pcap not processed")},
+        )
+    if len(df) > max_rows:
+        return IngestResult(
+            ok=False,
+            source="pcap",
+            schema=schema,
+            detail={**status, "code": "TOO_MANY_ROWS", "max_rows": max_rows, "got": len(df)},
+            validation=status.get("validation") or {"ok": True},
+        )
+    flows = rows_as_feature_dicts(df)
     return IngestResult(
-        ok=False,
+        ok=True,
         source="pcap",
+        flows=flows,
         schema=schema,
-        detail=status,
-        validation={"ok": False, "message": status.get("message", "pcap not processed")},
+        detail={**status, "code": "OK"},
+        validation=status.get("validation") or {"ok": True},
     )
 
 

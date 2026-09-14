@@ -11,20 +11,30 @@
 
 Do **not** claim live capture, automatic mitigation, or OAuth SSO until those pieces are implemented and validated.
 
-## Phase A — Foundation (this branch starter)
+## Phase A — Foundation (this branch)
 
 1. **Feature schema versioning** — `ingestion/schema/cicids2017_v1_1.json` + `/api/ingest/capabilities`
 2. **CSV flow ingestion adapter** — align MachineLearningCVE-compatible CSVs to the frozen 78-feature schema
-3. **PCAP contract** — status + endpoints that fail safely until CICFlowMeter/Zeek is wired
-4. **Predict hand-off** — `/api/ingest/flows/csv` → optional `/api/predict/batch`
+3. **Column alias normalization** — map common CICFlowMeter abbreviations (`Dst Port`, `Tot Fwd Pkts`, …) onto the frozen schema
+4. **Optional CICFlowMeter PCAP path** — when `cicflowmeter` is on PATH: extract → normalize → validate → optional predict
+5. **CLI** — `python -m ingestion capabilities|schema|normalize-csv|pcap|ingest-csv`
 
 ### New API surface
 
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET | `/api/ingest/capabilities` | Schema version + extractor status |
-| POST | `/api/ingest/flows/csv` | Offline CSV → validated feature rows |
-| POST | `/api/ingest/pcap` | Offline PCAP (returns not-configured until tool wired) |
+| POST | `/api/ingest/flows/csv` | Offline CSV → validated feature rows (+ optional predict) |
+| POST | `/api/ingest/pcap` | Offline PCAP via cicflowmeter when installed; else 501 |
+
+### CLI examples
+
+```bash
+python -m ingestion capabilities
+python -m ingestion normalize-csv -i flows.csv -o aligned.csv
+python -m ingestion pcap -i capture.pcap --align
+```
+
 
 ## Later phases (not started here)
 
