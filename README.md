@@ -102,7 +102,7 @@ pytest -q
 | [`docs/00-index.md`](docs/00-index.md) | Module index |
 | [`docs/DEMO.md`](docs/DEMO.md) | 2-minute viva demo |
 | [`docs/TEAM.md`](docs/TEAM.md) | 3-member ownership guide |
-| [`docs/PROJECT_REPORT.md`](docs/PROJECT_REPORT.md) | Full report draft |
+| [`docs/PROJECT_REPORT.md`](docs/PROJECT_REPORT.md) | **Final project report** (v2.0; Ch. 1–16) |
 | [`docs/Aegis_IDS_Project_Report.docx`](docs/Aegis_IDS_Project_Report.docx) | Word export |
 | [`docs/Aegis_IDS_Viva_Presentation.pptx`](docs/Aegis_IDS_Viva_Presentation.pptx) | Viva PowerPoint |
 | [`docs/PRESENTATION.md`](docs/PRESENTATION.md) | Slide outline |
