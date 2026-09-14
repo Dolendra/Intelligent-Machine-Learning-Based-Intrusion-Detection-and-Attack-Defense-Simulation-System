@@ -39,6 +39,43 @@ def _demo_allow_missing(requested: bool) -> bool:
     return bool(requested) and demo
 
 
+@router.get("/security/status")
+def security_status():
+    """Stage-2 Phase C: auth/RBAC + database dialect status (no secrets)."""
+    import os
+
+    from database.url import database_info
+    from security.rbac import rbac_summary
+
+    cfg = load_config()
+    auth = cfg.get("api", {}).get("auth", {}) or {}
+    rl = cfg.get("api", {}).get("rate_limit", {}) or {}
+    key_configured = bool(os.getenv("AEGIS_API_KEY") or auth.get("api_key"))
+    return {
+        "stage": "2-phase-c",
+        "auth": {
+            "enabled": bool(auth.get("enabled", False)),
+            "api_key_configured": key_configured,
+            "header": auth.get("header", "X-API-Key"),
+            "role_header": auth.get("role_header", "X-Aegis-Role"),
+            "default_role": auth.get("default_role", "analyst"),
+            "enforce_rbac": bool(auth.get("enforce_rbac", True)),
+        },
+        "rate_limit": {
+            "enabled": bool(rl.get("enabled", False)),
+            "requests_per_window": rl.get("requests_per_window"),
+            "window_seconds": rl.get("window_seconds"),
+        },
+        "database": database_info(),
+        "rbac": rbac_summary(),
+        "notes": [
+            "Auth and rate limiting remain disabled by default for the research/demo baseline.",
+            "Enable api.auth.enabled and set AEGIS_API_KEY for Stage-2 hardening.",
+            "PostgreSQL is optional via IDS_DB_URL; SQLite remains the default.",
+        ],
+    }
+
+
 @router.get("/health", response_model=HealthResponse)
 def health():
     cfg = load_config()

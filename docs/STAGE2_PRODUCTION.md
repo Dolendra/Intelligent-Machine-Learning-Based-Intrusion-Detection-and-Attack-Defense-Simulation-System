@@ -50,9 +50,20 @@ In-process FIFO queue (single API worker):
 
 Honest limits: **not** Redis/Kafka, **not** multi-node. Useful for staging batches and measuring detect latency on one process.
 
+### Phase C — Database + auth/RBAC scaffolding (started)
+
+| Item | Status |
+|------|--------|
+| SQLite default | unchanged (research baseline) |
+| PostgreSQL via `IDS_DB_URL` | URL + pool kwargs ready; install driver separately |
+| `/api/security/status` | auth/rate-limit/DB/RBAC summary (public) |
+| API key auth | still **disabled by default**; enable `api.auth.enabled` + `AEGIS_API_KEY` |
+| RBAC roles | `admin` / `analyst` / `viewer` / `ml_research` via `X-Aegis-Role` |
+
+Not included yet: OAuth/SSO, user tables, password login, full SOC analyst accounts.
+
 ### Still later
 
-- **C** PostgreSQL + auth/RBAC SOC workspace
 - **D** API hardening + controlled response
 - **E** Observability / CI-CD / load tests
 - **F** Cyber-range simulation validation + docs

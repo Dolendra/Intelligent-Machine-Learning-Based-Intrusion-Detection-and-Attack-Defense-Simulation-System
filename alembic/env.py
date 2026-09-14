@@ -12,14 +12,15 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from database.db import Base, DATABASE_URL  # noqa: E402
+from database.db import Base
+from database.url import resolve_database_url
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+config.set_main_option("sqlalchemy.url", resolve_database_url())
 
 
 def run_migrations_offline() -> None:
