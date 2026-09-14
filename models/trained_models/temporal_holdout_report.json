@@ -184,5 +184,127 @@
     }
   },
   "interpretation": "Compare friday_temporal_holdout.binary with iid_stratified_from_training_report.binary_test. A drop under day/scenario holdout indicates limited generalization beyond the stratified IID split and should be discussed honestly in the report/viva.",
-  "delta_f1_iid_minus_friday": -0.0072
+  "delta_f1_iid_minus_friday": -0.0072,
+  "frozen_models": {
+    "binary": "decision_tree",
+    "multiclass": "random_forest",
+    "binary_threshold": 0.85,
+    "artifacts": [
+      "binary_best.joblib",
+      "multiclass_best.joblib",
+      "feature_bundle.joblib"
+    ],
+    "no_retrain": true
+  },
+  "friday_multiclass_families_present": [
+    "Bot",
+    "DDoS",
+    "PortScan"
+  ],
+  "friday_multiclass_families_absent": [
+    "BruteForce",
+    "DoS",
+    "WebAttack"
+  ],
+  "friday_multiclass_class_wise": [
+    {
+      "index": 0,
+      "attack_type": "Bot",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 108.0
+    },
+    {
+      "index": 2,
+      "attack_type": "DDoS",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 6915.0
+    },
+    {
+      "index": 4,
+      "attack_type": "PortScan",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 5142.0
+    }
+  ],
+  "comparison_tables": {
+    "binary": {
+      "iid_test": {
+        "f1": 0.9904784130688448,
+        "precision": 0.984036818492714,
+        "recall": 0.9970048978728903,
+        "roc_auc": 0.9991563202362416,
+        "pr_auc": 0.9974366596551231,
+        "fpr": 0.003286302062948078,
+        "fnr": 0.0029951021271097853
+      },
+      "friday_temporal": {
+        "f1": 0.9976952835624331,
+        "precision": 0.999010961839611,
+        "recall": 0.9963830661734484,
+        "roc_auc": 0.9998278098907658,
+        "pr_auc": 0.9995609932877398,
+        "fpr": 0.0005034612964128383,
+        "fnr": 0.0036169338265515825,
+        "n": 36000,
+        "attack_rate": 0.33791666666666664
+      },
+      "early_mon_thu": {
+        "f1": 0.9799684351098701,
+        "precision": 0.9863147605083089,
+        "recall": 0.9737032569360675,
+        "roc_auc": 0.9989412358101535,
+        "n": 60000,
+        "attack_rate": 0.06908333333333333
+      },
+      "delta_iid_minus_friday": {
+        "f1": -0.00722,
+        "recall": 0.00062,
+        "precision": -0.01497,
+        "roc_auc": -0.00067
+      },
+      "delta_iid_minus_early": {
+        "f1": 0.01051,
+        "recall": 0.0233
+      }
+    },
+    "multiclass": {
+      "iid_test_six_class": {
+        "accuracy": 0.9997885810263216,
+        "f1_macro": 0.9981270442352507,
+        "f1_weighted": 0.999788756170181
+      },
+      "friday_temporal_subset": {
+        "accuracy": 1.0,
+        "f1_macro": 1.0,
+        "f1_weighted": 1.0,
+        "n_attacks": 12165,
+        "families_present": [
+          "Bot",
+          "DDoS",
+          "PortScan"
+        ],
+        "families_absent": [
+          "BruteForce",
+          "DoS",
+          "WebAttack"
+        ],
+        "note": "Friday multiclass metrics cover only families present in the Friday sample after attack-only encoding \u2014 not a full six-class temporal evaluation."
+      }
+    }
+  },
+  "academic_caveats": [
+    "Frozen Decision Tree / Random Forest joblibs were scored without retraining.",
+    "Day slices are capped samples (per_file_cap), not exhaustive day populations.",
+    "Attack-rate composition differs sharply across day slices; headline F1 can rise or fall with prevalence.",
+    "Friday multiclass perfect scores apply only to Bot/DDoS/PortScan present in that sample.",
+    "Mon\u2013Thu multiclass scoring skipped when rare labels (e.g. Infiltration) appear outside the freeze class set.",
+    "This is not evidence of live-network generalization or production IDS readiness.",
+    "External-dataset validation was not performed within the current experimental scope and is identified as future work for assessing cross-dataset generalization."
+  ]
 }

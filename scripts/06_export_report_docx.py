@@ -111,10 +111,15 @@ def main() -> None:
 
     doc.add_heading("Appendix C — Evaluation figures", level=1)
     for name, caption in [
-        ("binary_confusion_matrix.png", "Binary confusion matrix (test sample)"),
-        ("binary_roc.png", "Binary ROC curve"),
-        ("multiclass_confusion_matrix.png", "Multiclass confusion matrix"),
-        ("feature_importance.png", "Top feature importances"),
+        ("binary_confusion_matrix.png", "Figure C1. Binary confusion matrix (IID test sample)"),
+        ("binary_roc.png", "Figure C2. Binary ROC curve (IID)"),
+        ("multiclass_confusion_matrix.png", "Figure C3. Multiclass confusion matrix (IID, six attack classes)"),
+        ("feature_importance.png", "Figure C4. Top feature importances"),
+        ("temporal_binary_iid_vs_holdout.png", "Figure C5. Binary metrics: IID vs Friday vs Mon–Thu samples"),
+        ("temporal_multiclass_iid_vs_holdout.png", "Figure C6. Multiclass: IID (6-class) vs Friday subset"),
+        ("temporal_friday_multiclass_confusion.png", "Figure C7. Friday temporal multiclass confusion matrix (present families)"),
+        ("temporal_friday_classwise.png", "Figure C8. Friday temporal class-wise support vs F1"),
+        ("temporal_generalization_summary.png", "Figure C9. Temporal generalization summary card"),
     ]:
         path = figures / name
         if path.exists():
@@ -123,6 +128,10 @@ def main() -> None:
             cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
             if cap.runs:
                 cap.runs[0].italic = True
+        else:
+            miss = doc.add_paragraph(f"[Missing figure: {name}]")
+            if miss.runs:
+                miss.runs[0].italic = True
 
     doc.save(out_path)
     print(f"Wrote {out_path}")

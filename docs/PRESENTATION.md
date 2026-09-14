@@ -1,4 +1,4 @@
-# Aegis IDS — Viva / Presentation Outline (8–12 slides)
+# Aegis IDS — Viva / Presentation Outline (8–14 slides)
 
 Use this as a PowerPoint/Google Slides skeleton. Keep each slide sparse; demo live where marked.  
 **Frozen models (v1.1):** Binary **Decision Tree** @ **0.85** · Multiclass **Random Forest** (six attack families, no BENIGN).
@@ -40,32 +40,48 @@ Use this as a PowerPoint/Google Slides skeleton. Keep each slide sparse; demo li
 - Multi-objective binary selection (not raw F1 alone)
 - Show confusion matrix + ROC figures
 
-## Slide 8 — Explainability (RQ2/RQ3)
+## Slide 8 — Temporal generalization **[RESEARCH]**
+- Protocol: score **frozen** DT/RF on day-named CSV samples (no retrain)
+- Friday holdout: n=36k, attack rate ≈34% → binary F1 **0.9977**
+- Mon–Thu sample: n=60k, attack rate ≈7% → binary F1 **0.9800** (mild drop)
+- Multiclass Friday: only **Bot / DDoS / PortScan** present — not a 6-class temporal claim
+- Figures: `temporal_binary_iid_vs_holdout.png`, `temporal_generalization_summary.png`
+- Message: IID strength ≠ automatic temporal / live generalization
+
+## Slide 9 — Explainability (RQ2/RQ3)
 - SHAP primary · LIME secondary
 - Live: Detection → Why? tabs
 
-## Slide 9 — Risk & recommendations (RQ4)
+## Slide 10 — Risk & recommendations (RQ4)
 - Risk weights: 50% attack · 25% confidence · 15% intensity · 10% asset
 - Advisory playbooks (not auto-blocking)
 
-## Slide 10 — Simulation (RQ5) **[LIVE DEMO]**
+## Slide 11 — Simulation (RQ5) **[LIVE DEMO]**
 - Topology · attack surge · IDS alert · defense · recover
 - Safety: visualization only; efficacy values are assumptions
 
-## Slide 11 — Contribution & limitations
-- Contribution: **integration**, not a new algorithm claim
-- Limits: CICIDS age, sim is pedagogical, rule-based recs, no live capture in research baseline
+## Slide 12 — Limitations & threats to validity
+- CICIDS2017 age / scenario structure (not continuous enterprise traffic)
+- Temporal slices are capped samples; multiclass temporal coverage incomplete
+- Simulation efficacy = assumptions; recommendations = advisory
+- **External-dataset validation = future work** (not fabricated)
+- Not a claim of production IDS readiness
 
-## Slide 12 — Q&A
+## Slide 13 — Contribution
+- Contribution: **integration** + honest evaluation framing, not a new algorithm claim
+- Research baseline frozen; Stage-2 productionization is a separate track
+
+## Slide 14 — Q&A
 - Point to `docs/DEMO.md` talking points
-- Frozen artifacts: `model_metadata.json` / `training_report.json`
+- Frozen artifacts: `model_metadata.json` / `training_report.json` / `temporal_holdout_report.json`
 
 ---
 
 ## Timing guide
 | Segment | Time |
 |---------|------|
-| Slides 1–6 | 3 min |
+| Slides 1–7 | 3 min |
+| Slide 8 (temporal) | 1 min |
 | Live demo | 3–4 min |
-| Slides 11–12 | 1 min |
+| Slides 12–14 | 1–2 min |
 | Buffer / questions | rest |

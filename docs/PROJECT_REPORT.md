@@ -11,7 +11,7 @@
 
 ## 1. Abstract
 
-This project presents an integrated intelligent intrusion detection platform that goes beyond raw classifier accuracy. The system detects malicious network flows, classifies attack families, estimates risk, explains predictions with SHAP (primary) and LIME (secondary), recommends advisory defensive actions, and interactively simulates the attack-to-defense lifecycle on a simplified enterprise topology. On CICIDS2017, the frozen binary Decision Tree achieves test F1 **0.99048** and ROC-AUC **0.99916** (threshold 0.85); the frozen attack-only Random Forest multiclass model achieves macro-F1 **0.99813** and weighted-F1 **0.99979**. These benchmark results are not claims of real-world future performance under live traffic.
+This project presents an integrated intelligent intrusion detection platform that goes beyond raw classifier accuracy. The system detects malicious network flows, classifies attack families, estimates risk, explains predictions with SHAP (primary) and LIME (secondary), recommends advisory defensive actions, and interactively simulates the attack-to-defense lifecycle on a simplified enterprise topology. On CICIDS2017, the frozen binary Decision Tree achieves test F1 **0.99048** and ROC-AUC **0.99916** (threshold 0.85); the frozen attack-only Random Forest multiclass model achieves macro-F1 **0.99813** and weighted-F1 **0.99979**. A day-aware Friday temporal holdout scores the same frozen artifacts without retraining and is reported separately from the IID split (§8). These benchmark results are not claims of real-world future performance under live traffic.
 
 ---
 
@@ -165,7 +165,84 @@ CICIDS2017 is a labelled **benchmark**. IID stratified splits overstate similari
 
 ---
 
-## 8. Feature importance & XAI (RQ2, RQ3)
+## 8. Temporal generalization evaluation
+
+Artifact: `models/trained_models/temporal_holdout_report.json`  
+Script: `scripts/25_temporal_holdout_eval.py` (score) · `scripts/28_plot_temporal_generalization.py` (figures)  
+Figures: `models/trained_models/figures/temporal_*.png`
+
+### Experimental setup
+
+| Item | Definition |
+|------|------------|
+| Models | Frozen **Decision Tree** (`binary_best.joblib`) @ threshold **0.85**; frozen **Random Forest** (`multiclass_best.joblib`); shared `feature_bundle.joblib` |
+| Retrain? | **No** — day slices score the freeze artifacts only |
+| Day definition | CICIDS2017 MachineLearningCVE day-named CSVs (`Monday`…`Friday`) |
+| Sampling | Cap **12,000** rows per CSV (`research.temporal_sample_per_file` / freeze default) |
+| Friday temporal | **36,000** flows (attack rate ≈ **33.8%**) |
+| Mon–Thu reference | **60,000** flows (attack rate ≈ **6.9%**) |
+| IID reference | Full stratified test metrics from `training_report.json` (not re-sampled here) |
+
+### Why temporal holdout matters
+
+A stratified IID split mixes days (and scenarios) into train/val/test. That can overstate how a model behaves when the **next day’s attack mix** differs. A day-aware Friday holdout is a modest, honest check of **within-CICIDS temporal / scenario shift** — not a live network trial.
+
+### Binary: IID vs temporal
+
+| Split | n | Attack rate | Precision | Recall | F1 | ROC-AUC |
+|-------|--:|------------:|----------:|-------:|---:|--------:|
+| IID stratified test | 504,151 | ~16.9% | 0.98404 | 0.99700 | **0.99048** | 0.99916 |
+| Friday temporal sample | 36,000 | 33.8% | 0.99901 | 0.99638 | **0.99770** | 0.99983 |
+| Mon–Thu sample | 60,000 | 6.9% | 0.98631 | 0.97370 | **0.97997** | 0.99894 |
+
+**Degradation / change (IID − slice):**
+
+| Contrast | Δ F1 | Δ Recall | Notes |
+|----------|-----:|---------:|-------|
+| IID − Friday | **−0.00722** | +0.00062 | Friday F1 is *higher*; prevalence and attack mix differ |
+| IID − Mon–Thu | **+0.01051** | +0.02330 | Mild F1/recall drop on low-prevalence early-week sample |
+
+Insert: `temporal_binary_iid_vs_holdout.png`, `temporal_generalization_summary.png`.
+
+### Multiclass: IID vs temporal
+
+| Evaluation | Scope | Accuracy | Macro-F1 | Weighted-F1 |
+|------------|-------|---------:|---------:|------------:|
+| IID stratified test | **6** attack classes | 0.99979 | 0.99813 | 0.99979 |
+| Friday temporal sample | **3** present classes only | 1.00000 | 1.00000 | 1.00000 |
+
+Friday families **present:** Bot, DDoS, PortScan (supports 108 / 6915 / 5142).  
+Friday families **absent** from the scored attack subset: BruteForce, DoS, WebAttack.
+
+Mon–Thu multiclass scoring was **skipped** in the freeze run because raw day samples contained labels outside the freeze class set (e.g. `Infiltration`).
+
+Insert: `temporal_multiclass_iid_vs_holdout.png`, `temporal_friday_multiclass_confusion.png`, `temporal_friday_classwise.png`.
+
+### Interpretation
+
+1. **Binary detection remains strong** under the Friday day sample; headline F1 does not collapse relative to IID.  
+2. **Composition matters:** attack rates of 6.9% vs 33.8% change precision/recall trade-offs; do not interpret a higher Friday F1 as “better than IID” without discussing prevalence.  
+3. **Mon–Thu** shows a modest binary F1 drop (~1.05 pp) and larger recall drop (~2.3 pp) — useful evidence that day/scenario slices are not identical to the IID test.  
+4. **Friday multiclass “perfect” scores are not a six-class temporal claim** — only three families appeared in that sample after attack-only encoding.
+
+### Limitations & threats to validity
+
+- Day slices are **capped samples**, not exhaustive day populations.  
+- CICIDS2017 days are **scenario-structured**, not continuous live enterprise traffic.  
+- Multiclass temporal coverage is **incomplete** (subset of families; rare-label skip on Mon–Thu).  
+- No claim of production IDS readiness or absence of concept drift in the wild.
+
+### What this does — and does not — claim
+
+**Does claim:** Within this freeze, scoring the Decision Tree / Random Forest artifacts on day-aware CICIDS samples yields competitive binary metrics and a documented, limited multiclass temporal slice — supporting discussion of generalization **beyond the IID split**.
+
+**Does not claim:** Live-network performance, cross-organization transfer, or measured real-world mitigation.
+
+**External-dataset validation** was not performed within the current experimental scope and is identified as **future work** for assessing cross-dataset generalization.
+
+---
+
+## 9. Feature importance & XAI (RQ2, RQ3)
 
 - Global importance: tree importances (figure above)  
 - Local explanation (primary): **SHAP** via `POST /api/explain` `method=shap`  
@@ -176,7 +253,7 @@ LIME fits a local linear surrogate for complementary intuition. Neither proves c
 
 ---
 
-## 9. Risk & recommendations (RQ4)
+## 10. Risk & recommendations (RQ4)
 
 Attack family + confidence + optional intensity + asset criticality → risk score → severity band (LOW/MEDIUM/HIGH/CRITICAL).  
 Weights: **50% / 25% / 15% / 10%** as in §5.  
@@ -184,7 +261,7 @@ Recommendation engine maps families to defensive playbooks (rate limiting, WAF, 
 
 ---
 
-## 10. Simulation (RQ5)
+## 11. Simulation (RQ5)
 
 State machine: `idle → normal → attack_start → attack_impact → detected → recommended → defended → recovered`  
 Rendered with React Flow. Evaluated qualitatively by whether each scenario reaches mitigation and communicates the lifecycle clearly.  
@@ -192,7 +269,7 @@ Rendered with React Flow. Evaluated qualitatively by whether each scenario reach
 
 ---
 
-## 11. Implementation
+## 12. Implementation
 
 | Module | Path |
 |--------|------|
@@ -202,6 +279,7 @@ Rendered with React Flow. Evaluated qualitatively by whether each scenario reach
 | SHAP / LIME | `explainability/` |
 | Risk / Recs | `security/` |
 | Simulation | `simulation/engine/core.py` |
+| Temporal eval | `scripts/25_temporal_holdout_eval.py`, `scripts/28_plot_temporal_generalization.py` |
 | API | `backend/` |
 | UI | `frontend/` |
 
@@ -211,6 +289,8 @@ Reproduce:
 python scripts/01_prepare_data.py
 python scripts/02_train_models.py
 python scripts/05_plot_evaluation.py
+python scripts/25_temporal_holdout_eval.py   # needs MachineLearningCVE CSVs
+python scripts/28_plot_temporal_generalization.py
 uvicorn backend.main:app --port 8000
 cd frontend && npm run dev
 ```
@@ -219,22 +299,23 @@ Or `docker compose up --build` after artifacts exist.
 
 ---
 
-## 12. Limitations & future work
+## 13. Limitations & future work
 
 - CICIDS2017 is dated relative to modern traffic; concept drift possible  
 - Simulation is pedagogical visualization, not a network emulator or live IDS  
 - Recommendations are rule/playbook-mapped decision support, not learned policies or auto-mitigation  
 - Calibration remains **disabled** after research trade-off (ECE vs recall/Brier); see `docs/experiments/CALIBRATION_AND_THRESHOLD.md`  
-- Cross-dataset evaluation is scaffolded and requires an external compatible dataset  
+- Temporal holdout is day-sample based within CICIDS2017 — see §8 threats to validity  
+- **External-dataset validation was not performed within the current experimental scope and is identified as future work for assessing cross-dataset generalization.**  
 - Live PCAP/flow ingestion and production IAM are Stage-2 / future engineering tracks  
 
 See also `docs/IMPLEMENTATION_STATUS.md` and `docs/STAGE2_PRODUCTION.md`.
 
 ---
 
-## 13. Conclusion
+## 14. Conclusion
 
-Aegis IDS demonstrates that an ML IDS becomes far more useful when coupled with explainability, risk scoring, defensive recommendations, and interactive simulation. The frozen Decision Tree + Random Forest pipeline answers not only *whether* traffic is malicious, but *what*, *why*, *how severe*, and *what an analyst might do next* — within an honest research/prototype framing.
+Aegis IDS demonstrates that an ML IDS becomes far more useful when coupled with explainability, risk scoring, defensive recommendations, and interactive simulation. The frozen Decision Tree + Random Forest pipeline answers not only *whether* traffic is malicious, but *what*, *why*, *how severe*, and *what an analyst might do next* — within an honest research/prototype framing that separates **IID benchmark strength** from **temporal / deployment-domain caution**.
 
 ---
 
