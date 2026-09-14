@@ -1,7 +1,7 @@
 # Experiment index
 
-Generated: `2026-09-14T19:31:56.391449+00:00`  
-Git commit: `093e77a`
+Generated: `2026-09-14T19:42:21.512487+00:00`  
+Git commit: `dd54996`
 
 | ID | Name | Artifact | Present | Focus |
 |----|------|----------|---------|-------|
@@ -24,3 +24,4 @@ Git commit: `093e77a`
 | EXP-017 | generalization_p10 | `generalization_report.json` | yes | P10 IID vs temporal generalization (frozen) |
 | EXP-018 | empirical_mitigation_ddos | `empirical_mitigation_report.json` | yes | P11 measured mitigation DDoS BLOCK_SOURCE (CONTROLLED) |
 | EXP-019 | empirical_mitigation_dos | `empirical_mitigation_report.json` | yes | P11 measured mitigation DoS RATE_LIMIT (CONTROLLED) |
+| EXP-020 | final_security_validation | `final_security_validation_report.json` | yes | P12 final security validation gate |

@@ -7,23 +7,19 @@
 
 | Phase | Focus | Status |
 |-------|--------|--------|
-| P0–P10 | Baseline → … → generalization | ✅ |
-| **P11** | Empirical mitigation | ✅ Complete |
-| P12 | Final security validation | Next |
+| P0–P11 | Baseline → … → empirical mitigation | ✅ |
+| **P12** | Final security validation | ✅ Complete |
 
-## P11 deliverables
+## P12 deliverables
 
-- Controlled in-process lab: `empirical/controlled_plane.py` gated by `TestNetworkAdapter.traffic_decision`
-- Conditions: **no_defense** vs **recommendation_only** vs **controlled_response** (approval → verify → rollback preserved)
-- Measured metrics + T0–T8 timeline; mean/median/stdev/min/max/p95 over 10 reps
-- EXP-018 (DDoS `BLOCK_SOURCE`), EXP-019 (DoS `RATE_LIMIT`) → `empirical_mitigation_report.json`
-- Simulation assumptions **preserved** and reported beside measurements (`docs/EMPIRICAL_MITIGATION.md`)
-- No LIVE firewall/EDR; suite `tests/test_productionization_p11_empirical.py`
-- Script: `scripts/42_empirical_mitigation_experiment.py`
+- Umbrella checks: `security/validation/p12_checks.py`
+- Runner: `scripts/43_final_security_validation.py` → **Overall: PASS**
+- Report: `reports/final_security_validation_report.json`
+- Docs: `FINAL_SECURITY_VALIDATION.md`, `SECURITY_MODEL.md`, `PRODUCTION_READINESS.md`
+- Tests: `tests/test_final_security_validation.py`
 
-**Completion criterion:** measurable change with vs without approved CONTROLLED defense — with experimental data, not simulation assumptions alone.
+**Completion criterion:** all ten validation categories PASS without opening a live-enforcement path or changing frozen research artifacts.
 
-## Prior phases
+## Roadmap complete
 
-- P10: `docs/GENERALIZATION.md`
-- P9: `docs/FAILURE_RECOVERY.md`
+The productionization roadmap is complete. The defensible claim is stated in `docs/PRODUCTION_READINESS.md`.

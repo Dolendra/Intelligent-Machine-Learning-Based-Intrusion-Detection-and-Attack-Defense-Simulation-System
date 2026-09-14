@@ -50,5 +50,10 @@ results/empirical/*
 !results/empirical/.gitkeep
 !results/empirical/empirical_mitigation_latest.json
 
+# P12 final validation report lives in reports/ (committed)
+reports/*
+!reports/.gitkeep
+!reports/final_security_validation_report.json
+
 # P9 backup drill artifacts
 backups/
