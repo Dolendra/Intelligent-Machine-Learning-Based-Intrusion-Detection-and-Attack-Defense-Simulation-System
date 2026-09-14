@@ -171,6 +171,81 @@ async def predict_batch_csv(
         raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
 
 
+@router.get("/ingest/capabilities")
+def ingest_capabilities():
+    """Stage-2 Phase A: schema version + extractor status (does not claim live capture)."""
+    from ingestion.pipeline import ingestion_capabilities
+
+    return ingestion_capabilities()
+
+
+@router.post("/ingest/flows/csv")
+async def ingest_flows_csv(
+    file: UploadFile = File(...),
+    predict: bool = False,
+    persist: bool = False,
+    db: Session = Depends(get_db),
+):
+    """Offline MachineLearningCVE-compatible CSV → schema-validated flows (optional predict)."""
+    from ingestion.pipeline import ingest_flows_csv as _ingest
+
+    raw = await file.read()
+    result = _ingest(raw, fill_missing=False, max_rows=500)
+    payload = result.as_dict()
+    if not result.ok:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": result.detail.get("code", "INGEST_FAILED"),
+                "message": result.validation.get("message") or result.detail.get("message") or "ingest failed",
+                "validation": result.validation,
+                "schema_version": (result.schema or {}).get("schema_version"),
+            },
+        )
+    if predict:
+        try:
+            batch = svc.run_prediction_batch(result.flows, db=db, persist=persist, allow_missing_features=False)
+            payload["prediction"] = batch
+        except FeatureValidationError as exc:
+            raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
+    # Avoid huge payloads by default when only validating
+    if not predict:
+        payload["flows"] = payload["flows"][:5]
+        payload["flows_truncated"] = True
+    return payload
+
+
+@router.post("/ingest/pcap")
+async def ingest_pcap(file: UploadFile = File(...)):
+    """Offline PCAP upload — fails safely until an external extractor is wired."""
+    import tempfile
+    from pathlib import Path
+
+    from ingestion.pipeline import ingest_pcap as _ingest_pcap
+
+    suffix = Path(file.filename or "capture.pcap").suffix or ".pcap"
+    raw = await file.read()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(raw)
+        tmp_path = Path(tmp.name)
+    try:
+        result = _ingest_pcap(tmp_path)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+    payload = result.as_dict()
+    raise HTTPException(
+        status_code=501,
+        detail={
+            "code": result.detail.get("code", "PCAP_NOT_AVAILABLE"),
+            "message": result.detail.get("message", "PCAP extraction not configured"),
+            "capabilities": result.detail,
+            "schema_version": (result.schema or {}).get("schema_version"),
+        },
+    )
+
+
 @router.post("/explain")
 def explain(body: ExplainRequest):
     allow_missing = _demo_allow_missing(body.allow_missing_features)

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { DecisionTraceTimeline } from "../components/DecisionTrace";
 import { api, BatchPredictResult, ExplainResult, PredictResult } from "../services/api";
@@ -18,12 +18,17 @@ export function DetectionPage() {
   const [counterfactual, setCounterfactual] = useState<Record<string, unknown> | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ingestInfo, setIngestInfo] = useState<Record<string, unknown> | null>(null);
 
   const activeExplain = xaiTab === "shap" ? explain : lime;
   const maxAbs = useMemo(() => {
     if (!activeExplain?.top_features?.length) return 1;
     return Math.max(...activeExplain.top_features.map((f) => Math.abs(f.contribution)), 1e-9);
   }, [activeExplain]);
+
+  useEffect(() => {
+    api.ingestCapabilities().then(setIngestInfo).catch(() => setIngestInfo(null));
+  }, []);
 
   async function loadDemo() {
     setBusy(true);
@@ -153,6 +158,35 @@ export function DetectionPage() {
             }}
           />
         </label>
+        <label className="btn btn-secondary" style={{ cursor: busy ? "not-allowed" : "pointer" }} title="Stage-2 schema-validated ingest">
+          Ingest CSV (Stage-2)
+          <input
+            type="file"
+            accept=".csv,text/csv"
+            hidden
+            disabled={busy}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              setBusy(true);
+              setError(null);
+              try {
+                const out = await api.ingestFlowsCsv(file, true, false);
+                const pred = out.prediction as BatchPredictResult | undefined;
+                if (pred) {
+                  setBatch(pred);
+                  setLabel(`Stage-2 ingest (${pred.total_flows} flows)`);
+                  setFeatures(null);
+                }
+              } catch (err) {
+                setError(err instanceof Error ? err.message : String(err));
+              } finally {
+                setBusy(false);
+              }
+            }}
+          />
+        </label>
         {busy && <span className="muted mono">Working…</span>}
         {label && (
           <span className="muted mono">
@@ -160,6 +194,21 @@ export function DetectionPage() {
           </span>
         )}
       </div>
+
+      {ingestInfo && (
+        <div className="hero-action" style={{ marginBottom: "1rem" }}>
+          <div>
+            <div style={{ fontWeight: 650 }}>Stage-2 ingestion</div>
+            <div className="muted mono" style={{ fontSize: "0.82rem" }}>
+              schema {(ingestInfo.schema as Record<string, unknown> | undefined)?.schema_version as string} ·{" "}
+              {String((ingestInfo.schema as Record<string, unknown> | undefined)?.feature_count ?? "—")} features · CSV{" "}
+              {(ingestInfo.flows_csv as Record<string, unknown> | undefined)?.available ? "ready" : "off"} · PCAP{" "}
+              {String(((ingestInfo.pcap as Record<string, unknown> | undefined)?.status as string) ?? "unknown")}
+            </div>
+          </div>
+          <span className="live-chip off">Prototype path — not live capture</span>
+        </div>
+      )}
 
       {error && (
         <div className="panel" style={{ borderColor: "rgba(227,93,106,.4)", marginBottom: "1rem" }}>

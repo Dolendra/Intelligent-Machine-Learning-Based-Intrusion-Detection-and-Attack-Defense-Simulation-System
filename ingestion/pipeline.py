@@ -1,0 +1,92 @@
+"""High-level ingestion entrypoints for Stage-2."""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+from ingestion.adapters import adapt_flows_csv, extract_flows_from_pcap, pcap_extractor_status
+from ingestion.schema_info import schema_summary
+from ingestion.validate import rows_as_feature_dicts
+
+
+@dataclass
+class IngestResult:
+    ok: bool
+    source: str
+    flows: list[dict[str, float]] = field(default_factory=list)
+    validation: dict[str, Any] = field(default_factory=dict)
+    schema: dict[str, Any] = field(default_factory=dict)
+    detail: dict[str, Any] = field(default_factory=dict)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "ok": self.ok,
+            "source": self.source,
+            "flow_count": len(self.flows),
+            "flows": self.flows,
+            "validation": self.validation,
+            "schema": self.schema,
+            "detail": self.detail,
+        }
+
+
+def ingest_flows_csv(
+    content: str | bytes | Path,
+    *,
+    fill_missing: bool = False,
+    max_rows: int = 500,
+) -> IngestResult:
+    aligned, validation = adapt_flows_csv(content, fill_missing=fill_missing)
+    schema = schema_summary()
+    if not validation.get("ok"):
+        return IngestResult(
+            ok=False,
+            source="flows_csv",
+            validation=validation,
+            schema=schema,
+            detail={"code": "SCHEMA_MISMATCH"},
+        )
+    if len(aligned) > max_rows:
+        return IngestResult(
+            ok=False,
+            source="flows_csv",
+            validation=validation,
+            schema=schema,
+            detail={"code": "TOO_MANY_ROWS", "max_rows": max_rows, "got": len(aligned)},
+        )
+    flows = rows_as_feature_dicts(aligned)
+    return IngestResult(
+        ok=True,
+        source="flows_csv",
+        flows=flows,
+        validation=validation,
+        schema=schema,
+        detail={"code": "OK"},
+    )
+
+
+def ingest_pcap(pcap_path: Path) -> IngestResult:
+    schema = schema_summary()
+    _df, status = extract_flows_from_pcap(pcap_path)
+    return IngestResult(
+        ok=False,
+        source="pcap",
+        schema=schema,
+        detail=status,
+        validation={"ok": False, "message": status.get("message", "pcap not processed")},
+    )
+
+
+def ingestion_capabilities() -> dict[str, Any]:
+    return {
+        "stage": "2-phase-a",
+        "baseline": "v1.1-research",
+        "schema": schema_summary(),
+        "flows_csv": {"available": True, "endpoint": "/api/ingest/flows/csv"},
+        "pcap": pcap_extractor_status(),
+        "notes": [
+            "v1.1 research baseline remains frozen on MachineLearningCVE flow features.",
+            "PCAP extraction is scaffolded; production wiring is opt-in via external tools.",
+        ],
+    }

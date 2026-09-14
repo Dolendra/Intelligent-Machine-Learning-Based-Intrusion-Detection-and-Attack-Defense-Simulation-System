@@ -1,0 +1,42 @@
+"""Stage-2 productionization roadmap (branch work — does not replace v1.1 baseline)."""
+
+# Aegis IDS — Stage 2 Productionization
+
+## Framing
+
+| Track | Meaning |
+|-------|---------|
+| **v1.1 research baseline** | Frozen academic/demo prototype (`main` / tag-worthy commits around `7ca09c2`+) |
+| **Stage 2** | Productionization on branch `stage2/productionization` |
+
+Do **not** claim live capture, automatic mitigation, or OAuth SSO until those pieces are implemented and validated.
+
+## Phase A — Foundation (this branch starter)
+
+1. **Feature schema versioning** — `ingestion/schema/cicids2017_v1_1.json` + `/api/ingest/capabilities`
+2. **CSV flow ingestion adapter** — align MachineLearningCVE-compatible CSVs to the frozen 78-feature schema
+3. **PCAP contract** — status + endpoints that fail safely until CICFlowMeter/Zeek is wired
+4. **Predict hand-off** — `/api/ingest/flows/csv` → optional `/api/predict/batch`
+
+### New API surface
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/ingest/capabilities` | Schema version + extractor status |
+| POST | `/api/ingest/flows/csv` | Offline CSV → validated feature rows |
+| POST | `/api/ingest/pcap` | Offline PCAP (returns not-configured until tool wired) |
+
+## Later phases (not started here)
+
+- **B** Real-time detection queue + throughput metrics
+- **C** PostgreSQL + auth/RBAC SOC workspace
+- **D** API hardening + controlled response
+- **E** Observability / CI-CD / load tests
+- **F** Cyber-range simulation validation + docs
+
+## Safety rules
+
+- Do not retrain or rewrite `models/trained_models/*` as part of ingestion work
+- Do not change Stage-1/Stage-2 ML semantics of the research baseline
+- Prefer external extractors that emit **MachineLearningCVE-compatible** columns
+- TrafficLabelling is **not** a separate training dataset for this project
