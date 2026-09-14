@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-12T19:14:56.174373+00:00",
-  "git_commit": "98e5376",
+  "generated_at": "2026-09-14T19:22:02.308587+00:00",
+  "git_commit": "130ffd9",
   "model_version": "1.1.0",
   "experiments": [
     {
@@ -130,6 +130,14 @@
       "present": true,
       "path": "D:\\IDS-Project\\models\\trained_models\\experiment_index.json",
       "intended_conclusion": "Unified experiment catalog"
+    },
+    {
+      "experiment_id": "EXP-017",
+      "name": "generalization_p10",
+      "artifact": "generalization_report.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\generalization_report.json",
+      "intended_conclusion": "P10 IID vs temporal generalization (frozen)"
     }
   ],
   "note": "Index of research artifacts \u2014 run the corresponding scripts to populate missing files."

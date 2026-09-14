@@ -26,4 +26,4 @@ Figures: `drift_psi_train_vs_test.png`, `drift_label_distribution.png`
 
 > Under the stratified IID train→test check, no high-PSI feature shifts were flagged.
 
-Do **not** cite this as proof of temporal or live-network drift absence. Pair with the Friday temporal holdout (§8 / `TEMPORAL_HOLDOUT.md`).
+Do **not** cite this as proof of temporal or live-network drift absence. Pair with the Friday temporal holdout (`TEMPORAL_HOLDOUT.md`) and P10 train→Friday PSI in `docs/GENERALIZATION.md`.

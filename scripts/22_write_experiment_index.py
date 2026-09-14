@@ -31,6 +31,7 @@ EXPERIMENTS = [
     ("EXP-014", "model_metadata", "model_metadata.json", "Git/config/package reproducibility metadata"),
     ("EXP-015", "intensity_reference", "intensity_reference.json", "Train percentile intensity reference"),
     ("EXP-016", "experiment_index", "experiment_index.json", "Unified experiment catalog"),
+    ("EXP-017", "generalization_p10", "generalization_report.json", "P10 IID vs temporal generalization (frozen)"),
 ]
 
 
