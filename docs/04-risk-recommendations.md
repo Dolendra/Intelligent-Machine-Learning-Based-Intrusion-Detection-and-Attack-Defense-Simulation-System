@@ -2,9 +2,21 @@
 
 ## Risk engine (`security/risk/engine.py`)
 
+Frozen blend weights from `config.yaml` → `risk.weights` (project convention):
+
 ```text
-score ≈ 0.55·attack_base + 0.30·confidence·100 + 0.15·intensity·100
+score ≈ 0.50·attack_base
+      + 0.25·confidence·100
+      + 0.15·intensity·100
+      + 0.10·asset_criticality·(scaled)
 ```
+
+| Weight | Component |
+|-------:|-----------|
+| 50% | Attack-family base severity |
+| 25% | Model confidence |
+| 15% | Traffic intensity |
+| 10% | Asset criticality |
 
 Severity bands (configurable in `config.yaml`):
 

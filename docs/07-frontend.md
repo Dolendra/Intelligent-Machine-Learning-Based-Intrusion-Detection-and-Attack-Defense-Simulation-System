@@ -8,15 +8,19 @@
 - One coherent security-ops composition (deep slate, cyan + amber accents)
 - Typography: Outfit + IBM Plex Mono (not Inter/Roboto defaults)
 - Atmospheric layered backgrounds (not flat white/purple AI chrome)
-- Pages each have one job: Dashboard · Detection · Simulation · Reports
+- Each page has one primary job
 
 ## Routes
 
-| Route | Job |
-|-------|-----|
-| `/` | Incident overview |
-| `/detection` | Load demo flow → predict → SHAP |
-| `/simulation` | Step through attack/defense on a topology |
-| `/reports` | Full incident table + analytics JSON |
+| Route | Page | Job |
+|-------|------|-----|
+| `/` | Dashboard | KPIs, recent incidents, attack / risk overview |
+| `/detection` | Detection | Demo / CSV / Stage-2 ingest → predict → SHAP → risk → recommendation |
+| `/simulation` | Simulation | Attack→defense lifecycle on a topology (visualization only) |
+| `/reports` | Reports | Incident table, analytics JSON/PDF export |
+| `/campaigns` | Campaigns | Correlated multi-step attack campaigns / kill-chain view |
+| `/incidents/:id` | Incident detail | Lifecycle status, notes, defense_action (advisory note) |
+| `/models` | Models | Model versions, metrics, comparison |
+| `/research` | Research | Experiments, temporal/drift methodology notes |
 
 Dev proxy: Vite forwards `/api` → `http://127.0.0.1:8000`.
