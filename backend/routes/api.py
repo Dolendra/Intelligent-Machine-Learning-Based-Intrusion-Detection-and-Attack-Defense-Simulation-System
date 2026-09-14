@@ -60,7 +60,13 @@ def security_status():
         auth_enabled = enabled_env.lower() in {"1", "true", "yes"}
     else:
         auth_enabled = bool(auth.get("enabled", False))
+    rl_env = os.getenv("AEGIS_RATE_LIMIT_ENABLED")
+    if rl_env is not None:
+        rl_enabled = rl_env.lower() in {"1", "true", "yes"}
+    else:
+        rl_enabled = bool(rl.get("enabled", True))
     default_rl_paths = [
+        "/api/auth/login",
         "/api/predict",
         "/api/ingest",
         "/api/explain",
@@ -68,6 +74,7 @@ def security_status():
         "/api/response",
         "/api/simulation",
     ]
+    from backend.middleware.request_limits import request_limits_summary
     from security.auth import auth_status
 
     return {
@@ -87,10 +94,18 @@ def security_status():
         },
         "auth_detail": auth_status(enabled=auth_enabled),
         "rate_limit": {
-            "enabled": bool(rl.get("enabled", False)),
+            "enabled": rl_enabled,
+            "default_on": True,
             "requests_per_window": rl.get("requests_per_window"),
             "window_seconds": rl.get("window_seconds"),
             "paths": list(rl.get("paths") or default_rl_paths),
+            "path_limits": rl.get("path_limits") or {},
+            "phase": "P5",
+        },
+        "request_limits": request_limits_summary(),
+        "cors": {
+            "origins": cfg.get("api", {}).get("cors_origins"),
+            "strict": bool(cfg.get("api", {}).get("cors_strict", False)),
         },
         "security_headers": security_headers_summary(),
         "observability": {
@@ -124,10 +139,11 @@ def security_status():
         "database": database_info(),
         "rbac": rbac_summary(),
         "notes": [
-            "Auth and rate limiting remain disabled by default for the research/demo baseline.",
+            "P5: rate limiting and request-size limits are ON by default for sensitive paths.",
+            "CI/local load tests may set DISABLE_RATE_LIMIT=true.",
             "Enable api.auth.enabled or AEGIS_AUTH_ENABLED=true for P4 authentication/RBAC.",
             "Login via POST /api/auth/login; send Authorization: Bearer <token>.",
-            "Enable api.rate_limit.enabled to protect predict/ingest/response surfaces.",
+            "WebSocket /api/ws/events requires the same auth when AEGIS_AUTH_ENABLED=true.",
             "P3: adapter contract + TestNetworkAdapter; LIVE firewall/EDR still forbidden.",
             "/api/metrics is in-process only (resets on restart); not a multi-node SRE stack.",
             "Cyber-range validation checks the simulation state machine — not a physical range or real defense efficacy.",
@@ -406,6 +422,21 @@ async def ingest_flows_csv(
     return payload
 
 
+def _pcap_temp_suffix(filename: str | None) -> str:
+    from pathlib import Path
+
+    from ingestion.upload_safety import UnsafeFilenameError, safe_upload_basename
+
+    try:
+        base = safe_upload_basename(filename, default="capture.pcap")
+    except UnsafeFilenameError:
+        base = "capture.pcap"
+    suffix = Path(base).suffix.lower()
+    if suffix not in {".pcap", ".pcapng", ".cap"}:
+        suffix = ".pcap"
+    return suffix
+
+
 @router.post("/ingest/pcap")
 async def ingest_pcap(
     request: Request,
@@ -423,7 +454,7 @@ async def ingest_pcap(
     from ingestion.pipeline import ingest_pcap as _ingest_pcap
 
     request_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID")
-    suffix = Path(file.filename or "capture.pcap").suffix or ".pcap"
+    suffix = _pcap_temp_suffix(file.filename)
     raw = await file.read()
     check = validate_pcap_upload(filename=file.filename, content=raw)
     if not check.ok:
@@ -585,7 +616,7 @@ async def ingest_queue_submit_pcap(
     _ensure_ingest_queue_worker()
 
     request_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID")
-    suffix = Path(file.filename or "capture.pcap").suffix or ".pcap"
+    suffix = _pcap_temp_suffix(file.filename)
     raw = await file.read()
     check = validate_pcap_upload(filename=file.filename, content=raw)
     if not check.ok:
@@ -1103,12 +1134,63 @@ def export_report_pdf(db: Session = Depends(get_db)):
 
 @router.websocket("/ws/events")
 async def ws_events(websocket: WebSocket):
-    """Push analytics snapshots + incident notifications for dashboard refresh."""
+    """Push analytics snapshots + incident notifications — auth required when P4 auth is enabled."""
     import asyncio
+    import os
+
+    from security.rbac import has_permission
+    from security.security_events import security_event
+
+    cfg = load_config().get("api", {}).get("auth", {}) or {}
+    enabled_env = os.getenv("AEGIS_AUTH_ENABLED")
+    if enabled_env is not None:
+        auth_enabled = enabled_env.lower() in {"1", "true", "yes"}
+    else:
+        auth_enabled = bool(cfg.get("enabled", False))
+
+    role = "anonymous"
+    username = None
+    if auth_enabled and os.getenv("DISABLE_API_AUTH", "").lower() not in {"1", "true", "yes"}:
+        token = websocket.query_params.get("token") or ""
+        auth_hdr = websocket.headers.get("authorization") or websocket.headers.get("Authorization") or ""
+        if not token and auth_hdr.lower().startswith("bearer "):
+            token = auth_hdr.split(" ", 1)[1].strip()
+        if not token:
+            security_event("ws_unauthorized", path="/api/ws/events", code="UNAUTHORIZED")
+            await websocket.close(code=4401)
+            return
+        from security.auth.service import AuthError, identity_from_bearer
+
+        try:
+            identity = identity_from_bearer(token)
+        except AuthError as exc:
+            security_event("ws_unauthorized", path="/api/ws/events", code=exc.code)
+            await websocket.close(code=4401)
+            return
+        role = str(identity.get("role") or "viewer")
+        username = identity.get("username")
+        if not has_permission(role, "read_incidents"):
+            security_event(
+                "ws_forbidden",
+                path="/api/ws/events",
+                code="FORBIDDEN",
+                user=username,
+                role=role,
+            )
+            await websocket.close(code=4403)
+            return
 
     await event_hub.connect(websocket)
     try:
-        await websocket.send_json({"type": "connected", "message": "Aegis event stream"})
+        await websocket.send_json(
+            {
+                "type": "connected",
+                "message": "Aegis event stream",
+                "auth_required": auth_enabled,
+                "user": username,
+                "role": role if auth_enabled else "anonymous",
+            }
+        )
         while True:
             db = SessionLocal()
             try:

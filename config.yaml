@@ -122,19 +122,32 @@ api:
     - "http://127.0.0.1:5173"
     - "http://localhost:80"
     - "http://127.0.0.1:80"
-  # Off by default for local demos; enable for hardening demos
+  # Set true (or AEGIS_CORS_STRICT=true) to restrict methods/headers for production
+  cors_strict: false
+  # P5: rate limiting ON by default for security-sensitive paths (CI sets DISABLE_RATE_LIMIT=true)
   rate_limit:
-    enabled: false
-    requests_per_window: 100
+    enabled: true
+    requests_per_window: 120
     window_seconds: 60
-    # Prefix match (path.startswith) — Stage-2 Phase D covers ingest + response surfaces
     paths:
+      - "/api/auth/login"
       - "/api/predict"
       - "/api/ingest"
       - "/api/explain"
       - "/api/recommendation"
       - "/api/response"
       - "/api/simulation"
+    path_limits:
+      "/api/auth/login":
+        requests_per_window: 10
+        window_seconds: 60
+  request_limits:
+    enabled: true
+    max_json_bytes: 1048576
+    max_csv_bytes: 10485760
+    max_pcap_bytes: 26214400
+    max_multipart_bytes: 31457280
+    max_body_bytes: 2097152
   security_headers:
     enabled: true
   auth:

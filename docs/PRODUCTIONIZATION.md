@@ -1,45 +1,29 @@
 # Aegis IDS — Productionization Roadmap
 
-**Immutable research baseline:** tag `v1.1-research` (Decision Tree @ 0.85 + Random Forest attack-only).  
-**Working branch:** `productionization` (extends `main`; never rewrite freeze artifacts under `models/trained_models/`).
-
-## Positioning
-
-| Claim | OK? |
-|-------|-----|
-| Submission-ready / productionized **IDS prototype** | ✅ |
-| Live enterprise SOC / guaranteed zero-day / auto-block | ❌ |
+**Immutable research baseline:** tag `v1.1-research`.  
+**Working branch:** `productionization`.
 
 ## Phase status
 
 | Phase | Focus | Status |
 |-------|--------|--------|
-| **P0** | Freeze `v1.1-research` | ✅ |
-| **P1** | PCAP → queue → frozen DT/RF | ✅ |
-| **P2** | Dry-run + approval gate | ✅ |
-| **P3** | Adapters + verify + rollback | ✅ |
-| **P4** | Authentication / RBAC | ✅ Complete (this branch) |
-| **P5** | API + application security | Next |
+| P0–P4 | Baseline → PCAP → response → adapters → auth/RBAC | ✅ |
+| **P5** | API + application security | ✅ Complete |
+| P6 | Persistence | Next |
 
-## P4 deliverables
+## P5 deliverables
 
-```text
-User → login (PBKDF2 password) → HMAC Bearer token → role from user directory
-     → server-side RBAC on every sensitive route → audit actor = username
-```
+- Rate limiting **ON by default** for `/api/auth/login`, predict, ingest, response, …
+- Prefix-bucketed limits (blocks trivial path-variant bypass)
+- Stricter login limit (`10/60s`)
+- Request-size limits (JSON/CSV/PCAP/multipart) via Content-Length
+- PCAP filename path-traversal rejection + safe temp suffixes
+- Sanitized validation/500 errors (no stack/secret/`input` leakage)
+- CORS allowlist; optional `AEGIS_CORS_STRICT` for production headers/methods
+- WebSocket `/api/ws/events` auth when `AEGIS_AUTH_ENABLED=true`
+- Security event logging for rate-limit / oversized / WS deny
+- Dedicated suite: `tests/test_productionization_p5_security.py`
 
-| Role | Propose/dry-run | Approve/rollback | Manage users |
-|------|----------------:|-----------------:|-------------:|
-| Viewer | ❌ | ❌ | ❌ |
-| Analyst | ✅ | ❌ | ❌ |
-| Responder | ✅ | ✅ | ❌ |
-| Admin | ✅ | ✅ | ✅ |
+**Completion criterion:** malicious or unauthorized requests are rejected at the application boundary before sensitive business logic / response adapters, with auditable security events.
 
-- **401** unauthenticated; **403** authenticated but forbidden  
-- Client `X-Aegis-Role` cannot escalate unless `allow_role_header=true` (demo only)  
-- UI reflects permissions; **API is the security boundary**  
-- Auth remains **off by default** for the research demo; enable with `AEGIS_AUTH_ENABLED=true`
-
-## Safety invariants preserved
-
-No approval → no execution · DRY_RUN/CONTROLLED only · LIVE forbidden · unauthorized → no response action · audit identity bound to login
+CI uses `DISABLE_RATE_LIMIT=true` for deterministic functional tests. ML artifacts untouched.

@@ -47,9 +47,26 @@ def validate_pcap_upload(*, filename: str | None, content: bytes) -> PcapValidat
     size = len(content)
     digest = hashlib.sha256(content).hexdigest() if content else None
     name = (filename or "capture.pcap").strip()
+
+    # Path traversal / absolute path rejection (before extension checks)
+    try:
+        from ingestion.upload_safety import UnsafeFilenameError, safe_upload_basename
+
+        safe_upload_basename(name, default="capture.pcap")
+    except Exception as exc:  # noqa: BLE001
+        code = getattr(exc, "code", "UNSAFE_FILENAME")
+        return PcapValidationResult(
+            False,
+            str(code),
+            getattr(exc, "message", str(exc)),
+            size_bytes=size,
+            sha256=digest,
+        )
+
     suffix = ""
     if "." in name:
-        suffix = "." + name.rsplit(".", 1)[-1].lower()
+        suffix = "." + name.replace("\\", "/").rsplit(".", 1)[-1].lower()
+        # If basename had path junk, suffix from raw name is still checked below
 
     if size == 0:
         return PcapValidationResult(False, "PCAP_EMPTY", "Uploaded PCAP is empty", size_bytes=0, sha256=digest)

@@ -58,28 +58,33 @@ In-process FIFO queue (single API worker):
 
 Honest limits: **not** Redis/Kafka, **not** multi-node. Useful for staging batches and measuring detect latency on one process.
 
-### Phase C — Database + auth/RBAC scaffolding (started)
+### Phase C — Database + auth/RBAC (P4 complete on `productionization`)
 
 | Item | Status |
 |------|--------|
 | SQLite default | unchanged (research baseline) |
 | PostgreSQL via `IDS_DB_URL` | URL + pool kwargs ready; install driver separately |
-| `/api/security/status` | auth/rate-limit/DB/RBAC summary (public) |
-| API key auth | still **disabled by default**; enable `api.auth.enabled` + `AEGIS_API_KEY` |
-| RBAC roles | `admin` / `analyst` / `viewer` / `ml_research` via `X-Aegis-Role` |
+| `/api/security/status` | auth/rate-limit/DB/RBAC/request-limits summary (public) |
+| Password login + Bearer tokens | P4 — enable `AEGIS_AUTH_ENABLED=true` |
+| Server RBAC | Roles from directory/token; forged body/header ignored |
+| API key auth | optional alongside Bearer; still off unless enabled |
 
-Not included yet: OAuth/SSO, user tables, password login, full SOC analyst accounts.
+Not included yet: OAuth/SSO. Persistence of users/actions across restarts is **P6**.
 
-### Phase D — API hardening + controlled response (started)
+### Phase D — API hardening (P5 complete on `productionization`)
 
 | Item | Status |
 |------|--------|
-| Rate-limit path coverage | Prefixes include `/api/ingest`, `/api/response`, `/api/simulation`, … (still **off** by default) |
-| Security headers | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `X-Aegis-Live-Mitigation: false` |
+| Rate limiting | **ON by default** for login/predict/ingest/response/… (`DISABLE_RATE_LIMIT` for CI) |
+| Request-size limits | JSON/CSV/PCAP/multipart Content-Length caps |
+| Security headers | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, … |
+| Error sanitization | No stack/`input`/secret leakage; correlation `request_id` |
+| WebSocket auth | `/api/ws/events` requires Bearer/token when auth enabled |
+| Upload safety | Basename-only filenames; PCAP magic/size/extension |
 | `POST /api/response/plan` | Advisory playbook + optional simulation preview |
-| Live mitigation | **Not implemented** — response remains decision-support / sim |
+| Live mitigation | **Not implemented** — response remains decision-support / controlled dry-run |
 
-Honest limits: no firewall/WAF/agent connectors; `defense_action` on incidents is an analyst note, not an executed control.
+Honest limits: no firewall/WAF/agent connectors; in-process rate limits (not Redis); CORS remains localhost allowlist unless `AEGIS_CORS_STRICT`.
 
 ### Phase E — Observability / CI-CD / load tests (started)
 

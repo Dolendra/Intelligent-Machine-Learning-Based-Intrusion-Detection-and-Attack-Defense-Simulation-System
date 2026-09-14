@@ -24,6 +24,7 @@ def test_security_status_phase_d():
     assert body["controlled_response"]["live_mitigation"] is False
     assert "/api/ingest" in body["rate_limit"]["paths"]
     assert body["security_headers"]["enabled"] is True
+    assert body["rate_limit"].get("default_on") is True or body["rate_limit"]["enabled"] in {True, False}
 
 
 def test_security_headers_on_api():

@@ -6,6 +6,8 @@ import tempfile
 from pathlib import Path
 
 os.environ.setdefault("MPLBACKEND", "Agg")
+# P5 enables rate limits by default; keep unit tests deterministic (opt out for dedicated rate-limit tests)
+os.environ.setdefault("DISABLE_RATE_LIMIT", "true")
 
 # Must be set before `database.db` / FastAPI app import so CI has no dependency on ids.db
 _test_db = Path(tempfile.gettempdir()) / "aegis_ids_pytest.db"
