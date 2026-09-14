@@ -10,6 +10,7 @@ const NAV = [
   { to: "/campaigns", label: "Campaigns", ico: "05", section: "Investigate" },
   { to: "/models", label: "Models", ico: "06", section: "Lab" },
   { to: "/research", label: "Research", ico: "07", section: "Lab" },
+  { to: "/system", label: "System", ico: "08", section: "Lab" },
 ] as const;
 
 type MeState = {

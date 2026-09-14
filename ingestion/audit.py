@@ -43,4 +43,24 @@ def audit_ingest_event(
     # Drop Nones for cleaner logs
     clean = {k: v for k, v in payload.items() if v is not None}
     logger.info("ingest_audit %s", json.dumps(clean, separators=(",", ":")))
+    try:
+        from backend.observability.registry import domain_metrics
+
+        ev = event.lower()
+        if "pcap" in ev or source.startswith("pcap"):
+            if "reject" in ev:
+                domain_metrics.incr("pcap.rejections")
+                domain_metrics.incr("security.invalid_uploads")
+            elif "extract_fail" in ev or "extract_failed" in ev:
+                domain_metrics.incr("pcap.extraction_failure")
+            elif "accept" in ev or "queue_submit" in ev or "queued" in ev:
+                domain_metrics.incr("pcap.uploads")
+                if size_bytes:
+                    domain_metrics.incr("pcap.bytes", int(size_bytes))
+            if "extract" in ev and "fail" not in ev and "success" in ev:
+                domain_metrics.incr("pcap.extraction_success")
+            if ev.endswith("extract_ok") or "extraction_ok" in ev:
+                domain_metrics.incr("pcap.extraction_success")
+    except Exception:  # noqa: BLE001
+        pass
     return clean

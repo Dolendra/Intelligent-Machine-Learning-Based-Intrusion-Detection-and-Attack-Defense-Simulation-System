@@ -98,17 +98,18 @@ Honest limits: no firewall/WAF/agent connectors; in-process rate limits (not Red
 
 Ephemeral by design: ingest queue, WS clients, rate-limit counters. Full backup/DR is P9.
 
-### Phase E — Observability / CI-CD / load tests (started)
+### Phase E — Observability (P7 complete on `productionization`)
 
 | Item | Status |
 |------|--------|
-| `GET /api/metrics` | In-process request counters + p50/p95 latency samples |
-| Request logging | Existing `StructuredLoggingMiddleware` + `X-Request-ID` |
-| Load smoke | `python scripts/26_api_load_smoke.py` (health/ready/metrics only) |
-| CI | Runs on `main` **and** `stage2/productionization`; `stage2-gate` job |
-| Docker image | `Dockerfile.api` copies `ingestion/` for Stage-2 APIs |
+| Structured JSON request/ops logs | `aegis.ops` + correlation IDs |
+| Domain metrics | `/api/metrics` embeds detection/queue/PCAP/response/security |
+| Health vs ready | Liveness `/api/health`; readiness `/api/ready` checks DB/models/FS |
+| Ops dashboard | `/api/ops/status` + UI `/system` |
+| Alerts | In-process thresholds (no external paging) |
+| Privacy | Redact passwords/tokens; no raw PCAP in logs |
 
-Honest limits: **not** Prometheus/Grafana/OpenTelemetry; metrics reset on process restart; load smoke is **not** a capacity/SLA claim.
+Honest limits: **not** Prometheus/Grafana/OpenTelemetry; metrics reset on process restart.
 
 ### Phase F — Cyber-range simulation validation + docs (started)
 

@@ -176,3 +176,18 @@ database:
     simulations_days: 90
     raw_pcap_hours: 24
     temp_files_hours: 1
+
+# P7 observability — structured logs + in-process metrics (not Prometheus/OTel)
+observability:
+  environment: development
+  log_level: INFO
+  log_retention_days: 14  # process/container log driver responsibility
+  alerts:
+    queue_depth_warn: 25
+    queue_depth_critical: 80
+    error_5xx_rate_warn: 0.05
+    min_requests_for_error_rate: 20
+    auth_failures_warn: 20
+    rate_limit_hits_warn: 50
+    pcap_extract_failures_warn: 5
+    response_verify_failures_warn: 3

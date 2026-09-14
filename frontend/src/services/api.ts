@@ -322,6 +322,9 @@ export const api = {
       note?: string;
     }>("/api/auth/me"),
   securityStatus: () => request<Record<string, unknown>>("/api/security/status"),
+  opsStatus: () => request<Record<string, unknown>>("/api/ops/status"),
+  metrics: () => request<Record<string, unknown>>("/api/metrics"),
+  ready: () => request<Record<string, unknown>>("/api/ready"),
   responseCapabilities: () => request<Record<string, unknown>>("/api/response/capabilities"),
   proposeResponse: (body: Record<string, unknown>) =>
     request<Record<string, unknown>>("/api/response/actions/propose", {

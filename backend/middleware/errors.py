@@ -61,6 +61,12 @@ def attach_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(RequestValidationError)
     async def validation_handler(request: Request, exc: RequestValidationError):
         rid = _request_id(request)
+        try:
+            from backend.observability.registry import domain_metrics
+
+            domain_metrics.incr("security.validation_failures")
+        except Exception:  # noqa: BLE001
+            pass
         return JSONResponse(
             status_code=422,
             content=_envelope(

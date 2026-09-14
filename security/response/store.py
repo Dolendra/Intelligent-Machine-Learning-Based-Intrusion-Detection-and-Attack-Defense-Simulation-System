@@ -276,6 +276,44 @@ class ResponseActionStore:
             actor,
             detail or {},
         )
+        try:
+            from backend.observability.context import bind_correlation
+            from backend.observability.events import log_event
+            from backend.observability.registry import domain_metrics
+
+            mapping = {
+                "proposed": "response.actions_proposed",
+                "approved": "response.actions_approved",
+                "rejected": "response.actions_rejected",
+                "failed": "response.actions_failed",
+                "verify_failed": "response.actions_failed",
+                "verified": "response.actions_verified",
+                "activated": "response.actions_verified",
+                "rolled_back": "response.actions_rolled_back",
+            }
+            metric = mapping.get(event)
+            if metric:
+                domain_metrics.incr(metric)
+            with bind_correlation(
+                action_id=action.action_id,
+                incident_id=action.incident_id,
+                user=actor,
+            ):
+                log_event(
+                    "response_audit_ops",
+                    action_id=action.action_id,
+                    incident_id=action.incident_id,
+                    actor=actor,
+                    action_type=action.action_type,
+                    adapter=action.adapter,
+                    approval_status=action._approval_status(),
+                    execution_status=action.status,
+                    verification_status=action.verified_at,
+                    rollback_status=action.rollback_status,
+                    audit_event=event,
+                )
+        except Exception:  # noqa: BLE001
+            pass
         return entry
 
     def claim_status(

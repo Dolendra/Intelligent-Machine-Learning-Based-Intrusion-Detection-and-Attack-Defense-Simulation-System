@@ -110,10 +110,14 @@ def security_status():
         "security_headers": security_headers_summary(),
         "observability": {
             "metrics_endpoint": "/api/metrics",
+            "ops_endpoint": "/api/ops/status",
             "request_logging": True,
+            "structured_json_logs": True,
+            "correlation_ids": True,
             "prometheus": False,
             "opentelemetry": False,
             "load_smoke_script": "scripts/26_api_load_smoke.py",
+            "phase": "P7",
         },
         "cyber_range_validation": {
             "live_cyber_range": False,
@@ -144,6 +148,7 @@ def security_status():
         },
         "rbac": rbac_summary(),
         "notes": [
+            "P7: structured JSON logs, correlation IDs, domain metrics, /api/ops/status.",
             "P6: users, response actions, audit, incidents, and simulations survive restarts.",
             "P5: rate limiting and request-size limits are ON by default for sensitive paths.",
             "CI/local load tests may set DISABLE_RATE_LIMIT=true.",
@@ -160,21 +165,34 @@ def security_status():
 
 @router.get("/metrics")
 def process_metrics_endpoint():
-    """Stage-2 Phase E: in-process request counters and latency samples (not Prometheus)."""
+    """P7: in-process request + domain counters (not Prometheus)."""
     from backend.middleware.metrics_mw import process_metrics
+    from backend.observability.registry import domain_metrics
 
     snap = process_metrics.snapshot()
+    snap["domain"] = domain_metrics.snapshot()
     try:
         from ingestion.queue import ingest_queue
 
         snap["ingest_queue"] = ingest_queue.status().get("metrics")
+        snap["queue_depth"] = ingest_queue.status().get("queued")
     except Exception:  # noqa: BLE001
         snap["ingest_queue"] = None
+    snap["phase"] = "P7"
     return snap
+
+
+@router.get("/ops/status")
+def ops_status():
+    """P7 operational snapshot for the System dashboard (no secrets)."""
+    from backend.observability.ops import ops_snapshot
+
+    return ops_snapshot()
 
 
 @router.get("/health", response_model=HealthResponse)
 def health():
+    """Liveness — process is up (does not imply workload readiness)."""
     cfg = load_config()
     return HealthResponse(
         status="ok",
@@ -185,23 +203,22 @@ def health():
 
 @router.get("/ready")
 def ready():
-    """Readiness probe — 503 until model artifacts are loadable."""
-    cfg = load_config()
-    if not svc.models_ready():
+    """Readiness — can Aegis serve required workload (DB + models + filesystem)?"""
+    from backend.observability.deps import readiness_report
+
+    report = readiness_report()
+    if not report["ready"]:
         raise HTTPException(
             status_code=503,
             detail={
-                "code": "MODEL_NOT_READY",
-                "message": "Model artifacts not loaded",
-                "models_loaded": False,
-                "version": cfg["project"]["version"],
+                "code": "NOT_READY",
+                "message": "Aegis is not ready to serve workload",
+                "missing": report.get("missing"),
+                "dependencies": report.get("dependencies"),
+                "version": report.get("version"),
             },
         )
-    return {
-        "status": "ready",
-        "models_loaded": True,
-        "version": cfg["project"]["version"],
-    }
+    return report
 
 
 @router.get("/auth/status")

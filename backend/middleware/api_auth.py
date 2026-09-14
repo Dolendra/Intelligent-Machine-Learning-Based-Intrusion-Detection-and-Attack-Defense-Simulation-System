@@ -21,6 +21,7 @@ PUBLIC_PATHS = {
     "/api/ready",
     "/api/security/status",
     "/api/metrics",
+    "/api/ops/status",
     "/api/auth/login",
     "/api/auth/status",
 }
@@ -149,6 +150,19 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
             try:
                 identity = identity_from_bearer(token)
             except AuthError as exc:
+                try:
+                    from backend.observability.registry import domain_metrics
+                    from security.security_events import security_event
+
+                    domain_metrics.incr("security.authentication_failures")
+                    security_event(
+                        "authentication_failure",
+                        path=path,
+                        method=request.method,
+                        code=exc.code,
+                    )
+                except Exception:  # noqa: BLE001
+                    pass
                 return JSONResponse(
                     status_code=exc.http_status,
                     content={"detail": {"code": exc.code, "message": exc.message}},
@@ -156,6 +170,19 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
         else:
             provided = request.headers.get(self.header_name) or request.query_params.get("api_key")
             if not self.api_key or not provided or provided != self.api_key:
+                try:
+                    from backend.observability.registry import domain_metrics
+                    from security.security_events import security_event
+
+                    domain_metrics.incr("security.authentication_failures")
+                    security_event(
+                        "authentication_failure",
+                        path=path,
+                        method=request.method,
+                        code="UNAUTHORIZED",
+                    )
+                except Exception:  # noqa: BLE001
+                    pass
                 return JSONResponse(
                     status_code=401,
                     content={
@@ -186,6 +213,21 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
         if self.enforce_rbac:
             needed = permission_for_request(request.method, path)
             if needed and not has_permission(role, needed):
+                try:
+                    from backend.observability.registry import domain_metrics
+                    from security.security_events import security_event
+
+                    domain_metrics.incr("security.authorization_denials")
+                    security_event(
+                        "authorization_denial",
+                        path=path,
+                        method=request.method,
+                        code="FORBIDDEN",
+                        user=identity.get("username"),
+                        role=role,
+                    )
+                except Exception:  # noqa: BLE001
+                    pass
                 return JSONResponse(
                     status_code=403,
                     content={

@@ -31,12 +31,31 @@ def security_event(
         "user": user,
         "role": role,
         "client": client,
-        "phase": "P5",
+        "phase": "P7",
     }
     if detail:
         payload["detail"] = detail
     clean = {k: v for k, v in payload.items() if v is not None}
     logger.warning("security_event %s", json.dumps(clean, separators=(",", ":")))
+    try:
+        from backend.observability.registry import domain_metrics
+
+        domain_metrics.incr("security.security_events")
+        ev = event.lower()
+        if "auth" in ev and ("fail" in ev or "unauth" in ev):
+            domain_metrics.incr("security.authentication_failures")
+        if "forbidden" in ev or "denied" in ev or code in {"FORBIDDEN", "RBAC_DENIED"}:
+            domain_metrics.incr("security.authorization_denials")
+        if "rate" in ev or code == "RATE_LIMITED":
+            domain_metrics.incr("security.rate_limit_hits")
+            domain_metrics.incr("security.blocked_requests")
+        if code in {"REQUEST_TOO_LARGE", "PCAP_REJECTED", "INVALID_UPLOAD"}:
+            domain_metrics.incr("security.invalid_uploads")
+            domain_metrics.incr("security.blocked_requests")
+        if code == "VALIDATION_ERROR":
+            domain_metrics.incr("security.validation_failures")
+    except Exception:  # noqa: BLE001
+        pass
     try:
         from database.db import SecurityAuditEvent, SessionLocal
 
@@ -52,12 +71,11 @@ def security_event(
                     user=user,
                     role=role,
                     client=client,
-                    phase="P5",
+                    phase="P7",
                     detail_json=json.dumps(detail, separators=(",", ":")) if detail else None,
                 )
             )
             db.commit()
     except Exception:  # noqa: BLE001
-        # Never fail the request path if audit persistence is unavailable
         logger.debug("security_event persistence skipped", exc_info=True)
     return clean
