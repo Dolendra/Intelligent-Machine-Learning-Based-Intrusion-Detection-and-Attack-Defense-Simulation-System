@@ -27,7 +27,7 @@ def test_ingest_capabilities_endpoint():
     r = client.get("/api/ingest/capabilities")
     assert r.status_code == 200
     body = r.json()
-    assert body["stage"] == "2-phase-a"
+    assert body["stage"] == "2-phase-b"
     assert body["schema"]["schema_version"] == "1.1.0"
     assert body["flows_csv"]["available"] is True
     assert "pcap" in body

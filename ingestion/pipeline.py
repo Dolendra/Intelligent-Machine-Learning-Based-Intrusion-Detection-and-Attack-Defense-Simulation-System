@@ -97,14 +97,24 @@ def ingest_pcap(pcap_path: Path, *, fill_missing: bool = False, max_rows: int = 
 
 
 def ingestion_capabilities() -> dict[str, Any]:
+    from ingestion.queue import ingest_queue
+
     return {
-        "stage": "2-phase-a",
+        "stage": "2-phase-b",
         "baseline": "v1.1-research",
         "schema": schema_summary(),
         "flows_csv": {"available": True, "endpoint": "/api/ingest/flows/csv"},
         "pcap": pcap_extractor_status(),
+        "queue": {
+            "available": True,
+            "endpoint": "/api/ingest/queue",
+            "mode": "in_process",
+            "status": ingest_queue.status(),
+        },
         "notes": [
             "v1.1 research baseline remains frozen on MachineLearningCVE flow features.",
-            "PCAP extraction is scaffolded; production wiring is opt-in via external tools.",
+            "CSV alias normalization maps common CICFlowMeter abbreviations onto schema v1.1.",
+            "PCAP extraction uses cicflowmeter when installed; otherwise fails safely (501).",
+            "Phase B adds an in-process ingest→detect queue for batch staging and latency metrics.",
         ],
     }

@@ -269,6 +269,65 @@ async def ingest_pcap(
     return payload
 
 
+@router.get("/ingest/queue")
+def ingest_queue_status():
+    """Stage-2 Phase B: in-process queue depth + latency metrics."""
+    from ingestion.queue import ingest_queue
+
+    return ingest_queue.status()
+
+
+@router.post("/ingest/queue/submit")
+async def ingest_queue_submit(
+    file: UploadFile = File(...),
+):
+    """Enqueue schema-validated CSV flows for async detection (in-process worker)."""
+    from ingestion.pipeline import ingest_flows_csv as _ingest
+    from ingestion.queue import ingest_queue
+
+    if not ingest_queue.status().get("worker_alive"):
+        # Lazy-start for TestClient / cases where lifespan did not wire predict fn yet
+        from backend.services import pipeline as _svc
+        from database.db import SessionLocal
+
+        def _predict_batch(flows: list[dict[str, float]]) -> dict:
+            db = SessionLocal()
+            try:
+                return _svc.run_prediction_batch(flows, db=db, persist=False, allow_missing_features=False)
+            finally:
+                db.close()
+
+        ingest_queue.set_predict_fn(_predict_batch)
+        ingest_queue.start()
+
+    raw = await file.read()
+    result = _ingest(raw, fill_missing=False, max_rows=500)
+    if not result.ok:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": result.detail.get("code", "INGEST_FAILED"),
+                "message": result.validation.get("message") or "ingest failed",
+                "validation": result.validation,
+            },
+        )
+    try:
+        job = ingest_queue.submit(result.flows, source="csv_upload")
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail={"code": "QUEUE_FULL", "message": str(exc)}) from exc
+    return {"ok": True, "job": job.as_dict()}
+
+
+@router.get("/ingest/queue/{job_id}")
+def ingest_queue_job(job_id: str):
+    from ingestion.queue import ingest_queue
+
+    job = ingest_queue.get(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail={"code": "JOB_NOT_FOUND", "message": job_id})
+    return job.as_dict()
+
+
 @router.post("/explain")
 def explain(body: ExplainRequest):
     allow_missing = _demo_allow_missing(body.allow_missing_features)

@@ -35,12 +35,37 @@ async def lifespan(_app: FastAPI):
     except Exception as exc:  # noqa: BLE001
         logging.getLogger("aegis.api").exception("Database init failed: %s", exc)
         raise RuntimeError(f"Database initialization failed: {exc}") from exc
+
+    # Stage-2 Phase B: in-process ingest→detect queue (prototype, single process)
+    try:
+        from backend.services import pipeline as svc
+        from database.db import SessionLocal
+        from ingestion.queue import ingest_queue
+
+        def _predict_batch(flows: list[dict[str, float]]) -> dict:
+            db = SessionLocal()
+            try:
+                return svc.run_prediction_batch(flows, db=db, persist=False, allow_missing_features=False)
+            finally:
+                db.close()
+
+        ingest_queue.set_predict_fn(_predict_batch)
+        ingest_queue.start()
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger("aegis.api").warning("Ingest queue not started: %s", exc)
+
     demo_mode = os.getenv("DEMO_MODE", "false").lower() in {"1", "true", "yes"}
     if demo_mode:
         n = seed_demo_incidents()
         if n:
             print(f"Seeded {n} demo incidents (DEMO_MODE=true)")
     yield
+    try:
+        from ingestion.queue import ingest_queue
+
+        ingest_queue.stop()
+    except Exception:
+        pass
 
 
 app = FastAPI(

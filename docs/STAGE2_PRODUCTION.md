@@ -36,13 +36,27 @@ python -m ingestion pcap -i capture.pcap --align
 ```
 
 
-## Later phases (not started here)
+## Later phases
 
-- **B** Real-time detection queue + throughput metrics
+### Phase B — Real-time / batch detection path (started)
+
+In-process FIFO queue (single API worker):
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/ingest/queue` | Queue depth + latency / throughput metrics |
+| POST | `/api/ingest/queue/submit` | Enqueue validated CSV flows for async detect |
+| GET | `/api/ingest/queue/{job_id}` | Poll job status / summary |
+
+Honest limits: **not** Redis/Kafka, **not** multi-node. Useful for staging batches and measuring detect latency on one process.
+
+### Still later
+
 - **C** PostgreSQL + auth/RBAC SOC workspace
 - **D** API hardening + controlled response
 - **E** Observability / CI-CD / load tests
 - **F** Cyber-range simulation validation + docs
+
 
 ## Safety rules
 

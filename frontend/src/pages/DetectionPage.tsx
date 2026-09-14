@@ -19,6 +19,7 @@ export function DetectionPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ingestInfo, setIngestInfo] = useState<Record<string, unknown> | null>(null);
+  const [queueJob, setQueueJob] = useState<Record<string, unknown> | null>(null);
 
   const activeExplain = xaiTab === "shap" ? explain : lime;
   const maxAbs = useMemo(() => {
@@ -187,6 +188,45 @@ export function DetectionPage() {
             }}
           />
         </label>
+        <label className="btn btn-secondary" style={{ cursor: busy ? "not-allowed" : "pointer" }} title="Stage-2 async queue">
+          Queue CSV (Phase B)
+          <input
+            type="file"
+            accept=".csv,text/csv"
+            hidden
+            disabled={busy}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              setBusy(true);
+              setError(null);
+              setQueueJob(null);
+              try {
+                const submitted = await api.ingestQueueSubmit(file);
+                const job = submitted.job as Record<string, unknown>;
+                setQueueJob(job);
+                const jobId = String(job.job_id);
+                for (let i = 0; i < 60; i++) {
+                  await new Promise((r) => setTimeout(r, 150));
+                  const cur = await api.ingestQueueJob(jobId);
+                  setQueueJob(cur);
+                  if (cur.status === "done" || cur.status === "error") {
+                    const summary = cur.result_summary as Record<string, unknown> | undefined;
+                    if (cur.status === "done" && summary) {
+                      setLabel(`Queue job ${String(summary.total_flows ?? "?")} flows · ${String(cur.latency_ms ?? "?")} ms`);
+                    }
+                    break;
+                  }
+                }
+              } catch (err) {
+                setError(err instanceof Error ? err.message : String(err));
+              } finally {
+                setBusy(false);
+              }
+            }}
+          />
+        </label>
         {busy && <span className="muted mono">Working…</span>}
         {label && (
           <span className="muted mono">
@@ -204,6 +244,7 @@ export function DetectionPage() {
               {String((ingestInfo.schema as Record<string, unknown> | undefined)?.feature_count ?? "—")} features · CSV{" "}
               {(ingestInfo.flows_csv as Record<string, unknown> | undefined)?.available ? "ready" : "off"} · PCAP{" "}
               {String(((ingestInfo.pcap as Record<string, unknown> | undefined)?.status as string) ?? "unknown")}
+              {queueJob ? ` · queue ${String(queueJob.status)}` : ""}
             </div>
           </div>
           <span className="live-chip off">Prototype path — not live capture</span>
