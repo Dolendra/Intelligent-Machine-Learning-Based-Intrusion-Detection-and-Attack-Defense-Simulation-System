@@ -45,5 +45,10 @@ results/performance/*
 !results/performance/.gitkeep
 !results/performance/operating_envelope_latest.json
 
+# P11 empirical mitigation outputs (keep latest report)
+results/empirical/*
+!results/empirical/.gitkeep
+!results/empirical/empirical_mitigation_latest.json
+
 # P9 backup drill artifacts
 backups/

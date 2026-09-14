@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-14T19:22:02.308587+00:00",
-  "git_commit": "130ffd9",
+  "generated_at": "2026-09-14T19:31:56.391449+00:00",
+  "git_commit": "093e77a",
   "model_version": "1.1.0",
   "experiments": [
     {
@@ -138,6 +138,22 @@
       "present": true,
       "path": "D:\\IDS-Project\\models\\trained_models\\generalization_report.json",
       "intended_conclusion": "P10 IID vs temporal generalization (frozen)"
+    },
+    {
+      "experiment_id": "EXP-018",
+      "name": "empirical_mitigation_ddos",
+      "artifact": "empirical_mitigation_report.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\empirical_mitigation_report.json",
+      "intended_conclusion": "P11 measured mitigation DDoS BLOCK_SOURCE (CONTROLLED)"
+    },
+    {
+      "experiment_id": "EXP-019",
+      "name": "empirical_mitigation_dos",
+      "artifact": "empirical_mitigation_report.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\models\\trained_models\\empirical_mitigation_report.json",
+      "intended_conclusion": "P11 measured mitigation DoS RATE_LIMIT (CONTROLLED)"
     }
   ],
   "note": "Index of research artifacts \u2014 run the corresponding scripts to populate missing files."

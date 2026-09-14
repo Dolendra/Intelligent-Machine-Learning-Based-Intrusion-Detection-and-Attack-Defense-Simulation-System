@@ -156,6 +156,49 @@ class TestNetworkAdapter(ResponseAdapter):
             "cleared": existed,
         }
 
+    def traffic_decision(self, source: str) -> dict[str, Any]:
+        """Gate a simulated connection attempt against active CONTROLLED state.
+
+        Used by the P11 empirical test plane — does **not** touch a real network.
+        Precedence: BLOCK_SOURCE / ISOLATE_HOST → deny; RATE_LIMIT → throttle;
+        otherwise allow.
+        """
+        src = (source or "").strip()
+        with self._lock:
+            for action_type, target in list(self._controls.keys()):
+                meta = self._controls.get((action_type, target)) or {}
+                if not meta.get("active"):
+                    continue
+                if target != src:
+                    continue
+                if action_type in {
+                    ActionType.BLOCK_SOURCE.value,
+                    ActionType.ISOLATE_HOST.value,
+                }:
+                    return {
+                        "decision": "DENY",
+                        "reason": action_type,
+                        "target": target,
+                        "action_id": meta.get("action_id"),
+                    }
+                if action_type == ActionType.RATE_LIMIT.value:
+                    return {
+                        "decision": "THROTTLE",
+                        "reason": action_type,
+                        "target": target,
+                        "action_id": meta.get("action_id"),
+                        "allow_fraction": 0.2,
+                    }
+                if action_type == ActionType.MONITOR.value:
+                    return {
+                        "decision": "ALLOW",
+                        "reason": action_type,
+                        "target": target,
+                        "action_id": meta.get("action_id"),
+                        "monitored": True,
+                    }
+        return {"decision": "ALLOW", "reason": None, "target": src}
+
     def capabilities(self) -> dict[str, Any]:
         base = super().capabilities()
         base.update({"simulated_control_plane": True, "state": self.snapshot()})

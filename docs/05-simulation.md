@@ -15,6 +15,8 @@ Topology: Attacker → Internet → Firewall → Router → {IDS, Server, PCs}
 It does **not** generate real attack traffic or compromise hosts.  
 It is **not** a physical cyber range. Defense effectiveness values in `config.yaml` are **visualization assumptions**, not empirically measured mitigation rates.
 
+For **measured** mitigation under the CONTROLLED `TestNetworkAdapter` lab (P11), see `docs/EMPIRICAL_MITIGATION.md`. Simulation and empirical tracks remain separate.
+
 ## API
 
 - `POST /api/simulation/start`

@@ -32,6 +32,8 @@ EXPERIMENTS = [
     ("EXP-015", "intensity_reference", "intensity_reference.json", "Train percentile intensity reference"),
     ("EXP-016", "experiment_index", "experiment_index.json", "Unified experiment catalog"),
     ("EXP-017", "generalization_p10", "generalization_report.json", "P10 IID vs temporal generalization (frozen)"),
+    ("EXP-018", "empirical_mitigation_ddos", "empirical_mitigation_report.json", "P11 measured mitigation DDoS BLOCK_SOURCE (CONTROLLED)"),
+    ("EXP-019", "empirical_mitigation_dos", "empirical_mitigation_report.json", "P11 measured mitigation DoS RATE_LIMIT (CONTROLLED)"),
 ]
 
 
