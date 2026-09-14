@@ -1,431 +1,531 @@
-# Intelligent ML-Based Intrusion Detection and Attack–Defense Simulation System
+# Aegis IDS — Final Project Report
 
-**Platform name:** Aegis IDS  
-**Dataset:** CICIDS2017 (`MachineLearningCVE`)  
-**Stack:** Python · Scikit-learn / XGBoost (compared) · SHAP / LIME · FastAPI · React · SQLite  
-**Frozen models (v1.1):** Binary **Decision Tree** @ threshold **0.85** · Multiclass **Random Forest** (attack-only)
+**Full title:** Intelligent Machine-Learning-Based Intrusion Detection and Attack–Defense Simulation System  
+**Platform:** Aegis IDS  
+**Repository state:** tag **`v2.0-aegis-productionized`** (productionized prototype) · frozen research baseline **`v1.1-research`**  
+**Dataset:** CICIDS2017 (`MachineLearningCVE` flow CSVs; not shipped in Git)  
+**Stack:** Python · scikit-learn / XGBoost (compared) · SHAP / LIME · FastAPI · React · SQLite  
 
-> Use this document as the backbone of your major-project report. Copy sections into Word/LaTeX and insert figures from `models/trained_models/figures/`. Authoritative metrics: `models/trained_models/model_metadata.json` and `training_report.json`.
-
----
-
-## 1. Abstract
-
-This project presents an integrated intelligent intrusion detection platform that goes beyond raw classifier accuracy. The system detects malicious network flows, classifies attack families, estimates risk, explains predictions with SHAP (primary) and LIME (secondary), recommends advisory defensive actions, and interactively simulates the attack-to-defense lifecycle on a simplified enterprise topology. On CICIDS2017, the frozen binary Decision Tree achieves test F1 **0.99048** and ROC-AUC **0.99916** (threshold 0.85); the frozen attack-only Random Forest multiclass model achieves macro-F1 **0.99813** and weighted-F1 **0.99979**. A day-aware Friday temporal holdout scores the same frozen artifacts without retraining and is reported separately from the IID split (§8). These benchmark results are not claims of real-world future performance under live traffic.
+> **Authoritative sources of truth (prefer these over older Word/PPT drafts):**  
+> `models/trained_models/model_metadata.json`, `training_report.json`, `generalization_report.json`, `empirical_mitigation_report.json`, `reports/final_security_validation_report.json`, and the phase docs under `docs/`.  
+> Figures: `models/trained_models/figures/`.
 
 ---
 
-## 2. Introduction & motivation
+## Measurement classes (read first)
 
-Traditional IDS outputs often stop at “attack detected.” Analysts also need *what*, *why*, *how severe*, and *what to do*. This project bridges **detection** and **security decision support** through an end-to-end pipeline:
+This report carefully separates three kinds of numbers:
+
+| Class | Meaning | Example |
+|-------|---------|---------|
+| **Research (IID / temporal)** | Frozen DT/RF scored on CICIDS2017 splits | Binary F1 **0.99048** (IID test) |
+| **Simulation assumptions** | Visualization priors in `config.yaml` | DDoS defense efficacy **0.82** |
+| **Controlled-lab (P11)** | Measured outcomes on `TestNetworkAdapter` | DDoS `BLOCK_SOURCE` effectiveness **1.00** |
+
+Do **not** treat simulation assumptions as measurements, or IID F1 as a live-network guarantee.
+
+---
+
+## Defensible one-line claim
+
+> **Aegis IDS is a productionized, security-validated intrusion-detection prototype that combines frozen machine-learning detection, explainable risk assessment, controlled response workflows, empirical mitigation experiments, attack-defense simulation, persistence, observability, recovery, and server-enforced authorization, while deliberately maintaining a hard boundary against live network enforcement.**
+
+---
+
+# Chapter 1 — Introduction
+
+Traditional intrusion detection systems often stop at an alert: “attack detected.” Security teams also need *what family of attack*, *why the model decided that*, *how severe the risk is*, and *what defensive action is appropriate*—with clear human control over any response.
+
+Aegis IDS addresses that gap as an **integrated decision-support platform**:
 
 ```text
-Traffic → Features → Binary ML → Attack family → Risk → XAI → Recommendation → Simulation → Dashboard
+Network flow → preprocess → binary ML → attack family → risk → XAI
+→ recommendation → incident → propose / dry-run / approve → CONTROLLED response
+→ verification / rollback → attack–defense simulation → SOC UI
 ```
 
-### Contribution framing (defensible)
+### Contribution framing
 
-We do **not** claim a novel IDS algorithm. The contribution is an **integrated decision-support and visualization framework** for ML-based intrusion detection.
+We do **not** claim a novel IDS learning algorithm. The contribution is a **reproducible, end-to-end decision-support and visualization framework** that:
+
+1. Freezes a strong CICIDS2017 research baseline (`v1.1-research`).  
+2. Productionizes the application stack through phases **P0–P12** (`v2.0-aegis-productionized`).  
+3. Separates **research evaluation**, **simulation assumptions**, and **controlled-lab empirical mitigation**.  
+4. Enforces a hard safety boundary: **no live firewall/EDR**, **no automatic unapproved response**.
 
 ---
 
-## 3. Research questions
+# Chapter 2 — Problem Definition
+
+### Problem statement
+
+Modern SOC workflows require more than a black-box classifier. Gaps in many student / research IDS demos include:
+
+- High benchmark accuracy without honest generalization analysis  
+- Little explainability for analyst trust  
+- Recommendations disconnected from actionable (but safe) response workflows  
+- Simulation that is confused with real mitigation effectiveness  
+- Missing authentication, audit, persistence, and fail-safe recovery  
+
+### Objectives
+
+1. Detect malicious vs benign flows with a frozen binary model.  
+2. Classify attack families with a frozen multiclass model (attack-only).  
+3. Explain predictions (SHAP primary, LIME secondary).  
+4. Score risk and emit **advisory** recommendations.  
+5. Simulate the attack–defense lifecycle for education and demo.  
+6. Provide a **CONTROLLED** response path with approval, verification, and rollback.  
+7. Productionize the system (P0–P12) without altering frozen ML artifacts.  
+8. Empirically measure mitigation on a controlled lab plane (P11) and validate security boundaries (P12).
+
+### Research questions
 
 | ID | Question |
 |----|----------|
-| RQ1 | How effectively can ML distinguish malicious from benign flows? |
+| RQ1 | How well can ML distinguish malicious from benign CICIDS2017 flows under an IID split? |
 | RQ2 | Which flow features contribute most to detection? |
-| RQ3 | Can XAI (SHAP/LIME) improve interpretability of IDS predictions? |
-| RQ4 | Can attack classifications map to actionable defensive recommendations? |
-| RQ5 | Can simulation improve understanding of the attack–defense lifecycle? |
+| RQ3 | Can SHAP/LIME improve interpretability of IDS decisions? |
+| RQ4 | Can attack classifications map to actionable (advisory / controlled) defenses? |
+| RQ5 | How does performance change under a day-aware temporal holdout? |
+| RQ6 | What measurable change occurs when an approved CONTROLLED defense is applied in a lab plane? |
 
 ---
 
-## 4. Related work
+# Chapter 3 — Literature / Existing Systems
 
-Intrusion detection research broadly spans **signature-based**, **anomaly-based**, and **machine-learning-based** approaches. Signature systems are precise for known patterns but brittle against novel attacks; anomaly and ML methods generalize better but can raise false positives and suffer from opaque decisions.
+Intrusion detection research spans **signature-based**, **anomaly-based**, and **machine-learning-based** methods. Signature systems are precise for known patterns but brittle against novelty; ML methods can generalize better but risk false positives and opaque decisions.
 
-**Datasets.** Many classic corpora (e.g., KDD Cup’99 derivatives) are outdated relative to modern traffic. Sharafaldin et al. introduced **CICIDS2017**, a labelled flow dataset covering benign activity and contemporary attack families (DoS/DDoS, brute force, web attacks, botnet, infiltration, Heartbleed), generated to address diversity and realism gaps in earlier benchmarks ([Sharafaldin et al., 2018](https://www.scitepress.org/Papers/2018/66398/66398.pdf); [CIC IDS 2017](https://www.unb.ca/cic/datasets/ids-2017.html)).
+**Datasets.** Earlier corpora (e.g., KDD’99 derivatives) are dated. **CICIDS2017** (Sharafaldin et al., 2018) provides labelled flow features for contemporary attack families and remains a standard academic benchmark ([CIC IDS 2017](https://www.unb.ca/cic/datasets/ids-2017.html)).
 
-**ML for IDS.** Tree ensembles and gradient boosting are widely used on flow features because they handle mixed-scale tabular inputs and class imbalance reasonably well when paired with appropriate metrics (precision/recall/F1 rather than accuracy alone).
+**ML for IDS.** Tree ensembles and boosting are common on tabular flow features; evaluation should emphasize precision/recall/F1 and PR-AUC under imbalance, not accuracy alone.
 
-**Explainability.** Lundberg & Lee’s **SHAP** and Ribeiro et al.’s **LIME** are standard local explanation methods. In security settings they help analysts inspect *why* a flow was flagged, improving trust without proving causality (SHAP as additive feature attribution; LIME as a local linear surrogate).
+**Explainability.** **SHAP** (Lundberg & Lee, 2017) and **LIME** (Ribeiro et al., 2016) support local explanations. In security they aid trust; they do not prove causality.
 
-**Decision support / SOAR.** Security orchestration platforms map alerts to playbooks. This project adopts that idea at student scale: attack family → **advisory** recommendation, with no automatic destructive network changes.
+**SOAR / decision support.** Orchestration maps alerts to playbooks. Aegis adopts this idea at prototype scale: family → recommendation → human-approved response, without unsupervised destructive enforcement.
 
-**Positioning.** Prior work often isolates either “high accuracy on CICIDS” or “dashboard demo.” Aegis IDS integrates detection, multiclass labelling, risk scoring, SHAP/LIME, recommendations, and attack–defense simulation in one reproducible platform.
-
-### References (starter set)
-
-1. I. Sharafaldin, A. H. Lashkari, and A. A. Ghorbani, “Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization,” in *ICISSP*, 2018, pp. 108–116. DOI: [10.5220/0006639801080116](https://doi.org/10.5220/0006639801080116).
-2. Canadian Institute for Cybersecurity, “Intrusion Detection Evaluation Dataset (CIC-IDS2017),” University of New Brunswick. https://www.unb.ca/cic/datasets/ids-2017.html
-3. S. M. Lundberg and S.-I. Lee, “A Unified Approach to Interpreting Model Predictions,” in *NeurIPS*, 2017.
-4. M. T. Ribeiro, S. Singh, and C. Guestrin, “‘Why Should I Trust You?’ Explaining the Predictions of Any Classifier,” in *KDD*, 2016.
-5. T. Chen and C. Guestrin, “XGBoost: A Scalable Tree Boosting System,” in *KDD*, 2016.
-6. R. Sommer and V. Paxson, “Outside the Closed World: On Using Machine Learning for Network Intrusion Detection,” in *IEEE S&P*, 2010.
-7. A. L. Buczak and E. Guven, “A Survey of Data Mining and Machine Learning Methods for Cyber Security Intrusion Detection,” *IEEE Communications Surveys & Tutorials*, 2016.
-8. H.-J. Liao et al., “Intrusion Detection System: A Comprehensive Review,” *Journal of Network and Computer Applications*, 2013.
-9. D. Gunning and D. Aha, “DARPA’s Explainable Artificial Intelligence (XAI) Program,” *AI Magazine*, 2019.
-10. N. Moustafa and J. Slay, “UNSW-NB15: A Comprehensive Data Set for Network Intrusion Detection Systems,” in *MilCIS*, 2015.
-
-*(Add institution-specific formatting / more recent XAI-for-IDS papers as required by your guide.)*
+**Positioning.** Many works isolate either “high CICIDS accuracy” or “dashboard demo.” Aegis integrates detection, multiclass labelling, risk, XAI, controlled response, empirical lab mitigation, simulation, and productionization controls in one reproducible repository.
 
 ---
 
-## 5. System architecture
+# Chapter 4 — Proposed Aegis IDS Architecture
 
-Layers: UI (React) → API (FastAPI) → ML engine + Security engine + Simulation engine → Data (CICIDS, models, SQLite incidents).
-
-Two-stage ML:
-
-1. **Binary:** BENIGN vs ATTACK — frozen model **Decision Tree**, threshold **0.85**
-2. **Multiclass (attack-only):** Bot, BruteForce, DDoS, DoS, PortScan, WebAttack — frozen model **Random Forest** (no BENIGN class)
-
-Risk score (configurable weights in `config.yaml`):
+### Logical layers
 
 ```text
-0.50·attack_base + 0.25·confidence·100 + 0.15·intensity·100 + 0.10·asset_criticality (scaled)
+React SOC UI
+    ↓
+FastAPI (auth/RBAC, limits, CORS, observability)
+    ↓
+ML engine (frozen FeatureBundle + DT + RF) · Risk · SHAP
+    ↓
+Response service (propose → dry-run → approve → execute → verify → rollback)
+    ↓
+Adapters: DRY_RUN | CONTROLLED (TestNetworkAdapter) | LIVE (forbidden)
+    ↓
+Simulation engine (visualization) · SQLite persistence · Ops metrics
 ```
 
-Recommendations are **advisory only**. Simulation is **visualization only** (no real attacks). Defense effectiveness percentages are **assumptions**, not measured mitigation rates.
+### Two-stage ML
+
+1. **Binary:** BENIGN vs ATTACK — frozen **Decision Tree**, operating threshold **0.85**  
+2. **Multiclass (attack-only):** Bot, BruteForce, DDoS, DoS, PortScan, WebAttack — frozen **Random Forest**
+
+### Provenance tags
+
+| Tag | Meaning |
+|-----|---------|
+| `v1.1-research` | Frozen academic ML baseline (joblibs + IID metrics) |
+| `v2.0-aegis-productionized` | Complete productionized prototype (P0–P12 on `main`) |
+
+Architecture figure: `docs/architecture.png`.
 
 ---
 
-## 6. Dataset & preprocessing
+# Chapter 5 — Dataset and Data Engineering
 
-- Source: CICIDS2017 MachineLearningCVE CSVs (~2.83M raw rows)  
-- Cleaning: strip columns, drop leakage fields, coerce numeric, remove Inf/NaN/duplicates  
-- Label families normalized (e.g., DoS Hulk → DoS)  
-- Rare classes with &lt; 50 samples dropped (Infiltration, Heartbleed) → **2,520,751** flows  
-- Stratified split: train 70% / val 10% / test 20%  
-- Features: StandardScaler + SelectKBest(**f_classif**, k=40) fit **on train only** (dual selectors)
+### Dataset
 
-See `data/processed/summary.json` and `models/trained_models/model_metadata.json`.
+- **CICIDS2017** MachineLearningCVE CSVs (~2.83M raw rows before cleaning).  
+- Raw files are **not** in Git (size/licensing); place under `MachineLearningCVE/` locally.  
+- Label families normalized (e.g., DoS Hulk → DoS).  
+- Rare classes with fewer than **50** samples dropped (e.g., Infiltration, Heartbleed) → **~2.52M** usable flows.  
+- Stratified split: **70% / 10% / 20%** train / val / test.  
+
+### Split sizes (frozen)
+
+| Split | Rows |
+|-------|-----:|
+| Train | 1,764,525 |
+| Validation | 252,075 |
+| Test | 504,151 |
+
+`random_state = 42`, `sample_frac = 1.0`.
+
+### Feature engineering
+
+- Drop leakage/identifier-like columns (Flow ID, IPs, Timestamp, ports where configured).  
+- Coerce numeric; remove Inf/NaN/duplicates.  
+- **StandardScaler** + **SelectKBest (`f_classif`, k=40)** fit **on train only**.  
+- **Dual selectors:** separate SelectKBest for binary vs multiclass (40 features each).  
+
+Artifacts: `feature_bundle.joblib`, `data/processed/*.parquet` (local), `model_metadata.json`.
 
 ---
 
-## 7. Experimental results (RQ1)
+# Chapter 6 — Machine Learning Detection
 
-### Binary (validation)
+### Binary model selection (validation ablation)
 
-| Model | Precision | Recall | F1 | ROC-AUC | Selection score |
-|-------|----------:|-------:|---:|--------:|----------------:|
-| logistic_regression | 0.7206 | 0.9706 | 0.8272 | 0.9860 | 0.9239 |
-| **decision_tree** | **0.9845** | **0.9966** | **0.9905** | **0.9989** | **0.9940** |
-| random_forest | 0.9863 | 0.9961 | 0.9912 | 0.9999 | 0.9877 |
-| xgboost | 0.9961 | 0.9899 | 0.9930 | 0.9999 | 0.9918 |
+Candidates shared the same preprocessing. Selection used multi-objective weights (recall 0.30, F1 0.25, PR-AUC 0.20, FPR 0.15, latency 0.10)—**not** highest F1 alone.
 
-**Selected binary model = Decision Tree** (multi-objective: recall / F1 / PR-AUC / FPR / latency — not highest raw F1 alone).
+| Model | Val F1 | Val Recall | Selection score |
+|-------|-------:|-----------:|----------------:|
+| logistic_regression | 0.8272 | 0.9706 | 0.9239 |
+| **decision_tree** | 0.9905 | **0.9966** | **0.9940** |
+| random_forest | 0.9912 | 0.9961 | 0.9877 |
+| xgboost | **0.9930** | 0.9899 | 0.9918 |
 
-**Test (Decision Tree, threshold 0.85):**
+**Why Decision Tree?** Higher attack **recall** under the IDS-oriented score; XGBoost wins raw F1 but not the selected objective.
+
+### Binary test results (Decision Tree @ 0.85)
 
 | Metric | Value |
 |--------|------:|
 | Precision | 0.98404 |
 | Recall | 0.99700 |
-| F1 | **0.99048** |
+| **F1** | **0.99048** |
 | PR-AUC | 0.99744 |
-| ROC-AUC | **0.99916** |
-| FPR | 0.00329 |
-| FNR | 0.00300 |
-| Brier | 0.00229 |
-| ECE | 0.00242 |
+| ROC-AUC | 0.99916 |
+| FP / FN | 1,377 / 255 |
+| TN / TP | 417,635 / 84,884 |
 
-### Multiclass (validation, attack-only)
-
-| Model | macro-F1 | weighted-F1 | accuracy | Selection score |
-|-------|---------:|------------:|---------:|----------------:|
-| **random_forest** | **0.9983** | **0.9999** | **0.9999** | **0.9988** |
-| xgboost | 0.9972 | 0.9998 | 0.9998 | 0.9980 |
-
-**Selected multiclass model = Random Forest.**
-
-**Test (Random Forest):**
+### Multiclass (attack-only Random Forest) — test
 
 | Metric | Value |
 |--------|------:|
 | Accuracy | 0.99979 |
 | Macro Precision | 0.99762 |
 | Macro Recall | 0.99864 |
-| Macro F1 | **0.99813** |
-| Weighted F1 | **0.99979** |
+| **Macro F1** | **0.99813** |
+| Weighted F1 | 0.99979 |
 
-### Model selection rationale (algorithm comparison)
+Classes: Bot, BruteForce, DDoS, DoS, PortScan, WebAttack.
 
-Candidates share the same preprocessing / `f_classif` k=40 pipeline — this is an **algorithm ablation**, not an architecture search.
+### Important caveat
 
-**Binary multi-objective weights** (`config.yaml`): recall 0.30 · F1 0.25 · PR-AUC 0.20 · FPR 0.15 · latency 0.10.
-
-| Model | Val recall | Val F1 | Val FPR | Infer(s) | selection_score |
-|-------|----------:|-------:|--------:|---------:|----------------:|
-| logistic_regression | 0.9706 | 0.8272 | 0.0765 | 0.015 | 0.9239 |
-| **decision_tree** | **0.9966** | 0.9905 | 0.0032 | 0.030 | **0.9940** |
-| random_forest | 0.9961 | 0.9912 | 0.0028 | 0.169 | 0.9877 |
-| xgboost | 0.9899 | **0.9930** | **0.0008** | 0.066 | 0.9918 |
-
-**Why Decision Tree over XGBoost?** XGBoost wins raw F1, but Decision Tree has **higher attack recall**. Under an IDS-oriented policy that prioritizes catching attacks, the selection score prefers Decision Tree. Random Forest is competitive on F1 but slower on validation inference, which the latency term penalizes.
-
-**Multiclass:** score ≈ `0.7·macro-F1 + 0.3·weighted-F1` → Random Forest (0.9988) over XGBoost (0.9980).
-
-Figures: `model_binary_selection_scores.png`, `model_binary_f1_vs_recall.png`, `model_binary_metric_bars.png`, `model_multiclass_selection.png`, `model_selection_summary.png`  
-Details: `docs/experiments/MODEL_COMPARISON.md`
-
-### Why these numbers are not deployment guarantees
-
-CICIDS2017 is a labelled **benchmark**. IID stratified splits overstate similarity to future live traffic. Temporal holdout and drift analyses in-repo explore generalization limits; treat high F1 as evidence of strong in-dataset discrimination, not as a promise of production IDS performance.
-
-### Figures to insert
-
-- `models/trained_models/figures/binary_confusion_matrix.png`  
-- `models/trained_models/figures/binary_roc.png`  
-- `models/trained_models/figures/multiclass_confusion_matrix.png`  
-- `models/trained_models/figures/feature_importance.png`
-
-**Discussion:** Accuracy alone is insufficient under imbalance (~83% benign). High attack recall is prioritized for IDS usefulness. Stage-2 multiclass excludes BENIGN so family probabilities are conditioned on the attack branch.
+These are **IID stratified test** results on CICIDS2017. They demonstrate strong in-dataset discrimination. They are **not** a claim of real-world future performance under live traffic (see Chapters 10–11 and 14).
 
 ---
 
-## 8. Temporal generalization evaluation
+# Chapter 7 — Explainability and Risk
 
-Artifact: `models/trained_models/temporal_holdout_report.json`  
-Script: `scripts/25_temporal_holdout_eval.py` (score) · `scripts/28_plot_temporal_generalization.py` (figures)  
-Figures: `models/trained_models/figures/temporal_*.png`
+### Explainability
 
-### Experimental setup
+- **SHAP** is the primary local explainer for analyst-facing attributions.  
+- **LIME** is secondary / comparative.  
+- Explanations support **decision support**, not causal proof of attack mechanics.
 
-| Item | Definition |
-|------|------------|
-| Models | Frozen **Decision Tree** (`binary_best.joblib`) @ threshold **0.85**; frozen **Random Forest** (`multiclass_best.joblib`); shared `feature_bundle.joblib` |
-| Retrain? | **No** — day slices score the freeze artifacts only |
-| Day definition | CICIDS2017 MachineLearningCVE day-named CSVs (`Monday`…`Friday`) |
-| Sampling | Cap **12,000** rows per CSV (`research.temporal_sample_per_file` / freeze default) |
-| Friday temporal | **36,000** flows (attack rate ≈ **33.8%**) |
-| Mon–Thu reference | **60,000** flows (attack rate ≈ **6.9%**) |
-| IID reference | Full stratified test metrics from `training_report.json` (not re-sampled here) |
+### Risk score (configurable)
 
-### Why temporal holdout matters
+From `config.yaml` (conceptual blend):
 
-A stratified IID split mixes days (and scenarios) into train/val/test. That can overstate how a model behaves when the **next day’s attack mix** differs. A day-aware Friday holdout is a modest, honest check of **within-CICIDS temporal / scenario shift** — not a live network trial.
-
-### Binary: IID vs temporal
-
-| Split | n | Attack rate | Precision | Recall | F1 | ROC-AUC |
-|-------|--:|------------:|----------:|-------:|---:|--------:|
-| IID stratified test | 504,151 | ~16.9% | 0.98404 | 0.99700 | **0.99048** | 0.99916 |
-| Friday temporal sample | 36,000 | 33.8% | 0.99901 | 0.99638 | **0.99770** | 0.99983 |
-| Mon–Thu sample | 60,000 | 6.9% | 0.98631 | 0.97370 | **0.97997** | 0.99894 |
-
-**Degradation / change (IID − slice):**
-
-| Contrast | Δ F1 | Δ Recall | Notes |
-|----------|-----:|---------:|-------|
-| IID − Friday | **−0.00722** | +0.00062 | Friday F1 is *higher*; prevalence and attack mix differ |
-| IID − Mon–Thu | **+0.01051** | +0.02330 | Mild F1/recall drop on low-prevalence early-week sample |
-
-Insert: `temporal_binary_iid_vs_holdout.png`, `temporal_generalization_summary.png`.
-
-### Multiclass: IID vs temporal
-
-| Evaluation | Scope | Accuracy | Macro-F1 | Weighted-F1 |
-|------------|-------|---------:|---------:|------------:|
-| IID stratified test | **6** attack classes | 0.99979 | 0.99813 | 0.99979 |
-| Friday temporal sample | **3** present classes only | 1.00000 | 1.00000 | 1.00000 |
-
-Friday families **present:** Bot, DDoS, PortScan (supports 108 / 6915 / 5142).  
-Friday families **absent** from the scored attack subset: BruteForce, DoS, WebAttack.
-
-Mon–Thu multiclass scoring was **skipped** in the freeze run because raw day samples contained labels outside the freeze class set (e.g. `Infiltration`).
-
-Insert: `temporal_multiclass_iid_vs_holdout.png`, `temporal_friday_multiclass_confusion.png`, `temporal_friday_classwise.png`.
-
-### Interpretation
-
-1. **Binary detection remains strong** under the Friday day sample; headline F1 does not collapse relative to IID.  
-2. **Composition matters:** attack rates of 6.9% vs 33.8% change precision/recall trade-offs; do not interpret a higher Friday F1 as “better than IID” without discussing prevalence.  
-3. **Mon–Thu** shows a modest binary F1 drop (~1.05 pp) and larger recall drop (~2.3 pp) — useful evidence that day/scenario slices are not identical to the IID test.  
-4. **Friday multiclass “perfect” scores are not a six-class temporal claim** — only three families appeared in that sample after attack-only encoding.
-
-### Limitations & threats to validity
-
-- Day slices are **capped samples**, not exhaustive day populations.  
-- CICIDS2017 days are **scenario-structured**, not continuous live enterprise traffic.  
-- Multiclass temporal coverage is **incomplete** (subset of families; rare-label skip on Mon–Thu).  
-- No claim of production IDS readiness or absence of concept drift in the wild.
-
-### What this does — and does not — claim
-
-**Does claim:** Within this freeze, scoring the Decision Tree / Random Forest artifacts on day-aware CICIDS samples yields competitive binary metrics and a documented, limited multiclass temporal slice — supporting discussion of generalization **beyond the IID split**.
-
-**Does not claim:** Live-network performance, cross-organization transfer, or measured real-world mitigation.
-
-**External-dataset validation** was not performed within the current experimental scope and is identified as **future work** for assessing cross-dataset generalization.
-
----
-
-## 9. IID data-drift monitoring
-
-Artifact: `models/trained_models/drift_report.json`  
-Scripts: `scripts/20_data_drift_report.py`, `scripts/29_plot_drift_and_errors.py`  
-Figures: `drift_psi_train_vs_test.png`, `drift_label_distribution.png`
-
-### Setup
-
-| Item | Value |
-|------|--------|
-| Reference | Processed **train** (n = 1,764,525) |
-| Current | Processed **test** (n = 504,151) |
-| Scope | Stratified **IID** splits from the same CICIDS2017 corpus |
-| Features compared | 78 |
-
-### Results (freeze)
-
-| Check | Result |
-|-------|--------|
-| Features with PSI ≥ 0.2 | **None** |
-| Max listed PSI | **0.0** |
-| Label distribution Δ (percentage points) | **≈ 0** for all labels |
-| Retrain recommendation | `monitor` (`promote: false`) |
-
-### Interpretation
-
-Near-zero PSI under train→test is **expected** when both splits are stratified draws from one cleaned corpus. It is a useful integrity / monitoring check, not evidence that live traffic or another day’s scenario mix will look identical.
-
-### What this does — and does not — claim
-
-**Does claim:** Within the freeze, the IID train/test feature and label distributions show no high-PSI flags.  
-**Does not claim:** Absence of temporal, operational, or cross-dataset drift (see §8 and future work).
-
----
-
-## 10. Error analysis (residual confusions)
-
-Artifact: `models/trained_models/error_analysis_report.json`  
-Scripts: `scripts/23_error_analysis.py`, `scripts/29_plot_drift_and_errors.py`  
-Figures: `error_binary_fp_fn_counts.png`, `error_multiclass_top_confusions.png`  
-Also: IID CMs from `scripts/05_plot_evaluation.py`
-
-### Binary residuals (Decision Tree, IID test)
-
-| | Count |
-|--|------:|
-| True negatives | 417,635 |
-| False positives | **1,377** |
-| False negatives | **255** |
-| True positives | 84,884 |
-
-FPR = 0.00329 · FNR = 0.00300 · F1 = 0.99048
-
-### Multiclass residuals (Random Forest, attack-only IID test)
-
-**18** misclassifications among **85,139** attack flows. Top off-diagonal pairs:
-
-| True → Pred | Count |
-|-------------|------:|
-| PortScan → DoS | 6 |
-| PortScan → WebAttack | 3 |
-| DoS → WebAttack | 3 |
-| DoS → PortScan | 2 |
-| WebAttack → DoS | 2 |
-| WebAttack → PortScan | 1 |
-| BruteForce → DoS | 1 |
-
-Bot and DDoS show perfect diagonals on this test CM. Residual difficulty concentrates in the **PortScan / DoS / WebAttack** neighborhood — plausible given overlapping volumetric / probing behaviors in flow space.
-
-### What this does — and does not — claim
-
-**Does claim:** Residual error mass is small on the IID test set and structurally concentrated among a few family pairs.  
-**Does not claim:** Acceptable false-alarm rates under live SOC traffic, or that rare families are equally easy.
-
----
-
-## 11. Feature importance & XAI (RQ2, RQ3)
-
-- Global importance: tree importances (figure above)  
-- Local explanation (primary): **SHAP** via `POST /api/explain` `method=shap`  
-- Local explanation (secondary): **LIME** via `method=lime`  
-
-SHAP answers “which features pushed this flow toward the predicted class?”  
-LIME fits a local linear surrogate for complementary intuition. Neither proves causality; both support analyst trust.
-
----
-
-## 12. Risk & recommendations (RQ4)
-
-Attack family + confidence + optional intensity + asset criticality → risk score → severity band (LOW/MEDIUM/HIGH/CRITICAL).  
-Weights: **50% / 25% / 15% / 10%** as in §5.  
-Recommendation engine maps families to defensive playbooks (rate limiting, WAF, isolation, etc.) with explicit **advisory** disclaimer.
-
----
-
-## 13. Simulation (RQ5)
-
-State machine: `idle → normal → attack_start → attack_impact → detected → recommended → defended → recovered`  
-Rendered with React Flow. Evaluated qualitatively by whether each scenario reaches mitigation and communicates the lifecycle clearly.  
-**Simulation defense effectiveness ≠ empirically measured real-world mitigation.**
-
----
-
-## 14. Implementation
-
-| Module | Path |
-|--------|------|
-| Data prep | `ml/preprocessing/`, `scripts/01_prepare_data.py` |
-| Training | `scripts/02_train_models.py` |
-| Predict | `ml/prediction/predictor.py` |
-| SHAP / LIME | `explainability/` |
-| Risk / Recs | `security/` |
-| Simulation | `simulation/engine/core.py` |
-| Temporal eval | `scripts/25_temporal_holdout_eval.py`, `scripts/28_plot_temporal_generalization.py` |
-| Drift / errors | `scripts/20_data_drift_report.py`, `scripts/23_error_analysis.py`, `scripts/29_plot_drift_and_errors.py` |
-| Model comparison | `scripts/04_export_comparison.py`, `scripts/30_plot_model_comparison.py` |
-| API | `backend/` |
-| UI | `frontend/` |
-
-Reproduce:
-
-```bash
-python scripts/01_prepare_data.py
-python scripts/02_train_models.py
-python scripts/05_plot_evaluation.py
-python scripts/20_data_drift_report.py
-python scripts/23_error_analysis.py
-python scripts/25_temporal_holdout_eval.py   # needs MachineLearningCVE CSVs
-python scripts/28_plot_temporal_generalization.py
-python scripts/29_plot_drift_and_errors.py
-python scripts/30_plot_model_comparison.py
-uvicorn backend.main:app --port 8000
-cd frontend && npm run dev
+```text
+0.50·attack_base + 0.25·confidence·100 + 0.15·intensity·100 + 0.10·asset_criticality
 ```
 
-Or `docker compose up --build` after artifacts exist.
+Severity bands (project convention): Low / Medium / High / Critical.
+
+### Recommendations
+
+Mapped from attack family and severity to **advisory** actions (monitor, rate-limit, block source, isolate, escalate). Recommendations do **not** automatically change a live network.
 
 ---
 
-## 15. Limitations & future work
+# Chapter 8 — Attack–Defense Simulation
 
-- CICIDS2017 is dated relative to modern traffic; concept drift possible  
-- Simulation is pedagogical visualization, not a network emulator or live IDS  
-- Recommendations are rule/playbook-mapped decision support, not learned policies or auto-mitigation  
-- Calibration remains **disabled** after research trade-off (ECE vs recall/Brier); see `docs/experiments/CALIBRATION_AND_THRESHOLD.md`  
-- Temporal holdout is day-sample based within CICIDS2017 — see §8 threats to validity  
-- IID drift PSI≈0 does **not** imply live or cross-dataset stability — see §9  
-- **External-dataset validation was not performed within the current experimental scope and is identified as future work for assessing cross-dataset generalization.**  
-- Live PCAP/flow ingestion and production IAM are Stage-2 / future engineering tracks  
+Simulation is a **safe visualization** of the lifecycle on a simplified enterprise topology:
 
-See also `docs/IMPLEMENTATION_STATUS.md` and `docs/STAGE2_PRODUCTION.md`.
+```text
+idle → normal → attack_start → attack_impact → detected → recommended → defended → recovered
+```
+
+### Critical honesty
+
+Defense effectiveness values in `config.yaml` are **visualization assumptions**, for example:
+
+| Attack family | Assumed efficacy |
+|---------------|-----------------:|
+| DDoS | **0.82** |
+| DoS | **0.78** |
+| PortScan | 0.85 |
+| BruteForce | 0.88 |
+| WebAttack | 0.90 |
+| Bot | 0.92 |
+
+They are **not** empirically measured mitigation rates. Measured lab results appear only in Chapter 11 (P11).
+
+See `docs/05-simulation.md`, `scripts/27_cyber_range_sim_validate.py`.
 
 ---
 
-## 16. Conclusion
+# Chapter 9 — Controlled Response Architecture
 
-Aegis IDS demonstrates that an ML IDS becomes far more useful when coupled with explainability, risk scoring, defensive recommendations, and interactive simulation. The frozen Decision Tree + Random Forest pipeline answers not only *whether* traffic is malicious, but *what*, *why*, *how severe*, and *what an analyst might do next* — within an honest research/prototype framing that separates **IID benchmark strength**, **temporal caution**, and **residual error structure** from production-deployment claims.
+### Modes
+
+| Mode | Behavior |
+|------|----------|
+| `DRY_RUN` | Preview only; `live_network_change = false` |
+| `CONTROLLED` | In-memory `TestNetworkAdapter` only |
+| `LIVE` | **Forbidden** at propose / adapter layer |
+
+### Lifecycle
+
+```text
+propose → dry-run → approve → execute → verify → ACTIVE/VERIFIED
+                              ↘ reject
+verify failure → rollback
+expire / reclaim → safe FAILED (no auto-replay)
+```
+
+### RBAC (when auth enabled)
+
+| Role | Propose / dry-run | Approve / rollback |
+|------|-------------------|--------------------|
+| viewer | no | no |
+| analyst | yes | no |
+| responder | yes | yes |
+| admin | yes | yes |
+
+Role is bound server-side (HMAC bearer / configured API key). Clients cannot escalate via forged `actor` fields.
+
+See `docs/SECURITY_MODEL.md`.
 
 ---
 
-## Appendix A — One-sentence project definition
+# Chapter 10 — Productionization (P0–P12)
 
-> We are building an intelligent machine-learning-based intrusion detection platform that detects and classifies network attacks, explains the reasons behind its predictions, assesses their risk, recommends appropriate defensive actions, and interactively simulates the attack-to-defense lifecycle through a visual network environment.
+Engineering after the research freeze proceeded in sequenced phases on branch `productionization`, merged via PR #2:
 
-## Appendix B — Ethics & safety
+| Phase | Focus | Outcome |
+|-------|--------|---------|
+| P0 | Research baseline freeze | Tag `v1.1-research`; immutable joblibs |
+| P1 | PCAP ingestion | Validation, queue, safe reject |
+| P2 | Response approval | Propose / dry-run / approve gate |
+| P3 | Controlled adapters | `TestNetworkAdapter`; LIVE forbidden |
+| P4 | Auth / RBAC | Server-enforced roles |
+| P5 | API security | Rate limits, size caps, CORS, headers, WS auth |
+| P6 | Persistence | Durable users/actions/audit (Alembic) |
+| P7 | Observability | Structured logs, metrics, `/api/ready`, System UI |
+| P8 | Performance | Measured envelope; ML not primary bottleneck |
+| P9 | Failure recovery / DR | Reclaim without auto-replay; backup/restore |
+| P10 | Generalization | Temporal holdout + PSI honesty (`GENERALIZATION.md`) |
+| P11 | Empirical mitigation | CONTROLLED lab measurements |
+| P12 | Final security validation | Overall **PASS** |
 
-No real attacks are launched. Defenses are not auto-executed against production networks.
+Post-merge verification on `main`: `docs/POST_MERGE_VERIFICATION.md` (**PASS**).  
+Release tag: **`v2.0-aegis-productionized`**.
+
+**No phase modified frozen `v1.1-research` model artifacts or published IID metrics.**
+
+---
+
+# Chapter 11 — Empirical Mitigation (P11)
+
+### Purpose
+
+Replace *simulation-only* defense-effectiveness **claims** with **measurements** from an isolated CONTROLLED lab—without removing the simulation, and without connecting real firewall/EDR.
+
+### Protocol (summary)
+
+```text
+Controlled synthetic traffic
+    → Aegis detection (frozen ML preferred)
+    → Conditions: no_defense | recommendation_only | controlled_response
+    → Approve → TestNetworkAdapter → traffic_decision gate
+    → Measure pre/post windows; repeat N=10
+```
+
+### Results (10 repetitions)
+
+| Scenario | No defense / recommendation-only blocked rate | Controlled response | **Measured effectiveness** | Simulation prior | Δ (meas − sim) |
+|----------|-----------------------------------------------:|--------------------:|---------------------------:|-----------------:|---------------:|
+| DDoS `BLOCK_SOURCE` | 0.00 | **1.00** | **1.00 ± 0** | 0.82 | **+0.18** |
+| DoS `RATE_LIMIT` | 0.00 | **0.80** | **0.80 ± 0** | 0.78 | **+0.02** |
+
+### How to cite
+
+> Under the tested controlled environment and scenario, the measured outcome was **1.00** (DDoS block) and **0.80** (DoS rate-limit), with the limitations below. Simulation priors **0.82** / **0.78** remain labelled assumptions and were **not** overwritten.
+
+### Limitations (P11)
+
+- CONTROLLED adapter only — **not** production firewall/EDR effectiveness.  
+- In-process synthetic connection attempts, not NIC packets.  
+- Hard `BLOCK_SOURCE` yields effectiveness 1.0 by construction of the test gate—validates the measurement framework more than claiming live block rates.  
+
+Full write-up: `docs/EMPIRICAL_MITIGATION.md` (EXP-018 / EXP-019).
+
+---
+
+# Chapter 12 — Security Validation (P12)
+
+P12 did **not** add product features; it validated the closed system.
+
+```text
+Authentication/RBAC       PASS
+Response safety           PASS
+API/input security        PASS
+Persistence/recovery      PASS
+Model-serving safety      PASS
+Simulation isolation      PASS
+Empirical mitigation      PASS
+Audit integrity           PASS
+Production boundary       PASS
+Frozen research baseline  PASS
+
+Overall: PASS
+```
+
+Artifact: `reports/final_security_validation_report.json`.  
+Docs: `FINAL_SECURITY_VALIDATION.md`, `SECURITY_MODEL.md`, `PRODUCTION_READINESS.md`.
+
+Frozen joblib SHA-256[:16] hashes match `model_metadata.json` (`binary_best`, `multiclass_best`, `feature_bundle`).
+
+---
+
+# Chapter 13 — Results and Discussion
+
+### A. Research detection (IID)
+
+Strong discrimination on CICIDS2017 stratified test: binary F1 **0.99048**, multiclass macro-F1 **0.99813**. Residual multiclass confusion (rare) concentrates among PortScan / DoS / WebAttack (`ERROR_ANALYSIS.md`).
+
+### B. Temporal generalization (P10)
+
+| Slice | Binary F1 | Notes |
+|-------|----------:|-------|
+| IID test | 0.99048 | Official stratified score |
+| Friday sample | 0.99770 | Δ F1 (IID−Fri) = **−0.00722**; higher attack rate (~34%) |
+| Mon–Thu sample | 0.97997 | Δ F1 = **+0.01051** (degradation) |
+
+Friday multiclass perfect scores cover only **Bot / DDoS / PortScan** present in that sample—not six-class temporal proof.
+
+**IID drift:** no feature with PSI ≥ 0.2 under stratified train→test.  
+**Temporal PSI:** max **0.2354** (2 features ≥ 0.2). Wording: *no feature exceeded the PSI threshold in the IID comparison*—**not** “there is no drift.”
+
+### C. Simulation vs empirical
+
+Simulation priors and P11 measurements must be cited **side by side**, never collapsed.
+
+### D. Productionization value
+
+P0–P12 transforms a research classifier pipeline into a **prototype SOC workflow** with auditability, RBAC, fail-safe recovery, and an explicit non-live enforcement boundary—without inflating research metrics.
+
+---
+
+# Chapter 14 — Limitations
+
+1. **Benchmark ≠ production traffic.** CICIDS2017 IID scores do not guarantee live performance.  
+2. **No zero-day / unknown-class claim.** Held-out unknown detection is future / separate work.  
+3. **External-dataset validation skipped** (compatible CSE-CIC-IDS2018 not present).  
+4. **Temporal multiclass incomplete** for BruteForce / DoS / WebAttack on Friday sample.  
+5. **Simulation efficacy is assumed**, not measured.  
+6. **P11 is a CONTROLLED lab**, not real firewall/EDR.  
+7. **No unsupervised live response**; LIVE mode forbidden.  
+8. **PCAP path** depends on optional cicflowmeter; without it, extraction is unavailable (fail closed).  
+9. **Auth may be off** in research demos; hardened demos should enable it.  
+10. **Not an enterprise SOC** (no SLA, no HA cluster claim, no full SOAR integration).
+
+---
+
+# Chapter 15 — Future Work
+
+1. Compatible cross-dataset evaluation under **frozen** preprocessing (no retrain-and-claim).  
+2. Broader temporal multiclass coverage across all six families.  
+3. Sandbox / opt-in real enforcement adapters **only after** CONTROLLED measurement maturity, with the same approval/verify/rollback model.  
+4. Online drift monitoring against live feature streams (beyond IID PSI).  
+5. Richer analyst UX / case management while preserving advisory-first defaults.  
+6. Optional unknown-class / novelty detection as a **separate** experiment (do not retune the freeze on that holdout).
+
+---
+
+# Chapter 16 — Conclusion
+
+Aegis IDS delivers a coherent story from **detection → explanation → risk → recommendation → controlled response → simulation → productionization**, with reproducible frozen metrics and an explicit safety boundary.
+
+The academically strongest position is:
+
+- Research: strong CICIDS2017 IID and documented temporal evaluation of **frozen** models.  
+- Engineering: P0–P12 productionized prototype with P12 security validation **PASS**.  
+- Empirics: CONTROLLED-lab mitigation measurements reported **beside** (not replacing) simulation assumptions.  
+- Honesty: no live-enforcement claim, no enterprise SLA claim, no zero-day guarantee.
+
+Together, tags **`v1.1-research`** and **`v2.0-aegis-productionized`** provide clear provenance for examination, demonstration, and viva.
+
+---
+
+# References
+
+1. I. Sharafaldin, A. H. Lashkari, and A. A. Ghorbani, “Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization,” *ICISSP*, 2018.  
+2. Canadian Institute for Cybersecurity, “Intrusion Detection Evaluation Dataset (CIC-IDS2017),” University of New Brunswick. https://www.unb.ca/cic/datasets/ids-2017.html  
+3. S. M. Lundberg and S.-I. Lee, “A Unified Approach to Interpreting Model Predictions,” *NeurIPS*, 2017.  
+4. M. T. Ribeiro, S. Singh, and C. Guestrin, “‘Why Should I Trust You?’ Explaining the Predictions of Any Classifier,” *KDD*, 2016.  
+5. T. Chen and C. Guestrin, “XGBoost: A Scalable Tree Boosting System,” *KDD*, 2016.  
+6. R. Sommer and V. Paxson, “Outside the Closed World: On Using Machine Learning for Network Intrusion Detection,” *IEEE S&P*, 2010.  
+7. A. L. Buczak and E. Guven, “A Survey of Data Mining and Machine Learning Methods for Cyber Security Intrusion Detection,” *IEEE Communications Surveys & Tutorials*, 2016.  
+8. H.-J. Liao et al., “Intrusion Detection System: A Comprehensive Review,” *JNCA*, 2013.  
+9. D. Gunning and D. Aha, “DARPA’s Explainable Artificial Intelligence (XAI) Program,” *AI Magazine*, 2019.  
+10. N. Moustafa and J. Slay, “UNSW-NB15…,” *MilCIS*, 2015.  
+
+*(Add institution-required citation style and any guide-mandated papers.)*
+
+---
+
+# Team Contribution
+
+Suggested three-member ownership (everyone should still understand the full pipeline for viva)—see `docs/TEAM.md`:
+
+| Member focus | Primary ownership |
+|--------------|-------------------|
+| **ML / Data** | CICIDS loading, features, training, IID/temporal metrics, notebooks |
+| **Security intelligence** | SHAP/LIME, risk, recommendations, incidents, response safety narrative |
+| **Application / simulation** | FastAPI, React SOC UI, simulation engine, demo ops, Docker |
+
+Repository / release: Nelluri Dolendra Sai Teja — GitHub `Dolendra` · tags `v1.1-research`, `v2.0-aegis-productionized`.
+
+*(Replace with your institution’s exact author list and contribution percentages as required.)*
+
+---
+
+# Appendices
+
+### A. Artifact index (selected)
+
+| Artifact | Path |
+|----------|------|
+| Model metadata | `models/trained_models/model_metadata.json` |
+| Training report | `models/trained_models/training_report.json` |
+| Generalization (P10) | `models/trained_models/generalization_report.json` · `docs/GENERALIZATION.md` |
+| Empirical (P11) | `models/trained_models/empirical_mitigation_report.json` · `docs/EMPIRICAL_MITIGATION.md` |
+| Security validation (P12) | `reports/final_security_validation_report.json` |
+| Post-merge verification | `docs/POST_MERGE_VERIFICATION.md` |
+| Demo script | `docs/DEMO.md` |
+| Viva Q&A | `docs/VIVA_QA.md` |
+
+### B. Figures to insert in Word/LaTeX
+
+- `binary_confusion_matrix.png`, `binary_roc.png`, `feature_importance.png`  
+- `multiclass_confusion_matrix.png`  
+- `temporal_*.png` (Friday holdout)  
+- `drift_psi_train_vs_test.png`  
+- Architecture: `docs/architecture.png`
+
+### C. How to regenerate key reports
+
+```bash
+python scripts/41_generalization_report.py
+python scripts/42_empirical_mitigation_experiment.py --repetitions 10
+python scripts/43_final_security_validation.py
+```
+
+---
+
+*End of final project report (repository-aligned, v2.0-aegis-productionized).*

@@ -13,10 +13,15 @@
 | [DEMO.md](DEMO.md) | Timed 5–10 min live demo script |
 | [VIVA_QA.md](VIVA_QA.md) | Viva Q&A pack (ML / cyber / XAI / research / architecture) |
 | [PRESENTATION.md](PRESENTATION.md) | Slide outline synced to frozen DT/RF metrics |
-| [PROJECT_REPORT.md](PROJECT_REPORT.md) | Full report draft (RQ1–RQ5 + temporal/drift/errors) |
+| [PROJECT_REPORT.md](PROJECT_REPORT.md) | **Final project report** (Ch. 1–16; research vs simulation vs P11 lab) |
+| [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) | What “productionized” means / hard boundaries |
+| [GENERALIZATION.md](GENERALIZATION.md) | P10 temporal generalization |
+| [EMPIRICAL_MITIGATION.md](EMPIRICAL_MITIGATION.md) | P11 controlled-lab measurements |
+| [FINAL_SECURITY_VALIDATION.md](FINAL_SECURITY_VALIDATION.md) | P12 security validation PASS |
+| [POST_MERGE_VERIFICATION.md](POST_MERGE_VERIFICATION.md) | Post-merge `main` verification |
 | [TEAM.md](TEAM.md) | 3-member viva ownership |
 | [architecture.svg](architecture.svg) | Architecture diagram |
 | [CHECKLIST.md](CHECKLIST.md) | Submission checklist |
-| [STAGE2_PRODUCTION.md](STAGE2_PRODUCTION.md) | Stage-2 productionization roadmap (side branch) |
-| [Aegis_IDS_Project_Report.docx](Aegis_IDS_Project_Report.docx) | Word report export |
-| [Aegis_IDS_Viva_Presentation.pptx](Aegis_IDS_Viva_Presentation.pptx) | Viva PowerPoint (if generated) |
+| [STAGE2_PRODUCTION.md](STAGE2_PRODUCTION.md) | Stage-2 notes (historical) |
+| [Aegis_IDS_Project_Report.docx](Aegis_IDS_Project_Report.docx) | Older Word export — prefer PROJECT_REPORT.md |
+| [Aegis_IDS_Viva_Presentation.pptx](Aegis_IDS_Viva_Presentation.pptx) | Viva PowerPoint (regenerate from PRESENTATION.md) |

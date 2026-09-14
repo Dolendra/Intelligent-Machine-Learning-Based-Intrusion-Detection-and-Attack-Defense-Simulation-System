@@ -48,6 +48,7 @@ cd frontend && npm install && npm run dev
 - UI: http://127.0.0.1:5173/  
 - API docs: http://127.0.0.1:8000/docs  
 - Demo script: [`docs/DEMO.md`](docs/DEMO.md)
+- **Final project report:** [`docs/PROJECT_REPORT.md`](docs/PROJECT_REPORT.md) (aligned to `v2.0-aegis-productionized`)
 - Optional env overrides: copy `.env.example` → `.env`
 
 ### Docker (after models are trained)
