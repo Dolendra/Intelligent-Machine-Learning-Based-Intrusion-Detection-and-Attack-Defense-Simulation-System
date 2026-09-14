@@ -242,7 +242,83 @@ Insert: `temporal_multiclass_iid_vs_holdout.png`, `temporal_friday_multiclass_co
 
 ---
 
-## 9. Feature importance & XAI (RQ2, RQ3)
+## 9. IID data-drift monitoring
+
+Artifact: `models/trained_models/drift_report.json`  
+Scripts: `scripts/20_data_drift_report.py`, `scripts/29_plot_drift_and_errors.py`  
+Figures: `drift_psi_train_vs_test.png`, `drift_label_distribution.png`
+
+### Setup
+
+| Item | Value |
+|------|--------|
+| Reference | Processed **train** (n = 1,764,525) |
+| Current | Processed **test** (n = 504,151) |
+| Scope | Stratified **IID** splits from the same CICIDS2017 corpus |
+| Features compared | 78 |
+
+### Results (freeze)
+
+| Check | Result |
+|-------|--------|
+| Features with PSI ≥ 0.2 | **None** |
+| Max listed PSI | **0.0** |
+| Label distribution Δ (percentage points) | **≈ 0** for all labels |
+| Retrain recommendation | `monitor` (`promote: false`) |
+
+### Interpretation
+
+Near-zero PSI under train→test is **expected** when both splits are stratified draws from one cleaned corpus. It is a useful integrity / monitoring check, not evidence that live traffic or another day’s scenario mix will look identical.
+
+### What this does — and does not — claim
+
+**Does claim:** Within the freeze, the IID train/test feature and label distributions show no high-PSI flags.  
+**Does not claim:** Absence of temporal, operational, or cross-dataset drift (see §8 and future work).
+
+---
+
+## 10. Error analysis (residual confusions)
+
+Artifact: `models/trained_models/error_analysis_report.json`  
+Scripts: `scripts/23_error_analysis.py`, `scripts/29_plot_drift_and_errors.py`  
+Figures: `error_binary_fp_fn_counts.png`, `error_multiclass_top_confusions.png`  
+Also: IID CMs from `scripts/05_plot_evaluation.py`
+
+### Binary residuals (Decision Tree, IID test)
+
+| | Count |
+|--|------:|
+| True negatives | 417,635 |
+| False positives | **1,377** |
+| False negatives | **255** |
+| True positives | 84,884 |
+
+FPR = 0.00329 · FNR = 0.00300 · F1 = 0.99048
+
+### Multiclass residuals (Random Forest, attack-only IID test)
+
+**18** misclassifications among **85,139** attack flows. Top off-diagonal pairs:
+
+| True → Pred | Count |
+|-------------|------:|
+| PortScan → DoS | 6 |
+| PortScan → WebAttack | 3 |
+| DoS → WebAttack | 3 |
+| DoS → PortScan | 2 |
+| WebAttack → DoS | 2 |
+| WebAttack → PortScan | 1 |
+| BruteForce → DoS | 1 |
+
+Bot and DDoS show perfect diagonals on this test CM. Residual difficulty concentrates in the **PortScan / DoS / WebAttack** neighborhood — plausible given overlapping volumetric / probing behaviors in flow space.
+
+### What this does — and does not — claim
+
+**Does claim:** Residual error mass is small on the IID test set and structurally concentrated among a few family pairs.  
+**Does not claim:** Acceptable false-alarm rates under live SOC traffic, or that rare families are equally easy.
+
+---
+
+## 11. Feature importance & XAI (RQ2, RQ3)
 
 - Global importance: tree importances (figure above)  
 - Local explanation (primary): **SHAP** via `POST /api/explain` `method=shap`  
@@ -253,7 +329,7 @@ LIME fits a local linear surrogate for complementary intuition. Neither proves c
 
 ---
 
-## 10. Risk & recommendations (RQ4)
+## 12. Risk & recommendations (RQ4)
 
 Attack family + confidence + optional intensity + asset criticality → risk score → severity band (LOW/MEDIUM/HIGH/CRITICAL).  
 Weights: **50% / 25% / 15% / 10%** as in §5.  
@@ -261,7 +337,7 @@ Recommendation engine maps families to defensive playbooks (rate limiting, WAF, 
 
 ---
 
-## 11. Simulation (RQ5)
+## 13. Simulation (RQ5)
 
 State machine: `idle → normal → attack_start → attack_impact → detected → recommended → defended → recovered`  
 Rendered with React Flow. Evaluated qualitatively by whether each scenario reaches mitigation and communicates the lifecycle clearly.  
@@ -269,7 +345,7 @@ Rendered with React Flow. Evaluated qualitatively by whether each scenario reach
 
 ---
 
-## 12. Implementation
+## 14. Implementation
 
 | Module | Path |
 |--------|------|
@@ -280,6 +356,7 @@ Rendered with React Flow. Evaluated qualitatively by whether each scenario reach
 | Risk / Recs | `security/` |
 | Simulation | `simulation/engine/core.py` |
 | Temporal eval | `scripts/25_temporal_holdout_eval.py`, `scripts/28_plot_temporal_generalization.py` |
+| Drift / errors | `scripts/20_data_drift_report.py`, `scripts/23_error_analysis.py`, `scripts/29_plot_drift_and_errors.py` |
 | API | `backend/` |
 | UI | `frontend/` |
 
@@ -289,8 +366,11 @@ Reproduce:
 python scripts/01_prepare_data.py
 python scripts/02_train_models.py
 python scripts/05_plot_evaluation.py
+python scripts/20_data_drift_report.py
+python scripts/23_error_analysis.py
 python scripts/25_temporal_holdout_eval.py   # needs MachineLearningCVE CSVs
 python scripts/28_plot_temporal_generalization.py
+python scripts/29_plot_drift_and_errors.py
 uvicorn backend.main:app --port 8000
 cd frontend && npm run dev
 ```
@@ -299,13 +379,14 @@ Or `docker compose up --build` after artifacts exist.
 
 ---
 
-## 13. Limitations & future work
+## 15. Limitations & future work
 
 - CICIDS2017 is dated relative to modern traffic; concept drift possible  
 - Simulation is pedagogical visualization, not a network emulator or live IDS  
 - Recommendations are rule/playbook-mapped decision support, not learned policies or auto-mitigation  
 - Calibration remains **disabled** after research trade-off (ECE vs recall/Brier); see `docs/experiments/CALIBRATION_AND_THRESHOLD.md`  
 - Temporal holdout is day-sample based within CICIDS2017 — see §8 threats to validity  
+- IID drift PSI≈0 does **not** imply live or cross-dataset stability — see §9  
 - **External-dataset validation was not performed within the current experimental scope and is identified as future work for assessing cross-dataset generalization.**  
 - Live PCAP/flow ingestion and production IAM are Stage-2 / future engineering tracks  
 
@@ -313,9 +394,9 @@ See also `docs/IMPLEMENTATION_STATUS.md` and `docs/STAGE2_PRODUCTION.md`.
 
 ---
 
-## 14. Conclusion
+## 16. Conclusion
 
-Aegis IDS demonstrates that an ML IDS becomes far more useful when coupled with explainability, risk scoring, defensive recommendations, and interactive simulation. The frozen Decision Tree + Random Forest pipeline answers not only *whether* traffic is malicious, but *what*, *why*, *how severe*, and *what an analyst might do next* — within an honest research/prototype framing that separates **IID benchmark strength** from **temporal / deployment-domain caution**.
+Aegis IDS demonstrates that an ML IDS becomes far more useful when coupled with explainability, risk scoring, defensive recommendations, and interactive simulation. The frozen Decision Tree + Random Forest pipeline answers not only *whether* traffic is malicious, but *what*, *why*, *how severe*, and *what an analyst might do next* — within an honest research/prototype framing that separates **IID benchmark strength**, **temporal caution**, and **residual error structure** from production-deployment claims.
 
 ---
 

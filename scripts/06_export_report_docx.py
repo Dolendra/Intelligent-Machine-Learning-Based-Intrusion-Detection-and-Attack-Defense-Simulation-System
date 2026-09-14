@@ -120,6 +120,11 @@ def main() -> None:
         ("temporal_friday_multiclass_confusion.png", "Figure C7. Friday temporal multiclass confusion matrix (present families)"),
         ("temporal_friday_classwise.png", "Figure C8. Friday temporal class-wise support vs F1"),
         ("temporal_generalization_summary.png", "Figure C9. Temporal generalization summary card"),
+        ("drift_psi_train_vs_test.png", "Figure C10. Feature PSI train→test (IID drift check)"),
+        ("drift_label_distribution.png", "Figure C11. Label distribution train vs test (IID)"),
+        ("error_binary_fp_fn_counts.png", "Figure C12. Binary FP/FN residual counts (IID test)"),
+        ("error_multiclass_top_confusions.png", "Figure C13. Top multiclass residual confusions"),
+        ("drift_error_research_summary.png", "Figure C14. Drift + error research summary card"),
     ]:
         path = figures / name
         if path.exists():

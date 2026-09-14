@@ -356,5 +356,62 @@
         ]
       ]
     }
+  },
+  "summary": {
+    "binary_best": "decision_tree",
+    "multiclass_best": "random_forest",
+    "binary_test_errors": {
+      "false_positives": 1377,
+      "false_negatives": 255,
+      "true_positives": 84884,
+      "true_negatives": 417635,
+      "fpr": 0.003286302062948078,
+      "fnr": 0.0029951021271097853,
+      "f1": 0.9904784130688448
+    },
+    "multiclass_off_diagonal": [
+      {
+        "count": 6,
+        "true": "PortScan",
+        "pred": "DoS"
+      },
+      {
+        "count": 3,
+        "true": "DoS",
+        "pred": "WebAttack"
+      },
+      {
+        "count": 3,
+        "true": "PortScan",
+        "pred": "WebAttack"
+      },
+      {
+        "count": 2,
+        "true": "DoS",
+        "pred": "PortScan"
+      },
+      {
+        "count": 2,
+        "true": "WebAttack",
+        "pred": "DoS"
+      },
+      {
+        "count": 1,
+        "true": "BruteForce",
+        "pred": "DoS"
+      },
+      {
+        "count": 1,
+        "true": "WebAttack",
+        "pred": "PortScan"
+      }
+    ],
+    "multiclass_off_diagonal_total": 18,
+    "multiclass_n_attacks": 85139,
+    "notes": [
+      "Error counts come from the frozen IID test split in training_report.json.",
+      "Dominant residual family confusions involve PortScan / DoS / WebAttack.",
+      "This is residual-error characterization, not a claim of zero operational risk."
+    ]
   }
 }

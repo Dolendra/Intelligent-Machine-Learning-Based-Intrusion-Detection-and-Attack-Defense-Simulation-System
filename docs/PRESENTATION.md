@@ -48,32 +48,39 @@ Use this as a PowerPoint/Google Slides skeleton. Keep each slide sparse; demo li
 - Figures: `temporal_binary_iid_vs_holdout.png`, `temporal_generalization_summary.png`
 - Message: IID strength ≠ automatic temporal / live generalization
 
-## Slide 9 — Explainability (RQ2/RQ3)
+## Slide 9 — Drift & residual errors **[RESEARCH]**
+- IID train→test drift: **0** features with PSI ≥ 0.2 (expected under stratified same-corpus split)
+- Binary residuals: FP **1,377** · FN **255** (FPR 0.00329 / FNR 0.00300)
+- Multiclass: **18** errors / 85,139 attacks — mainly PortScan / DoS / WebAttack
+- Message: PSI≈0 ≠ live drift absence; residual family confusions remain
+
+## Slide 10 — Explainability (RQ2/RQ3)
 - SHAP primary · LIME secondary
 - Live: Detection → Why? tabs
 
-## Slide 10 — Risk & recommendations (RQ4)
+## Slide 11 — Risk & recommendations (RQ4)
 - Risk weights: 50% attack · 25% confidence · 15% intensity · 10% asset
 - Advisory playbooks (not auto-blocking)
 
-## Slide 11 — Simulation (RQ5) **[LIVE DEMO]**
+## Slide 12 — Simulation (RQ5) **[LIVE DEMO]**
 - Topology · attack surge · IDS alert · defense · recover
 - Safety: visualization only; efficacy values are assumptions
 
-## Slide 12 — Limitations & threats to validity
+## Slide 13 — Limitations & threats to validity
 - CICIDS2017 age / scenario structure (not continuous enterprise traffic)
 - Temporal slices are capped samples; multiclass temporal coverage incomplete
+- IID drift check ≠ temporal/live/cross-dataset drift
 - Simulation efficacy = assumptions; recommendations = advisory
 - **External-dataset validation = future work** (not fabricated)
 - Not a claim of production IDS readiness
 
-## Slide 13 — Contribution
+## Slide 14 — Contribution
 - Contribution: **integration** + honest evaluation framing, not a new algorithm claim
 - Research baseline frozen; Stage-2 productionization is a separate track
 
-## Slide 14 — Q&A
+## Slide 15 — Q&A
 - Point to `docs/DEMO.md` talking points
-- Frozen artifacts: `model_metadata.json` / `training_report.json` / `temporal_holdout_report.json`
+- Frozen artifacts: `model_metadata.json` / `training_report.json` / `temporal_holdout_report.json` / `drift_report.json`
 
 ---
 
@@ -81,7 +88,7 @@ Use this as a PowerPoint/Google Slides skeleton. Keep each slide sparse; demo li
 | Segment | Time |
 |---------|------|
 | Slides 1–7 | 3 min |
-| Slide 8 (temporal) | 1 min |
+| Slides 8–9 (temporal + drift/errors) | 1.5 min |
 | Live demo | 3–4 min |
-| Slides 12–14 | 1–2 min |
+| Slides 13–15 | 1–2 min |
 | Buffer / questions | rest |
