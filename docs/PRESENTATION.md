@@ -1,6 +1,12 @@
-# Aegis IDS — Viva / Presentation Outline (8–14 slides)
+# Aegis IDS — Viva / Presentation Outline (15 slides)
 
-Use this as a PowerPoint/Google Slides skeleton. Keep each slide sparse; demo live where marked.  
+Use this as a PowerPoint/Google Slides skeleton, or regenerate:
+
+```bash
+python scripts/08_export_presentation_pptx.py
+# → docs/Aegis_IDS_Viva_Presentation.pptx
+```
+
 **Frozen models (v1.1):** Binary **Decision Tree** @ **0.85** · Multiclass **Random Forest** (six attack families, no BENIGN).
 
 ---
