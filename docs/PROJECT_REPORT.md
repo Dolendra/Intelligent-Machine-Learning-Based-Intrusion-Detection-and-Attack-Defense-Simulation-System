@@ -392,6 +392,7 @@ python scripts/23_error_analysis.py
 python scripts/25_temporal_holdout_eval.py   # needs MachineLearningCVE CSVs
 python scripts/28_plot_temporal_generalization.py
 python scripts/29_plot_drift_and_errors.py
+python scripts/30_plot_model_comparison.py
 uvicorn backend.main:app --port 8000
 cd frontend && npm run dev
 ```
