@@ -136,9 +136,15 @@ def security_status():
             "controlled_test_adapter": True,
             "live_firewall_edr": False,
         },
-        "database": database_info(),
+        "database": {
+            **database_info(),
+            "persistence": __import__(
+                "database.retention", fromlist=["persistence_summary"]
+            ).persistence_summary(),
+        },
         "rbac": rbac_summary(),
         "notes": [
+            "P6: users, response actions, audit, incidents, and simulations survive restarts.",
             "P5: rate limiting and request-size limits are ON by default for sensitive paths.",
             "CI/local load tests may set DISABLE_RATE_LIMIT=true.",
             "Enable api.auth.enabled or AEGIS_AUTH_ENABLED=true for P4 authentication/RBAC.",
@@ -147,7 +153,7 @@ def security_status():
             "P3: adapter contract + TestNetworkAdapter; LIVE firewall/EDR still forbidden.",
             "/api/metrics is in-process only (resets on restart); not a multi-node SRE stack.",
             "Cyber-range validation checks the simulation state machine — not a physical range or real defense efficacy.",
-            "PostgreSQL is optional via IDS_DB_URL; SQLite remains the default.",
+            "PostgreSQL is optional via IDS_DB_URL; SQLite remains the default. Backups are P9.",
         ],
     }
 

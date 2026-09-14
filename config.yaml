@@ -162,8 +162,17 @@ api:
     default_role: "analyst"
     enforce_rbac: true
 
-# Stage-2 Phase C: optional durable DB. Default empty → local SQLite file.
+# Stage-2 Phase C / P6: durable DB. Default empty → local SQLite file.
 # Example: postgresql+psycopg://aegis:aegis@localhost:5432/aegis
 database:
   url: ""
   dialect_note: "sqlite default for research baseline; set IDS_DB_URL for PostgreSQL"
+  # Retention rationale: audit/incidents are security evidence (long);
+  # simulations are operational (shorter); raw PCAP is filesystem TTL (short).
+  retention:
+    audit_days: 365
+    incidents_days: 365
+    alerts_days: 365
+    simulations_days: 90
+    raw_pcap_hours: 24
+    temp_files_hours: 1

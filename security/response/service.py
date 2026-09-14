@@ -8,7 +8,7 @@ from security.response.adapters.base import AdapterError
 from security.response.adapters.live_forbidden import LiveAdapterForbiddenError
 from security.response.adapters.reversibility import inverse_action, is_reversible
 from security.response.planner import build_proposal_fields
-from security.response.store import new_action_id, response_store
+from security.response.store import ResponseStoreError, new_action_id, response_store
 from security.response.types import (
     ALLOWED_ACTION_TYPES,
     ALLOWED_MODES,
@@ -19,6 +19,11 @@ from security.response.types import (
     utc_now,
     utc_now_iso,
 )
+
+
+def _from_store_error(exc: ResponseStoreError) -> ResponseError:
+    status = 404 if exc.code == "NOT_FOUND" else 409
+    return ResponseError(exc.code, exc.message, http_status=status)
 
 
 class ResponseError(Exception):
@@ -179,27 +184,28 @@ def run_dry_run(action_id: str, *, actor: str | None = "analyst") -> dict[str, A
 
 
 def approve_action(action_id: str, *, actor: str | None = "responder") -> dict[str, Any]:
-    action = response_store.get(action_id)
-    if action is None:
+    existing = response_store.get(action_id)
+    if existing is None:
         raise ResponseError("NOT_FOUND", f"Unknown action {action_id}", http_status=404)
-    if action.status == ActionStatus.REJECTED.value:
+    if existing.status == ActionStatus.REJECTED.value:
         raise ResponseError("REJECTED", "Rejected actions cannot be approved", http_status=409)
-    if action.status != ActionStatus.PROPOSED.value:
-        raise ResponseError(
-            "ALREADY_DECIDED",
-            f"Action is '{action.status}'; cannot approve twice",
-            http_status=409,
+    try:
+        action = response_store.claim_status(
+            action_id,
+            expected=ActionStatus.PROPOSED.value,
+            new_status=ActionStatus.APPROVED.value,
+            audit_event="approved",
+            actor=actor,
+            detail={
+                "mode": existing.mode,
+                "adapter": existing.adapter,
+                "live_network_change": False,
+            },
+            approved_at=utc_now_iso(),
+            approved_by=actor,
         )
-
-    action.status = ActionStatus.APPROVED.value
-    action.approved_at = utc_now_iso()
-    action.approved_by = actor
-    response_store.append_audit(
-        action,
-        event="approved",
-        actor=actor,
-        detail={"mode": action.mode, "adapter": action.adapter, "live_network_change": False},
-    )
+    except ResponseStoreError as exc:
+        raise _from_store_error(exc) from exc
     exec_result = _execute_with_adapter(action, actor=actor)
     return {"ok": True, "action": action.as_dict(), "execution": exec_result}
 
@@ -210,25 +216,21 @@ def reject_action(
     actor: str | None = "responder",
     reason: str | None = None,
 ) -> dict[str, Any]:
-    action = response_store.get(action_id)
-    if action is None:
-        raise ResponseError("NOT_FOUND", f"Unknown action {action_id}", http_status=404)
-    if action.status != ActionStatus.PROPOSED.value:
-        raise ResponseError(
-            "ALREADY_DECIDED",
-            f"Action is '{action.status}'; cannot reject",
-            http_status=409,
+    rejection_reason = reason or "Rejected by analyst"
+    try:
+        action = response_store.claim_status(
+            action_id,
+            expected=ActionStatus.PROPOSED.value,
+            new_status=ActionStatus.REJECTED.value,
+            audit_event="rejected",
+            actor=actor,
+            detail={"reason": rejection_reason, "executed": False},
+            rejected_at=utc_now_iso(),
+            rejected_by=actor,
+            rejection_reason=rejection_reason,
         )
-    action.status = ActionStatus.REJECTED.value
-    action.rejected_at = utc_now_iso()
-    action.rejected_by = actor
-    action.rejection_reason = reason or "Rejected by analyst"
-    response_store.append_audit(
-        action,
-        event="rejected",
-        actor=actor,
-        detail={"reason": action.rejection_reason, "executed": False},
-    )
+    except ResponseStoreError as exc:
+        raise _from_store_error(exc) from exc
     return {"ok": True, "action": action.as_dict(), "executed": False}
 
 
@@ -517,12 +519,14 @@ def propose_from_incident(
 def response_capabilities() -> dict[str, Any]:
     return {
         "phase": "P3",
+        "persistence_phase": "P6",
         "mode_default": ExecutionMode.DRY_RUN.value,
         "modes_allowed": sorted(ALLOWED_MODES),
         "live_mitigation": False,
         "action_types": sorted(ALLOWED_ACTION_TYPES),
         "lifecycle": [s.value for s in ActionStatus],
         "adapters": list_adapters(),
+        "persistence": True,
         "endpoints": {
             "propose": "/api/response/actions/propose",
             "dry_run": "/api/response/actions/{id}/dry-run",
@@ -534,10 +538,12 @@ def response_capabilities() -> dict[str, Any]:
             "list": "/api/response/actions",
         },
         "notes": [
+            "P6 persists response actions and append-only audit across restarts.",
             "P3 adds adapter contract + TestNetworkAdapter (simulated control plane).",
             "DRY_RUN and CONTROLLED are allowed; LIVE / firewall / EDR remain forbidden.",
             "Verification failure triggers automatic rollback when the action is reversible.",
             "Time-bound ACTIVE actions can expire and clean up via rollback.",
+            "Duplicate approve/reject is rejected via atomic status claim.",
         ],
     }
 

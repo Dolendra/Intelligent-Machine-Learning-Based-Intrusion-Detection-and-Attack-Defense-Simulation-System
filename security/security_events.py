@@ -1,4 +1,4 @@
-"""Structured security-boundary audit events (P5)."""
+"""Structured security-boundary audit events (P5) — durable append-only rows (P6)."""
 from __future__ import annotations
 
 import json
@@ -37,4 +37,27 @@ def security_event(
         payload["detail"] = detail
     clean = {k: v for k, v in payload.items() if v is not None}
     logger.warning("security_event %s", json.dumps(clean, separators=(",", ":")))
+    try:
+        from database.db import SecurityAuditEvent, SessionLocal
+
+        with SessionLocal() as db:
+            db.add(
+                SecurityAuditEvent(
+                    event=event,
+                    timestamp=str(payload["ts"]),
+                    request_id=request_id,
+                    path=path,
+                    method=method,
+                    code=code,
+                    user=user,
+                    role=role,
+                    client=client,
+                    phase="P5",
+                    detail_json=json.dumps(detail, separators=(",", ":")) if detail else None,
+                )
+            )
+            db.commit()
+    except Exception:  # noqa: BLE001
+        # Never fail the request path if audit persistence is unavailable
+        logger.debug("security_event persistence skipped", exc_info=True)
     return clean

@@ -25,12 +25,10 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def _reset():
-    response_store._actions.clear()
-    response_store._order.clear()
+    response_store.clear()
     reset_test_adapter()
     yield
-    response_store._actions.clear()
-    response_store._order.clear()
+    response_store.clear()
     reset_test_adapter()
 
 
@@ -141,8 +139,9 @@ def test_expire_active_action():
     ra = response_store.get(aid)
     assert ra is not None
     assert ra.status == ActionStatus.ACTIVE.value
-    # Force expiry in the past
+    # Force expiry in the past (must persist — store is DB-backed in P6)
     ra.expires_at = (utc_now() - timedelta(minutes=1)).isoformat()
+    response_store.save(ra)
     out = expire_action(aid)
     assert out["action"]["status"] == ActionStatus.EXPIRED.value
     assert test_network_adapter.snapshot()["count"] == 0

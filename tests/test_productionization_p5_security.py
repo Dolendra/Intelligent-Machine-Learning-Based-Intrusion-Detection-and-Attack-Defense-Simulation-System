@@ -30,11 +30,9 @@ def _minimal_pcap() -> bytes:
 
 @pytest.fixture(autouse=True)
 def _clear_response_store():
-    response_store._actions.clear()
-    response_store._order.clear()
+    response_store.clear()
     yield
-    response_store._actions.clear()
-    response_store._order.clear()
+    response_store.clear()
 
 
 def test_path_traversal_filename_rejected():

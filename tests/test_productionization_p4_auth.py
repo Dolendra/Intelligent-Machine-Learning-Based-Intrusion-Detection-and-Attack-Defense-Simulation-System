@@ -157,7 +157,7 @@ def test_full_app_analyst_forbidden_approve(monkeypatch):
     # Re-attach is hard on existing app; use login + middleware unit style via TestClient
     # with a fresh app import is heavy — use Starlette isolation already covered.
     # Additionally prove end-to-end against response service with actor binding:
-    response_store._actions.clear()
+    response_store.clear()
     from security.auth.service import login
     from security.response import propose_action, approve_action
     from security.response.service import ResponseError

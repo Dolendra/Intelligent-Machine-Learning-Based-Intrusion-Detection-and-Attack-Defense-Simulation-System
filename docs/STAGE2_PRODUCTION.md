@@ -69,7 +69,7 @@ Honest limits: **not** Redis/Kafka, **not** multi-node. Useful for staging batch
 | Server RBAC | Roles from directory/token; forged body/header ignored |
 | API key auth | optional alongside Bearer; still off unless enabled |
 
-Not included yet: OAuth/SSO. Persistence of users/actions across restarts is **P6**.
+Not included yet: OAuth/SSO. Persistence of users/actions across restarts is **P6** (complete on `productionization`).
 
 ### Phase D — API hardening (P5 complete on `productionization`)
 
@@ -85,6 +85,18 @@ Not included yet: OAuth/SSO. Persistence of users/actions across restarts is **P
 | Live mitigation | **Not implemented** — response remains decision-support / controlled dry-run |
 
 Honest limits: no firewall/WAF/agent connectors; in-process rate limits (not Redis); CORS remains localhost allowlist unless `AEGIS_CORS_STRICT`.
+
+### Phase persistence (P6 complete on `productionization`)
+
+| Item | Status |
+|------|--------|
+| Alembic `002_p6_persistence` | users, response_actions, response/security audit, model refs |
+| Response store | DB-backed; append-only audit; atomic approve/reject |
+| Users | Durable seed directory |
+| Retention | Documented in `database.retention` (not silent audit wipe) |
+| Restart tests | `tests/test_productionization_p6_persistence.py` |
+
+Ephemeral by design: ingest queue, WS clients, rate-limit counters. Full backup/DR is P9.
 
 ### Phase E — Observability / CI-CD / load tests (started)
 

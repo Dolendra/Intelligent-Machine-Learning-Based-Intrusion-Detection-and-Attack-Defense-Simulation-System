@@ -23,11 +23,9 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def _clear_store():
-    response_store._actions.clear()
-    response_store._order.clear()
+    response_store.clear()
     yield
-    response_store._actions.clear()
-    response_store._order.clear()
+    response_store.clear()
 
 
 def test_dry_run_never_calls_live_adapter():
