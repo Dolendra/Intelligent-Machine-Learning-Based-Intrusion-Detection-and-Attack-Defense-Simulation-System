@@ -6,6 +6,12 @@ type Conclusion = { id: string; title: string; conclusion: string };
 
 const STATIC_CONCLUSIONS: Conclusion[] = [
   {
+    id: "EXP-001",
+    title: "Model selection",
+    conclusion:
+      "Binary Decision Tree selected over XGBoost for higher recall under multi-objective weights; multiclass Random Forest edged XGBoost on macro/weighted blend.",
+  },
+  {
     id: "EXP-004",
     title: "Threshold",
     conclusion:
@@ -23,9 +29,27 @@ const STATIC_CONCLUSIONS: Conclusion[] = [
   },
   {
     id: "EXP-008",
-    title: "Drift",
+    title: "Drift (IID)",
     conclusion:
-      "No feature exceeded the selected PSI ≥ 0.2 flagging threshold between the training and IID test split.",
+      "No feature exceeded PSI ≥ 0.2 between train and IID test — expected under stratified same-corpus splits; not a live-drift claim.",
+  },
+  {
+    id: "EXP-011",
+    title: "Error analysis",
+    conclusion:
+      "IID residuals: FP 1,377 / FN 255; multiclass 18 confusions / 85k attacks, mainly PortScan / DoS / WebAttack.",
+  },
+  {
+    id: "EXP-013",
+    title: "Temporal holdout",
+    conclusion:
+      "Frozen models on Friday samples stay strong on binary F1; Friday multiclass covered only Bot/DDoS/PortScan — not a full six-class temporal claim.",
+  },
+  {
+    id: "EXP-009",
+    title: "External dataset",
+    conclusion:
+      "Not performed in the current experimental scope — identified as future work for cross-dataset generalization.",
   },
 ];
 
@@ -183,12 +207,12 @@ export function ResearchPage() {
                 <tr>
                   <td>Binary model</td>
                   <td>{String(meta.binary_model ?? cmp?.binary_best ?? "decision_tree")}</td>
-                  <td>Best multi-objective selection score</td>
+                  <td>IDS multi-objective score (recall-first; not raw F1 alone)</td>
                 </tr>
                 <tr>
                   <td>Multiclass model</td>
                   <td>{String(meta.multiclass_model ?? cmp?.multiclass_best ?? "random_forest")}</td>
-                  <td>Best attack-family selection score</td>
+                  <td>Best attack-family selection score (attack-only)</td>
                 </tr>
                 <tr>
                   <td>Stage-2 classes</td>
@@ -213,12 +237,25 @@ export function ResearchPage() {
                   <td>Isotonic worsened Brier/recall</td>
                 </tr>
                 <tr>
+                  <td>Features</td>
+                  <td>SelectKBest(f_classif, k=40)</td>
+                  <td>Dual selectors fit on train only</td>
+                </tr>
+                <tr>
                   <td>Simulation</td>
                   <td>Deterministic state machine</td>
                   <td>Safe controlled visualization; efficacy values are assumptions</td>
                 </tr>
+                <tr>
+                  <td>External dataset</td>
+                  <td>Future work</td>
+                  <td>Not fabricated within current scope</td>
+                </tr>
               </tbody>
             </table>
+            <p className="muted" style={{ fontSize: "0.85rem", marginBottom: 0 }}>
+              Submission pack: docs/DEMO.md · docs/VIVA_QA.md · docs/Aegis_IDS_Viva_Presentation.pptx · docs/PROJECT_REPORT.md
+            </p>
           </section>
         </>
       )}

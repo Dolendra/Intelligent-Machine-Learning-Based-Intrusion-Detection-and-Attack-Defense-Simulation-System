@@ -137,5 +137,28 @@
     "reason": "Few or no high-PSI features",
     "promote": false
   },
-  "note": "Prototype drift monitoring \u2014 does not auto-replace production models."
+  "note": "Prototype drift monitoring \u2014 does not auto-replace production models.",
+  "summary": {
+    "protocol": "train \u2192 test (IID stratified processed splits)",
+    "features_compared": 78,
+    "flagged_psi_ge_0.2_count": 0,
+    "max_psi": 0.0,
+    "largest_abs_mean_shift_z": {
+      "feature": "Total Length of Fwd Packets",
+      "psi": 0.0,
+      "mean_shift_z": 0.004
+    },
+    "label_max_abs_delta_pp": 0.0,
+    "retrain_recommendation": {
+      "action": "monitor",
+      "reason": "Few or no high-PSI features",
+      "promote": false
+    },
+    "academic_caveats": [
+      "IID train\u2192test PSI near zero is expected under stratified sampling from one corpus.",
+      "This does not measure temporal day-shift, live capture drift, or cross-dataset shift.",
+      "Temporal holdout (\u00a78) is the complementary within-CICIDS generalization check.",
+      "External-dataset validation remains future work."
+    ]
+  }
 }

@@ -15,40 +15,48 @@ def main() -> None:
     cfg = load_config()
     path = resolve_path(cfg["models"]["output_dir"]) / "training_report.json"
     report = json.loads(path.read_text(encoding="utf-8"))
+    bval = report["binary"]["validation"]
+    mval = report["multiclass"]["validation"]
     lines = [
         "# Model comparison (from training_report.json)",
         "",
+        f"**Frozen selection (v1.1):** binary = `{report['binary']['best']}` · multiclass = `{report['multiclass']['best']}`",
+        "Binary selection is **multi-objective** (recall / F1 / PR-AUC / FPR / latency).",
+        "",
         "## Binary validation",
         "",
-        "| Model | Precision | Recall | F1 | ROC-AUC |",
-        "|-------|----------:|-------:|---:|--------:|",
+        "| Model | Precision | Recall | F1 | ROC-AUC | selection_score |",
+        "|-------|----------:|-------:|---:|--------:|----------------:|",
     ]
-    for name, m in report["binary"]["validation"].items():
-        roc = m.get("roc_auc")
-        roc_s = f"{roc:.4f}" if isinstance(roc, (int, float)) else "—"
+    for name, m in bval.items():
+        star = "**" if name == report["binary"]["best"] else ""
         lines.append(
-            f"| {name} | {m['precision']:.4f} | {m['recall']:.4f} | {m['f1']:.4f} | {roc_s} |"
+            f"| {star}{name}{star} | {m['precision']:.4f} | {m['recall']:.4f} | {m['f1']:.4f} | "
+            f"{m.get('roc_auc', 0):.4f} | {m.get('selection_score', 0):.6f} |"
         )
     bt = report["binary"]["test"]
     lines += [
         "",
         f"**Best binary:** `{report['binary']['best']}`",
-        f"**Test:** precision={bt['precision']:.4f}, recall={bt['recall']:.4f}, F1={bt['f1']:.4f}, ROC-AUC={bt.get('roc_auc')}",
+        f"**Test:** precision={bt['precision']:.5f}, recall={bt['recall']:.5f}, F1={bt['f1']:.5f}, "
+        f"ROC-AUC={bt.get('roc_auc')}",
         "",
-        "## Multiclass validation (macro / weighted F1)",
+        "## Multiclass validation (attack-only)",
         "",
-        "| Model | macro-F1 | weighted-F1 | accuracy |",
-        "|-------|---------:|------------:|---------:|",
+        "| Model | macro-F1 | weighted-F1 | accuracy | selection_score |",
+        "|-------|---------:|------------:|---------:|----------------:|",
     ]
-    for name, m in report["multiclass"]["validation"].items():
+    for name, m in mval.items():
+        star = "**" if name == report["multiclass"]["best"] else ""
         lines.append(
-            f"| {name} | {m['f1_macro']:.4f} | {m['f1_weighted']:.4f} | {m['accuracy']:.4f} |"
+            f"| {star}{name}{star} | {m['f1_macro']:.4f} | {m['f1_weighted']:.4f} | "
+            f"{m['accuracy']:.4f} | {m.get('selection_score', 0):.6f} |"
         )
     mt = report["multiclass"]["test"]
     lines += [
         "",
         f"**Best multiclass:** `{report['multiclass']['best']}`",
-        f"**Test:** macro-F1={mt['f1_macro']:.4f}, weighted-F1={mt['f1_weighted']:.4f}",
+        f"**Test:** macro-F1={mt['f1_macro']:.5f}, weighted-F1={mt['f1_weighted']:.5f}",
         "",
     ]
     out = resolve_path(cfg["models"]["output_dir"]) / "model_comparison.md"

@@ -220,6 +220,27 @@ export const api = {
     if (!res.ok) throw new Error((await res.text()) || res.statusText);
     return res.json() as Promise<BatchPredictResult>;
   },
+  ingestCapabilities: () => request<Record<string, unknown>>("/api/ingest/capabilities"),
+  ingestFlowsCsv: async (file: File, predict = false, persist = false) => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(
+      `${API_BASE}/api/ingest/flows/csv?predict=${predict ? "true" : "false"}&persist=${persist ? "true" : "false"}`,
+      { method: "POST", body: form }
+    );
+    if (!res.ok) throw new Error((await res.text()) || res.statusText);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  ingestQueueStatus: () => request<Record<string, unknown>>("/api/ingest/queue"),
+  ingestQueueSubmit: async (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${API_BASE}/api/ingest/queue/submit`, { method: "POST", body: form });
+    if (!res.ok) throw new Error((await res.text()) || res.statusText);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  ingestQueueJob: (jobId: string) =>
+    request<Record<string, unknown>>(`/api/ingest/queue/${encodeURIComponent(jobId)}`),
   downloadExport: async (kind: "incidents.csv" | "incidents.json" | "analytics.json" | "report.pdf") => {
     const res = await fetch(`${API_BASE}/api/export/${kind}`);
     if (!res.ok) throw new Error((await res.text()) || res.statusText);

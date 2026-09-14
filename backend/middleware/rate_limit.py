@@ -69,7 +69,14 @@ def attach_rate_limit(app) -> None:
         paths=list(
             cfg.get(
                 "paths",
-                ["/api/predict", "/api/predict/batch", "/api/predict/batch/csv"],
+                [
+                    "/api/predict",
+                    "/api/ingest",
+                    "/api/explain",
+                    "/api/recommendation",
+                    "/api/response",
+                    "/api/simulation",
+                ],
             )
         ),
     )

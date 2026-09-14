@@ -1,4 +1,4 @@
-"""Generate viva PowerPoint from docs/PRESENTATION.md content + evaluation figures."""
+"""Generate viva PowerPoint aligned to frozen v1.1 (Decision Tree + Random Forest)."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -13,7 +13,6 @@ ROOT = Path(__file__).resolve().parents[1]
 FIGS = ROOT / "models" / "trained_models" / "figures"
 OUT = ROOT / "docs" / "Aegis_IDS_Viva_Presentation.pptx"
 
-# Slate / cyan theme (matches UI)
 BG = RGBColor(0x07, 0x11, 0x1A)
 ACCENT = RGBColor(0x3E, 0xC7, 0xC2)
 TEXT = RGBColor(0xE7, 0xF0, 0xF5)
@@ -50,14 +49,14 @@ def title_block(slide, title: str, subtitle: str | None = None):
     run.text = title
     _set_run(run, 32, True, ACCENT)
     if subtitle:
-        box2 = slide.shapes.add_textbox(Inches(0.6), Inches(1.1), Inches(12), Inches(0.6))
+        box2 = slide.shapes.add_textbox(Inches(0.6), Inches(1.1), Inches(12), Inches(0.55))
         p2 = box2.text_frame.paragraphs[0]
         r2 = p2.add_run()
         r2.text = subtitle
-        _set_run(r2, 16, False, MUTED)
+        _set_run(r2, 15, False, MUTED)
 
 
-def bullets(slide, lines: list[str], top=1.9, left=0.7, width=12, size=22):
+def bullets(slide, lines: list[str], top=1.85, left=0.7, width=12, size=20):
     box = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(5.2))
     tf = box.text_frame
     tf.word_wrap = True
@@ -67,7 +66,19 @@ def bullets(slide, lines: list[str], top=1.9, left=0.7, width=12, size=22):
         run = p.add_run()
         run.text = "•  " + line
         _set_run(run, size, False, TEXT)
-        p.space_after = Pt(10)
+        p.space_after = Pt(8)
+
+
+def add_pic(slide, name: str, left: float, top: float, height: float | None = None, width: float | None = None):
+    path = FIGS / name
+    if not path.exists():
+        return
+    kwargs = {}
+    if height is not None:
+        kwargs["height"] = Inches(height)
+    if width is not None:
+        kwargs["width"] = Inches(width)
+    slide.shapes.add_picture(str(path), Inches(left), Inches(top), **kwargs)
 
 
 def main() -> None:
@@ -77,7 +88,7 @@ def main() -> None:
 
     # 1 Title
     s = add_blank(prs)
-    box = s.shapes.add_textbox(Inches(0.8), Inches(2.2), Inches(11.5), Inches(3))
+    box = s.shapes.add_textbox(Inches(0.8), Inches(1.8), Inches(11.5), Inches(4))
     tf = box.text_frame
     p = tf.paragraphs[0]
     p.alignment = PP_ALIGN.CENTER
@@ -92,8 +103,13 @@ def main() -> None:
     p3 = tf.add_paragraph()
     p3.alignment = PP_ALIGN.CENTER
     r3 = p3.add_run()
-    r3.text = "\nTeam members  ·  College  ·  Year"
+    r3.text = "\nFrozen v1.1  ·  Decision Tree @ 0.85  ·  Random Forest (attack-only)"
     _set_run(r3, 16, False, MUTED)
+    p4 = tf.add_paragraph()
+    p4.alignment = PP_ALIGN.CENTER
+    r4 = p4.add_run()
+    r4.text = "Team members  ·  College  ·  Year"
+    _set_run(r4, 14, False, MUTED)
 
     # 2 Problem
     s = add_blank(prs)
@@ -103,7 +119,7 @@ def main() -> None:
         [
             "Typical IDS output: “Attack detected.”",
             "Analysts still need: attack type · why · severity · recommended action",
-            "Students/evaluators also need a visual attack → defense story",
+            "Evaluators also need a visual attack → defense story",
             "Gap: detection alone ≠ security decision support",
         ],
     )
@@ -115,10 +131,11 @@ def main() -> None:
         s,
         [
             "Detect → Classify → Explain → Assess risk → Recommend → Simulate",
-            "Platform name: Aegis IDS",
-            "Contribution: integration framework — not a claim of a new IDS algorithm",
+            "Platform: Aegis IDS (prototype / decision-support)",
+            "Contribution: integration + honest evaluation — not a new IDS algorithm claim",
+            "Safety: no live capture claim · no automatic network blocking",
         ],
-        size=24,
+        size=22,
     )
 
     # 4 Architecture
@@ -128,8 +145,8 @@ def main() -> None:
         s,
         [
             "React UI  ↔  FastAPI  ↔  ML + Risk + Recommendations + Simulation",
-            "Data: CICIDS2017 flows · trained models · SQLite incidents",
-            "Two-stage ML: binary (benign vs attack) then attack-family multiclass",
+            "Data: CICIDS2017 MachineLearningCVE · trained models · SQLite incidents",
+            "Two-stage ML: binary then attack-family multiclass (no BENIGN in Stage-2)",
             "XAI: SHAP (primary) + LIME (secondary)",
         ],
     )
@@ -142,35 +159,83 @@ def main() -> None:
         [
             "Clean · normalize labels · drop rare classes (<50 samples)",
             "~2.52M flows after cleaning; stratified train/val/test",
-            "Scaler + SelectKBest fit on train only (no leakage)",
-            "Families: BENIGN, DoS, DDoS, PortScan, BruteForce, WebAttack, Bot",
+            "StandardScaler + SelectKBest(f_classif, k=40) fit on train only",
+            "Attack families: Bot · BruteForce · DDoS · DoS · PortScan · WebAttack",
         ],
     )
 
     # 6 ML results
     s = add_blank(prs)
-    title_block(s, "Two-stage ML results (RQ1)", "Best model: XGBoost")
+    title_block(s, "Two-stage ML results (RQ1)", "Binary: Decision Tree @ 0.85  ·  Multiclass: Random Forest")
     bullets(
         s,
         [
-            "Binary test: F1 ≈ 0.993 · Recall ≈ 0.990 · ROC-AUC ≈ 0.9999",
-            "Multiclass test: weighted F1 ≈ 0.998 · macro F1 ≈ 0.917",
-            "Compared LR, Decision Tree, Random Forest, XGBoost",
-            "For IDS, recall/precision/F1 matter more than raw accuracy",
+            "Binary test: F1 0.99048 · Recall 0.997 · ROC-AUC 0.99916 · FPR 0.00329",
+            "Multiclass test: macro-F1 0.99813 · weighted-F1 0.99979 · accuracy 0.99979",
+            "Candidates compared: LR, Decision Tree, Random Forest, XGBoost",
+            "IID benchmark strength ≠ live-deployment performance guarantee",
         ],
+        size=19,
     )
 
-    # 7 Metrics figures
+    # 7 Selection / metrics
     s = add_blank(prs)
-    title_block(s, "Evaluation figures", "Confusion matrix & ROC")
-    left = FIGS / "binary_confusion_matrix.png"
-    right = FIGS / "binary_roc.png"
-    if left.exists():
-        s.shapes.add_picture(str(left), Inches(0.6), Inches(1.8), height=Inches(4.8))
-    if right.exists():
-        s.shapes.add_picture(str(right), Inches(6.8), Inches(1.8), height=Inches(4.8))
+    title_block(s, "Why Decision Tree (not XGBoost)?", "Multi-objective selection — recall first")
+    bullets(
+        s,
+        [
+            "Weights: recall 0.30 · F1 0.25 · PR-AUC 0.20 · FPR 0.15 · latency 0.10",
+            "XGBoost can win raw F1; Decision Tree wins attack recall → selected",
+            "Multiclass: Random Forest edges XGBoost on macro/weighted blend",
+            "For IDS, missed attacks (FN) are costly — policy matters",
+        ],
+        left=0.6,
+        width=6.5,
+        size=18,
+    )
+    add_pic(s, "model_binary_f1_vs_recall.png", 7.2, 1.9, width=5.6)
 
-    # 8 XAI
+    # 8 Evaluation figures
+    s = add_blank(prs)
+    title_block(s, "Evaluation figures", "IID test confusion matrix & ROC")
+    add_pic(s, "binary_confusion_matrix.png", 0.5, 1.7, height=5.0)
+    add_pic(s, "binary_roc.png", 6.9, 1.7, height=5.0)
+
+    # 9 Temporal
+    s = add_blank(prs)
+    title_block(s, "Temporal generalization", "Frozen models · day-aware Friday holdout · no retrain")
+    bullets(
+        s,
+        [
+            "Friday sample (n=36k, attack rate ~34%): binary F1 0.9977",
+            "Mon–Thu sample (n=60k, ~7% attacks): binary F1 0.980 — mild drop",
+            "Friday multiclass only Bot/DDoS/PortScan — not a 6-class temporal claim",
+            "Message: IID strength ≠ automatic temporal / live generalization",
+        ],
+        left=0.6,
+        width=6.6,
+        size=17,
+    )
+    add_pic(s, "temporal_generalization_summary.png", 7.1, 1.85, width=5.7)
+
+    # 10 Drift + errors
+    s = add_blank(prs)
+    title_block(s, "Drift & residual errors", "IID monitoring + confusion structure")
+    bullets(
+        s,
+        [
+            "Train→test IID drift: 0 features with PSI ≥ 0.2 (expected same-corpus)",
+            "Binary residuals: FP 1,377 · FN 255 (FPR 0.00329 / FNR 0.00300)",
+            "Multiclass: 18 errors / 85,139 attacks — PortScan / DoS / WebAttack",
+            "PSI≈0 ≠ live drift absence · external dataset = future work",
+        ],
+        left=0.6,
+        width=6.6,
+        size=17,
+    )
+    add_pic(s, "error_multiclass_top_confusions.png", 7.1, 1.85, width=5.7)
+
+    # 11 XAI
     s = add_blank(prs)
     title_block(s, "Explainability (RQ2 / RQ3)")
     bullets(
@@ -179,70 +244,78 @@ def main() -> None:
             "SHAP: feature contributions for each prediction (primary)",
             "LIME: local surrogate explanation (secondary)",
             "Live demo: Detection → Why? → SHAP / LIME tabs",
-            "Supports analyst trust — not treated as causal proof",
+            "Decision support — not treated as causal proof",
         ],
+        left=0.6,
+        width=6.5,
+        size=18,
     )
-    fig = FIGS / "feature_importance.png"
-    if fig.exists():
-        s.shapes.add_picture(str(fig), Inches(7.2), Inches(2.0), width=Inches(5.5))
+    add_pic(s, "feature_importance.png", 7.2, 1.9, width=5.5)
 
-    # 9 Risk
+    # 12 Risk
     s = add_blank(prs)
     title_block(s, "Risk & recommendations (RQ4)")
     bullets(
         s,
         [
-            "Risk blends attack-family base + confidence + traffic intensity",
-            "Severity bands: LOW / MEDIUM / HIGH / CRITICAL (configurable)",
+            "Risk weights: 50% attack base · 25% confidence · 15% intensity · 10% asset",
+            "Severity bands: LOW / MEDIUM / HIGH / CRITICAL (project conventions)",
             "Playbooks: rate limiting, filtering, WAF, isolation, …",
             "Advisory only — platform does not auto-block real networks",
         ],
     )
 
-    # 10 Simulation LIVE
+    # 13 Simulation
     s = add_blank(prs)
     title_block(s, "Simulation (RQ5) — LIVE DEMO", "Attack → Detect → Defend → Recover")
     bullets(
         s,
         [
-            "Simplified topology: Attacker → Firewall → Router → Server / PCs + IDS",
-            "Step through: normal → attack → impact → IDS alert → defense → recovery",
+            "Topology: Attacker → Firewall → Router → Server / PCs + IDS",
+            "Step: normal → attack → impact → IDS alert → defense → recovery",
+            "Defense effectiveness values are simulation assumptions",
             "Safety: controlled visualization only — no real cyberattacks",
-            "Open UI → Simulation → New scenario → Next / Apply defense",
         ],
-        size=22,
+        size=20,
     )
 
-    # 11 Contribution
+    # 14 Limitations
     s = add_blank(prs)
-    title_block(s, "Contribution & limitations")
+    title_block(s, "Limitations & threats to validity")
     bullets(
         s,
         [
-            "Contribution: integrated decision-support + visualization for ML-IDS",
-            "Limits: CICIDS2017 age / concept drift; pedagogical simulator",
-            "Limits: rule-mapped recommendations (not learned policies)",
-            "Future: live PCAP→flows, PostgreSQL, analyst feedback loop",
+            "CICIDS2017 age / scenario structure ≠ continuous enterprise traffic",
+            "Temporal slices are capped samples; multiclass temporal coverage incomplete",
+            "IID drift check ≠ temporal / live / cross-dataset drift",
+            "External-dataset validation not performed — stated as future work",
+            "Not a claim of production IDS readiness",
         ],
+        size=18,
     )
 
-    # 12 Q&A
+    # 15 Contribution + Q&A
     s = add_blank(prs)
-    box = s.shapes.add_textbox(Inches(0.8), Inches(2.6), Inches(11.5), Inches(2.5))
+    title_block(s, "Contribution")
+    bullets(
+        s,
+        [
+            "Integrated ML-IDS decision-support + visualization platform",
+            "Honest evaluation: IID · temporal · drift · residual errors · model selection",
+            "Research baseline frozen; Stage-2 productionization is a separate track",
+        ],
+        top=1.8,
+        size=20,
+    )
+    box = s.shapes.add_textbox(Inches(0.7), Inches(5.2), Inches(12), Inches(1.5))
     tf = box.text_frame
     p = tf.paragraphs[0]
-    p.alignment = PP_ALIGN.CENTER
     r = p.add_run()
-    r.text = "Questions?"
-    _set_run(r, 48, True, ACCENT)
-    p2 = tf.add_paragraph()
-    p2.alignment = PP_ALIGN.CENTER
-    r2 = p2.add_run()
-    r2.text = "Demo script: docs/DEMO.md   ·   Report: docs/Aegis_IDS_Project_Report.docx"
-    _set_run(r2, 16, False, MUTED)
+    r.text = "Questions?   ·   docs/DEMO.md   ·   docs/VIVA_QA.md   ·   docs/Aegis_IDS_Project_Report.docx"
+    _set_run(r, 16, False, MUTED)
 
     prs.save(OUT)
-    print(f"Wrote {OUT}")
+    print(f"Wrote {OUT} ({OUT.stat().st_size} bytes)")
 
 
 if __name__ == "__main__":

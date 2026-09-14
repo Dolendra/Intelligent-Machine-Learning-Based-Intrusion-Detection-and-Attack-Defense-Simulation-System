@@ -127,12 +127,27 @@ api:
     enabled: false
     requests_per_window: 100
     window_seconds: 60
+    # Prefix match (path.startswith) — Stage-2 Phase D covers ingest + response surfaces
     paths:
       - "/api/predict"
-      - "/api/predict/batch"
-      - "/api/predict/batch/csv"
+      - "/api/ingest"
+      - "/api/explain"
+      - "/api/recommendation"
+      - "/api/response"
+      - "/api/simulation"
+  security_headers:
+    enabled: true
   auth:
     enabled: false
     # Prefer env AEGIS_API_KEY when enabling; config value is a fallback for demos only
     api_key: ""
     header: "X-API-Key"
+    role_header: "X-Aegis-Role"
+    default_role: "analyst"
+    enforce_rbac: true
+
+# Stage-2 Phase C: optional durable DB. Default empty → local SQLite file.
+# Example: postgresql+psycopg://aegis:aegis@localhost:5432/aegis
+database:
+  url: ""
+  dialect_note: "sqlite default for research baseline; set IDS_DB_URL for PostgreSQL"

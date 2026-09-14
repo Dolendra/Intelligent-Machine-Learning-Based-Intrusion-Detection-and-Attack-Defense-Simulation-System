@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, stage2/productionization]
   pull_request:
-    branches: [main]
+    branches: [main, stage2/productionization]
 
 jobs:
   test-python:
@@ -33,6 +33,46 @@ jobs:
       - name: Smoke modules import
         run: |
           python -c "from security.risk.engine import compute_risk; from security.rules import evaluate_rules; from security.correlation import escalate_severity; from simulation.engine.core import SimulationEngine; print('ok')"
+
+  stage2-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Stage-2 phase + ingestion tests
+        env:
+          MPLBACKEND: Agg
+          DISABLE_RATE_LIMIT: "true"
+        run: |
+          python -m pytest \
+            tests/test_ingestion_stage2.py \
+            tests/test_ingestion_queue.py \
+            tests/test_phase_c_security.py \
+            tests/test_phase_d_hardening.py \
+            tests/test_phase_e_observability.py \
+            tests/test_phase_f_simulation_validation.py \
+            -q --tb=short
+
+      - name: Stage-2 import smoke (ingestion + metrics + sim validation)
+        run: |
+          python -c "from ingestion.queue import ingest_queue; from backend.middleware.metrics_mw import process_metrics; from simulation.validation import validate_families; r=validate_families(('DDoS',)); assert r['all_ok']; print('stage2 ok')"
+
+      - name: Cyber-range sim validate script
+        env:
+          MPLBACKEND: Agg
+        run: |
+          python scripts/27_cyber_range_sim_validate.py
 
   build-frontend:
     runs-on: ubuntu-latest

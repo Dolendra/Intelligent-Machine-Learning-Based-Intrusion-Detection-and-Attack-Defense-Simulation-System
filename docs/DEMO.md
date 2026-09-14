@@ -1,49 +1,68 @@
-# Aegis IDS — Demo & Viva Script (~2–3 minutes)
+# Aegis IDS — Demo Script (5–10 minutes)
 
-## One-sentence answer
+**Frozen baseline (v1.1):** Binary **Decision Tree** @ threshold **0.85** · Multiclass **Random Forest** (attack-only: Bot, BruteForce, DDoS, DoS, PortScan, WebAttack).
 
-> We are building an intelligent machine-learning-based intrusion detection platform that detects and classifies network attacks, explains the reasons behind its predictions, assesses their risk, recommends appropriate defensive actions, and interactively simulates the attack-to-defense lifecycle through a visual network environment.
+## Before you start (2 minutes setup)
 
-## Live demo flow (follow exactly)
+```bash
+# API (from repo root)
+uvicorn backend.main:app --port 8000
 
-1. Open **http://127.0.0.1:5173/** — Dashboard shows incident analytics.
-   - Mention auto-refresh (WebSocket / polling) updates the overview — still **not** live packet capture.
-2. Go to **Detection**
-   - Demo flow type: `DDoS` → **Load sample flow** → **Detect & classify**
-   - Point to: verdict, confidence, certainty band, risk/severity, recommendation, **rules fired**
-   - Point to **WHY DID AEGIS DO THIS?** decision trace (traffic → ML → risk → recommendation → incident)
-   - Scroll to **Why?** — show SHAP (and that fallback is labeled if used)
-   - Click **Simulate this incident** (hands off to Simulation with that session)
-   - Optional: **Batch sample** or **Upload CSV** for multi-flow analytics
-3. Go to **Simulation**
-   - Configure intensity/confidence if desired, then **Run simulation** / **Play**
-   - Point to detection/defense/recovery delays and without-vs-with defense table
-   - Say: “Controlled visualization only — not a real attack tool.”
-4. Go to **Reports** / **Incident detail**
-   - Show lifecycle timeline + decision trace
-   - Optional: **Export CSV / JSON / PDF**
-5. Optional: **Models** page — health, threshold, validation comparison table
+# UI
+cd frontend && npm run dev
+```
 
-## Likely viva questions
+- Open **http://127.0.0.1:5173/**
+- Optional: `DEMO_MODE=true` seeds demo incidents (docker-compose does this by default)
+- Have `docs/PRESENTATION.md` slides ready if the panel wants a short deck first
 
-| Question | Answer cue |
-|----------|------------|
-| Why two-stage ML? | Binary detection first, then attack-family classification — clearer academically and operationally |
-| Why not accuracy alone? | Class imbalance; we report recall/precision/F1, PR-AUC, FPR/FNR |
-| Why SHAP? | Turns “model said attack” into feature-level decision support; LIME is secondary |
-| Do you auto-block traffic? | No — recommendations are advisory only |
-| Dataset? | CICIDS2017 (`MachineLearningCVE`), cleaned, rare classes filtered, stratified split |
-| Confidence vs risk? | Confidence is model certainty; risk is impact-oriented scoring (attack family + confidence + intensity + asset criticality) |
-| Novelty? | Integration: ML + XAI + risk + rules + recommendation + simulation — not a new algorithm claim |
+## One-sentence opener (15 s)
 
-## Team talking points
+> We built **Aegis IDS** — an ML-based intrusion detection **prototype** that detects and classifies CICIDS2017 flows, explains predictions with SHAP, scores risk, recommends **advisory** defenses, and **simulates** the attack–defense lifecycle. We do **not** capture live packets or auto-block networks.
 
-- **Member 1:** data prep, dual feature selection, model comparison, calibration/HPO experiments
-- **Member 2:** SHAP/LIME, risk bands, rule engine, recommendations, incidents lifecycle
-- **Member 3:** FastAPI, React UI, React Flow simulation, WebSocket dashboard, exports
+---
 
-Everyone should still be able to narrate the full pipeline end-to-end.
+## Timed walkthrough
 
-## Honest wording (use these)
+| Time | Page | What to do | What to say |
+|------|------|------------|-------------|
+| 0:00–0:45 | **Dashboard** | Show KPIs / recent incidents | “Analyst overview — incidents, risk bands. WebSocket refresh is UI telemetry, **not** live capture.” |
+| 0:45–3:30 | **Detection** | Load **DDoS** sample → Detect | “Stage-1 Decision Tree: attack vs benign @ 0.85. Stage-2 Random Forest: family. Note confidence, certainty band, risk, recommendation, rules.” |
+| | | Open **Why?** (SHAP) | “Feature attributions — decision support, not causality proof. LIME is secondary.” |
+| | | Point to decision trace | “Traffic → ML → risk → recommendation → incident — one integrated pipeline.” |
+| | | **Simulate this incident** | Hand off to Simulation with context. |
+| 3:30–5:30 | **Simulation** | Play / advance to recover | “Controlled visualization: attack → detect → recommend → defend → recover. Efficacy values are **assumptions**.” |
+| | | Without vs with defense | “Pedagogical comparison — **not** measured real-world mitigation.” |
+| 5:30–6:30 | **Incident / Reports** | Open incident lifecycle | “Statuses and analyst notes. `defense_action` is a recorded note, not an executed control.” |
+| | | Optional export PDF/CSV | “Reporting for viva evidence.” |
+| 6:30–7:30 | **Models** (optional) | Show health / metrics | “Frozen artifacts: DT F1≈0.990 · RF macro-F1≈0.998 on IID test.” |
+| 7:30–8:30 | **Research** (optional) | Temporal / drift notes | “Friday temporal holdout; IID PSI≈0; residual PortScan/DoS/WebAttack confusions. External dataset = future work.” |
+| 8:30–9:00 | Close | Return to Dashboard | “Contribution is **integration + honest evaluation**, not a novel IDS algorithm.” |
 
-Prefer: **ML-based intrusion detection prototype**, **controlled attack–defense simulation**, **decision-support recommendations**.
+**If short on time (≤5 min):** Dashboard → Detection (DDoS + SHAP) → Simulate → one honesty line → stop.
+
+**If Stage-2 branch demo:** mention Detection CSV/queue ingest is productionization scaffolding; research baseline remains CICIDS CSV flows.
+
+---
+
+## Phrases to use / avoid
+
+| Prefer | Avoid |
+|--------|--------|
+| Prototype / decision-support | “Production SOC platform” |
+| Controlled simulation | “We ran real attacks” |
+| Advisory recommendations | “We auto-mitigate” |
+| IID / temporal benchmark results | “Guarantees live accuracy” |
+| Assumed defense efficacy | “82% real mitigation proven” |
+
+---
+
+## Checklist before the panel
+
+- [ ] API `/api/health` and `/api/ready` return OK  
+- [ ] Detection DDoS sample classifies as attack  
+- [ ] SHAP panel renders (or fallback is labeled)  
+- [ ] Simulation reaches recovered  
+- [ ] You can state DT @ 0.85 and RF attack-only without notes  
+
+Full Q&A: [`VIVA_QA.md`](VIVA_QA.md) · Slides: [`PRESENTATION.md`](PRESENTATION.md) · Team roles: [`TEAM.md`](TEAM.md)

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from backend.schemas.api import (
     BatchPredictRequest,
+    ControlledResponsePlanRequest,
     ExplainRequest,
     HealthResponse,
     IncidentUpdateRequest,
@@ -37,6 +38,94 @@ def _demo_allow_missing(requested: bool) -> bool:
 
     demo = os.getenv("DEMO_MODE", "false").lower() in {"1", "true", "yes"}
     return bool(requested) and demo
+
+
+@router.get("/security/status")
+def security_status():
+    """Stage-2 Phase F: auth/RBAC + observability + cyber-range validation honesty (no secrets)."""
+    import os
+
+    from backend.middleware.security_headers import security_headers_summary
+    from database.url import database_info
+    from security.rbac import rbac_summary
+
+    cfg = load_config()
+    auth = cfg.get("api", {}).get("auth", {}) or {}
+    rl = cfg.get("api", {}).get("rate_limit", {}) or {}
+    key_configured = bool(os.getenv("AEGIS_API_KEY") or auth.get("api_key"))
+    default_rl_paths = [
+        "/api/predict",
+        "/api/ingest",
+        "/api/explain",
+        "/api/recommendation",
+        "/api/response",
+        "/api/simulation",
+    ]
+    return {
+        "stage": "2-phase-f",
+        "auth": {
+            "enabled": bool(auth.get("enabled", False)),
+            "api_key_configured": key_configured,
+            "header": auth.get("header", "X-API-Key"),
+            "role_header": auth.get("role_header", "X-Aegis-Role"),
+            "default_role": auth.get("default_role", "analyst"),
+            "enforce_rbac": bool(auth.get("enforce_rbac", True)),
+        },
+        "rate_limit": {
+            "enabled": bool(rl.get("enabled", False)),
+            "requests_per_window": rl.get("requests_per_window"),
+            "window_seconds": rl.get("window_seconds"),
+            "paths": list(rl.get("paths") or default_rl_paths),
+        },
+        "security_headers": security_headers_summary(),
+        "observability": {
+            "metrics_endpoint": "/api/metrics",
+            "request_logging": True,
+            "prometheus": False,
+            "opentelemetry": False,
+            "load_smoke_script": "scripts/26_api_load_smoke.py",
+        },
+        "cyber_range_validation": {
+            "live_cyber_range": False,
+            "live_mitigation": False,
+            "efficacy_are_assumptions": True,
+            "mode": "controlled_visualization",
+            "script": "scripts/27_cyber_range_sim_validate.py",
+            "module": "simulation.validation",
+        },
+        "controlled_response": {
+            "live_mitigation": False,
+            "simulation": True,
+            "advisory_only": True,
+            "plan_endpoint": "/api/response/plan",
+        },
+        "database": database_info(),
+        "rbac": rbac_summary(),
+        "notes": [
+            "Auth and rate limiting remain disabled by default for the research/demo baseline.",
+            "Enable api.auth.enabled and set AEGIS_API_KEY for Stage-2 hardening.",
+            "Enable api.rate_limit.enabled to protect predict/ingest/response surfaces.",
+            "Controlled response is advisory + simulation only — no live network mitigation.",
+            "/api/metrics is in-process only (resets on restart); not a multi-node SRE stack.",
+            "Cyber-range validation checks the simulation state machine — not a physical range or real defense efficacy.",
+            "PostgreSQL is optional via IDS_DB_URL; SQLite remains the default.",
+        ],
+    }
+
+
+@router.get("/metrics")
+def process_metrics_endpoint():
+    """Stage-2 Phase E: in-process request counters and latency samples (not Prometheus)."""
+    from backend.middleware.metrics_mw import process_metrics
+
+    snap = process_metrics.snapshot()
+    try:
+        from ingestion.queue import ingest_queue
+
+        snap["ingest_queue"] = ingest_queue.status().get("metrics")
+    except Exception:  # noqa: BLE001
+        snap["ingest_queue"] = None
+    return snap
 
 
 @router.get("/health", response_model=HealthResponse)
@@ -171,6 +260,163 @@ async def predict_batch_csv(
         raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
 
 
+@router.get("/ingest/capabilities")
+def ingest_capabilities():
+    """Stage-2 Phase A: schema version + extractor status (does not claim live capture)."""
+    from ingestion.pipeline import ingestion_capabilities
+
+    return ingestion_capabilities()
+
+
+@router.post("/ingest/flows/csv")
+async def ingest_flows_csv(
+    file: UploadFile = File(...),
+    predict: bool = False,
+    persist: bool = False,
+    db: Session = Depends(get_db),
+):
+    """Offline MachineLearningCVE-compatible CSV → schema-validated flows (optional predict)."""
+    from ingestion.pipeline import ingest_flows_csv as _ingest
+
+    raw = await file.read()
+    result = _ingest(raw, fill_missing=False, max_rows=500)
+    payload = result.as_dict()
+    if not result.ok:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": result.detail.get("code", "INGEST_FAILED"),
+                "message": result.validation.get("message") or result.detail.get("message") or "ingest failed",
+                "validation": result.validation,
+                "schema_version": (result.schema or {}).get("schema_version"),
+            },
+        )
+    if predict:
+        try:
+            batch = svc.run_prediction_batch(result.flows, db=db, persist=persist, allow_missing_features=False)
+            payload["prediction"] = batch
+        except FeatureValidationError as exc:
+            raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
+    # Avoid huge payloads by default when only validating
+    if not predict:
+        payload["flows"] = payload["flows"][:5]
+        payload["flows_truncated"] = True
+    return payload
+
+
+@router.post("/ingest/pcap")
+async def ingest_pcap(
+    file: UploadFile = File(...),
+    predict: bool = False,
+    persist: bool = False,
+    db: Session = Depends(get_db),
+):
+    """Offline PCAP upload — uses cicflowmeter when installed; otherwise 501."""
+    import tempfile
+    from pathlib import Path
+
+    from ingestion.pipeline import ingest_pcap as _ingest_pcap
+
+    suffix = Path(file.filename or "capture.pcap").suffix or ".pcap"
+    raw = await file.read()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(raw)
+        tmp_path = Path(tmp.name)
+    try:
+        result = _ingest_pcap(tmp_path)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+    if not result.ok:
+        code = result.detail.get("code", "PCAP_NOT_AVAILABLE")
+        status = 501 if code in {"PCAP_EXTRACTOR_NOT_CONFIGURED", "PCAP_EXTRACTOR_NOT_WIRED"} else 422
+        raise HTTPException(
+            status_code=status,
+            detail={
+                "code": code,
+                "message": result.detail.get("message", "PCAP extraction failed"),
+                "capabilities": result.detail,
+                "schema_version": (result.schema or {}).get("schema_version"),
+                "validation": result.validation,
+            },
+        )
+
+    payload = result.as_dict()
+    if predict:
+        try:
+            batch = svc.run_prediction_batch(result.flows, db=db, persist=persist, allow_missing_features=False)
+            payload["prediction"] = batch
+        except FeatureValidationError as exc:
+            raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
+    if not predict:
+        payload["flows"] = payload["flows"][:5]
+        payload["flows_truncated"] = True
+    return payload
+
+
+@router.get("/ingest/queue")
+def ingest_queue_status():
+    """Stage-2 Phase B: in-process queue depth + latency metrics."""
+    from ingestion.queue import ingest_queue
+
+    return ingest_queue.status()
+
+
+@router.post("/ingest/queue/submit")
+async def ingest_queue_submit(
+    file: UploadFile = File(...),
+):
+    """Enqueue schema-validated CSV flows for async detection (in-process worker)."""
+    from ingestion.pipeline import ingest_flows_csv as _ingest
+    from ingestion.queue import ingest_queue
+
+    if not ingest_queue.status().get("worker_alive"):
+        # Lazy-start for TestClient / cases where lifespan did not wire predict fn yet
+        from backend.services import pipeline as _svc
+        from database.db import SessionLocal
+
+        def _predict_batch(flows: list[dict[str, float]]) -> dict:
+            db = SessionLocal()
+            try:
+                return _svc.run_prediction_batch(flows, db=db, persist=False, allow_missing_features=False)
+            finally:
+                db.close()
+
+        ingest_queue.set_predict_fn(_predict_batch)
+        ingest_queue.start()
+
+    raw = await file.read()
+    result = _ingest(raw, fill_missing=False, max_rows=500)
+    if not result.ok:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": result.detail.get("code", "INGEST_FAILED"),
+                "message": result.validation.get("message") or "ingest failed",
+                "validation": result.validation,
+            },
+        )
+    try:
+        job = ingest_queue.submit(result.flows, source="csv_upload")
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail={"code": "QUEUE_FULL", "message": str(exc)}) from exc
+    return {"ok": True, "job": job.as_dict()}
+
+
+@router.get("/ingest/queue/{job_id}")
+def ingest_queue_job(job_id: str):
+    from ingestion.queue import ingest_queue
+
+    job = ingest_queue.get(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail={"code": "JOB_NOT_FOUND", "message": job_id})
+    return job.as_dict()
+
+
 @router.post("/explain")
 def explain(body: ExplainRequest):
     allow_missing = _demo_allow_missing(body.allow_missing_features)
@@ -222,6 +468,25 @@ def recommendation(body: RecommendationRequest):
         traffic_intensity=body.traffic_intensity,
         certainty=body.certainty,
         is_attack=body.is_attack,
+    )
+
+
+@router.post("/response/plan")
+def response_plan(body: ControlledResponsePlanRequest):
+    """Stage-2 Phase D: advisory playbook + optional simulation preview (not live mitigation)."""
+    from backend.services.controlled_response import build_response_plan
+
+    return build_response_plan(
+        attack_type=body.attack_type,
+        severity=body.severity,
+        confidence=body.confidence,
+        traffic_intensity=body.traffic_intensity,
+        certainty=body.certainty,
+        is_attack=body.is_attack,
+        asset_criticality=body.asset_criticality,
+        risk_score=body.risk_score,
+        start_simulation=body.start_simulation,
+        incident_id=body.incident_id,
     )
 
 
