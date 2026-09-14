@@ -55,6 +55,11 @@ def security_status():
     auth = cfg.get("api", {}).get("auth", {}) or {}
     rl = cfg.get("api", {}).get("rate_limit", {}) or {}
     key_configured = bool(os.getenv("AEGIS_API_KEY") or auth.get("api_key"))
+    enabled_env = os.getenv("AEGIS_AUTH_ENABLED")
+    if enabled_env is not None:
+        auth_enabled = enabled_env.lower() in {"1", "true", "yes"}
+    else:
+        auth_enabled = bool(auth.get("enabled", False))
     default_rl_paths = [
         "/api/predict",
         "/api/ingest",
@@ -63,16 +68,24 @@ def security_status():
         "/api/response",
         "/api/simulation",
     ]
+    from security.auth import auth_status
+
     return {
         "stage": "2-phase-f",
         "auth": {
-            "enabled": bool(auth.get("enabled", False)),
+            "enabled": auth_enabled,
             "api_key_configured": key_configured,
             "header": auth.get("header", "X-API-Key"),
             "role_header": auth.get("role_header", "X-Aegis-Role"),
             "default_role": auth.get("default_role", "analyst"),
+            "api_key_role": auth.get("api_key_role", "admin"),
+            "allow_role_header": bool(auth.get("allow_role_header", False)),
             "enforce_rbac": bool(auth.get("enforce_rbac", True)),
+            "login_endpoint": "/api/auth/login",
+            "bearer": True,
+            "phase": "P4",
         },
+        "auth_detail": auth_status(enabled=auth_enabled),
         "rate_limit": {
             "enabled": bool(rl.get("enabled", False)),
             "requests_per_window": rl.get("requests_per_window"),
@@ -112,7 +125,8 @@ def security_status():
         "rbac": rbac_summary(),
         "notes": [
             "Auth and rate limiting remain disabled by default for the research/demo baseline.",
-            "Enable api.auth.enabled and set AEGIS_API_KEY for Stage-2 hardening.",
+            "Enable api.auth.enabled or AEGIS_AUTH_ENABLED=true for P4 authentication/RBAC.",
+            "Login via POST /api/auth/login; send Authorization: Bearer <token>.",
             "Enable api.rate_limit.enabled to protect predict/ingest/response surfaces.",
             "P3: adapter contract + TestNetworkAdapter; LIVE firewall/EDR still forbidden.",
             "/api/metrics is in-process only (resets on restart); not a multi-node SRE stack.",
@@ -166,6 +180,83 @@ def ready():
         "models_loaded": True,
         "version": cfg["project"]["version"],
     }
+
+
+@router.get("/auth/status")
+def auth_status_endpoint():
+    import os
+
+    from security.auth import auth_status
+
+    cfg = load_config().get("api", {}).get("auth", {}) or {}
+    enabled_env = os.getenv("AEGIS_AUTH_ENABLED")
+    if enabled_env is not None:
+        enabled = enabled_env.lower() in {"1", "true", "yes"}
+    else:
+        enabled = bool(cfg.get("enabled", False))
+    return auth_status(enabled=enabled)
+
+
+@router.post("/auth/login")
+def auth_login(body: dict):
+    from security.auth import AuthError, login
+
+    username = str((body or {}).get("username") or "")
+    password = str((body or {}).get("password") or "")
+    try:
+        return login(username, password)
+    except AuthError as exc:
+        raise HTTPException(
+            status_code=exc.http_status,
+            detail={"code": exc.code, "message": exc.message},
+        ) from exc
+
+
+@router.get("/auth/me")
+def auth_me(request: Request):
+    identity = getattr(request.state, "aegis_user", None)
+    if not identity or getattr(request.state, "aegis_role", None) == "anonymous":
+        # When auth is disabled, report demo identity
+        import os
+
+        from ids_config import load_config
+
+        cfg = load_config().get("api", {}).get("auth", {}) or {}
+        enabled_env = os.getenv("AEGIS_AUTH_ENABLED")
+        if enabled_env is not None:
+            enabled = enabled_env.lower() in {"1", "true", "yes"}
+        else:
+            enabled = bool(cfg.get("enabled", False))
+        if not enabled:
+            from security.rbac import permissions_for
+
+            return {
+                "authenticated": False,
+                "auth_enabled": False,
+                "role": "anonymous",
+                "permissions": sorted(permissions_for("admin")),
+                "note": "Auth disabled — demo open access (not a production posture).",
+            }
+        raise HTTPException(status_code=401, detail={"code": "UNAUTHORIZED", "message": "Not authenticated"})
+    return {"authenticated": True, "auth_enabled": True, **identity}
+
+
+@router.post("/auth/logout")
+def auth_logout():
+    """Client discards bearer token (stateless HMAC tokens — server-side revoke list not used in P4)."""
+    return {"ok": True, "message": "Discard the access token client-side"}
+
+
+@router.get("/auth/users")
+def auth_users_list(request: Request):
+    from security.auth.users import user_store
+    from security.rbac import has_permission
+
+    role = getattr(request.state, "aegis_role", None)
+    if role != "anonymous" and not has_permission(role, "admin"):
+        raise HTTPException(status_code=403, detail={"code": "FORBIDDEN", "message": "admin required"})
+    # When auth disabled, still allow for local demo introspection
+    return {"items": user_store.list_public()}
 
 
 @router.get("/models")
@@ -676,10 +767,11 @@ def response_actions_list(incident_id: str | None = None, limit: int = 50):
 
 @router.post("/response/actions/propose")
 def response_actions_propose(body: ResponseActionProposeRequest, request: Request):
+    from backend.middleware.api_auth import actor_from_request
     from security.recommendations.engine import recommend
     from security.response import ResponseError, propose_action
 
-    actor = getattr(request.state, "aegis_role", None) or "analyst"
+    actor = actor_from_request(request)
     try:
         rec = recommend(
             body.attack_type,
@@ -730,34 +822,36 @@ def response_actions_audit(action_id: str):
 
 @router.post("/response/actions/{action_id}/dry-run")
 def response_actions_dry_run(action_id: str, request: Request):
+    from backend.middleware.api_auth import actor_from_request
     from security.response import ResponseError, run_dry_run
 
-    actor = getattr(request.state, "aegis_role", None) or "analyst"
     try:
-        return run_dry_run(action_id, actor=actor)
+        return run_dry_run(action_id, actor=actor_from_request(request))
     except ResponseError as exc:
         raise _response_http(exc) from exc
 
 
 @router.post("/response/actions/{action_id}/approve")
 def response_actions_approve(action_id: str, request: Request, body: ResponseActionDecisionRequest | None = None):
+    from backend.middleware.api_auth import actor_from_request
     from security.response import ResponseError, approve_action
 
-    actor = (body.actor if body and body.actor else None) or getattr(request.state, "aegis_role", None) or "responder"
+    # Identity always from auth context — ignore client-supplied actor (no privilege spoofing)
+    _ = body
     try:
-        return approve_action(action_id, actor=actor)
+        return approve_action(action_id, actor=actor_from_request(request))
     except ResponseError as exc:
         raise _response_http(exc) from exc
 
 
 @router.post("/response/actions/{action_id}/reject")
 def response_actions_reject(action_id: str, request: Request, body: ResponseActionDecisionRequest | None = None):
+    from backend.middleware.api_auth import actor_from_request
     from security.response import ResponseError, reject_action
 
-    actor = (body.actor if body and body.actor else None) or getattr(request.state, "aegis_role", None) or "responder"
     reason = body.reason if body else None
     try:
-        return reject_action(action_id, actor=actor, reason=reason)
+        return reject_action(action_id, actor=actor_from_request(request), reason=reason)
     except ResponseError as exc:
         raise _response_http(exc) from exc
 
@@ -765,43 +859,43 @@ def response_actions_reject(action_id: str, request: Request, body: ResponseActi
 @router.post("/response/actions/{action_id}/execute")
 def response_actions_execute(action_id: str, request: Request):
     """Explicit execute after approve — DRY_RUN or CONTROLLED adapter only."""
+    from backend.middleware.api_auth import actor_from_request
     from security.response import ResponseError, execute_action
 
-    actor = getattr(request.state, "aegis_role", None) or "responder"
     try:
-        return execute_action(action_id, actor=actor)
+        return execute_action(action_id, actor=actor_from_request(request))
     except ResponseError as exc:
         raise _response_http(exc) from exc
 
 
 @router.post("/response/actions/{action_id}/rollback")
 def response_actions_rollback(action_id: str, request: Request):
+    from backend.middleware.api_auth import actor_from_request
     from security.response import ResponseError, rollback_action
 
-    actor = getattr(request.state, "aegis_role", None) or "responder"
     try:
-        return rollback_action(action_id, actor=actor)
+        return rollback_action(action_id, actor=actor_from_request(request))
     except ResponseError as exc:
         raise _response_http(exc) from exc
 
 
 @router.post("/response/actions/{action_id}/expire")
 def response_actions_expire(action_id: str, request: Request):
+    from backend.middleware.api_auth import actor_from_request
     from security.response import ResponseError, expire_action
 
-    actor = getattr(request.state, "aegis_role", None) or "system"
     try:
-        return expire_action(action_id, actor=actor)
+        return expire_action(action_id, actor=actor_from_request(request))
     except ResponseError as exc:
         raise _response_http(exc) from exc
 
 
 @router.post("/response/actions/sweep-expired")
 def response_actions_sweep_expired(request: Request):
+    from backend.middleware.api_auth import actor_from_request
     from security.response import sweep_expired
 
-    actor = getattr(request.state, "aegis_role", None) or "system"
-    return sweep_expired(actor=actor)
+    return sweep_expired(actor=actor_from_request(request))
 
 
 @router.get("/response/adapters")
@@ -814,14 +908,14 @@ def response_adapters_list():
 @router.post("/incidents/{incident_id}/response/propose")
 def incident_response_propose(incident_id: str, request: Request, db: Session = Depends(get_db)):
     """Propose a response action from an existing incident (default DRY_RUN)."""
+    from backend.middleware.api_auth import actor_from_request
     from security.response import ResponseError, propose_from_incident
 
     incident = svc.get_incident(db, incident_id)
     if incident is None:
         raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": "Unknown incident"})
-    actor = getattr(request.state, "aegis_role", None) or "analyst"
     try:
-        return propose_from_incident(incident, actor=actor)
+        return propose_from_incident(incident, actor=actor_from_request(request))
     except ResponseError as exc:
         raise _response_http(exc) from exc
 

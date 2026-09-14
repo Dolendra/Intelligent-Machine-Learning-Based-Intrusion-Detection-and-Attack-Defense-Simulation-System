@@ -10,48 +10,36 @@
 | Submission-ready / productionized **IDS prototype** | ✅ |
 | Live enterprise SOC / guaranteed zero-day / auto-block | ❌ |
 
-Wording: **“productionized IDS prototype”** or **“submission-ready IDS prototype”** — not “production-ready IDS.”
-
 ## Phase status
 
 | Phase | Focus | Status |
 |-------|--------|--------|
-| **P0** | Freeze `v1.1-research` | ✅ Done |
-| **P1** | Real PCAP → flow → frozen DT/RF | ✅ Complete |
-| **P2** | Defense dry-run + approval gate | ✅ Complete |
-| **P3** | Adapter + verify + rollback | ✅ Complete (this branch) |
-| **P4** | Auth / RBAC enablement | Scaffolding exists; expand next |
-| **P5+** | Hardening / persistence / load / DR / generalization | Later |
+| **P0** | Freeze `v1.1-research` | ✅ |
+| **P1** | PCAP → queue → frozen DT/RF | ✅ |
+| **P2** | Dry-run + approval gate | ✅ |
+| **P3** | Adapters + verify + rollback | ✅ |
+| **P4** | Authentication / RBAC | ✅ Complete (this branch) |
+| **P5** | API + application security | Next |
 
-## P3 deliverables
+## P4 deliverables
 
 ```text
-Propose → Dry-run → Approve → ResponseAdapter.execute → verify → ACTIVE/VERIFIED
-                                                    ↘ verify fail → rollback
-ACTIVE → expire → rollback cleanup → EXPIRED
+User → login (PBKDF2 password) → HMAC Bearer token → role from user directory
+     → server-side RBAC on every sensitive route → audit actor = username
 ```
 
-| Adapter | Role |
-|---------|------|
-| `dry_run` | Default — no state change |
-| `test_network` | CONTROLLED simulated control plane |
-| `live_forbidden` | Stub — always raises |
+| Role | Propose/dry-run | Approve/rollback | Manage users |
+|------|----------------:|-----------------:|-------------:|
+| Viewer | ❌ | ❌ | ❌ |
+| Analyst | ✅ | ❌ | ❌ |
+| Responder | ✅ | ✅ | ❌ |
+| Admin | ✅ | ✅ | ✅ |
 
-Contract: `validate` / `preview` / `execute` / `verify` / `rollback`
+- **401** unauthenticated; **403** authenticated but forbidden  
+- Client `X-Aegis-Role` cannot escalate unless `allow_role_header=true` (demo only)  
+- UI reflects permissions; **API is the security boundary**  
+- Auth remains **off by default** for the research demo; enable with `AEGIS_AUTH_ENABLED=true`
 
-Reversibility: `BLOCK_SOURCE↔UNBLOCK_SOURCE`, `RATE_LIMIT↔REMOVE_RATE_LIMIT`, …; `ESCALATE` marked non-reversible.
+## Safety invariants preserved
 
-## Safety invariants (tested)
-
-- No approval → no execution  
-- Dry-run → no real network modification  
-- CONTROLLED → simulated only (`live_network_change: false`)  
-- LIVE / firewall / EDR → forbidden  
-- Verify failure → rollback when reversible  
-- Every transition → audit  
-
-## Safety rules
-
-- Do not retrain or overwrite `models/trained_models/*`
-- Do not claim live NIC capture or live firewall blocking yet
-- Real vendor adapters come only after this contract is proven
+No approval → no execution · DRY_RUN/CONTROLLED only · LIVE forbidden · unauthorized → no response action · audit identity bound to login

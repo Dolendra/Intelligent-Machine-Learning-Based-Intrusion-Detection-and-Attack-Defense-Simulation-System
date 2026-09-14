@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { api } from "../services/api";
+import { FormEvent, useEffect, useState } from "react";
+import { api, getAccessToken, setAccessToken } from "../services/api";
 
 const NAV = [
   { to: "/", end: true, label: "Dashboard", ico: "01", section: "Operations" },
@@ -12,15 +12,83 @@ const NAV = [
   { to: "/research", label: "Research", ico: "07", section: "Lab" },
 ] as const;
 
+type MeState = {
+  authenticated: boolean;
+  auth_enabled?: boolean;
+  username?: string;
+  role?: string;
+  permissions?: string[];
+  note?: string;
+};
+
 export function AppLayout() {
   const [modelsLoaded, setModelsLoaded] = useState<boolean | null>(null);
+  const [authEnabled, setAuthEnabled] = useState(false);
+  const [me, setMe] = useState<MeState | null>(null);
+  const [username, setUsername] = useState("analyst");
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authBusy, setAuthBusy] = useState(false);
+
+  async function refreshAuth() {
+    const status = await api.securityStatus().catch(() => null);
+    const enabled = Boolean((status?.auth as Record<string, unknown> | undefined)?.enabled);
+    setAuthEnabled(enabled);
+    if (!enabled) {
+      setMe({
+        authenticated: false,
+        auth_enabled: false,
+        role: "anonymous",
+        note: "Auth disabled — demo open access",
+        permissions: ["write_response", "approve_response", "admin"],
+      });
+      return;
+    }
+    if (!getAccessToken()) {
+      setMe({ authenticated: false, auth_enabled: true, permissions: [] });
+      return;
+    }
+    try {
+      const profile = await api.authMe();
+      setMe(profile);
+    } catch {
+      setAccessToken(null);
+      setMe({ authenticated: false, auth_enabled: true, permissions: [] });
+    }
+  }
 
   useEffect(() => {
     api
       .health()
       .then((h) => setModelsLoaded(h.models_loaded))
       .catch(() => setModelsLoaded(false));
+    refreshAuth().catch(() => setAuthEnabled(false));
   }, []);
+
+  async function onLogin(e: FormEvent) {
+    e.preventDefault();
+    setAuthBusy(true);
+    setAuthError(null);
+    try {
+      await api.authLogin(username, password);
+      await refreshAuth();
+      setPassword("");
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function onLogout() {
+    setAuthBusy(true);
+    try {
+      await api.authLogout();
+      await refreshAuth();
+    } finally {
+      setAuthBusy(false);
+    }
+  }
 
   let lastSection = "";
 
@@ -64,6 +132,52 @@ export function AppLayout() {
                 ? "Models online"
                 : "Models offline"}
           </div>
+
+          <div style={{ marginTop: "0.75rem", padding: "0.55rem 0.35rem" }}>
+            <div className="nav-section">Session (P4)</div>
+            {!authEnabled && (
+              <p className="muted" style={{ fontSize: "0.75rem", margin: "0.25rem 0 0", lineHeight: 1.35 }}>
+                Auth off (demo). Server-side RBAC inactive.
+              </p>
+            )}
+            {authEnabled && me?.authenticated && (
+              <div style={{ fontSize: "0.8rem", lineHeight: 1.4 }}>
+                <div className="mono">{me.username}</div>
+                <div className="muted">role · {me.role}</div>
+                <button className="btn btn-secondary" style={{ marginTop: "0.45rem" }} disabled={authBusy} onClick={() => void onLogout()}>
+                  Log out
+                </button>
+              </div>
+            )}
+            {authEnabled && !me?.authenticated && (
+              <form onSubmit={(e) => void onLogin(e)} style={{ display: "grid", gap: "0.35rem" }}>
+                <input
+                  className="select"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="username"
+                  autoComplete="username"
+                />
+                <input
+                  className="select"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="password"
+                  autoComplete="current-password"
+                />
+                <button className="btn btn-primary" disabled={authBusy} type="submit">
+                  Log in
+                </button>
+                {authError && (
+                  <p className="muted" style={{ fontSize: "0.72rem", margin: 0, color: "var(--danger, #c44)" }}>
+                    {authError}
+                  </p>
+                )}
+              </form>
+            )}
+          </div>
+
           {modelsLoaded === false && (
             <p className="muted" style={{ fontSize: "0.78rem", margin: "0 0.35rem", lineHeight: 1.35 }}>
               Start API: <span className="mono">uvicorn backend.main:app --port 8000</span>
@@ -84,7 +198,16 @@ export function AppLayout() {
             <span className="muted"> Detection and explainability need the FastAPI server with trained artifacts.</span>
           </div>
         )}
-        <Outlet />
+        {authEnabled && !me?.authenticated && (
+          <div
+            className="panel rise"
+            style={{ marginBottom: "1rem", borderColor: "rgba(227,93,106,.35)" }}
+          >
+            <strong>Authentication required.</strong>
+            <span className="muted"> Log in from the sidebar. UI hiding is not the security boundary — the API enforces RBAC.</span>
+          </div>
+        )}
+        <Outlet context={{ me, authEnabled, refreshAuth }} />
       </main>
     </div>
   );

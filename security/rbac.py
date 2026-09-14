@@ -39,7 +39,6 @@ ROLE_PERMISSIONS: dict[str, set[str]] = {
         "write_simulation",
         "write_ingest",
         "write_response",
-        # propose + dry-run only — cannot approve/reject without responder/admin
     },
     "viewer": {
         "read_health",
@@ -55,6 +54,18 @@ ROLE_PERMISSIONS: dict[str, set[str]] = {
 }
 
 DEFAULT_ROLE = "analyst"
+
+# Human-readable matrix for docs / viva (matches ROLE_PERMISSIONS)
+OPERATION_MATRIX = {
+    "view_detections": {"viewer": True, "analyst": True, "responder": True, "admin": True},
+    "view_shap": {"viewer": True, "analyst": True, "responder": True, "admin": True},
+    "create_incident": {"viewer": False, "analyst": True, "responder": True, "admin": True},
+    "propose_response": {"viewer": False, "analyst": True, "responder": True, "admin": True},
+    "dry_run": {"viewer": False, "analyst": True, "responder": True, "admin": True},
+    "approve_response": {"viewer": False, "analyst": False, "responder": True, "admin": True},
+    "rollback_response": {"viewer": False, "analyst": False, "responder": True, "admin": True},
+    "manage_users": {"viewer": False, "analyst": False, "responder": False, "admin": True},
+}
 
 
 def normalize_role(role: str | None) -> str:
@@ -81,10 +92,12 @@ def rbac_summary() -> dict:
         "roles": sorted(ROLE_PERMISSIONS.keys()),
         "permissions": sorted(PERMISSIONS),
         "matrix": {role: sorted(perms) for role, perms in ROLE_PERMISSIONS.items()},
+        "operations": OPERATION_MATRIX,
         "notes": [
-            "RBAC is enforced only when api.auth.enabled=true (or AEGIS_API_KEY + enabled).",
-            "Pass role via X-Aegis-Role when authenticated; defaults to analyst.",
-            "P2: write_response = propose/dry-run; approve_response = approve/reject (responder/admin).",
-            "This is scaffolding for Stage-2 — not a full IdP/OAuth SSO implementation.",
+            "P4: RBAC enforced when api.auth.enabled=true (or AEGIS_AUTH_ENABLED=true).",
+            "Bearer login binds role to the user record — clients cannot escalate via headers.",
+            "API keys use server-configured api_key_role unless allow_role_header=true (demo only).",
+            "write_response = propose/dry-run; approve_response = approve/reject/rollback/execute.",
+            "Not a full IdP/OAuth SSO — local password + HMAC bearer for the prototype.",
         ],
     }

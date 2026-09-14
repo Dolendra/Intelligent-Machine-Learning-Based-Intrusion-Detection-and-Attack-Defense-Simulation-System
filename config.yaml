@@ -139,8 +139,11 @@ api:
     enabled: true
   auth:
     enabled: false
-    # Prefer env AEGIS_API_KEY when enabling; config value is a fallback for demos only
+    # Prefer env AEGIS_API_KEY / AEGIS_AUTH_SECRET when enabling
     api_key: ""
+    api_key_role: admin
+    # P4: do not trust client X-Aegis-Role unless explicitly enabled for legacy demos
+    allow_role_header: false
     header: "X-API-Key"
     role_header: "X-Aegis-Role"
     default_role: "analyst"

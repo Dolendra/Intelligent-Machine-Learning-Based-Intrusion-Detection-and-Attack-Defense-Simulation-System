@@ -17,6 +17,8 @@ export function IncidentDetailPage() {
   const [busy, setBusy] = useState(false);
   const [responseActions, setResponseActions] = useState<Array<Record<string, unknown>>>([]);
   const [activeResponse, setActiveResponse] = useState<Record<string, unknown> | null>(null);
+  const [canPropose, setCanPropose] = useState(true);
+  const [canApprove, setCanApprove] = useState(true);
 
   async function loadResponses() {
     if (!incidentId) return;
@@ -44,6 +46,20 @@ export function IncidentDetailPage() {
 
   useEffect(() => {
     load().catch((e) => setError(e instanceof Error ? e.message : String(e)));
+  }, [incidentId]);
+
+  useEffect(() => {
+    api
+      .authMe()
+      .then((me) => {
+        const perms = new Set(me.permissions || []);
+        setCanPropose(perms.has("write_response") || perms.has("admin") || me.auth_enabled === false);
+        setCanApprove(perms.has("approve_response") || perms.has("admin") || me.auth_enabled === false);
+      })
+      .catch(() => {
+        setCanPropose(false);
+        setCanApprove(false);
+      });
   }, [incidentId]);
 
   async function advance(status: string) {
@@ -174,9 +190,10 @@ export function IncidentDetailPage() {
   const events = (item?.events as Array<Record<string, unknown>> | undefined) ?? [];
   const pending = Boolean(activeResponse?.pending_approval);
   const canRollback =
-    activeResponse &&
-    activeResponse.reversible !== false &&
-    ["ACTIVE", "VERIFIED", "SUCCEEDED"].includes(String(activeResponse.status));
+    Boolean(activeResponse) &&
+    activeResponse?.reversible !== false &&
+    ["ACTIVE", "VERIFIED", "SUCCEEDED"].includes(String(activeResponse?.status)) &&
+    canApprove;
 
   return (
     <div className="rise">
@@ -245,7 +262,7 @@ export function IncidentDetailPage() {
                   Adapters: <strong>DRY_RUN</strong> / <strong>CONTROLLED</strong> test plane — no live firewall/EDR.
                 </p>
               </div>
-              <button className="btn btn-primary" disabled={busy} onClick={() => void proposeResponse()}>
+              <button className="btn btn-primary" disabled={busy || !canPropose} onClick={() => void proposeResponse()}>
                 Propose response
               </button>
             </div>
@@ -273,13 +290,13 @@ export function IncidentDetailPage() {
                   </span>
                 </div>
                 <div className="row">
-                  <button className="btn btn-secondary" disabled={busy} onClick={() => void dryRunActive()}>
+                  <button className="btn btn-secondary" disabled={busy || !canPropose} onClick={() => void dryRunActive()}>
                     Dry run
                   </button>
-                  <button className="btn btn-primary" disabled={busy || !pending} onClick={() => void approveActive()}>
+                  <button className="btn btn-primary" disabled={busy || !pending || !canApprove} onClick={() => void approveActive()}>
                     Approve
                   </button>
-                  <button className="btn btn-secondary" disabled={busy || !pending} onClick={() => void rejectActive()}>
+                  <button className="btn btn-secondary" disabled={busy || !pending || !canApprove} onClick={() => void rejectActive()}>
                     Reject
                   </button>
                   <button className="btn btn-secondary" disabled={busy || !canRollback} onClick={() => void rollbackActive()}>
