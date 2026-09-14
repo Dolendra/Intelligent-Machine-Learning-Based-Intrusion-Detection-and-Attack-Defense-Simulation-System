@@ -100,10 +100,13 @@ def security_status():
             "simulation": True,
             "advisory_only": True,
             "dry_run_default": True,
-            "phase": "P2",
+            "phase": "P3",
             "plan_endpoint": "/api/response/plan",
             "actions_endpoint": "/api/response/actions",
+            "adapters_endpoint": "/api/response/adapters",
             "approval_required": True,
+            "controlled_test_adapter": True,
+            "live_firewall_edr": False,
         },
         "database": database_info(),
         "rbac": rbac_summary(),
@@ -111,7 +114,7 @@ def security_status():
             "Auth and rate limiting remain disabled by default for the research/demo baseline.",
             "Enable api.auth.enabled and set AEGIS_API_KEY for Stage-2 hardening.",
             "Enable api.rate_limit.enabled to protect predict/ingest/response surfaces.",
-            "P2 controlled response: propose → dry-run → approve/reject; no live firewall/EDR.",
+            "P3: adapter contract + TestNetworkAdapter; LIVE firewall/EDR still forbidden.",
             "/api/metrics is in-process only (resets on restart); not a multi-node SRE stack.",
             "Cyber-range validation checks the simulation state machine — not a physical range or real defense efficacy.",
             "PostgreSQL is optional via IDS_DB_URL; SQLite remains the default.",
@@ -697,6 +700,7 @@ def response_actions_propose(body: ResponseActionProposeRequest, request: Reques
             reason=body.reason,
             duration_minutes=body.duration_minutes,
             mode=body.mode,
+            adapter=body.adapter,
             actor=actor,
         )
     except ResponseError as exc:
@@ -760,7 +764,7 @@ def response_actions_reject(action_id: str, request: Request, body: ResponseActi
 
 @router.post("/response/actions/{action_id}/execute")
 def response_actions_execute(action_id: str, request: Request):
-    """Explicit execute after approve — still dry-run only in P2."""
+    """Explicit execute after approve — DRY_RUN or CONTROLLED adapter only."""
     from security.response import ResponseError, execute_action
 
     actor = getattr(request.state, "aegis_role", None) or "responder"
@@ -770,9 +774,46 @@ def response_actions_execute(action_id: str, request: Request):
         raise _response_http(exc) from exc
 
 
+@router.post("/response/actions/{action_id}/rollback")
+def response_actions_rollback(action_id: str, request: Request):
+    from security.response import ResponseError, rollback_action
+
+    actor = getattr(request.state, "aegis_role", None) or "responder"
+    try:
+        return rollback_action(action_id, actor=actor)
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/{action_id}/expire")
+def response_actions_expire(action_id: str, request: Request):
+    from security.response import ResponseError, expire_action
+
+    actor = getattr(request.state, "aegis_role", None) or "system"
+    try:
+        return expire_action(action_id, actor=actor)
+    except ResponseError as exc:
+        raise _response_http(exc) from exc
+
+
+@router.post("/response/actions/sweep-expired")
+def response_actions_sweep_expired(request: Request):
+    from security.response import sweep_expired
+
+    actor = getattr(request.state, "aegis_role", None) or "system"
+    return sweep_expired(actor=actor)
+
+
+@router.get("/response/adapters")
+def response_adapters_list():
+    from security.response.adapters import list_adapters
+
+    return {"items": list_adapters(), "live_mitigation": False, "phase": "P3"}
+
+
 @router.post("/incidents/{incident_id}/response/propose")
 def incident_response_propose(incident_id: str, request: Request, db: Session = Depends(get_db)):
-    """Propose a dry-run response action from an existing incident."""
+    """Propose a response action from an existing incident (default DRY_RUN)."""
     from security.response import ResponseError, propose_from_incident
 
     incident = svc.get_incident(db, incident_id)

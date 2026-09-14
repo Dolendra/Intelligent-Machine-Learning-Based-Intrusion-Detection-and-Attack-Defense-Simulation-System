@@ -288,6 +288,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ reason }),
     }),
+  rollbackResponse: (actionId: string) =>
+    request<Record<string, unknown>>(`/api/response/actions/${encodeURIComponent(actionId)}/rollback`, {
+      method: "POST",
+      body: "{}",
+    }),
   getResponseAction: (actionId: string) =>
     request<Record<string, unknown>>(`/api/response/actions/${encodeURIComponent(actionId)}`),
   downloadExport: async (kind: "incidents.csv" | "incidents.json" | "analytics.json" | "report.pdf") => {

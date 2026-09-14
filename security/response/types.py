@@ -1,8 +1,8 @@
-"""P2 controlled response — abstract action types and lifecycle (no live network)."""
+"""Controlled response — abstract action types and lifecycle."""
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any
 
@@ -23,29 +23,42 @@ class ActionStatus(str, Enum):
     SUCCEEDED = "SUCCEEDED"
     FAILED = "FAILED"
     VERIFIED = "VERIFIED"
+    ACTIVE = "ACTIVE"
     ROLLED_BACK = "ROLLED_BACK"
     EXPIRED = "EXPIRED"
 
 
 class ExecutionMode(str, Enum):
     DRY_RUN = "DRY_RUN"
-    # LIVE reserved for later phases — not executable in P2
-    LIVE = "LIVE"
+    CONTROLLED = "CONTROLLED"  # TestNetworkAdapter — simulated only
+    LIVE = "LIVE"  # forbidden until a later phase
 
 
 ALLOWED_ACTION_TYPES = {m.value for m in ActionType}
-TERMINAL_BEFORE_EXEC = {ActionStatus.REJECTED, ActionStatus.EXPIRED}
+ALLOWED_MODES = {ExecutionMode.DRY_RUN.value, ExecutionMode.CONTROLLED.value}
 EXECUTED_STATUSES = {
     ActionStatus.EXECUTING,
     ActionStatus.SUCCEEDED,
     ActionStatus.FAILED,
     ActionStatus.VERIFIED,
+    ActionStatus.ACTIVE,
     ActionStatus.ROLLED_BACK,
+    ActionStatus.EXPIRED,
 }
 
 
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 def utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return utc_now().isoformat()
+
+
+def parse_iso(ts: str | None) -> datetime | None:
+    if not ts:
+        return None
+    return datetime.fromisoformat(ts.replace("Z", "+00:00"))
 
 
 @dataclass
@@ -60,6 +73,7 @@ class ResponseAction:
     severity: str | None
     duration_minutes: int
     mode: str = ExecutionMode.DRY_RUN.value
+    adapter: str = "dry_run"
     status: str = ActionStatus.PROPOSED.value
     created_at: str = field(default_factory=utc_now_iso)
     created_by: str | None = None
@@ -70,18 +84,23 @@ class ResponseAction:
     rejection_reason: str | None = None
     executed_at: str | None = None
     verified_at: str | None = None
+    expires_at: str | None = None
+    rolled_back_at: str | None = None
     result: str | None = None
     dry_run_preview: str | None = None
     rollback_status: str | None = None
+    reversible: bool = True
+    inverse_action: str | None = None
     attack_type: str | None = None
+    live_network_change: bool = False
     audit: list[dict[str, Any]] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
         data = asdict(self)
         data["approval_status"] = self._approval_status()
         data["execution_status"] = self.status
-        data["live_network_change"] = False
         data["pending_approval"] = self.status == ActionStatus.PROPOSED.value
+        data["is_active"] = self.status == ActionStatus.ACTIVE.value
         return data
 
     def _approval_status(self) -> str:
@@ -92,6 +111,12 @@ class ResponseAction:
         if self.approved_at:
             return "APPROVED"
         return "N/A"
+
+    def compute_expires_at(self) -> str | None:
+        if self.duration_minutes <= 0:
+            return None
+        base = parse_iso(self.executed_at) or utc_now()
+        return (base + timedelta(minutes=self.duration_minutes)).isoformat()
 
 
 @dataclass

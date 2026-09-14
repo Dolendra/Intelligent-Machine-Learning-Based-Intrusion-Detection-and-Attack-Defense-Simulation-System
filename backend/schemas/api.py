@@ -102,7 +102,7 @@ class ControlledResponsePlanRequest(BaseModel):
 
 
 class ResponseActionProposeRequest(BaseModel):
-    """P2: propose an abstract dry-run response action (pending approval)."""
+    """Propose an abstract response action (DRY_RUN or CONTROLLED test adapter)."""
 
     attack_type: str
     incident_id: str | None = None
@@ -116,6 +116,7 @@ class ResponseActionProposeRequest(BaseModel):
     reason: str | None = Field(None, max_length=2000)
     duration_minutes: int | None = Field(None, ge=0, le=1440)
     mode: str = "DRY_RUN"
+    adapter: str | None = None
 
 
 class ResponseActionDecisionRequest(BaseModel):

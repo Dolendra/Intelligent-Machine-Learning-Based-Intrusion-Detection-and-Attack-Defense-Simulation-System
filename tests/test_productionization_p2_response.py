@@ -47,8 +47,8 @@ def test_dry_run_never_calls_live_adapter():
     with pytest.raises(LiveAdapterForbiddenError):
         adapter.apply(action)
     preview = DryRunExecutor().preview(action)
-    assert "Would block source 10.10.10.25" in preview
-    assert "15 minutes" in preview
+    assert "Would block source 10.10.10.25" in preview["message"]
+    assert "15 minutes" in preview["message"]
 
 
 def test_propose_ddos_block_source_pending_approval():
@@ -97,7 +97,7 @@ def test_approve_dry_runs_and_verifies_no_network_change():
     )
     aid = action["action_id"]
     out = approve_action(aid, actor="responder")
-    assert out["action"]["status"] == ActionStatus.VERIFIED.value
+    assert out["action"]["status"] in {ActionStatus.VERIFIED.value, ActionStatus.ACTIVE.value}
     assert out["action"]["approved_by"] == "responder"
     assert out["execution"]["live_network_change"] is False
     assert out["action"]["live_network_change"] is False
@@ -155,7 +155,7 @@ def test_api_propose_approve_reject_flow():
 
     ok = client.post(f"/api/response/actions/{aid}/approve")
     assert ok.status_code == 200
-    assert ok.json()["action"]["status"] == "VERIFIED"
+    assert ok.json()["action"]["status"] in {"VERIFIED", "ACTIVE"}
     assert ok.json()["execution"]["live_network_change"] is False
 
     # second action — reject path
@@ -196,7 +196,7 @@ def test_security_status_reports_p2_dry_run():
     assert cr["live_mitigation"] is False
     assert cr["dry_run_default"] is True
     assert cr["approval_required"] is True
-    assert cr["phase"] == "P2"
+    assert cr["phase"] == "P3"
 
 
 def test_response_plan_includes_suggested_action():
@@ -205,7 +205,7 @@ def test_response_plan_includes_suggested_action():
     body = r.json()
     assert body["live_mitigation"] is False
     assert body["suggested_action_type"] == "BLOCK_SOURCE"
-    assert body["phase"] == "P2"
+    assert body["phase"] == "P3"
 
 
 def test_dry_run_after_reject_fails():

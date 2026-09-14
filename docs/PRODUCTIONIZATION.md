@@ -18,42 +18,40 @@ Wording: **“productionized IDS prototype”** or **“submission-ready IDS pro
 |-------|--------|--------|
 | **P0** | Freeze `v1.1-research` | ✅ Done |
 | **P1** | Real PCAP → flow → frozen DT/RF | ✅ Complete |
-| **P2** | Defense dry-run + approval gate | ✅ Complete (this branch) |
-| **P3** | Controlled adapter + verify + rollback | Pending (next) |
-| **P4** | Reliability / load / DR | Partial metrics; expand later |
-| **P5** | External-dataset generalization | Future work (need real dataset) |
-| **P6** | Empirical mitigation evidence | Future work (controlled lab) |
+| **P2** | Defense dry-run + approval gate | ✅ Complete |
+| **P3** | Adapter + verify + rollback | ✅ Complete (this branch) |
+| **P4** | Auth / RBAC enablement | Scaffolding exists; expand next |
+| **P5+** | Hardening / persistence / load / DR / generalization | Later |
 
-## P1 deliverables
-
-1. Harden `POST /api/ingest/pcap` (size / magic / extension validation)
-2. Structured ingest audit events
-3. Detection UI PCAP upload + queue PCAP
-4. `POST /api/ingest/queue/submit-pcap` → same detect queue as CSV
-5. CI fixtures under `tests/fixtures/pcap/`
-6. Honest **501** without `cicflowmeter`
-
-## P2 deliverables
+## P3 deliverables
 
 ```text
-Detection → risk → recommendation → propose → DRY_RUN → approve/reject → audit
+Propose → Dry-run → Approve → ResponseAdapter.execute → verify → ACTIVE/VERIFIED
+                                                    ↘ verify fail → rollback
+ACTIVE → expire → rollback cleanup → EXPIRED
 ```
 
-Abstract actions: `MONITOR` | `RATE_LIMIT` | `BLOCK_SOURCE` | `ISOLATE_HOST` | `ESCALATE`
+| Adapter | Role |
+|---------|------|
+| `dry_run` | Default — no state change |
+| `test_network` | CONTROLLED simulated control plane |
+| `live_forbidden` | Stub — always raises |
 
-| Item | Detail |
-|------|--------|
-| Propose | `POST /api/response/actions/propose` (or `/api/incidents/{id}/response/propose`) |
-| Dry-run | Default mode; never invokes live adapters |
-| Approve / Reject | Human gate; reject ⇒ no execution |
-| Lifecycle | PROPOSED → APPROVED/REJECTED → EXECUTING → SUCCEEDED → VERIFIED |
-| RBAC seed | `write_response` (propose) vs `approve_response` (responder/admin) |
-| UI | Incident detail: Propose / Dry run / Approve / Reject |
-| Live firewall | **Not implemented** (stub raises `LiveAdapterForbiddenError`) |
+Contract: `validate` / `preview` / `execute` / `verify` / `rollback`
+
+Reversibility: `BLOCK_SOURCE↔UNBLOCK_SOURCE`, `RATE_LIMIT↔REMOVE_RATE_LIMIT`, …; `ESCALATE` marked non-reversible.
+
+## Safety invariants (tested)
+
+- No approval → no execution  
+- Dry-run → no real network modification  
+- CONTROLLED → simulated only (`live_network_change: false`)  
+- LIVE / firewall / EDR → forbidden  
+- Verify failure → rollback when reversible  
+- Every transition → audit  
 
 ## Safety rules
 
-- Do not retrain or overwrite `models/trained_models/*` as part of P1–P4
-- Do not claim live NIC capture until that mode is implemented and tested
-- Dry-run before any real firewall/EDR action (P2+; live adapters deferred to P3+)
-- Recommendations remain advisory until an explicit approval gate exists
+- Do not retrain or overwrite `models/trained_models/*`
+- Do not claim live NIC capture or live firewall blocking yet
+- Real vendor adapters come only after this contract is proven

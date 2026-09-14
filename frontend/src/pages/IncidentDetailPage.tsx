@@ -155,9 +155,28 @@ export function IncidentDetailPage() {
     }
   }
 
+  async function rollbackActive() {
+    if (!activeResponse?.action_id) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const out = await api.rollbackResponse(String(activeResponse.action_id));
+      setActiveResponse(out.action as Record<string, unknown>);
+      await loadResponses();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const next = (item?.allowed_next_statuses as string[] | undefined) ?? [];
   const events = (item?.events as Array<Record<string, unknown>> | undefined) ?? [];
   const pending = Boolean(activeResponse?.pending_approval);
+  const canRollback =
+    activeResponse &&
+    activeResponse.reversible !== false &&
+    ["ACTIVE", "VERIFIED", "SUCCEEDED"].includes(String(activeResponse.status));
 
   return (
     <div className="rise">
@@ -221,9 +240,9 @@ export function IncidentDetailPage() {
           <section className="panel panel-interactive" style={{ marginBottom: "1rem" }}>
             <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
-                <h3 style={{ marginTop: 0, marginBottom: "0.35rem" }}>Controlled response (P2)</h3>
+                <h3 style={{ marginTop: 0, marginBottom: "0.35rem" }}>Controlled response (P3)</h3>
                 <p className="muted" style={{ margin: 0 }}>
-                  Default mode: <strong>DRY_RUN</strong> — approval never changes a real network.
+                  Adapters: <strong>DRY_RUN</strong> / <strong>CONTROLLED</strong> test plane — no live firewall/EDR.
                 </p>
               </div>
               <button className="btn btn-primary" disabled={busy} onClick={() => void proposeResponse()}>
@@ -247,10 +266,10 @@ export function IncidentDetailPage() {
                   {String(activeResponse.dry_run_preview || activeResponse.result || activeResponse.reason)}
                 </p>
                 <div className="row" style={{ marginBottom: "0.75rem" }}>
-                  <span className="live-chip off">DRY RUN</span>
+                  <span className="live-chip off">{String(activeResponse.mode || "DRY_RUN")}</span>
                   <span className="badge">{String(activeResponse.approval_status || activeResponse.status)}</span>
                   <span className="muted mono" style={{ fontSize: "0.8rem" }}>
-                    {String(activeResponse.action_id)}
+                    {String(activeResponse.adapter || "dry_run")} · {String(activeResponse.action_id)}
                   </span>
                 </div>
                 <div className="row">
@@ -262,6 +281,9 @@ export function IncidentDetailPage() {
                   </button>
                   <button className="btn btn-secondary" disabled={busy || !pending} onClick={() => void rejectActive()}>
                     Reject
+                  </button>
+                  <button className="btn btn-secondary" disabled={busy || !canRollback} onClick={() => void rollbackActive()}>
+                    Rollback
                   </button>
                 </div>
                 {Array.isArray(activeResponse.audit) && (activeResponse.audit as unknown[]).length > 0 && (

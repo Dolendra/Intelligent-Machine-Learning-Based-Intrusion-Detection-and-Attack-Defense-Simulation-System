@@ -72,7 +72,7 @@ def build_response_plan(
         "mode": "dry_run_approval",
         "live_mitigation": False,
         "advisory_only": True,
-        "phase": "P2",
+        "phase": "P3",
         "attack_type": attack_type,
         "recommendation": recommendation,
         "risk": risk,
@@ -80,12 +80,12 @@ def build_response_plan(
         "suggested_action_type": suggested.value,
         "next_steps": [
             "Review recommendation with an analyst (decision support).",
-            "Propose a response via POST /api/response/actions/propose (DRY_RUN default).",
-            "Run dry-run, then APPROVE or REJECT — approval never touches a live firewall in P2.",
-            "Optionally run /api/simulation/* to visualize assumed defense efficacy.",
+            "Propose via POST /api/response/actions/propose (DRY_RUN default, or CONTROLLED test adapter).",
+            "Dry-run → APPROVE/REJECT → adapter execute → verify → optional rollback/expire.",
+            "LIVE firewall/EDR adapters remain disabled in P3.",
         ],
         "disclaimer": (
-            "P2 controlled response uses dry-run + human approval only. "
-            "Aegis IDS does not automatically apply firewall, WAF, or host isolation actions."
+            "P3 controlled response uses dry-run / simulated test adapters with human approval. "
+            "Aegis IDS does not automatically apply real firewall, WAF, or host isolation actions."
         ),
     }
