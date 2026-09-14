@@ -227,6 +227,41 @@ export function DetectionPage() {
             }}
           />
         </label>
+        <label
+          className="btn btn-secondary"
+          style={{ cursor: busy ? "not-allowed" : "pointer" }}
+          title="P1 offline PCAP → cicflowmeter → frozen DT/RF (requires extractor)"
+        >
+          Ingest PCAP (P1)
+          <input
+            type="file"
+            accept=".pcap,.pcapng,.cap,application/vnd.tcpdump.pcap"
+            hidden
+            disabled={busy}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              setBusy(true);
+              setError(null);
+              try {
+                const out = await api.ingestPcap(file, true, false);
+                const pred = out.prediction as BatchPredictResult | undefined;
+                if (pred) {
+                  setBatch(pred);
+                  setLabel(`PCAP ingest (${pred.total_flows} flows)`);
+                  setFeatures(null);
+                } else {
+                  setLabel(`PCAP validated (${String(out.flow_count ?? 0)} flows)`);
+                }
+              } catch (err) {
+                setError(err instanceof Error ? err.message : String(err));
+              } finally {
+                setBusy(false);
+              }
+            }}
+          />
+        </label>
         {busy && <span className="muted mono">Working…</span>}
         {label && (
           <span className="muted mono">
@@ -238,12 +273,13 @@ export function DetectionPage() {
       {ingestInfo && (
         <div className="hero-action" style={{ marginBottom: "1rem" }}>
           <div>
-            <div style={{ fontWeight: 650 }}>Stage-2 ingestion</div>
+            <div style={{ fontWeight: 650 }}>Stage-2 / P1 ingestion</div>
             <div className="muted mono" style={{ fontSize: "0.82rem" }}>
               schema {(ingestInfo.schema as Record<string, unknown> | undefined)?.schema_version as string} ·{" "}
               {String((ingestInfo.schema as Record<string, unknown> | undefined)?.feature_count ?? "—")} features · CSV{" "}
               {(ingestInfo.flows_csv as Record<string, unknown> | undefined)?.available ? "ready" : "off"} · PCAP{" "}
               {String(((ingestInfo.pcap as Record<string, unknown> | undefined)?.status as string) ?? "unknown")}
+              {(ingestInfo.pcap as Record<string, unknown> | undefined)?.live_capture === false ? " · offline only" : ""}
               {queueJob ? ` · queue ${String(queueJob.status)}` : ""}
             </div>
           </div>

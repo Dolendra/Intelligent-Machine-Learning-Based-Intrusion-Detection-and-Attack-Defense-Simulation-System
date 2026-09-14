@@ -1,7 +1,7 @@
 """FastAPI route handlers."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -308,19 +308,45 @@ async def ingest_flows_csv(
 
 @router.post("/ingest/pcap")
 async def ingest_pcap(
+    request: Request,
     file: UploadFile = File(...),
     predict: bool = False,
     persist: bool = False,
     db: Session = Depends(get_db),
 ):
-    """Offline PCAP upload — uses cicflowmeter when installed; otherwise 501."""
+    """Offline PCAP upload — validates file, then cicflowmeter when installed; otherwise 501."""
     import tempfile
     from pathlib import Path
 
+    from ingestion.audit import audit_ingest_event
+    from ingestion.pcap_validation import validate_pcap_upload
     from ingestion.pipeline import ingest_pcap as _ingest_pcap
 
+    request_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID")
     suffix = Path(file.filename or "capture.pcap").suffix or ".pcap"
     raw = await file.read()
+    check = validate_pcap_upload(filename=file.filename, content=raw)
+    if not check.ok:
+        audit_ingest_event(
+            event="pcap_rejected",
+            source="pcap",
+            request_id=request_id,
+            filename=file.filename,
+            sha256=check.sha256,
+            size_bytes=check.size_bytes,
+            code=check.code,
+            predict=predict,
+        )
+        status = 413 if check.code == "PCAP_TOO_LARGE" else 422
+        raise HTTPException(
+            status_code=status,
+            detail={
+                "code": check.code,
+                "message": check.message,
+                "validation": check.as_dict(),
+            },
+        )
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(raw)
         tmp_path = Path(tmp.name)
@@ -332,6 +358,17 @@ async def ingest_pcap(
     if not result.ok:
         code = result.detail.get("code", "PCAP_NOT_AVAILABLE")
         status = 501 if code in {"PCAP_EXTRACTOR_NOT_CONFIGURED", "PCAP_EXTRACTOR_NOT_WIRED"} else 422
+        audit_ingest_event(
+            event="pcap_extract_failed",
+            source="pcap",
+            request_id=request_id,
+            filename=file.filename,
+            sha256=check.sha256,
+            size_bytes=check.size_bytes,
+            code=code,
+            schema_version=(result.schema or {}).get("schema_version"),
+            predict=predict,
+        )
         raise HTTPException(
             status_code=status,
             detail={
@@ -340,10 +377,24 @@ async def ingest_pcap(
                 "capabilities": result.detail,
                 "schema_version": (result.schema or {}).get("schema_version"),
                 "validation": result.validation,
+                "upload": check.as_dict(),
             },
         )
 
     payload = result.as_dict()
+    payload["upload"] = check.as_dict()
+    audit_ingest_event(
+        event="pcap_accepted",
+        source="pcap",
+        request_id=request_id,
+        filename=file.filename,
+        sha256=check.sha256,
+        size_bytes=check.size_bytes,
+        code="OK",
+        flow_count=len(result.flows),
+        schema_version=(result.schema or {}).get("schema_version"),
+        predict=predict,
+    )
     if predict:
         try:
             batch = svc.run_prediction_batch(result.flows, db=db, persist=persist, allow_missing_features=False)

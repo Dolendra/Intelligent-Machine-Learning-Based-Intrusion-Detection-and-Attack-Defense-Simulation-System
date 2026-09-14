@@ -25,7 +25,9 @@ Do **not** claim live capture, automatic mitigation, or OAuth SSO until those pi
 |--------|------|---------|
 | GET | `/api/ingest/capabilities` | Schema version + extractor status |
 | POST | `/api/ingest/flows/csv` | Offline CSV → validated feature rows (+ optional predict) |
-| POST | `/api/ingest/pcap` | Offline PCAP via cicflowmeter when installed; else 501 |
+| POST | `/api/ingest/pcap` | Offline PCAP (P1: size/magic/extension validation + audit); cicflowmeter when installed; else 501 |
+
+> **Productionization (post `v1.1-research`):** see `docs/PRODUCTIONIZATION.md`. Branch `productionization` hardens offline PCAP without changing frozen DT/RF artifacts. Live NIC capture remains out of scope until a later phase.
 
 ### CLI examples
 

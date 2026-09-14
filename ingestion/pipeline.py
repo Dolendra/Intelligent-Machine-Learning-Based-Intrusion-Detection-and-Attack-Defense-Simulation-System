@@ -97,24 +97,39 @@ def ingest_pcap(pcap_path: Path, *, fill_missing: bool = False, max_rows: int = 
 
 
 def ingestion_capabilities() -> dict[str, Any]:
+    from ingestion.pcap_validation import max_pcap_bytes
     from ingestion.queue import ingest_queue
 
+    pcap = pcap_extractor_status()
+    pcap["max_bytes"] = max_pcap_bytes()
+    pcap["validation"] = ["extension", "magic", "max_size"]
+    pcap["endpoint"] = "/api/ingest/pcap"
+    pcap["live_capture"] = False
+
     return {
-        "stage": "2-phase-b",
+        "stage": "productionization-p1",
+        "stage2_scaffold": "2-phase-b",
         "baseline": "v1.1-research",
+        "productionization": {
+            "phase": "P1",
+            "focus": "offline_pcap_harden",
+            "docs": "docs/PRODUCTIONIZATION.md",
+        },
         "schema": schema_summary(),
         "flows_csv": {"available": True, "endpoint": "/api/ingest/flows/csv"},
-        "pcap": pcap_extractor_status(),
+        "pcap": pcap,
         "queue": {
             "available": True,
             "endpoint": "/api/ingest/queue",
             "mode": "in_process",
             "status": ingest_queue.status(),
+            "accepts": ["flows_csv"],
         },
         "notes": [
             "v1.1 research baseline remains frozen on MachineLearningCVE flow features.",
             "CSV alias normalization maps common CICFlowMeter abbreviations onto schema v1.1.",
-            "PCAP extraction uses cicflowmeter when installed; otherwise fails safely (501).",
-            "Phase B adds an in-process ingest→detect queue for batch staging and latency metrics.",
+            "P1 hardens offline PCAP upload (size/magic/extension + audit); cicflowmeter still required for extract.",
+            "Live NIC capture is not implemented — do not claim production packet capture.",
+            "Queue currently accepts CSV; PCAP uses synchronous /api/ingest/pcap.",
         ],
     }
