@@ -67,6 +67,13 @@ def paired(records, variant, method, metric="known_recall") -> dict:
 
 
 def main() -> None:
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", type=Path, default=OUT, help="output path (the committed file is protected)")
+    out = ap.parse_args().out
+    sys.path.insert(0, str(ROOT))
+    from research.artifact_guard import assert_writable
+    assert_writable(out)
     data = json.loads(SRC.read_text(encoding="utf-8"))
     recs = data["records"]
     days = sorted({r["fold"] for r in recs})
@@ -103,9 +110,9 @@ def main() -> None:
         "seed_level_known_recall_vs_aegis_osr": comparisons,
         "in_distribution_reference": loafo,
     }
-    OUT.write_text(json.dumps(report, indent=1), encoding="utf-8")
+    out.write_text(json.dumps(report, indent=1), encoding="utf-8")
 
-    print(f"wrote {OUT.relative_to(ROOT)}")
+    print(f"wrote {out}")
     for v in ["none", "recal@2000", "recal+ref@2000", "recal+ref@5000"]:
         print(f"\n{v}:  FPR / known recall / AUROC(benign vs attacks)")
         for m in METHODS:

@@ -65,3 +65,8 @@ CSE-CIC-IDS2018/
 .ci-venv/
 models/trained_models/retrain_log.txt
 research_artifacts/cache/
+
+# R3: per-flow score dumps and tuning studies are large and regenerable (manifests are committed)
+research_artifacts/r3/**/scores/**/*.parquet
+research_artifacts/r3/**/tuning/
+research_artifacts/r3/**/models/

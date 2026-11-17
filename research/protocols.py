@@ -29,6 +29,8 @@ VAL_CAPS = {"BENIGN": 60_000, "_attack": 10_000}
 TEST_CAPS = {"BENIGN": 150_000, "_attack": 25_000}
 
 Log = Callable[[str], None]
+# Optional per-flow score sink, called as dump(key, model, scores, families, groups) — see research/scoredump.py.
+Dump = Callable[..., None]
 
 
 def _cap_keep_index(df: pd.DataFrame, caps: dict[str, int], seed: int) -> pd.DataFrame:
@@ -46,10 +48,12 @@ ORACLE_WINDOW = 2000
 
 
 def _evaluate(model: AegisOSR, Xte: np.ndarray, fam: np.ndarray, groups: np.ndarray,
-              alpha: float) -> tuple[dict, dict, float]:
+              alpha: float, dump: Dump | None = None, key: dict | None = None) -> tuple[dict, dict, float]:
     t = time.time()
     sc = model.score(Xte)
     elapsed = time.time() - t
+    if dump is not None:  # passive observer: records per-flow evidence, never changes model state
+        dump(key or {}, model, sc, fam, groups)
     methods = {name: detection_metrics(m, groups, alpha, fam) for name, m in method_scores(sc).items()}
     attribution = openset_attribution(model.label(sc), fam, groups)
     return methods, attribution, elapsed
@@ -70,6 +74,7 @@ def run_once(
     warmup: pd.DataFrame | None = None,
     warmup_oracle: pd.DataFrame | None = None,
     windows: Iterable[int] = WARMUP_WINDOWS,
+    dump: Dump | None = None,
 ) -> dict:
     """Fit on train, calibrate on val, evaluate on test.
 
@@ -88,7 +93,8 @@ def run_once(
 
     fam = test["family"].astype(str).to_numpy()
     groups = np.where(fam == "BENIGN", "benign", np.where(np.isin(fam, list(unknown)), "unknown", "known"))
-    methods, attribution, score_s = _evaluate(model, Xte, fam, groups, alpha)
+    key = {"protocol": protocol, "fold": fold, "seed": seed}
+    methods, attribution, score_s = _evaluate(model, Xte, fam, groups, alpha, dump, {**key, "variant": "none"})
 
     rec = {
         "protocol": protocol,
@@ -120,7 +126,7 @@ def run_once(
                 continue
             for variant, upd in (("recal", False), ("recal+ref", True)):
                 model.restore(base_state).recalibrate(Xw_all[:W], update_reference=upd)
-                m_ad, a_ad, _ = _evaluate(model, Xte, fam, groups, alpha)
+                m_ad, a_ad, _ = _evaluate(model, Xte, fam, groups, alpha, dump, {**key, "variant": f"{variant}@{W}"})
                 rec["adaptation"][f"{variant}@{W}"] = {"window": W, "variant": variant, "methods": m_ad,
                                                        "aegis_osr_attribution": a_ad}
                 pa = m_ad[PROPOSED]
@@ -129,7 +135,8 @@ def run_once(
             # upper bound: a *representative* random benign sample of the target (not in test)
             Xo = scaler.transform(warmup_oracle[feats].to_numpy()[:ORACLE_WINDOW])
             model.restore(base_state).recalibrate(Xo, update_reference=False)  # isolates calibration drift
-            m_ad, a_ad, _ = _evaluate(model, Xte, fam, groups, alpha)
+            m_ad, a_ad, _ = _evaluate(model, Xte, fam, groups, alpha, dump,
+                                      {**key, "variant": f"oracle@{ORACLE_WINDOW}"})
             rec["adaptation"][f"oracle@{ORACLE_WINDOW}"] = {"window": ORACLE_WINDOW, "variant": "oracle",
                                                            "methods": m_ad, "aegis_osr_attribution": a_ad}
             pa = m_ad[PROPOSED]
@@ -227,7 +234,7 @@ PERDAY_TEST_CAPS = {"BENIGN": 20_000, "_attack": 8_000}
 
 def cross_dataset_perday(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[int], log: Log = print,
                          alpha: float = 0.01, ae_kwargs: dict | None = None,
-                         windows: Iterable[int] = WARMUP_WINDOWS) -> list[dict]:
+                         windows: Iterable[int] = WARMUP_WINDOWS, dump: Dump | None = None) -> list[dict]:
     """CICIDS2017 → CSE-CIC-IDS2018 with **independent per-day** recalibration (R1b).
 
     The model is trained once per seed on CICIDS2017. For every 2018 capture day separately:
@@ -263,7 +270,8 @@ def cross_dataset_perday(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[i
             groups = np.where(fam == "BENIGN", "benign", np.where(np.isin(fam, unknown), "unknown", "known"))
             Xte = scaler.transform(test[feats].to_numpy())
             model.restore(base_state)
-            methods, attribution, _ = _evaluate(model, Xte, fam, groups, alpha)
+            key = {"protocol": "cross_perday", "fold": day, "seed": seed}
+            methods, attribution, _ = _evaluate(model, Xte, fam, groups, alpha, dump, {**key, "variant": "none"})
             rec = {
                 "protocol": "cross_perday", "fold": day, "seed": seed, "alpha": alpha,
                 "known_families": sorted(known_set), "unknown_families": unknown,
@@ -279,7 +287,8 @@ def cross_dataset_perday(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[i
                     continue
                 for variant, upd in (("recal", False), ("recal+ref", True)):
                     model.restore(base_state).recalibrate(Xw[:W], update_reference=upd)
-                    m_ad, a_ad, _ = _evaluate(model, Xte, fam, groups, alpha)
+                    m_ad, a_ad, _ = _evaluate(model, Xte, fam, groups, alpha, dump,
+                                              {**key, "variant": f"{variant}@{W}"})
                     rec["adaptation"][f"{variant}@{W}"] = {"window": W, "variant": variant, "methods": m_ad,
                                                            "aegis_osr_attribution": a_ad}
             model.restore(base_state)

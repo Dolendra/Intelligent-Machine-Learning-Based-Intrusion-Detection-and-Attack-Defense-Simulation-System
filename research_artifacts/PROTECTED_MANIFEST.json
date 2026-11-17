@@ -1,0 +1,138 @@
+{
+ "files": {
+  "research_artifacts/dataset_summary.json": {
+   "sha256": "75858d331afc77f8a924259847a8b1010b9cf4848a50c9d5838018273a7def5e",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/frozen_v11_on_cic2018.json": {
+   "sha256": "9c0636ec0dfa755ea9ea0f52d3ee047b6e5ae027924f6ae3edacbe9a1babcdc2",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/frozen_v11_on_cic2018_v2.json": {
+   "sha256": "5f023ef64b67ca87c6f8fa85e6f05d9e4e32808d59ac4b2f3ae7954a0dab11b7",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/model_family_comparison.json": {
+   "sha256": "e57de85b2f131c6d7adf2d6a0a8d2c49f555847e30c1079128a070c0aa545560",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/openset_cross_perday_records.json": {
+   "sha256": "c1a13dc307672fd2ea0cbb344f206a22ef84b7ac43b37ec8a3eed1db4bbba1fa",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/openset_cross_perday_summary.json": {
+   "sha256": "1cc382001a0ed33a91befc20d2063cc10bcc7956daf4ab86300cf881bbd2f9c8",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/openset_cross_records.json": {
+   "sha256": "35410c1f7bfbd91da2e2325d5b9d6e09251a833746388ce99a1a5bef8e5f0dda",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/openset_cross_records_v2.json": {
+   "sha256": "0403e0c1a9d4e2155751c274eac82f9440be1d7cce9023f9153cb9bbbe5c32fe",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/openset_cross_summary.json": {
+   "sha256": "bb11959d0ecec0d71e6e1c7a70d229f4e1868af208ff04115bd714529b425709",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/openset_cross_summary_v2.json": {
+   "sha256": "166101eb14ed593c513d305bc1bbf421f7f76d14fae092ee628184a546d84421",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/openset_loafo_records.json": {
+   "sha256": "f5713067890366bad1a87e21ba5321bd655a1e199a0a62b1eebcb333ca6e63e8",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/openset_loafo_records_repro.json": {
+   "sha256": "a922396805d975787f4686489de742a2a3d6bafe8a8f2ac0cf8f9bbdb344c4c6",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/openset_loafo_summary.json": {
+   "sha256": "2eb66a5d0f99ce69885000d180644b1859548b9c79a8f623da2bd5fa35ca5c9f",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/openset_loafo_summary_repro.json": {
+   "sha256": "6f64cbcee89d063b85348a47cd566ee8a515e693bb4b40696fabae22ae9e0b59",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/openset_temporal_records.json": {
+   "sha256": "67e91fd48fd0dc5dfbe78a7f3a47273a923d95174df86b65f34019a890aa3c64",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/openset_temporal_summary.json": {
+   "sha256": "19d02fbf36838e8b06dd82efb78f938862c6fbaf5bee1a8961308d8c39cdc3ea",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/pilot_seed0_fusion_selection.csv": {
+   "sha256": "e7a59ae45f4aa0a0791fd58addfc3fcf3286601779a0cca18e302835e939dce9",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/pilot_seed0_records.json": {
+   "sha256": "75669442b91118c5a7ae5a61f4cd9af9209d585c6ac9b5da6bddc19db1a96d45",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/recalibration_diagnosis.json": {
+   "sha256": "6b6b033a972741f27adce02f1c4f392aad4c26afd9dc6976986a92eb22483d95",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/replay/legacy/README.md": {
+   "sha256": "f78dfdc9b83b7ae9033543cb02c9aff2faa1f26d0fc6be7ea7f059f55be88766",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/replay/legacy/replay_pool_v1_INVALID_for_frozen.parquet": {
+   "sha256": "3d1667e934b64ecea5e4f3c12c846c21a03c6e43db9de51a44902250e486b09b",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/replay/replay_pool.parquet": {
+   "sha256": "5505ffb3ecf94ba640235ca42945a41b5102e13e6019c6226e3bc8ac79468e7d",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/replay/replay_pool_manifest.json": {
+   "sha256": "5939ee069dffd6429dd3bf3763443c9bb85c72fc0c37c573e418eb6727f98a6b",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/reproduction_loafo_repro.json": {
+   "sha256": "a67441c22ea4d6ebe51da8550583af07a4e93d3710c51dd6be94f21f47493f43",
+   "added": "2026-11-17"
+  },
+  "research_artifacts/zero_day_gate_report.json": {
+   "sha256": "2da9237522595cda4b3281b2de5187ad3f21a90f9602fb9cbbd263785c4c8670",
+   "added": "2026-11-17"
+  }
+ },
+ "history": [
+  {
+   "at": "2026-11-17T13:39:33.060680+00:00",
+   "reason": "R3 Stage 0: protect all historical research artifacts before any R3 run",
+   "added": [
+    "research_artifacts/dataset_summary.json",
+    "research_artifacts/frozen_v11_on_cic2018.json",
+    "research_artifacts/frozen_v11_on_cic2018_v2.json",
+    "research_artifacts/model_family_comparison.json",
+    "research_artifacts/openset_cross_perday_records.json",
+    "research_artifacts/openset_cross_perday_summary.json",
+    "research_artifacts/openset_cross_records.json",
+    "research_artifacts/openset_cross_records_v2.json",
+    "research_artifacts/openset_cross_summary.json",
+    "research_artifacts/openset_cross_summary_v2.json",
+    "research_artifacts/openset_loafo_records.json",
+    "research_artifacts/openset_loafo_records_repro.json",
+    "research_artifacts/openset_loafo_summary.json",
+    "research_artifacts/openset_loafo_summary_repro.json",
+    "research_artifacts/openset_temporal_records.json",
+    "research_artifacts/openset_temporal_summary.json",
+    "research_artifacts/pilot_seed0_fusion_selection.csv",
+    "research_artifacts/pilot_seed0_records.json",
+    "research_artifacts/recalibration_diagnosis.json",
+    "research_artifacts/replay/legacy/README.md",
+    "research_artifacts/replay/legacy/replay_pool_v1_INVALID_for_frozen.parquet",
+    "research_artifacts/replay/replay_pool.parquet",
+    "research_artifacts/replay/replay_pool_manifest.json",
+    "research_artifacts/reproduction_loafo_repro.json",
+    "research_artifacts/zero_day_gate_report.json"
+   ]
+  }
+ ],
+ "note": "Historical research artifacts. Never overwrite; re-runs use new names or research_artifacts/r3/. Entries are only ever added (python -m research.artifact_guard --build --reason ...)."
+}

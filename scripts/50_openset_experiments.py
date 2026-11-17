@@ -38,6 +38,7 @@ import numpy as np  # noqa: E402
 
 import research.protocols as P  # noqa: E402
 from research.data import ARTIFACT_DIR, load_cic2017, load_cic2018, feature_columns  # noqa: E402
+from research.artifact_guard import assert_writable  # noqa: E402
 
 
 def _json_default(o):
@@ -62,6 +63,7 @@ def _clean(o):
 
 
 def _write(path: Path, payload) -> None:
+    assert_writable(path)  # historical results are never overwritten (research/artifact_guard.py)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(_clean(payload), indent=1, default=_json_default), encoding="utf-8")

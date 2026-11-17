@@ -28,6 +28,7 @@ from sklearn.metrics import f1_score, precision_score, recall_score  # noqa: E40
 
 from ml.prediction.predictor import IDSPredictor  # noqa: E402
 from research.data import ARTIFACT_DIR, feature_columns, load_cic2017, load_cic2018  # noqa: E402
+from research.artifact_guard import assert_writable  # noqa: E402
 
 SEED = 42
 PER_LABEL = 20_000
@@ -39,7 +40,10 @@ def main() -> None:
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--cic2018-version", type=int, default=2, choices=[1, 2])
-    version = ap.parse_args().cic2018_version
+    ap.add_argument("--out", type=Path, default=None,
+                    help="write the result here instead of research_artifacts/ (used by the regression gate)")
+    args = ap.parse_args()
+    version = args.cic2018_version
     feats = feature_columns(load_cic2017().head(1))
     d18 = load_cic2018(feats, version=version)
     parts = []
@@ -101,8 +105,11 @@ def main() -> None:
         ),
     }
     name = "frozen_v11_on_cic2018.json" if version == 1 else f"frozen_v11_on_cic2018_v{version}.json"
-    (ARTIFACT_DIR / name).write_text(json.dumps(result, indent=2), encoding="utf-8")
-    if version != 1:  # keep the EXP-009 status file pointing at its original evidence
+    out_path = args.out or (ARTIFACT_DIR / name)
+    assert_writable(out_path)  # the committed EXP-009 evidence is never overwritten
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    if version != 1 or args.out is not None:  # keep the EXP-009 status file pointing at its original evidence
         print(json.dumps(result["binary"], indent=1))
         return
     status_path = ROOT / "models/trained_models/cross_dataset_status.json"
