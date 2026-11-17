@@ -1,0 +1,235 @@
+{
+ "generated_at": "2026-11-17T11:03:31.932427+00:00",
+ "cic2017": {
+  "rows": 2520798,
+  "by_family": {
+   "BENIGN": 2095057,
+   "DoS": 193745,
+   "DDoS": 128014,
+   "PortScan": 90694,
+   "BruteForce": 9150,
+   "WebAttack": 2143,
+   "Bot": 1948,
+   "Infiltration": 36,
+   "Heartbleed": 11
+  },
+  "by_day_family": {
+   "Friday": {
+    "BENIGN": 394777,
+    "Bot": 1948,
+    "DDoS": 128014,
+    "PortScan": 90694
+   },
+   "Monday": {
+    "BENIGN": 502464
+   },
+   "Thursday": {
+    "BENIGN": 400256,
+    "Infiltration": 36,
+    "WebAttack": 2143
+   },
+   "Tuesday": {
+    "BENIGN": 400833,
+    "BruteForce": 9150
+   },
+   "Wednesday": {
+    "BENIGN": 396727,
+    "DoS": 193745,
+    "Heartbleed": 11
+   }
+  },
+  "n_features": 77,
+  "note": "MachineLearningCVE, cleaned and de-duplicated (research cache, research/data.py)"
+ },
+ "cic2018_v1": {
+  "rows": 804192,
+  "by_family": {
+   "DDoS": 250179,
+   "BENIGN": 143116,
+   "Infiltration": 132646,
+   "DoS": 118923,
+   "BruteForce": 82299,
+   "Bot": 76162,
+   "WebAttack": 867
+  },
+  "by_day_family": {
+   "2018-02-14": {
+    "BruteForce": 82299
+   },
+   "2018-02-15": {
+    "DoS": 51314
+   },
+   "2018-02-16": {
+    "BENIGN": 22192,
+    "DoS": 67609
+   },
+   "2018-02-20": {
+    "BENIGN": 35047,
+    "DDoS": 150000
+   },
+   "2018-02-21": {
+    "DDoS": 100179
+   },
+   "2018-02-22": {
+    "WebAttack": 324
+   },
+   "2018-02-23": {
+    "BENIGN": 49565,
+    "WebAttack": 543
+   },
+   "2018-02-28": {
+    "Infiltration": 50115
+   },
+   "2018-03-01": {
+    "Infiltration": 82531
+   },
+   "2018-03-02": {
+    "BENIGN": 36312,
+    "Bot": 76162
+   }
+  },
+  "benign_median_by_day": {
+   "2018-02-16": {
+    "Flow Bytes/s": 300.23577880859375,
+    "Fwd Packets/s": 1.157865047454834,
+    "Init_Win_bytes_forward": 219.0,
+    "Flow Duration": 4305921.0
+   },
+   "2018-02-20": {
+    "Flow Bytes/s": 1316.6414794921875,
+    "Fwd Packets/s": 43.33506774902344,
+    "Init_Win_bytes_forward": 260.0,
+    "Flow Duration": 45588.0
+   },
+   "2018-02-23": {
+    "Flow Bytes/s": 790.9613647460938,
+    "Fwd Packets/s": 16.39075469970703,
+    "Init_Win_bytes_forward": 4987.0,
+    "Flow Duration": 186098.0
+   },
+   "2018-03-02": {
+    "Flow Bytes/s": 1106.89501953125,
+    "Fwd Packets/s": 9.291969299316406,
+    "Init_Win_bytes_forward": 8192.0,
+    "Flow Duration": 416003.0
+   }
+  }
+ },
+ "cic2018_v2": {
+  "rows": 1098993,
+  "by_family": {
+   "BENIGN": 604938,
+   "DDoS": 148319,
+   "Infiltration": 139341,
+   "DoS": 103803,
+   "Bot": 51250,
+   "BruteForce": 50475,
+   "WebAttack": 867
+  },
+  "by_day_family": {
+   "2018-02-14": {
+    "BENIGN": 29250,
+    "BruteForce": 50475
+   },
+   "2018-02-15": {
+    "BENIGN": 45188,
+    "DoS": 51314
+   },
+   "2018-02-16": {
+    "BENIGN": 22320,
+    "DoS": 52489
+   },
+   "2018-02-20": {
+    "BENIGN": 321702,
+    "DDoS": 99971
+   },
+   "2018-02-21": {
+    "BENIGN": 17762,
+    "DDoS": 48348
+   },
+   "2018-02-22": {
+    "BENIGN": 47361,
+    "WebAttack": 324
+   },
+   "2018-02-23": {
+    "BENIGN": 49695,
+    "WebAttack": 543
+   },
+   "2018-02-28": {
+    "BENIGN": 24193,
+    "Infiltration": 56810
+   },
+   "2018-03-01": {
+    "BENIGN": 11167,
+    "Infiltration": 82531
+   },
+   "2018-03-02": {
+    "BENIGN": 36300,
+    "Bot": 51250
+   }
+  },
+  "benign_median_by_day": {
+   "2018-02-14": {
+    "Flow Bytes/s": 1129.3336181640625,
+    "Fwd Packets/s": 25.2896728515625,
+    "Init_Win_bytes_forward": 292.0,
+    "Flow Duration": 99600.0
+   },
+   "2018-02-15": {
+    "Flow Bytes/s": 1179.549560546875,
+    "Fwd Packets/s": 36.56642150878906,
+    "Init_Win_bytes_forward": 257.0,
+    "Flow Duration": 39157.5
+   },
+   "2018-02-16": {
+    "Flow Bytes/s": 299.9737548828125,
+    "Fwd Packets/s": 1.1577675342559814,
+    "Init_Win_bytes_forward": 219.0,
+    "Flow Duration": 4306145.5
+   },
+   "2018-02-20": {
+    "Flow Bytes/s": 1148.45068359375,
+    "Fwd Packets/s": 26.050430297851562,
+    "Init_Win_bytes_forward": 913.0,
+    "Flow Duration": 93483.5
+   },
+   "2018-02-21": {
+    "Flow Bytes/s": 842916.8125,
+    "Fwd Packets/s": 3419.97265625,
+    "Init_Win_bytes_forward": 65535.0,
+    "Flow Duration": 1462.0
+   },
+   "2018-02-22": {
+    "Flow Bytes/s": 785.1082763671875,
+    "Fwd Packets/s": 11.355506896972656,
+    "Init_Win_bytes_forward": 8192.0,
+    "Flow Duration": 281374.0
+   },
+   "2018-02-23": {
+    "Flow Bytes/s": 791.9841918945312,
+    "Fwd Packets/s": 16.47772216796875,
+    "Init_Win_bytes_forward": 5386.0,
+    "Flow Duration": 183842.0
+   },
+   "2018-02-28": {
+    "Flow Bytes/s": 1496.3607177734375,
+    "Fwd Packets/s": 70.05548095703125,
+    "Init_Win_bytes_forward": 258.0,
+    "Flow Duration": 24890.0
+   },
+   "2018-03-01": {
+    "Flow Bytes/s": 1167.9351806640625,
+    "Fwd Packets/s": 53.30774688720703,
+    "Init_Win_bytes_forward": 257.0,
+    "Flow Duration": 36829.0
+   },
+   "2018-03-02": {
+    "Flow Bytes/s": 1086.781982421875,
+    "Fwd Packets/s": 9.078975677490234,
+    "Init_Win_bytes_forward": 8192.0,
+    "Flow Duration": 416516.5
+   }
+  }
+ },
+ "cic2018_note": "v1 = pre-R1b sample (global per-label cap; benign from 4 of 10 days only); v2 = R1b sample (5% benign of every day; attacks capped per day and label at random)"
+}

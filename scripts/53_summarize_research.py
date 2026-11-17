@@ -32,10 +32,14 @@ _spec.loader.exec_module(_exp)  # reuse its NaN-safe JSON writer
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--protocol", nargs="+", default=["loafo", "temporal", "cross"])
+    ap.add_argument("--protocol", nargs="+", default=["loafo", "temporal", "cross", "cross_v2", "cross_perday"])
     args = ap.parse_args()
     for proto in args.protocol:
-        rec_path = ARTIFACT_DIR / f"openset_{proto}_records.json"
+        # "cross_v2" = cross-dataset records on the corrected 2018 sample (openset_cross_records_v2.json)
+        stem, _, ver = proto.partition("_v")
+        rec_name = f"openset_{stem}_records_v{ver}.json" if ver.isdigit() else f"openset_{proto}_records.json"
+        sum_name = rec_name.replace("_records", "_summary")
+        rec_path = ARTIFACT_DIR / rec_name
         if not rec_path.exists():
             print(f"{proto}: no records yet")
             continue
@@ -48,7 +52,7 @@ def main() -> None:
         summary["meta"] = {**payload.get("meta", {}), "n_records": len(records),
                            "seeds": sorted({r["seed"] for r in records}),
                            "summarized_at": datetime.now(timezone.utc).isoformat()}
-        _exp._write(ARTIFACT_DIR / f"openset_{proto}_summary.json", summary)
+        _exp._write(ARTIFACT_DIR / sum_name, summary)
         seeds = sorted({r["seed"] for r in records})
         folds = sorted({r["fold"] for r in records})
         print(f"{proto}: {len(records)} records, seeds={seeds}, folds={folds}")

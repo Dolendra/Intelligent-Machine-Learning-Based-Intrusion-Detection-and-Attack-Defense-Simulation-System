@@ -35,8 +35,13 @@ BENIGN_N = 200_000
 
 
 def main() -> None:
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--cic2018-version", type=int, default=2, choices=[1, 2])
+    version = ap.parse_args().cic2018_version
     feats = feature_columns(load_cic2017().head(1))
-    d18 = load_cic2018(feats)
+    d18 = load_cic2018(feats, version=version)
     parts = []
     for lab, g in d18.groupby("fine_label", observed=True):
         n = BENIGN_N if (g["family"] == "BENIGN").all() else PER_LABEL
@@ -69,11 +74,7 @@ def main() -> None:
         per_label.append(row)
 
     ref = json.loads((ROOT / "models/trained_models/training_report.json").read_text(encoding="utf-8"))
-    iid_f1 = None
-    try:
-        iid_f1 = ref["binary"]["test_metrics"]["f1"]
-    except Exception:  # noqa: BLE001
-        pass
+    iid_f1 = ref["binary"]["test"]["f1"]  # frozen v1.1 IID test F1 (training_report.json → binary.test.f1)
 
     result = {
         "experiment": "cross_dataset_validation",
@@ -81,7 +82,9 @@ def main() -> None:
         "train_dataset": "CICIDS2017 (frozen v1.1 artifacts, unchanged)",
         "external_dataset": "CSE-CIC-IDS2018 (Processed Traffic Data for ML Algorithms, mapped to 2017 schema)",
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "sampling": {"benign": BENIGN_N, "per_attack_label": PER_LABEL, "seed": SEED},
+        "sampling": {"benign": BENIGN_N, "per_attack_label": PER_LABEL, "seed": SEED,
+                     "cic2018_sample_version": version,
+                     "benign_days": sorted(test.loc[test["family"] == "BENIGN", "day"].astype(str).unique().tolist())},
         "n": {"benign": int((y == 0).sum()), "attack": int(y.sum())},
         "binary": {
             "precision": float(precision_score(y, is_attack, zero_division=0)),
@@ -97,7 +100,11 @@ def main() -> None:
             "the IID score and no retraining or threshold tuning was done on 2018 data."
         ),
     }
-    (ARTIFACT_DIR / "frozen_v11_on_cic2018.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
+    name = "frozen_v11_on_cic2018.json" if version == 1 else f"frozen_v11_on_cic2018_v{version}.json"
+    (ARTIFACT_DIR / name).write_text(json.dumps(result, indent=2), encoding="utf-8")
+    if version != 1:  # keep the EXP-009 status file pointing at its original evidence
+        print(json.dumps(result["binary"], indent=1))
+        return
     status_path = ROOT / "models/trained_models/cross_dataset_status.json"
     status_path.write_text(json.dumps({
         "experiment": "cross_dataset_validation", "train_dataset": "CICIDS2017",

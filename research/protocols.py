@@ -221,6 +221,76 @@ def cross_dataset(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[int], lo
     return records
 
 
+# --------------------------------------------------------------------------- cross-dataset, per day
+PERDAY_TEST_CAPS = {"BENIGN": 20_000, "_attack": 8_000}
+
+
+def cross_dataset_perday(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[int], log: Log = print,
+                         alpha: float = 0.01, ae_kwargs: dict | None = None,
+                         windows: Iterable[int] = WARMUP_WINDOWS) -> list[dict]:
+    """CICIDS2017 → CSE-CIC-IDS2018 with **independent per-day** recalibration (R1b).
+
+    The model is trained once per seed on CICIDS2017. For every 2018 capture day separately:
+    the warm-up window = that day's earliest ``max(windows)`` benign flows (arrival order); the
+    evaluation set is drawn only from the *rest* of that day, so calibration and evaluation
+    flows never overlap and the window always comes from the day it is applied to. This fixes
+    the earlier protocol, whose single warm-up window came from the first day only.
+    """
+    feats = feature_columns(src)
+    dst = dst[feats + [c for c in dst.columns if c not in feats]]
+    windows = tuple(windows)
+    records = []
+    for seed in seeds:
+        src_base = src[~src["family"].isin(RARE_NATURAL_UNKNOWN)]
+        tr, va, _ = stratified_split(src_base, (0.85, 0.15, 0.0), seed)
+        train = cap_per_family(tr, _caps(tr, TRAIN_CAPS), seed)
+        val = cap_per_family(va, _caps(va, VAL_CAPS), seed)
+        t0 = time.time()
+        scaler = SignedLogScaler().fit(train[feats].to_numpy())
+        model = AegisOSR(seed=seed, alpha=alpha, ae_kwargs=ae_kwargs)
+        model.fit(scaler.transform(train[feats].to_numpy()), train["family"].to_numpy(),
+                  scaler.transform(val[feats].to_numpy()), val["family"].to_numpy(), log=log)
+        fit_s = time.time() - t0
+        base_state = model.snapshot()
+        known_set = set(model.classes_) - {"BENIGN"}
+        for day in sorted(dst["day"].astype(str).unique()):
+            day_df = dst[dst["day"].astype(str) == day]
+            warm, pool = _split_warmup(day_df, max(windows))
+            test = _cap_keep_index(pool, _caps(pool, PERDAY_TEST_CAPS), seed).reset_index(drop=True)
+            overlap = int(len(set(warm.index) & set(pool.index)))
+            fam = test["family"].astype(str).to_numpy()
+            unknown = sorted(set(fam) - known_set - {"BENIGN"})
+            groups = np.where(fam == "BENIGN", "benign", np.where(np.isin(fam, unknown), "unknown", "known"))
+            Xte = scaler.transform(test[feats].to_numpy())
+            model.restore(base_state)
+            methods, attribution, _ = _evaluate(model, Xte, fam, groups, alpha)
+            rec = {
+                "protocol": "cross_perday", "fold": day, "seed": seed, "alpha": alpha,
+                "known_families": sorted(known_set), "unknown_families": unknown,
+                "n_test": {g: int((groups == g).sum()) for g in ("benign", "known", "unknown")},
+                "test_families": {f: int((fam == f).sum()) for f in sorted(set(fam))},
+                "warmup_available": int(len(warm)), "warmup_eval_overlap": overlap,
+                "methods": methods, "aegis_osr_attribution": attribution, "fit_seconds": round(fit_s, 1),
+                "adaptation": {},
+            }
+            Xw = scaler.transform(warm.sort_values("seq")[feats].to_numpy())
+            for W in windows:
+                if W > len(Xw):
+                    continue
+                for variant, upd in (("recal", False), ("recal+ref", True)):
+                    model.restore(base_state).recalibrate(Xw[:W], update_reference=upd)
+                    m_ad, a_ad, _ = _evaluate(model, Xte, fam, groups, alpha)
+                    rec["adaptation"][f"{variant}@{W}"] = {"window": W, "variant": variant, "methods": m_ad,
+                                                           "aegis_osr_attribution": a_ad}
+            model.restore(base_state)
+            p = methods[PROPOSED]
+            ad = rec["adaptation"].get("recal@2000", {}).get("methods", {}).get(PROPOSED, {})
+            log(f"[cross_perday:{day}:s{seed}] n={rec['n_test']} FPR={p['fpr']:.4f} → recal@2000 "
+                f"FPR={ad.get('fpr', float('nan')):.4f} ZDR={ad.get('zero_day_recall', float('nan'))}")
+            records.append(rec)
+    return records
+
+
 # --------------------------------------------------------------------------- aggregation
 METRICS = [
     "zero_day_recall", "auroc_unknown", "auprc_unknown", "known_recall", "fpr", "auroc_all",

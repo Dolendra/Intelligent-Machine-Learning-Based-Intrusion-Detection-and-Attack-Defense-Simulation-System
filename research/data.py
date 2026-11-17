@@ -148,6 +148,7 @@ def build_cic2018(
     cap_per_label: int = 150_000,
     chunksize: int = 500_000,
     seed: int = 42,
+    version: int = 1,
 ) -> pd.DataFrame:
     """Stream the (very large) 2018 CSVs, keep all attacks up to a per-label cap and a
     uniform ``benign_frac`` sample of benign flows, mapped to the 2017 schema."""
@@ -181,25 +182,51 @@ def build_cic2018(
                 chunk[c] = np.nan
             chunk = chunk[target_features + ["fine_label", "family", "day", "dataset", "seq"]]
             for label, part in chunk.groupby("fine_label", observed=True):
-                room = cap_per_label - counts.get(label, 0)
-                if room <= 0:
-                    continue
-                part = part.iloc[:room]
-                kept.setdefault(label, []).append(part)
-                counts[label] = counts.get(label, 0) + len(part)
+                if version == 1:
+                    # v1 (kept for reproducibility of pre-R1b results): one GLOBAL cap per label in
+                    # file order. Defect: once "Benign" hit the cap (after 4 of 10 files), later
+                    # days kept no benign traffic at all.
+                    room = cap_per_label - counts.get(label, 0)
+                    if room <= 0:
+                        continue
+                    part = part.iloc[:room]
+                    kept.setdefault(label, []).append(part)
+                    counts[label] = counts.get(label, 0) + len(part)
+                else:
+                    # v2: benign = the uniform benign_frac sample of EVERY day (no further cap);
+                    # attacks capped per (day, label) by a seeded random subsample, not file order.
+                    key = f"{day}|{label}"
+                    if label.lower() != "benign":
+                        part = part.assign(__r=rng.random(len(part)))
+                        prev = kept.get(key)
+                        part = part if prev is None else pd.concat([prev[0], part])
+                        if len(part) > cap_per_label:
+                            part = part.nsmallest(cap_per_label, "__r")
+                        kept[key] = [part]
+                    else:
+                        kept.setdefault(key, []).append(part)
     out = pd.concat([p for parts in kept.values() for p in parts], ignore_index=True)
+    out = out.drop(columns=["__r"], errors="ignore")
     out = out[out["family"] != "Other"]
     return _finalize(out, target_features)
 
 
-def load_cic2018(target_features: list[str], *, rebuild: bool = False, **kwargs) -> pd.DataFrame:
+CIC2018_CACHE = {1: "cic2018_sample.parquet", 2: "cic2018_sample_v2.parquet"}
+
+
+def load_cic2018(target_features: list[str], *, rebuild: bool = False, version: int = 2, **kwargs) -> pd.DataFrame:
+    """CSE-CIC-IDS2018 sample. ``version=2`` (default since R1b) keeps benign traffic for every
+    capture day; ``version=1`` reproduces the pre-R1b sample (benign from 4 of 10 days only)."""
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache = CACHE_DIR / "cic2018_sample.parquet"
+    cache = CACHE_DIR / CIC2018_CACHE[version]
     if cache.exists() and not rebuild:
         df = pd.read_parquet(cache)
         if feature_columns(df) == list(target_features):
             return df
-    df = build_cic2018(target_features=target_features, **kwargs)
+    kw = dict(kwargs)
+    if version == 2:
+        kw.setdefault("cap_per_label", 100_000)
+    df = build_cic2018(target_features=target_features, version=version, **kw)
     df.to_parquet(cache, index=False)
     return df
 
