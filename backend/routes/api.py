@@ -238,14 +238,26 @@ def auth_status_endpoint():
 
 
 @router.post("/auth/login")
-def auth_login(body: dict):
+def auth_login(body: dict, request: Request):
     from security.auth import AuthError, login
+    from security.security_events import security_event
 
     username = str((body or {}).get("username") or "")
     password = str((body or {}).get("password") or "")
     try:
         return login(username, password)
     except AuthError as exc:
+        # R-02 (SEC-8): failed password logins are now a durable security event + metric.
+        security_event(
+            "authentication_failure",
+            request_id=getattr(request.state, "request_id", None),
+            path=request.url.path,
+            method="POST",
+            code=exc.code,
+            user=username[:64] or None,
+            client=request.client.host if request.client else None,
+            detail={"auth_method": "password"},
+        )
         raise HTTPException(
             status_code=exc.http_status,
             detail={"code": exc.code, "message": exc.message},

@@ -205,6 +205,8 @@ def init_db() -> None:
 
         cfg = Config(str(ROOT / "alembic.ini"))
         cfg.set_main_option("sqlalchemy.url", DATABASE_URL)
+        # R-02: the app owns logging; Alembic must not reconfigure it (see alembic/env.py).
+        cfg.attributes["configure_logger"] = False
         command.upgrade(cfg, "head")
         _post_migrate_bootstrap()
         return

@@ -18,14 +18,23 @@ from ids_config import load_config
 logger = logging.getLogger("aegis.api")
 
 
+def _state_user(request: Request) -> str | None:
+    """Identity set by ApiKeyMiddleware (R-02 / ARCH-22: it uses aegis_user / aegis_role)."""
+    identity = getattr(request.state, "aegis_user", None) or {}
+    if identity.get("username"):
+        return str(identity["username"])
+    role = getattr(request.state, "aegis_role", None)
+    return str(role) if role and role != "anonymous" else None
+
+
 class StructuredLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         request_id = request.headers.get("X-Request-ID") or f"req_{uuid.uuid4().hex[:12]}"
         request.state.request_id = request_id
         set_request_id(request_id)
-        user = getattr(request.state, "username", None) or getattr(request.state, "user", None)
+        user = _state_user(request)
         if user:
-            set_user(str(user))
+            set_user(user)
         start = time.perf_counter()
         response: Response | None = None
         err: str | None = None
@@ -33,9 +42,9 @@ class StructuredLoggingMiddleware(BaseHTTPMiddleware):
         try:
             response = await call_next(request)
             # Auth middleware may set identity after dispatch starts; re-read
-            user = getattr(request.state, "username", None) or getattr(request.state, "role", None)
+            user = _state_user(request)
             if user:
-                set_user(str(user))
+                set_user(user)
             response.headers["X-Request-ID"] = request_id
             return response
         except Exception as exc:  # noqa: BLE001

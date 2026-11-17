@@ -16,8 +16,12 @@ from database.db import Base
 from database.url import resolve_database_url
 
 config = context.config
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+# R-02 (SEC-5 / ARCH-3): only configure logging when Alembic runs from its CLI. When the app
+# runs migrations at startup (database.db.init_db sets configure_logger=False), fileConfig
+# used to disable every existing logger (aegis.security, aegis.api.errors, ...) and raise
+# root to WARNING. Even from the CLI, existing loggers are left enabled.
+if config.config_file_name is not None and config.attributes.get("configure_logger", True):
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 config.set_main_option("sqlalchemy.url", resolve_database_url())
