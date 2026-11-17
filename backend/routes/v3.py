@@ -54,6 +54,43 @@ def zero_day_assess(body: ZeroDayAssessRequest):
     }
 
 
+@router.get("/zero-day/alerts")
+def zero_day_alerts(limit: int = 50, gate_only: bool = False):
+    """Persisted Zero-Day Gate alerts for analyst review.
+
+    Under the operational default policy ``frozen`` a gate-only alert raises no incident, so this
+    list is where it can be reviewed. Gate-only alerts carry ``review_label = "Zero-Day
+    Candidate"``; they are advisory and cannot authorize containment (security.response).
+    """
+    from database.db import SessionLocal, ZeroDayAlert
+    from security.detection_policy import GATE_ONLY_LABEL
+
+    limit = max(1, min(int(limit), 500))
+    with SessionLocal() as db:
+        q = db.query(ZeroDayAlert)
+        if gate_only:
+            q = q.filter(ZeroDayAlert.frozen_is_attack == 0)
+        rows = q.order_by(ZeroDayAlert.id.desc()).limit(limit).all()
+        items = [{
+            "id": r.id,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+            "origin": r.origin,
+            "source_ref": r.source_ref,
+            "policy": r.policy,
+            "raised_incident": bool(r.raised_incident),
+            "incident_code": r.incident_code,
+            "gate_only": not bool(r.frozen_is_attack),
+            "review_label": GATE_ONLY_LABEL if not r.frozen_is_attack else r.frozen_attack_type,
+            "gate_label": r.gate_label,
+            "p_value": r.p_value,
+            "alpha": r.alpha,
+            "family_hint": r.family_predicted,
+            "frozen_attack_type": r.frozen_attack_type,
+            "gate_model_version": r.gate_model_version,
+        } for r in rows]
+    return {"total": len(items), "advisory": True, "items": items}
+
+
 # --------------------------------------------------------------------------- research results
 _PROTOCOLS = {"loafo": "openset_loafo", "temporal": "openset_temporal", "cross": "openset_cross"}
 

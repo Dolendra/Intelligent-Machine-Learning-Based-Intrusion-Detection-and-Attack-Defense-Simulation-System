@@ -6,9 +6,12 @@ is it called" means exactly the same thing everywhere.
 
 Policies (``config.yaml → zero_day_gate.incident_policy``):
 
-* ``frozen`` — only the frozen v1.1 model raises incidents (gate alerts are still recorded).
+* ``frozen`` — only the frozen v1.1 model raises incidents (default; gate alerts are still
+  recorded and listed for analyst review at ``GET /api/zero-day/alerts``).
 * ``gate``   — only the Zero-Day Gate raises incidents.
-* ``union``  — either detector raises an incident (default).
+* ``union``  — either detector raises an incident (experimental).
+
+The operational default is ``frozen`` (user decision 2026-11-18, audit finding ML-4).
 
 Labelling rule — a gate alert never becomes a known-family classification by itself:
 
@@ -42,7 +45,7 @@ class DetectionDecision:
 
 def configured_policy() -> str:
     cfg = load_config().get("zero_day_gate", {}) or {}
-    policy = str(cfg.get("incident_policy", "union")).lower()
+    policy = str(cfg.get("incident_policy", "frozen")).lower()
     if policy not in POLICIES:
         raise ValueError(f"zero_day_gate.incident_policy must be one of {POLICIES}, got {policy!r}")
     return policy

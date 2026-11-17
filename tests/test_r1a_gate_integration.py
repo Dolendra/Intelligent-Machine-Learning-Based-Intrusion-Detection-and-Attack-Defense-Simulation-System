@@ -48,8 +48,12 @@ def _heartbleed_features() -> dict:
 
 
 @needs_models
-def test_gate_only_detection_creates_auditable_zero_day_incident():
+def test_gate_only_detection_creates_auditable_zero_day_incident(monkeypatch):
+    import security.detection_policy as dp
     from database.db import SessionLocal, ZeroDayAlert
+
+    # "union" is now an explicitly selected experimental policy (default is "frozen").
+    monkeypatch.setattr(dp, "configured_policy", lambda: "union")
 
     body = client.post("/api/predict", json={"features": _heartbleed_features(), "persist": True,
                                              "source_ref": "r1a-heartbleed"}).json()

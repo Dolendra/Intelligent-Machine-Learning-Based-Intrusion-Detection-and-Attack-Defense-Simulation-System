@@ -197,4 +197,8 @@ zero_day_gate:
   enabled: true
   # Which detector may raise incidents — shared by the API and the Cyber Range:
   #   frozen | gate | union. Gate-only incidents are labelled "Zero-Day Candidate", never a known family.
-  incident_policy: union
+  # Operational default is "frozen" (user decision 2026-11-18): the frozen v1.1 detector is the
+  # decision authority; gate alerts are still recorded and listed at GET /api/zero-day/alerts for
+  # analyst review. "union" and "gate" remain selectable EXPERIMENTAL settings (union raised the
+  # benign incident rate from 0.09% to 0.81% in the Phase 0 audit, ML-4).
+  incident_policy: frozen
