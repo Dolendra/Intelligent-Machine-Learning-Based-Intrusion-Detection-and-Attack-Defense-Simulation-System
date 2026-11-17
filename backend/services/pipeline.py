@@ -812,7 +812,10 @@ def update_incident_status(
     *,
     analyst_notes: str | None = None,
     defense_action: str | None = None,
+    actor: str | None = None,
 ) -> dict[str, Any]:
+    # R-08 (SEC-18): record the real requester; "analyst" was hard-coded for everyone.
+    actor = actor or "anonymous"
     row = db.query(Incident).filter(Incident.incident_code == incident_id).first()
     if not row:
         raise KeyError(f"Unknown incident: {incident_id}")
@@ -826,7 +829,7 @@ def update_incident_status(
             row.analyst_notes = analyst_notes
         if defense_action is not None:
             row.defense_action = defense_action
-        _record_incident_event(db, incident_id, current, current, actor="analyst",
+        _record_incident_event(db, incident_id, current, current, actor=actor,
                                notes=analyst_notes, action=defense_action)
         db.commit()
         return get_incident(db, incident_id) or _incident_dict(row)
@@ -844,7 +847,7 @@ def update_incident_status(
         incident_id,
         current,
         target,
-        actor="analyst",
+        actor=actor,
         notes=analyst_notes,
         action=defense_action,
     )

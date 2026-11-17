@@ -157,6 +157,10 @@ class ResponseActionStore:
     """SQLite/Postgres-backed store with atomic status transitions."""
 
     def __init__(self, *, max_actions: int = 500) -> None:
+        # R-08 (SEC-6): max_actions is kept for API compatibility but no longer prunes. Creating
+        # new proposals used to delete the oldest terminal actions together with their
+        # "append-only" audit trail, so 500 proposals could erase who approved and executed an
+        # action. Retention is now an explicit, time-based operation (database/retention.py).
         self._max = max_actions
         self._lock = threading.RLock()
 
@@ -164,22 +168,6 @@ class ResponseActionStore:
         with self._lock:
             with SessionLocal() as db:
                 db.add(ResponseActionRecord(**_row_values(action)))
-                # Soft retention: drop oldest terminal rows beyond max
-                count = db.query(ResponseActionRecord).count()
-                if count > self._max:
-                    oldest = (
-                        db.query(ResponseActionRecord)
-                        .order_by(ResponseActionRecord.id.asc())
-                        .limit(count - self._max)
-                        .all()
-                    )
-                    for row in oldest:
-                        if row.status in {"PROPOSED", "APPROVED", "EXECUTING", "ACTIVE"}:
-                            continue
-                        db.query(ResponseAuditEvent).filter(
-                            ResponseAuditEvent.action_id == row.action_id
-                        ).delete()
-                        db.delete(row)
                 db.commit()
         return action
 

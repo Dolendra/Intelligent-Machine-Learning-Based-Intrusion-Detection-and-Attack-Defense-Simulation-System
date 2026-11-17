@@ -1110,7 +1110,10 @@ def incident_trace(incident_id: str, db: Session = Depends(get_db)):
 
 
 @router.patch("/incidents/{incident_id}")
-def incident_update(incident_id: str, body: IncidentUpdateRequest, db: Session = Depends(get_db)):
+def incident_update(incident_id: str, body: IncidentUpdateRequest, request: Request,
+                    db: Session = Depends(get_db)):
+    from backend.middleware.api_auth import actor_from_request
+
     try:
         return svc.update_incident_status(
             db,
@@ -1118,6 +1121,7 @@ def incident_update(incident_id: str, body: IncidentUpdateRequest, db: Session =
             body.status,
             analyst_notes=body.analyst_notes,
             defense_action=body.defense_action,
+            actor=actor_from_request(request),
         )
     except KeyError as exc:
         raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "message": str(exc)}) from exc
