@@ -1,6 +1,6 @@
 {
- "generated_at": "2026-11-17T12:57:25.725637+00:00",
- "pdf_sha256": "f6a49aed695ea194679ba1edddee87ad57ac7f1c358fcdb7b4d15dfc11a19b23",
+ "generated_at": "2026-11-17T14:16:36.461662+00:00",
+ "pdf_sha256": "bbfa11aa079ea9c9e4e7a09d13b1303a139a9e6934e2ab182b6270416331c70f",
  "pages": 5,
  "checks": {
   "tables": {
@@ -17,7 +17,7 @@
    "pass": true
   },
   "macros": {
-   "used": 58,
+   "used": 62,
    "missing": {},
    "pass": true
   },
@@ -87,8 +87,8 @@
   }
  },
  "inputs_sha256": {
-  "docs/research/paper.tex": "6c4ee9b8df44d7f1c4bccf087d7141522045b60cd28266c116448c662e632c3f",
-  "docs/research/paper_numbers.tex": "5b01a570f9dce66e33ddb31f5c55f39d925ae92f87639e578e7a8b9c7fac3d64",
+  "docs/research/paper.tex": "9849aebed301d1cd0f31af12ec3213ce5a8a8e062f228adca922d0a1113bc3db",
+  "docs/research/paper_numbers.tex": "c2106af7df67a489370b604db6bd37715704aeaa77fbbfd0982188fa132399e8",
   "docs/research/publication/tables/loafo.tex": "72c00122baa7ef59e985159177a2ebb38dfbaf31aaa0177b4576ef404fe86236",
   "docs/research/publication/tables/significance.tex": "5f856d437345754894b228775519a30e3a32e0d105c46047880865bdd70079fa",
   "docs/research/publication/tables/temporal.tex": "3a6c54ad695b6d1c3d451c712b3ffd2f35a76888ce0583f451e1a9a6b98624f0",

@@ -311,5 +311,25 @@ target-day benign flows separates the same days' attacks (AUROC 0.999–1.000). 
 > "… are missed by the frozen detector at its fixed thresholds; after same-day recalibration a retrained classifier
 > separates them, so the shift moves scores rather than erasing the signal."
 
-The new numbers must enter through `research/publication.py` facts sourced from `recalibration_diagnosis.json`. They are
-not applied yet: the change alters the paper's narrative, and the user reviews it first.
+The new numbers must enter through `research/publication.py` facts sourced from `recalibration_diagnosis.json`.
+
+**Applied (approved by the user, 2026-11-17).** Every affected occurrence:
+
+| Location | Before | After |
+|---|---|---|
+| `paper.tex` §IV-E | "lose detection almost entirely" | "are almost entirely missed by the frozen detector at its fixed operating thresholds" |
+| `paper.tex` §IV-E | "Identical tools becoming undetectable suggests …" | "This does not make those attacks undetectable …", plus the recalibrated-classifier evidence (facts `rd_xgb_*`, labelled exploratory/post-hoc) and the extractor confound kept as a possibility |
+| `paper_build/paper.py` (DOCX), 2018 transfer section | "were barely detected" / "Identical tools becoming undetectable suggests …" | same corrections as above |
+| `paper_build/paper.py` (DOCX), conclusion | "the gate turned an undetectable zero-day scenario" | "a zero-day scenario that the frozen detector did not detect" (same over-claim, cyber-range result) |
+| `CLAIM_AUDIT.md` §5, `RESEARCH_GAP_ANALYSIS.md`, `STATE_OF_THE_ART_REVIEW.md` | — | already qualified in §9 / Revision 1; §5 is kept as the historical audit text |
+
+* No numerical result changed. The six new facts (`rd_xgb_{bf,dos}_{known,fpr,auroc}`) are read from
+  `research_artifacts/recalibration_diagnosis.json` (the closed-set XGB recal@2000 row for 2018-02-14 and 2018-02-16).
+* Rebuilt: `paper_numbers.tex`, the DOCX and the Word PDF. `paper.tex` was recompiled with Tectonic 0.17.0
+  (checksum re-verified). `scripts/63` passes: 5 pages, 0 overfull boxes, 0 undefined references. The new log has
+  4 underfull-vbox float-placement warnings (cosmetic).
+* **Related sentence not changed** (outside the approved scope, flagged for decision). `paper.tex` §IV-E says
+  "Recalibration controls false alarms … it cannot create separation the evidence lacks." It is literally true, but
+  next to the corrected paragraph it implies that the *evidence* lacks separation on 2018. The diagnosis shows that the
+  *supervised* evidence keeps it on several days, while the fused score loses it. Suggested wording: "it cannot restore
+  separation that the fused score has lost". The DOCX has the same sentence (`paper_build/paper.py`: "cannot create separation that the evidence does not contain").

@@ -2397,6 +2397,30 @@
    "display": "0.877",
    "source": "results/cyber_range/experiments/latest.json:suites.detector[bot_beacon].attack_flow_recall"
   },
+  "rd_xgb_bf_auroc": {
+   "display": "0.999",
+   "source": "research_artifacts/recalibration_diagnosis.json:per_day_mean_over_seeds.2018-02-14.variants.recal@2000.Closed-set XGB.auroc_all"
+  },
+  "rd_xgb_bf_fpr": {
+   "display": "0.7%",
+   "source": "research_artifacts/recalibration_diagnosis.json:per_day_mean_over_seeds.2018-02-14.variants.recal@2000.Closed-set XGB.fpr"
+  },
+  "rd_xgb_bf_known": {
+   "display": "0.984",
+   "source": "research_artifacts/recalibration_diagnosis.json:per_day_mean_over_seeds.2018-02-14.variants.recal@2000.Closed-set XGB.known_recall"
+  },
+  "rd_xgb_dos_auroc": {
+   "display": "1.000",
+   "source": "research_artifacts/recalibration_diagnosis.json:per_day_mean_over_seeds.2018-02-16.variants.recal@2000.Closed-set XGB.auroc_all"
+  },
+  "rd_xgb_dos_fpr": {
+   "display": "0.9%",
+   "source": "research_artifacts/recalibration_diagnosis.json:per_day_mean_over_seeds.2018-02-16.variants.recal@2000.Closed-set XGB.fpr"
+  },
+  "rd_xgb_dos_known": {
+   "display": "0.920",
+   "source": "research_artifacts/recalibration_diagnosis.json:per_day_mean_over_seeds.2018-02-16.variants.recal@2000.Closed-set XGB.known_recall"
+  },
   "risk_band_changes": {
    "display": "0",
    "source": "models/trained_models/risk_weight_sensitivity.json:results (cases with >1 severity)"

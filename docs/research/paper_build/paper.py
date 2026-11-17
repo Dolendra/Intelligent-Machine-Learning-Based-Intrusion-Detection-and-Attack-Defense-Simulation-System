@@ -748,11 +748,16 @@ P.para(f"Table {TR['v11_2018']} scores the *unchanged* frozen detector on CSE-CI
        "the sample; the earlier sample, whose benign flows came from four days only, gave a lower F1 for the same "
        "detector.) The per-label rows show that the failure is not confined to unfamiliar labels: DoS-Hulk "
        f"({F['x_frozen_hulk']}) and SSH brute force ({F['x_frozen_ssh']}), tools that also appear in CICIDS2017, were barely "
-       f"detected, while LOIC-HTTP ({F['x_frozen_loichttp']}) transferred partly and Slowloris ({F['x_frozen_slowloris']}) "
+       f"detected by the frozen detector at its fixed operating thresholds, while LOIC-HTTP ({F['x_frozen_loichttp']}) transferred partly and Slowloris ({F['x_frozen_slowloris']}) "
        "carried over. Per-label rates also depend on how the sample is drawn: the earlier sample, which kept each label's "
-       "first flows in file order, showed LOIC-HTTP as undetected. Identical tools becoming undetectable suggests that "
-       "differences between the flow extractors used for the two releases are confounded with the change of network; "
-       "separating the two requires data produced by a single extractor.")
+       "first flows in file order, showed LOIC-HTTP as undetected. This does not make those attacks undetectable. In an "
+       "exploratory, post-hoc analysis of the per-day records, a classifier retrained on CICIDS2017 and re-calibrated on "
+       "2,000 benign flows of the same day detected the 2018-02-14 brute-force attacks (recall "
+       f"{F['rd_xgb_bf_known']} at {F['rd_xgb_bf_fpr']} false alarms) and the 2018-02-16 DoS attacks "
+       f"({F['rd_xgb_dos_known']} at {F['rd_xgb_dos_fpr']}): the shift moved scores relative to the frozen thresholds "
+       "rather than removing the signal. Differences between the flow extractors used for the two releases may "
+       "contribute and are confounded with the change of network; separating the two requires data produced by a "
+       "single extractor.")
 PT("v11_2018")
 P.para(f"Table {TR['cross']} reports the open-set protocol across datasets, with Infiltration—never in training—as "
        "the unknown family. It is a negative result. Every method's ability to separate the unknown family from benign "
@@ -957,8 +962,8 @@ P.para("We set out to give a flow-based intrusion detector a way to say \"this i
        "changed: across days, re-calibration on a few thousand benign flows largely restored it without retraining, "
        "though the result depended on how the window was drawn; across networks, neither the frozen detector "
        f"(F1 {F['v11_f1']} → {F['x_frozen_f1']}) nor the gate transferred, and per-day re-calibration controlled false "
-       "alarms at the cost of most of the recall. In the trace-driven cyber range, the gate turned an undetectable "
-       f"zero-day scenario into one detected in about {F['rz_gate_latency']} seconds, alert aggregation removed false "
+       "alarms at the cost of most of the recall. In the trace-driven cyber range, the gate turned a zero-day scenario "
+       f"that the frozen detector did not detect into one detected in about {F['rz_gate_latency']} seconds, alert aggregation removed false "
        "incidents, and the choice and timing of the human-approved response—not detection speed—decided the modelled "
        "service outcome.")
 P.para("The most pressing next steps follow from the failures: building the benign reference and calibration from "

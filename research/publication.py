@@ -34,6 +34,7 @@ FROZEN18_V2 = f"{RA}/frozen_v11_on_cic2018_v2.json"
 FROZEN18_V1 = f"{RA}/frozen_v11_on_cic2018.json"
 FAMILIES = f"{RA}/model_family_comparison.json"
 DATASET = f"{RA}/dataset_summary.json"
+RECAL_DIAG = f"{RA}/recalibration_diagnosis.json"  # exploratory, post-hoc (scripts/64)
 TRAINING = "models/trained_models/training_report.json"
 P11 = "models/trained_models/empirical_mitigation_report.json"
 ENVELOPE = "results/performance/operating_envelope_latest.json"
@@ -979,6 +980,16 @@ def facts() -> dict[str, Fact]:
         fpr_days = [m(ad["recal@2000"]["per_fold"][d_][OSR]["fpr"]) for d_ in days_ok]
         put("pd_recal2000_fpr_range", (min(fpr_days), max(fpr_days)), f"{pct(min(fpr_days), 2)}–{pct(max(fpr_days), 2)}",
             f"{PERDAY}:adaptation.cross_perday.recal@2000.per_fold.*.{OSR}.fpr")
+    if exists(RECAL_DIAG):
+        # Days whose attacks are the tools the frozen detector misses: SSH/FTP brute force (02-14) and DoS-Hulk (02-16).
+        # Closed-set XGB retrained on CICIDS2017 and re-calibrated on 2,000 of that day's benign flows (seed mean).
+        rd = load(RECAL_DIAG)["per_day_mean_over_seeds"]
+        for day, tag in (("2018-02-14", "bf"), ("2018-02-16", "dos")):
+            v = rd[day]["variants"]["recal@2000"][XGB]
+            src = f"{RECAL_DIAG}:per_day_mean_over_seeds.{day}.variants.recal@2000.{XGB}"
+            put(f"rd_xgb_{tag}_known", v["known_recall"], f3(v["known_recall"]), f"{src}.known_recall")
+            put(f"rd_xgb_{tag}_fpr", v["fpr"], pct(v["fpr"]), f"{src}.fpr")
+            put(f"rd_xgb_{tag}_auroc", v["auroc_all"], f3(v["auroc_all"]), f"{src}.auroc_all")
     return F
 
 
