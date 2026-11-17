@@ -3,11 +3,11 @@ from __future__ import annotations
 
 from security.auth.posture import kill_switch_allowed
 import os
-from typing import Callable
 
-from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import HTTPException
+from starlette.datastructures import Headers
 from starlette.responses import JSONResponse
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from ids_config import load_config
 from security.security_events import security_event
@@ -40,60 +40,101 @@ def limit_for_path(path: str, content_type: str | None) -> int:
     return limits["default"]
 
 
-class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
-    """Reject oversized requests early via Content-Length (when present)."""
+class BodyTooLarge(HTTPException):
+    """Raised from the wrapped ``receive`` once the streamed body exceeds its limit.
 
-    def __init__(self, app, *, enabled: bool = True):
-        super().__init__(app)
+    It subclasses HTTPException on purpose: FastAPI re-raises HTTPException from body/form
+    parsing unchanged (other errors become a generic 400), so the client gets a 413.
+    """
+
+    def __init__(self, limit: int) -> None:
+        super().__init__(
+            status_code=413,
+            detail={
+                "code": "REQUEST_TOO_LARGE",
+                "message": f"Request body exceeds limit ({limit} bytes)",
+                "limit_bytes": limit,
+            },
+        )
+        self.limit = limit
+
+
+def _client(scope: Scope) -> str | None:
+    client = scope.get("client")
+    return client[0] if client else None
+
+
+def _too_large_event(scope: Scope, limit: int, size: int | None, *, streamed: bool) -> None:
+    security_event(
+        "request_too_large",
+        path=scope.get("path"),
+        method=scope.get("method"),
+        code="REQUEST_TOO_LARGE",
+        client=_client(scope),
+        detail={"size": size, "limit": limit, "streamed": streamed},
+    )
+
+
+class RequestSizeLimitMiddleware:
+    """Enforce body-size limits on the bytes actually received (R-07, SEC-4).
+
+    * A declared ``Content-Length`` above the limit is rejected before the handler runs.
+    * Every body, with or without Content-Length (e.g. ``Transfer-Encoding: chunked``), is
+      counted as it streams in; the request fails with 413 as soon as the limit is crossed,
+      so at most ``limit`` bytes plus one chunk are ever buffered.
+    """
+
+    def __init__(self, app: ASGIApp, *, enabled: bool = True) -> None:
+        self.app = app
         self.enabled = enabled
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        if not self.enabled or request.method in {"GET", "HEAD", "OPTIONS"}:
-            return await call_next(request)
-        if kill_switch_allowed("DISABLE_REQUEST_LIMITS"):
-            return await call_next(request)
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if (
+            scope["type"] != "http"
+            or not self.enabled
+            or scope.get("method") in {"GET", "HEAD", "OPTIONS"}
+            or kill_switch_allowed("DISABLE_REQUEST_LIMITS")
+        ):
+            await self.app(scope, receive, send)
+            return
 
-        cl = request.headers.get("content-length")
-        if cl is None:
-            return await call_next(request)
-        try:
-            size = int(cl)
-        except ValueError:
-            security_event(
-                "invalid_content_length",
-                path=request.url.path,
-                method=request.method,
-                code="BAD_CONTENT_LENGTH",
-                client=request.client.host if request.client else None,
-            )
-            return JSONResponse(
-                status_code=400,
-                content={"detail": {"code": "BAD_CONTENT_LENGTH", "message": "Invalid Content-Length"}},
-            )
+        headers = Headers(scope=scope)
+        path = scope.get("path", "")
+        limit = limit_for_path(path, headers.get("content-type"))
 
-        limit = limit_for_path(request.url.path, request.headers.get("content-type"))
-        if size > limit:
-            rid = getattr(request.state, "request_id", None)
-            security_event(
-                "request_too_large",
-                request_id=rid,
-                path=request.url.path,
-                method=request.method,
-                code="REQUEST_TOO_LARGE",
-                client=request.client.host if request.client else None,
-                detail={"size": size, "limit": limit},
-            )
-            return JSONResponse(
-                status_code=413,
-                content={
-                    "detail": {
-                        "code": "REQUEST_TOO_LARGE",
-                        "message": f"Request body exceeds limit ({limit} bytes)",
-                        "limit_bytes": limit,
-                    }
-                },
-            )
-        return await call_next(request)
+        cl = headers.get("content-length")
+        if cl is not None:
+            try:
+                declared = int(cl)
+                if declared < 0:
+                    raise ValueError(cl)
+            except ValueError:
+                security_event("invalid_content_length", path=path, method=scope.get("method"),
+                               code="BAD_CONTENT_LENGTH", client=_client(scope))
+                await JSONResponse(
+                    status_code=400,
+                    content={"detail": {"code": "BAD_CONTENT_LENGTH", "message": "Invalid Content-Length"}},
+                )(scope, receive, send)
+                return
+            if declared > limit:
+                _too_large_event(scope, limit, declared, streamed=False)
+                await JSONResponse(status_code=413, content={"detail": BodyTooLarge(limit).detail})(
+                    scope, receive, send)
+                return
+
+        received = 0
+
+        async def counted_receive() -> Message:
+            nonlocal received
+            message = await receive()
+            if message["type"] == "http.request":
+                received += len(message.get("body", b""))
+                if received > limit:
+                    _too_large_event(scope, limit, received, streamed=True)
+                    raise BodyTooLarge(limit)
+            return message
+
+        await self.app(scope, counted_receive, send)
 
 
 def attach_request_limits(app) -> None:
@@ -114,6 +155,7 @@ def request_limits_summary() -> dict:
         "limits_bytes": limits,
         "notes": [
             "Content-Length checked before handlers when present.",
+            "Streamed/chunked bodies are counted as received and cut off at the limit (R-07).",
             "PCAP also validated by magic/extension/size in ingestion.pcap_validation.",
         ],
     }
