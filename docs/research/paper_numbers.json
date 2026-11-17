@@ -1,0 +1,827 @@
+{
+ "LoafoRecords": {
+  "value": 30,
+  "display": "30",
+  "source": "research_artifacts/openset_loafo_summary.json:meta.n_records"
+ },
+ "LoafoSeeds": {
+  "value": 5,
+  "display": "5",
+  "source": "research_artifacts/openset_loafo_summary.json:meta.seeds"
+ },
+ "LoafoOsrZdr": {
+  "value": 0.7060181775151322,
+  "display": "0.706",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.zero_day_recall.mean"
+ },
+ "LoafoOsrZdrLo": {
+  "value": 0.6889187509777932,
+  "display": "0.689",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.zero_day_recall.ci_low"
+ },
+ "LoafoOsrZdrHi": {
+  "value": 0.7231176040524712,
+  "display": "0.723",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.zero_day_recall.ci_high"
+ },
+ "LoafoOsrAuroc": {
+  "value": 0.9462614123741538,
+  "display": "0.946",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.auroc_unknown.mean"
+ },
+ "LoafoOsrAurocLo": {
+  "value": 0.9426324243716631,
+  "display": "0.943",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.auroc_unknown.ci_low"
+ },
+ "LoafoOsrAurocHi": {
+  "value": 0.9498904003766446,
+  "display": "0.950",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.auroc_unknown.ci_high"
+ },
+ "LoafoOsrFpr": {
+  "value": 0.009954000000000001,
+  "display": "1.00\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.fpr.mean"
+ },
+ "LoafoOsrFprLo": {
+  "value": 0.009214749480503685,
+  "display": "0.92\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.fpr.ci_low"
+ },
+ "LoafoOsrFprHi": {
+  "value": 0.010693250519496317,
+  "display": "1.07\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.fpr.ci_high"
+ },
+ "LoafoXgbZdr": {
+  "value": 0.48972561843871665,
+  "display": "0.490",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Closed-set XGB.zero_day_recall.mean"
+ },
+ "LoafoXgbZdrLo": {
+  "value": 0.4468046817388608,
+  "display": "0.447",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Closed-set XGB.zero_day_recall.ci_low"
+ },
+ "LoafoXgbZdrHi": {
+  "value": 0.5326465551385725,
+  "display": "0.533",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Closed-set XGB.zero_day_recall.ci_high"
+ },
+ "LoafoDtZdr": {
+  "value": 0.2409230698284936,
+  "display": "0.241",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Closed-set DT (v1.1-style).zero_day_recall.mean"
+ },
+ "LoafoDtZdrLo": {
+  "value": 0.17693217464855554,
+  "display": "0.177",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Closed-set DT (v1.1-style).zero_day_recall.ci_low"
+ },
+ "LoafoDtZdrHi": {
+  "value": 0.30491396500843165,
+  "display": "0.305",
+  "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Closed-set DT (v1.1-style).zero_day_recall.ci_high"
+ },
+ "LoafoOsrBot": {
+  "value": 0.023458646616541352,
+  "display": "2.3\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.Bot.Aegis-OSR.zero_day_recall.mean"
+ },
+ "LoafoXgbBot": {
+  "value": 0.0040100250626566416,
+  "display": "0.4\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.Bot.Closed-set XGB.zero_day_recall.mean"
+ },
+ "LoafoOsrBruteForce": {
+  "value": 0.923105360443623,
+  "display": "92.3\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.BruteForce.Aegis-OSR.zero_day_recall.mean"
+ },
+ "LoafoXgbBruteForce": {
+  "value": 0.3100793737088181,
+  "display": "31.0\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.BruteForce.Closed-set XGB.zero_day_recall.mean"
+ },
+ "LoafoOsrDDoS": {
+  "value": 0.9645386673054658,
+  "display": "96.5\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.DDoS.Aegis-OSR.zero_day_recall.mean"
+ },
+ "LoafoXgbDDoS": {
+  "value": 0.7416377210843613,
+  "display": "74.2\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.DDoS.Closed-set XGB.zero_day_recall.mean"
+ },
+ "LoafoOsrDoS": {
+  "value": 0.9768754741086758,
+  "display": "97.7\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.DoS.Aegis-OSR.zero_day_recall.mean"
+ },
+ "LoafoXgbDoS": {
+  "value": 0.8243382441010899,
+  "display": "82.4\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.DoS.Closed-set XGB.zero_day_recall.mean"
+ },
+ "LoafoOsrPortScan": {
+  "value": 0.3570806883059848,
+  "display": "35.7\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.PortScan.Aegis-OSR.zero_day_recall.mean"
+ },
+ "LoafoXgbPortScan": {
+  "value": 0.1122609494150996,
+  "display": "11.2\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.PortScan.Closed-set XGB.zero_day_recall.mean"
+ },
+ "LoafoOsrWebAttack": {
+  "value": 0.9910502283105023,
+  "display": "99.1\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.WebAttack.Aegis-OSR.zero_day_recall.mean"
+ },
+ "LoafoXgbWebAttack": {
+  "value": 0.9460273972602741,
+  "display": "94.6\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.WebAttack.Closed-set XGB.zero_day_recall.mean"
+ },
+ "LoafoOsrPortScanAtFive": {
+  "value": 0.5280712260949416,
+  "display": "52.8\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.PortScan.Aegis-OSR.zero_day_recall@0.05.mean"
+ },
+ "LoafoBotBestAny": {
+  "value": 0.04340852130325815,
+  "display": "4.3\\%",
+  "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.Bot.kNN distance.zero_day_recall.mean (max over methods)"
+ },
+ "DeltaXgb": {
+  "value": 0.21629255907641554,
+  "display": "+0.216",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Closed-set XGB.mean_diff"
+ },
+ "DeltaXgbLo": {
+  "value": 0.180260097556129,
+  "display": "+0.180",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Closed-set XGB.diff_ci_low"
+ },
+ "DeltaXgbHi": {
+  "value": 0.25232502059670203,
+  "display": "+0.252",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Closed-set XGB.diff_ci_high"
+ },
+ "TpXgb": {
+  "value": 7.59367329035423e-05,
+  "display": "7.6\\times10^{-5}",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Closed-set XGB.t_p_value"
+ },
+ "PosSeedsXgb": {
+  "value": 5,
+  "display": "5",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Closed-set XGB.positive_seeds"
+ },
+ "DeltaDt": {
+  "value": 0.4650951076866384,
+  "display": "+0.465",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Closed-set DT (v1.1-style).mean_diff"
+ },
+ "DeltaDtLo": {
+  "value": 0.40244654841838434,
+  "display": "+0.402",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Closed-set DT (v1.1-style).diff_ci_low"
+ },
+ "DeltaDtHi": {
+  "value": 0.5277436669548925,
+  "display": "+0.528",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Closed-set DT (v1.1-style).diff_ci_high"
+ },
+ "TpDt": {
+  "value": 3.272562145444562e-05,
+  "display": "3.3\\times10^{-5}",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Closed-set DT (v1.1-style).t_p_value"
+ },
+ "PosSeedsDt": {
+  "value": 5,
+  "display": "5",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Closed-set DT (v1.1-style).positive_seeds"
+ },
+ "DeltaEnergy": {
+  "value": 0.24932438928620976,
+  "display": "+0.249",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.XGB + Energy.mean_diff"
+ },
+ "DeltaEnergyLo": {
+  "value": 0.23148810654790355,
+  "display": "+0.231",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.XGB + Energy.diff_ci_low"
+ },
+ "DeltaEnergyHi": {
+  "value": 0.26716067202451593,
+  "display": "+0.267",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.XGB + Energy.diff_ci_high"
+ },
+ "TpEnergy": {
+  "value": 2.632894662678671e-06,
+  "display": "2.6\\times10^{-6}",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.XGB + Energy.t_p_value"
+ },
+ "PosSeedsEnergy": {
+  "value": 5,
+  "display": "5",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.XGB + Energy.positive_seeds"
+ },
+ "DeltaAe": {
+  "value": 0.4746617807202077,
+  "display": "+0.475",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Autoencoder.mean_diff"
+ },
+ "DeltaAeLo": {
+  "value": 0.4353623735362198,
+  "display": "+0.435",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Autoencoder.diff_ci_low"
+ },
+ "DeltaAeHi": {
+  "value": 0.5139611879041956,
+  "display": "+0.514",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Autoencoder.diff_ci_high"
+ },
+ "TpAe": {
+  "value": 4.716627221824195e-06,
+  "display": "4.7\\times10^{-6}",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Autoencoder.t_p_value"
+ },
+ "PosSeedsAe": {
+  "value": 5,
+  "display": "5",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Autoencoder.positive_seeds"
+ },
+ "DeltaKnn": {
+  "value": 0.3268569731344416,
+  "display": "+0.327",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.kNN distance.mean_diff"
+ },
+ "DeltaKnnLo": {
+  "value": 0.3040232310637195,
+  "display": "+0.304",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.kNN distance.diff_ci_low"
+ },
+ "DeltaKnnHi": {
+  "value": 0.34969071520516376,
+  "display": "+0.350",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.kNN distance.diff_ci_high"
+ },
+ "TpKnn": {
+  "value": 2.394646928465083e-06,
+  "display": "2.4\\times10^{-6}",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.kNN distance.t_p_value"
+ },
+ "PosSeedsKnn": {
+  "value": 5,
+  "display": "5",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.kNN distance.positive_seeds"
+ },
+ "DeltaAblAe": {
+  "value": 0.14410078117537578,
+  "display": "+0.144",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ AE novelty.mean_diff"
+ },
+ "DeltaAblAeLo": {
+  "value": 0.11927813356405688,
+  "display": "+0.119",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ AE novelty.diff_ci_low"
+ },
+ "DeltaAblAeHi": {
+  "value": 0.1689234287866947,
+  "display": "+0.169",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ AE novelty.diff_ci_high"
+ },
+ "TpAblAe": {
+  "value": 8.666792586823938e-05,
+  "display": "8.7\\times10^{-5}",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ AE novelty.t_p_value"
+ },
+ "PosSeedsAblAe": {
+  "value": 5,
+  "display": "5",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ AE novelty.positive_seeds"
+ },
+ "DeltaAblMax": {
+  "value": 0.17454745754401732,
+  "display": "+0.175",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ max fusion.mean_diff"
+ },
+ "DeltaAblMaxLo": {
+  "value": 0.15237611290368583,
+  "display": "+0.152",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ max fusion.diff_ci_low"
+ },
+ "DeltaAblMaxHi": {
+  "value": 0.1967188021843488,
+  "display": "+0.197",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ max fusion.diff_ci_high"
+ },
+ "TpAblMax": {
+  "value": 2.5922273994808118e-05,
+  "display": "2.6\\times10^{-5}",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ max fusion.t_p_value"
+ },
+ "PosSeedsAblMax": {
+  "value": 5,
+  "display": "5",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ max fusion.positive_seeds"
+ },
+ "DeltaAblOmni": {
+  "value": 0.09164292965690861,
+  "display": "+0.092",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ omnibus fusion.mean_diff"
+ },
+ "DeltaAblOmniLo": {
+  "value": 0.07774248822274535,
+  "display": "+0.078",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ omnibus fusion.diff_ci_low"
+ },
+ "DeltaAblOmniHi": {
+  "value": 0.10554337109107187,
+  "display": "+0.106",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ omnibus fusion.diff_ci_high"
+ },
+ "TpAblOmni": {
+  "value": 5.239878836154218e-05,
+  "display": "5.2\\times10^{-5}",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ omnibus fusion.t_p_value"
+ },
+ "PosSeedsAblOmni": {
+  "value": 5,
+  "display": "5",
+  "source": "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall.Aegis-OSR w/ omnibus fusion.positive_seeds"
+ },
+ "PairWinsXgb": {
+  "value": 30,
+  "display": "30",
+  "source": "research_artifacts/openset_loafo_summary.json:significance.loafo.zero_day_recall.Closed-set XGB.wins"
+ },
+ "PairsN": {
+  "value": 30,
+  "display": "30",
+  "source": "research_artifacts/openset_loafo_summary.json:significance.loafo.zero_day_recall.Closed-set XGB.n"
+ },
+ "TempFriOsrFpr": {
+  "value": 0.07088933333333333,
+  "display": "7.09\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Thu→Fri.Aegis-OSR.fpr.mean"
+ },
+ "TempFriOsrZdr": {
+  "value": 0.4953414953414953,
+  "display": "0.495",
+  "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Thu→Fri.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempFriXgbFpr": {
+  "value": 0.012694666666666668,
+  "display": "1.27\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Thu→Fri.Closed-set XGB.fpr.mean"
+ },
+ "TempFriXgbZdr": {
+  "value": 0.4705782705782706,
+  "display": "0.471",
+  "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Thu→Fri.Closed-set XGB.zero_day_recall.mean"
+ },
+ "TempFriKnnFpr": {
+  "value": 0.08823333333333333,
+  "display": "8.82\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Thu→Fri.kNN distance.fpr.mean"
+ },
+ "TempFriKnnZdr": {
+  "value": 0.4230499730499731,
+  "display": "0.423",
+  "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Thu→Fri.kNN distance.zero_day_recall.mean"
+ },
+ "TempFriRecalFiveHFpr": {
+  "value": 0.0035653333333333327,
+  "display": "0.36\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@500.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr.mean"
+ },
+ "TempFriRecalFiveHZdr": {
+  "value": 0.3448910448910449,
+  "display": "0.345",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@500.per_fold.Mon-Thu→Fri.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempFriRecalTwoKFpr": {
+  "value": 0.008246666666666666,
+  "display": "0.82\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@2000.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr.mean"
+ },
+ "TempFriRecalTwoKZdr": {
+  "value": 0.42917917917917914,
+  "display": "0.429",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@2000.per_fold.Mon-Thu→Fri.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempFriRecalFiveKFpr": {
+  "value": 0.025731999999999998,
+  "display": "2.57\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@5000.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr.mean"
+ },
+ "TempFriRecalFiveKZdr": {
+  "value": 0.44142219142219147,
+  "display": "0.441",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@5000.per_fold.Mon-Thu→Fri.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempFriRefFiveHFpr": {
+  "value": 0.004588,
+  "display": "0.46\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@500.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr.mean"
+ },
+ "TempFriRefFiveHZdr": {
+  "value": 0.3287672287672288,
+  "display": "0.329",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@500.per_fold.Mon-Thu→Fri.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempFriRefTwoKFpr": {
+  "value": 0.006280000000000001,
+  "display": "0.63\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@2000.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr.mean"
+ },
+ "TempFriRefTwoKZdr": {
+  "value": 0.3827481327481328,
+  "display": "0.383",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@2000.per_fold.Mon-Thu→Fri.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempFriRefFiveKFpr": {
+  "value": 0.028353333333333335,
+  "display": "2.84\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@5000.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr.mean"
+ },
+ "TempFriRefFiveKZdr": {
+  "value": 0.4438630938630938,
+  "display": "0.444",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@5000.per_fold.Mon-Thu→Fri.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempFriOracleTwoKFpr": {
+  "value": 0.009689333333333331,
+  "display": "0.97\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr.mean"
+ },
+ "TempFriOracleTwoKZdr": {
+  "value": 0.3896550396550396,
+  "display": "0.390",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Thu→Fri.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempThuOsrFpr": {
+  "value": 0.017158666666666666,
+  "display": "1.72\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Wed→Thu.Aegis-OSR.fpr.mean"
+ },
+ "TempThuOsrZdr": {
+  "value": 0.9922900413033501,
+  "display": "0.992",
+  "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Wed→Thu.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempThuXgbFpr": {
+  "value": 0.012514666666666669,
+  "display": "1.25\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Wed→Thu.Closed-set XGB.fpr.mean"
+ },
+ "TempThuXgbZdr": {
+  "value": 0.9824690224873794,
+  "display": "0.982",
+  "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Wed→Thu.Closed-set XGB.zero_day_recall.mean"
+ },
+ "TempThuKnnFpr": {
+  "value": 0.11005466666666668,
+  "display": "11.01\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Wed→Thu.kNN distance.fpr.mean"
+ },
+ "TempThuKnnZdr": {
+  "value": 0.05461220743460303,
+  "display": "0.055",
+  "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Wed→Thu.kNN distance.zero_day_recall.mean"
+ },
+ "TempThuRecalFiveHFpr": {
+  "value": 0.0027266666666666667,
+  "display": "0.27\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@500.per_fold.Mon-Wed→Thu.Aegis-OSR.fpr.mean"
+ },
+ "TempThuRecalFiveHZdr": {
+  "value": 0.9376778338687473,
+  "display": "0.938",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@500.per_fold.Mon-Wed→Thu.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempThuRecalTwoKFpr": {
+  "value": 0.004902666666666666,
+  "display": "0.49\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@2000.per_fold.Mon-Wed→Thu.Aegis-OSR.fpr.mean"
+ },
+ "TempThuRecalTwoKZdr": {
+  "value": 0.9513538320330426,
+  "display": "0.951",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@2000.per_fold.Mon-Wed→Thu.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempThuRecalFiveKFpr": {
+  "value": 0.006653333333333333,
+  "display": "0.67\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@5000.per_fold.Mon-Wed→Thu.Aegis-OSR.fpr.mean"
+ },
+ "TempThuRecalFiveKZdr": {
+  "value": 0.8815052776502983,
+  "display": "0.882",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@5000.per_fold.Mon-Wed→Thu.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempThuRefFiveHFpr": {
+  "value": 0.0024146666666666665,
+  "display": "0.24\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@500.per_fold.Mon-Wed→Thu.Aegis-OSR.fpr.mean"
+ },
+ "TempThuRefFiveHZdr": {
+  "value": 0.9255621844882974,
+  "display": "0.926",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@500.per_fold.Mon-Wed→Thu.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempThuRefTwoKFpr": {
+  "value": 0.0049173333333333335,
+  "display": "0.49\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@2000.per_fold.Mon-Wed→Thu.Aegis-OSR.fpr.mean"
+ },
+ "TempThuRefTwoKZdr": {
+  "value": 0.954290959155576,
+  "display": "0.954",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@2000.per_fold.Mon-Wed→Thu.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempThuRefFiveKFpr": {
+  "value": 0.0077146666666666665,
+  "display": "0.77\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@5000.per_fold.Mon-Wed→Thu.Aegis-OSR.fpr.mean"
+ },
+ "TempThuRefFiveKZdr": {
+  "value": 0.9605323542909592,
+  "display": "0.961",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@5000.per_fold.Mon-Wed→Thu.Aegis-OSR.zero_day_recall.mean"
+ },
+ "TempThuOracleTwoKFpr": {
+  "value": 0.0092,
+  "display": "0.92\\%",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Wed→Thu.Aegis-OSR.fpr.mean"
+ },
+ "TempThuOracleTwoKZdr": {
+  "value": 0.9813675998164296,
+  "display": "0.981",
+  "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Wed→Thu.Aegis-OSR.zero_day_recall.mean"
+ },
+ "CrossOsrFpr": {
+  "value": 0.3519780474383851,
+  "display": "35.2\\%",
+  "source": "research_artifacts/openset_cross_summary.json:per_fold.cross_dataset.CICIDS2017→CSE-CIC-IDS2018.Aegis-OSR.fpr.mean"
+ },
+ "CrossOsrZdr": {
+  "value": 0.43820800000000004,
+  "display": "0.438",
+  "source": "research_artifacts/openset_cross_summary.json:per_fold.cross_dataset.CICIDS2017→CSE-CIC-IDS2018.Aegis-OSR.zero_day_recall.mean"
+ },
+ "CrossOsrKnown": {
+  "value": 0.8639693854283363,
+  "display": "0.864",
+  "source": "research_artifacts/openset_cross_summary.json:per_fold.cross_dataset.CICIDS2017→CSE-CIC-IDS2018.Aegis-OSR.known_recall.mean"
+ },
+ "CrossXgbFpr": {
+  "value": 0.04095977294448145,
+  "display": "4.1\\%",
+  "source": "research_artifacts/openset_cross_summary.json:per_fold.cross_dataset.CICIDS2017→CSE-CIC-IDS2018.Closed-set XGB.fpr.mean"
+ },
+ "CrossXgbZdr": {
+  "value": 0.166128,
+  "display": "0.166",
+  "source": "research_artifacts/openset_cross_summary.json:per_fold.cross_dataset.CICIDS2017→CSE-CIC-IDS2018.Closed-set XGB.zero_day_recall.mean"
+ },
+ "CrossXgbKnown": {
+  "value": 0.8415557119771581,
+  "display": "0.842",
+  "source": "research_artifacts/openset_cross_summary.json:per_fold.cross_dataset.CICIDS2017→CSE-CIC-IDS2018.Closed-set XGB.known_recall.mean"
+ },
+ "CrossRecalFiveHFpr": {
+  "value": 0.008329230501896956,
+  "display": "0.8\\%",
+  "source": "research_artifacts/openset_cross_summary.json:adaptation.cross_dataset.recal@500.per_fold.CICIDS2017→CSE-CIC-IDS2018.Aegis-OSR.fpr.mean"
+ },
+ "CrossRecalFiveHZdr": {
+  "value": 0.043016000000000006,
+  "display": "0.043",
+  "source": "research_artifacts/openset_cross_summary.json:adaptation.cross_dataset.recal@500.per_fold.CICIDS2017→CSE-CIC-IDS2018.Aegis-OSR.zero_day_recall.mean"
+ },
+ "CrossRecalTwoKFpr": {
+  "value": 0.023626516840916333,
+  "display": "2.4\\%",
+  "source": "research_artifacts/openset_cross_summary.json:adaptation.cross_dataset.recal@2000.per_fold.CICIDS2017→CSE-CIC-IDS2018.Aegis-OSR.fpr.mean"
+ },
+ "CrossRecalTwoKZdr": {
+  "value": 0.15200799999999998,
+  "display": "0.152",
+  "source": "research_artifacts/openset_cross_summary.json:adaptation.cross_dataset.recal@2000.per_fold.CICIDS2017→CSE-CIC-IDS2018.Aegis-OSR.zero_day_recall.mean"
+ },
+ "CrossRefTwoKFpr": {
+  "value": 0.5096165542008166,
+  "display": "51.0\\%",
+  "source": "research_artifacts/openset_cross_summary.json:adaptation.cross_dataset.recal+ref@2000.per_fold.CICIDS2017→CSE-CIC-IDS2018.Aegis-OSR.fpr.mean"
+ },
+ "CrossRefTwoKZdr": {
+  "value": 0.64444,
+  "display": "0.644",
+  "source": "research_artifacts/openset_cross_summary.json:adaptation.cross_dataset.recal+ref@2000.per_fold.CICIDS2017→CSE-CIC-IDS2018.Aegis-OSR.zero_day_recall.mean"
+ },
+ "CrossRefFiveKFpr": {
+  "value": 0.403652002664427,
+  "display": "40.4\\%",
+  "source": "research_artifacts/openset_cross_summary.json:adaptation.cross_dataset.recal+ref@5000.per_fold.CICIDS2017→CSE-CIC-IDS2018.Aegis-OSR.fpr.mean"
+ },
+ "CrossRefFiveKZdr": {
+  "value": 0.5005279999999999,
+  "display": "0.501",
+  "source": "research_artifacts/openset_cross_summary.json:adaptation.cross_dataset.recal+ref@5000.per_fold.CICIDS2017→CSE-CIC-IDS2018.Aegis-OSR.zero_day_recall.mean"
+ },
+ "FrozenEighteenHulk": {
+  "value": 0.00805,
+  "display": "0.8\\%",
+  "source": "research_artifacts/frozen_v11_on_cic2018.json:per_label[DoS attacks-Hulk].alert_rate"
+ },
+ "FrozenEighteenSsh": {
+  "value": 0.0,
+  "display": "0.0\\%",
+  "source": "research_artifacts/frozen_v11_on_cic2018.json:per_label[SSH-Bruteforce].alert_rate"
+ },
+ "FrozenEighteenLoicHttp": {
+  "value": 0.0,
+  "display": "0.0\\%",
+  "source": "research_artifacts/frozen_v11_on_cic2018.json:per_label[DDoS attacks-LOIC-HTTP].alert_rate"
+ },
+ "FrozenEighteenSlowloris": {
+  "value": 0.9557932983447719,
+  "display": "95.6\\%",
+  "source": "research_artifacts/frozen_v11_on_cic2018.json:per_label[DoS attacks-Slowloris].alert_rate"
+ },
+ "FrozenEighteenFone": {
+  "value": 0.18464701932048472,
+  "display": "0.185",
+  "source": "research_artifacts/frozen_v11_on_cic2018.json:binary.f1"
+ },
+ "FrozenEighteenRecall": {
+  "value": 0.10179475922443336,
+  "display": "0.102",
+  "source": "research_artifacts/frozen_v11_on_cic2018.json:binary.recall"
+ },
+ "FrozenEighteenPrecision": {
+  "value": 0.9922713336739908,
+  "display": "0.992",
+  "source": "research_artifacts/frozen_v11_on_cic2018.json:binary.precision"
+ },
+ "FrozenEighteenFpr": {
+  "value": 0.0008454680119623243,
+  "display": "0.08\\%",
+  "source": "research_artifacts/frozen_v11_on_cic2018.json:binary.benign_fpr"
+ },
+ "GateFpr": {
+  "value": 0.009205,
+  "display": "0.92\\%",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.gate.benign_fpr"
+ },
+ "GateKnownRecall": {
+  "value": 0.9987956538813981,
+  "display": "0.999",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.gate.known_attack_recall"
+ },
+ "HthFrozenFpr": {
+  "value": 0.0007903929017618113,
+  "display": "0.08\\%",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.head_to_head.frozen_v11.benign_fpr"
+ },
+ "HthFrozenKnown": {
+  "value": 0.9926863016406404,
+  "display": "0.993",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.head_to_head.frozen_v11.known_attack_recall"
+ },
+ "HthWebAttackFrozen": {
+  "value": 0.4155844155844156,
+  "display": "41.6\\%",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.head_to_head.per_family_recall.WebAttack.frozen_v11"
+ },
+ "HthWebAttackGate": {
+  "value": 1.0,
+  "display": "100.0\\%",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.head_to_head.per_family_recall.WebAttack.gate"
+ },
+ "HthWebAttackN": {
+  "value": 77,
+  "display": "77",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.head_to_head.per_family_recall.WebAttack.n"
+ },
+ "HthBotFrozen": {
+  "value": 0.5853658536585366,
+  "display": "58.5\\%",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.head_to_head.per_family_recall.Bot.frozen_v11"
+ },
+ "HthBotGate": {
+  "value": 0.926829268292683,
+  "display": "92.7\\%",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.head_to_head.per_family_recall.Bot.gate"
+ },
+ "HthBotN": {
+  "value": 82,
+  "display": "82",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.head_to_head.per_family_recall.Bot.n"
+ },
+ "UnseenTotal": {
+  "value": 47,
+  "display": "47",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.natural_unknowns[*].n"
+ },
+ "UnseenGateCaught": {
+  "value": 29,
+  "display": "29",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.natural_unknowns[*].gate_alert_rate*n"
+ },
+ "UnseenFrozenCaught": {
+  "value": 0,
+  "display": "0",
+  "source": "research_artifacts/zero_day_gate_report.json:evaluation.natural_unknowns[*].frozen_v11_attack_rate*n"
+ },
+ "PoolRows": {
+  "value": 10676,
+  "display": "10676",
+  "source": "research_artifacts/replay/replay_pool_manifest.json:rows"
+ },
+ "FamBestHeldout": {
+  "value": 0.48293161417654124,
+  "display": "48.3\\%",
+  "source": "research_artifacts/model_family_comparison.json:results.Hist. gradient boosting (LightGBM-style).heldout_mean.zero_day_recall"
+ },
+ "FamCount": {
+  "value": 10,
+  "display": "10",
+  "source": "research_artifacts/model_family_comparison.json:results"
+ },
+ "XaiShapLime": {
+  "value": 0.2726,
+  "display": "0.273",
+  "source": "models/trained_models/xai_stability_report.json:overall.shap_lime_jaccard_top5.mean"
+ },
+ "XaiRobustBot": {
+  "value": 0.5673,
+  "display": "0.567",
+  "source": "models/trained_models/xai_stability_report.json:per_family.Bot.robustness_jaccard_top5.mean"
+ },
+ "XaiRobustWebAttack": {
+  "value": 0.7282,
+  "display": "0.728",
+  "source": "models/trained_models/xai_stability_report.json:per_family.WebAttack.robustness_jaccard_top5.mean"
+ },
+ "RangeRuns": {
+  "value": 1190,
+  "display": "1190",
+  "source": "results/cyber_range/experiments/latest.json:sum(len(suites.*.cells)) * len(seeds)"
+ },
+ "RangeSeeds": {
+  "value": 10,
+  "display": "10",
+  "source": "results/cyber_range/experiments/latest.json:seeds"
+ },
+ "RangeZeroDayFrozenDetected": {
+  "value": 0.0,
+  "display": "0.0\\%",
+  "source": "results/cyber_range/experiments/latest.json:suites.detector[zero_day,frozen].summary.detected.mean"
+ },
+ "RangeZeroDayGateDetected": {
+  "value": 1.0,
+  "display": "100.0\\%",
+  "source": "results/cyber_range/experiments/latest.json:suites.detector[zero_day,gate].summary.detected.mean"
+ },
+ "RangeZeroDayGateLatency": {
+  "value": 4.3,
+  "display": "4.3",
+  "source": "results/cyber_range/experiments/latest.json:suites.detector[zero_day,gate].summary.detection_latency_s.mean"
+ },
+ "RangeFalseIncidentsOne": {
+  "value": 18.025,
+  "display": "18.0",
+  "source": "results/cyber_range/experiments/latest.json:mean over scenarios of suites.threshold[alert_threshold=1].false_incidents"
+ },
+ "RangeFalseIncidentsThree": {
+  "value": 0.025,
+  "display": "0.0",
+  "source": "results/cyber_range/experiments/latest.json:mean over scenarios of suites.threshold[alert_threshold=3].false_incidents"
+ },
+ "RangeIsolateCollateral": {
+  "value": 0.2738433333333334,
+  "display": "27.4\\%",
+  "source": "results/cyber_range/experiments/latest.json:mean over scenarios of suites.defense[isolate_host].collateral_rate"
+ },
+ "RangeBlockCollateral": {
+  "value": 4.4444444444444447e-05,
+  "display": "0.0\\%",
+  "source": "results/cyber_range/experiments/latest.json:mean over scenarios of suites.defense[block_source].collateral_rate"
+ },
+ "RangeDdosAvailZero": {
+  "value": 0.9949000000000001,
+  "display": "99.5\\%",
+  "source": "results/cyber_range/experiments/latest.json:suites.delay[ddos,0].availability_mean_during_attack.mean"
+ },
+ "RangeDdosAvailThirty": {
+  "value": 0.62019,
+  "display": "62.0\\%",
+  "source": "results/cyber_range/experiments/latest.json:suites.delay[ddos,30].availability_mean_during_attack.mean"
+ }
+}

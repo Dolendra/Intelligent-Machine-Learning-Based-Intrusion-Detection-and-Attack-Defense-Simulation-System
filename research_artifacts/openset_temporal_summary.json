@@ -21712,6 +21712,316 @@
    }
   }
  },
+ "significance_seed_level": {
+  "temporal": {
+   "zero_day_recall": {
+    "Closed-set XGB": {
+     "n_seeds": 5,
+     "mean_diff": 0.017292121789597693,
+     "diff_ci_low": 0.0036460555505238735,
+     "diff_ci_high": 0.030938188028671515,
+     "positive_seeds": 5,
+     "t_statistic": 3.518275967600109,
+     "t_p_value": 0.02448813061424365,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Closed-set DT (v1.1-style)": {
+     "n_seeds": 5,
+     "mean_diff": 0.2516887532146825,
+     "diff_ci_low": 0.15211936841023804,
+     "diff_ci_high": 0.3512581380191269,
+     "positive_seeds": 5,
+     "t_statistic": 7.018221597619519,
+     "t_p_value": 0.0021708729230056085,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Isolation Forest": {
+     "n_seeds": 5,
+     "mean_diff": 0.7361344717471381,
+     "diff_ci_low": 0.7333574929112507,
+     "diff_ci_high": 0.7389114505830254,
+     "positive_seeds": 5,
+     "t_statistic": 735.9929879323887,
+     "t_p_value": 2.044801705514862e-11,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Autoencoder": {
+     "n_seeds": 5,
+     "mean_diff": 0.6044316009093429,
+     "diff_ci_low": 0.5621985399345164,
+     "diff_ci_high": 0.6466646618841694,
+     "positive_seeds": 5,
+     "t_statistic": 39.735958536652255,
+     "t_p_value": 2.3965418007582896e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "kNN distance": {
+     "n_seeds": 5,
+     "mean_diff": 0.5049846780801348,
+     "diff_ci_low": 0.5022044464477408,
+     "diff_ci_high": 0.5077649097125289,
+     "positive_seeds": 5,
+     "t_statistic": 504.2969158825634,
+     "t_p_value": 9.276723603548869e-11,
+     "wilcoxon_p_value": 0.0625
+    },
+    "XGB + Energy": {
+     "n_seeds": 5,
+     "mean_diff": 0.02878399545448651,
+     "diff_ci_low": 0.004474814679114553,
+     "diff_ci_high": 0.05309317622985847,
+     "positive_seeds": 5,
+     "t_statistic": 3.287530913777648,
+     "t_p_value": 0.030285640664029004,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ max fusion": {
+     "n_seeds": 5,
+     "mean_diff": 0.028279266840533456,
+     "diff_ci_low": 0.012352079267558675,
+     "diff_ci_high": 0.044206454413508234,
+     "positive_seeds": 5,
+     "t_statistic": 4.929673342405213,
+     "t_p_value": 0.007874683232455807,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ omnibus fusion": {
+     "n_seeds": 5,
+     "mean_diff": 0.008529068659862605,
+     "diff_ci_low": 0.0002786899582582422,
+     "diff_ci_high": 0.016779447361466967,
+     "positive_seeds": 5,
+     "t_statistic": 2.870230784432542,
+     "t_p_value": 0.04545803752138309,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ AE novelty": {
+     "n_seeds": 5,
+     "mean_diff": 0.005785595494177409,
+     "diff_ci_low": 0.001956019036802201,
+     "diff_ci_high": 0.009615171951552617,
+     "positive_seeds": 5,
+     "t_statistic": 4.19456001708166,
+     "t_p_value": 0.013755901770445002,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ IForest novelty": {
+     "n_seeds": 5,
+     "mean_diff": 0.036921224186024545,
+     "diff_ci_low": 0.023313234823601973,
+     "diff_ci_high": 0.05052921354844712,
+     "positive_seeds": 5,
+     "t_statistic": 7.533056459631804,
+     "t_p_value": 0.0016630025855255204,
+     "wilcoxon_p_value": 0.0625
+    }
+   },
+   "auroc_unknown": {
+    "Closed-set XGB": {
+     "n_seeds": 5,
+     "mean_diff": 0.03171746711605814,
+     "diff_ci_low": 0.009620138750416327,
+     "diff_ci_high": 0.053814795481699956,
+     "positive_seeds": 5,
+     "t_statistic": 3.985178880745381,
+     "t_p_value": 0.016330418054258503,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Closed-set DT (v1.1-style)": {
+     "n_seeds": 5,
+     "mean_diff": 0.16781200178291925,
+     "diff_ci_low": 0.12304359838582923,
+     "diff_ci_high": 0.21258040518000926,
+     "positive_seeds": 5,
+     "t_statistic": 10.40735821670859,
+     "t_p_value": 0.0004814157876982209,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Isolation Forest": {
+     "n_seeds": 5,
+     "mean_diff": 0.11846182984623517,
+     "diff_ci_low": 0.0869543830822252,
+     "diff_ci_high": 0.14996927661024514,
+     "positive_seeds": 5,
+     "t_statistic": 10.438889894596265,
+     "t_p_value": 0.00047579604142434926,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Autoencoder": {
+     "n_seeds": 5,
+     "mean_diff": 0.10594213445938491,
+     "diff_ci_low": 0.06979727070939679,
+     "diff_ci_high": 0.14208699820937304,
+     "positive_seeds": 5,
+     "t_statistic": 8.137878805921968,
+     "t_p_value": 0.001240522915659342,
+     "wilcoxon_p_value": 0.0625
+    },
+    "kNN distance": {
+     "n_seeds": 5,
+     "mean_diff": 0.13418296062710544,
+     "diff_ci_low": 0.11707099173286646,
+     "diff_ci_high": 0.15129492952134443,
+     "positive_seeds": 5,
+     "t_statistic": 21.771406115604883,
+     "t_p_value": 2.633428929896091e-05,
+     "wilcoxon_p_value": 0.0625
+    },
+    "XGB + Energy": {
+     "n_seeds": 5,
+     "mean_diff": 0.03984211907451744,
+     "diff_ci_low": 0.02145118743345515,
+     "diff_ci_high": 0.058233050715579736,
+     "positive_seeds": 5,
+     "t_statistic": 6.014891395614041,
+     "t_p_value": 0.0038474153652921007,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ max fusion": {
+     "n_seeds": 5,
+     "mean_diff": 0.005680471310574586,
+     "diff_ci_low": -0.004834713669683488,
+     "diff_ci_high": 0.01619565629083266,
+     "positive_seeds": 3,
+     "t_statistic": 1.4998801062531781,
+     "t_p_value": 0.20802946720691254,
+     "wilcoxon_p_value": 0.4375
+    },
+    "Aegis-OSR w/ omnibus fusion": {
+     "n_seeds": 5,
+     "mean_diff": 0.001945733328060939,
+     "diff_ci_low": -0.008294376394523866,
+     "diff_ci_high": 0.012185843050645745,
+     "positive_seeds": 2,
+     "t_statistic": 0.527555067383729,
+     "t_p_value": 0.6257155202859066,
+     "wilcoxon_p_value": 0.8125
+    },
+    "Aegis-OSR w/ AE novelty": {
+     "n_seeds": 5,
+     "mean_diff": -0.02125312131138033,
+     "diff_ci_low": -0.03555532219777754,
+     "diff_ci_high": -0.006950920424983126,
+     "positive_seeds": 0,
+     "t_statistic": -4.1258072868546645,
+     "t_p_value": 0.01454346051632342,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ IForest novelty": {
+     "n_seeds": 5,
+     "mean_diff": 0.0008705651810716475,
+     "diff_ci_low": -0.0055818967995374625,
+     "diff_ci_high": 0.0073230271616807575,
+     "positive_seeds": 3,
+     "t_statistic": 0.37459754788262,
+     "t_p_value": 0.7269735109142427,
+     "wilcoxon_p_value": 1.0
+    }
+   },
+   "fpr": {
+    "Closed-set XGB": {
+     "n_seeds": 5,
+     "mean_diff": 0.031419333333333334,
+     "diff_ci_low": 0.028730054214889774,
+     "diff_ci_high": 0.03410861245177689,
+     "positive_seeds": 5,
+     "t_statistic": 32.437709289320104,
+     "t_p_value": 5.385225508441422e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Closed-set DT (v1.1-style)": {
+     "n_seeds": 5,
+     "mean_diff": 0.04271533333333334,
+     "diff_ci_low": 0.038785826304813795,
+     "diff_ci_high": 0.04664484036185289,
+     "positive_seeds": 5,
+     "t_statistic": 30.181083095023013,
+     "t_p_value": 7.17860614467253e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Isolation Forest": {
+     "n_seeds": 5,
+     "mean_diff": 0.009635333333333334,
+     "diff_ci_low": 0.005331479611880212,
+     "diff_ci_high": 0.013939187054786455,
+     "positive_seeds": 5,
+     "t_statistic": 6.215818613196299,
+     "t_p_value": 0.003409608348616955,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Autoencoder": {
+     "n_seeds": 5,
+     "mean_diff": -0.044934666666666664,
+     "diff_ci_low": -0.05577586755907561,
+     "diff_ci_high": -0.03409346577425772,
+     "positive_seeds": 0,
+     "t_statistic": -11.507824323015505,
+     "t_p_value": 0.0003255560891316,
+     "wilcoxon_p_value": 0.0625
+    },
+    "kNN distance": {
+     "n_seeds": 5,
+     "mean_diff": -0.05512,
+     "diff_ci_low": -0.0584180251718266,
+     "diff_ci_high": -0.051821974828173405,
+     "positive_seeds": 0,
+     "t_statistic": -46.40281569280537,
+     "t_p_value": 1.2901210895367094e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "XGB + Energy": {
+     "n_seeds": 5,
+     "mean_diff": 0.03127933333333334,
+     "diff_ci_low": 0.02863116580739349,
+     "diff_ci_high": 0.033927500859273194,
+     "positive_seeds": 5,
+     "t_statistic": 32.794508306781516,
+     "t_p_value": 5.155365293291766e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ max fusion": {
+     "n_seeds": 5,
+     "mean_diff": -0.052139333333333336,
+     "diff_ci_low": -0.05520635707238805,
+     "diff_ci_high": -0.04907230959427862,
+     "positive_seeds": 0,
+     "t_statistic": -47.19950321161399,
+     "t_p_value": 1.2053218554032047e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ omnibus fusion": {
+     "n_seeds": 5,
+     "mean_diff": -0.04803466666666666,
+     "diff_ci_low": -0.053215607631900606,
+     "diff_ci_high": -0.04285372570143272,
+     "positive_seeds": 0,
+     "t_statistic": -25.741581701356477,
+     "t_p_value": 1.3528620560694428e-05,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ AE novelty": {
+     "n_seeds": 5,
+     "mean_diff": 0.006013333333333333,
+     "diff_ci_low": 0.00022187322840337177,
+     "diff_ci_high": 0.011804793438263295,
+     "positive_seeds": 5,
+     "t_statistic": 2.882811863806834,
+     "t_p_value": 0.044885986163726334,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ IForest novelty": {
+     "n_seeds": 5,
+     "mean_diff": 0.019561333333333337,
+     "diff_ci_low": 0.01679560501147935,
+     "diff_ci_high": 0.022327061655187323,
+     "positive_seeds": 5,
+     "t_statistic": 19.637130572560643,
+     "t_p_value": 3.966139507449112e-05,
+     "wilcoxon_p_value": 0.0625
+    }
+   }
+  }
+ },
  "meta": {
   "generated_at": "2026-11-10T10:52:21.817907+00:00",
   "git_commit": "775e9a9",
@@ -21746,6 +22056,6 @@
   "quick": false,
   "pilot_seed_excluded": 0,
   "n_records": 10,
-  "summarized_at": "2026-11-10T11:54:06.492997+00:00"
+  "summarized_at": "2026-11-17T09:33:06.944598+00:00"
  }
 }

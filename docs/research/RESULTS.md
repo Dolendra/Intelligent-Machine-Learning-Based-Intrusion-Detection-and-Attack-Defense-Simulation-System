@@ -1,6 +1,6 @@
 # Aegis-OSR — results (auto-generated)
 
-_Generated 2026-11-10T11:54:12+00:00 by `scripts/55_research_figures.py`. Do not edit by hand — rerun the script._
+_Generated 2026-11-17T09:45:47+00:00 by `scripts/55_research_figures.py`. Do not edit by hand — rerun the script._
 
 Design selected on pilot seed 0; all numbers below use fresh seeds (see `meta`). α = 1% benign false-alarm budget unless stated; brackets are 95% t-intervals over seeds.
 
@@ -24,20 +24,20 @@ Seeds: [1, 2, 3, 4, 5] · records: 30 · commit `775e9a9`
 | Autoencoder | baseline | 0.231 [0.197, 0.265] | 0.883 [0.870, 0.897] | 0.430 [0.397, 0.463] | 1.00% [0.86, 1.13] |
 | Isolation Forest | baseline | 0.012 [0.011, 0.012] | 0.840 [0.829, 0.851] | 0.008 [0.007, 0.008] | 0.99% [0.92, 1.06] |
 
-**Paired Wilcoxon signed-rank tests (pairs = fold × seed)**
+**Seed-level paired comparison (folds averaged within each seed; fold W/L/T descriptive only)**
 
-| Aegis-OSR vs | Mean Δ zero-day recall | Wins / losses / ties | Wilcoxon p |
-|---|---|---|---|
-| Closed-set XGB | +0.216 | 30 / 0 / 0 | 1.86e-09 |
-| Closed-set DT (v1.1-style) | +0.465 | 30 / 0 / 0 | 1.86e-09 |
-| XGB + Energy | +0.249 | 30 / 0 / 0 | 1.73e-06 |
-| Aegis-OSR w/ IForest novelty | +0.228 | 30 / 0 / 0 | 1.73e-06 |
-| Isolation Forest | +0.694 | 27 / 2 / 1 | 3.69e-06 |
-| Autoencoder | +0.475 | 27 / 3 / 0 | 4.73e-06 |
-| Aegis-OSR w/ max fusion | +0.175 | 24 / 6 / 0 | 6.92e-06 |
-| Aegis-OSR w/ AE novelty | +0.144 | 25 / 5 / 0 | 6.92e-06 |
-| kNN distance | +0.327 | 25 / 5 / 0 | 7.68e-06 |
-| Aegis-OSR w/ omnibus fusion | +0.092 | 24 / 6 / 0 | 1.11e-04 |
+| Aegis-OSR vs | Mean Δ zero-day recall [95% CI] | Seeds better | Paired t p (seeds) | Fold W / L / T (descriptive) |
+|---|---|---|---|---|
+| Isolation Forest | +0.694 [+0.677, +0.712] | 5 / 5 | 3.76e-08 | 27 / 2 / 1 |
+| kNN distance | +0.327 [+0.304, +0.350] | 5 / 5 | 2.39e-06 | 25 / 5 / 0 |
+| XGB + Energy | +0.249 [+0.231, +0.267] | 5 / 5 | 2.63e-06 | 30 / 0 / 0 |
+| Autoencoder | +0.475 [+0.435, +0.514] | 5 / 5 | 4.72e-06 | 27 / 3 / 0 |
+| Aegis-OSR w/ max fusion | +0.175 [+0.152, +0.197] | 5 / 5 | 2.59e-05 | 24 / 6 / 0 |
+| Closed-set DT (v1.1-style) | +0.465 [+0.402, +0.528] | 5 / 5 | 3.27e-05 | 30 / 0 / 0 |
+| Aegis-OSR w/ IForest novelty | +0.228 [+0.194, +0.262] | 5 / 5 | 4.79e-05 | 30 / 0 / 0 |
+| Aegis-OSR w/ omnibus fusion | +0.092 [+0.078, +0.106] | 5 / 5 | 5.24e-05 | 24 / 6 / 0 |
+| Closed-set XGB | +0.216 [+0.180, +0.252] | 5 / 5 | 7.59e-05 | 30 / 0 / 0 |
+| Aegis-OSR w/ AE novelty | +0.144 [+0.119, +0.169] | 5 / 5 | 8.67e-05 | 25 / 5 / 0 |
 
 ![per family](../../research_artifacts/figures/loafo_by_family.png)
 
@@ -74,20 +74,20 @@ Seeds: [1, 2, 3, 4, 5] · records: 10 · commit `775e9a9`
 | Autoencoder | baseline | 0.139 [0.097, 0.182] | 0.806 [0.777, 0.835] | — | 8.90% [7.61, 10.19] |
 | Isolation Forest | baseline | 0.008 [0.006, 0.009] | 0.794 [0.773, 0.814] | — | 3.44% [3.22, 3.65] |
 
-**Paired Wilcoxon signed-rank tests (pairs = fold × seed)**
+**Seed-level paired comparison (folds averaged within each seed; fold W/L/T descriptive only)**
 
-| Aegis-OSR vs | Mean Δ zero-day recall | Wins / losses / ties | Wilcoxon p |
-|---|---|---|---|
-| Closed-set XGB | +0.017 | 10 / 0 / 0 | 1.95e-03 |
-| Closed-set DT (v1.1-style) | +0.252 | 10 / 0 / 0 | 1.95e-03 |
-| Isolation Forest | +0.736 | 10 / 0 / 0 | 1.95e-03 |
-| Autoencoder | +0.604 | 10 / 0 / 0 | 1.95e-03 |
-| kNN distance | +0.505 | 10 / 0 / 0 | 1.95e-03 |
-| XGB + Energy | +0.029 | 10 / 0 / 0 | 1.95e-03 |
-| Aegis-OSR w/ AE novelty | +0.006 | 10 / 0 / 0 | 1.95e-03 |
-| Aegis-OSR w/ IForest novelty | +0.037 | 10 / 0 / 0 | 1.95e-03 |
-| Aegis-OSR w/ omnibus fusion | +0.009 | 7 / 3 / 0 | 4.88e-02 |
-| Aegis-OSR w/ max fusion | +0.028 | 6 / 3 / 1 | 1.45e-01 |
+| Aegis-OSR vs | Mean Δ zero-day recall [95% CI] | Seeds better | Paired t p (seeds) | Fold W / L / T (descriptive) |
+|---|---|---|---|---|
+| Isolation Forest | +0.736 [+0.733, +0.739] | 5 / 5 | 2.04e-11 | 10 / 0 / 0 |
+| kNN distance | +0.505 [+0.502, +0.508] | 5 / 5 | 9.28e-11 | 10 / 0 / 0 |
+| Autoencoder | +0.604 [+0.562, +0.647] | 5 / 5 | 2.40e-06 | 10 / 0 / 0 |
+| Aegis-OSR w/ IForest novelty | +0.037 [+0.023, +0.051] | 5 / 5 | 1.66e-03 | 10 / 0 / 0 |
+| Closed-set DT (v1.1-style) | +0.252 [+0.152, +0.351] | 5 / 5 | 2.17e-03 | 10 / 0 / 0 |
+| Aegis-OSR w/ max fusion | +0.028 [+0.012, +0.044] | 5 / 5 | 7.87e-03 | 6 / 3 / 1 |
+| Aegis-OSR w/ AE novelty | +0.006 [+0.002, +0.010] | 5 / 5 | 1.38e-02 | 10 / 0 / 0 |
+| Closed-set XGB | +0.017 [+0.004, +0.031] | 5 / 5 | 2.45e-02 | 10 / 0 / 0 |
+| XGB + Energy | +0.029 [+0.004, +0.053] | 5 / 5 | 3.03e-02 | 10 / 0 / 0 |
+| Aegis-OSR w/ omnibus fusion | +0.009 [+0.000, +0.017] | 5 / 5 | 4.55e-02 | 7 / 3 / 0 |
 
 **Per fold (zero-day recall, realized FPR)**
 
@@ -137,20 +137,20 @@ Seeds: [1, 2, 3, 4, 5] · records: 5 · commit `775e9a9`
 | Closed-set DT (v1.1-style) | baseline | 0.085 [0.045, 0.124] | 0.453 [0.406, 0.501] | 0.331 [0.281, 0.381] | 13.97% [5.16, 22.78] |
 | Isolation Forest | baseline | 0.037 [0.033, 0.040] | 0.438 [0.419, 0.456] | 0.007 [0.006, 0.007] | 1.51% [0.99, 2.03] |
 
-**Paired Wilcoxon signed-rank tests (pairs = fold × seed)**
+**Seed-level paired comparison (folds averaged within each seed; fold W/L/T descriptive only)**
 
-| Aegis-OSR vs | Mean Δ zero-day recall | Wins / losses / ties | Wilcoxon p |
-|---|---|---|---|
-| Closed-set XGB | +0.272 | 5 / 0 / 0 | 6.25e-02 |
-| Closed-set DT (v1.1-style) | +0.354 | 5 / 0 / 0 | 6.25e-02 |
-| Isolation Forest | +0.402 | 5 / 0 / 0 | 6.25e-02 |
-| Autoencoder | +0.134 | 5 / 0 / 0 | 6.25e-02 |
-| kNN distance | -0.276 | 0 / 5 / 0 | 6.25e-02 |
-| XGB + Energy | +0.283 | 5 / 0 / 0 | 6.25e-02 |
-| Aegis-OSR w/ IForest novelty | +0.288 | 5 / 0 / 0 | 6.25e-02 |
-| Aegis-OSR w/ omnibus fusion | -0.018 | 1 / 4 / 0 | 1.88e-01 |
-| Aegis-OSR w/ AE novelty | +0.005 | 3 / 2 / 0 | 4.38e-01 |
-| Aegis-OSR w/ max fusion | +0.010 | 2 / 3 / 0 | 1.00e+00 |
+| Aegis-OSR vs | Mean Δ zero-day recall [95% CI] | Seeds better | Paired t p (seeds) | Fold W / L / T (descriptive) |
+|---|---|---|---|---|
+| Closed-set XGB | +0.272 [+0.262, +0.282] | 5 / 5 | 2.15e-07 | 5 / 0 / 0 |
+| Isolation Forest | +0.402 [+0.385, +0.418] | 5 / 5 | 2.73e-07 | 5 / 0 / 0 |
+| kNN distance | -0.276 [-0.294, -0.257] | 0 / 5 | 1.98e-06 | 0 / 5 / 0 |
+| Closed-set DT (v1.1-style) | +0.354 [+0.324, +0.383] | 5 / 5 | 4.87e-06 | 5 / 0 / 0 |
+| Autoencoder | +0.134 [+0.121, +0.148] | 5 / 5 | 9.91e-06 | 5 / 0 / 0 |
+| XGB + Energy | +0.283 [+0.250, +0.316] | 5 / 5 | 1.88e-05 | 5 / 0 / 0 |
+| Aegis-OSR w/ IForest novelty | +0.288 [+0.222, +0.354] | 5 / 5 | 2.68e-04 | 5 / 0 / 0 |
+| Aegis-OSR w/ omnibus fusion | -0.018 [-0.050, +0.014] | 1 / 5 | 1.86e-01 | 1 / 4 / 0 |
+| Aegis-OSR w/ AE novelty | +0.005 [-0.006, +0.017] | 3 / 5 | 2.68e-01 | 3 / 2 / 0 |
+| Aegis-OSR w/ max fusion | +0.010 [-0.039, +0.059] | 2 / 5 | 6.15e-01 | 2 / 3 / 0 |
 
 **Per fold (zero-day recall, realized FPR)**
 
@@ -183,9 +183,9 @@ Seeds: [1, 2, 3, 4, 5] · records: 5 · commit `775e9a9`
 | 0.01 | 0.920% | 0.9988 | 0.617 |
 | 0.05 | 4.943% | 1.0000 | 0.979 |
 
-Frozen v1.1 reference: benign FPR 0.064%, known recall 0.9931, never-seen attack rate 0.000.
+Frozen v1.1 reference: benign FPR 0.079%, known recall 0.9927, never-seen attack rate 0.000.
 
-> Natural unknowns (Infiltration n=36, Heartbleed n=11) are tiny; treat rates as illustrative, the LOAFO / temporal / cross-dataset protocols are the statistical evidence.
+> Gate metrics use the gate's own test split. Every frozen-vs-gate comparison uses only flows neither model trained on (protocol v2, R1a). Natural unknowns (Infiltration n=36, Heartbleed n=11) are tiny; treat rates as illustrative — LOAFO / temporal / cross-dataset protocols are the statistical evidence.
 
 ## Frozen v1.1 on CSE-CIC-IDS2018 (EXP-009, no retraining)
 

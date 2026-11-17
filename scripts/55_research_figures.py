@@ -197,11 +197,15 @@ def table_sig(block: dict) -> str:
     rows = [s for s in block["significance"] if s["metric"] == "zero_day_recall"]
     if not rows:
         return "_No significance tests yet._"
-    lines = ["| Aegis-OSR vs | Mean Δ zero-day recall | Wins / losses / ties | Wilcoxon p |", "|---|---|---|---|"]
+    lines = ["| Aegis-OSR vs | Mean Δ zero-day recall [95% CI] | Seeds better | Paired t p (seeds) | Fold W / L / T (descriptive) |",
+             "|---|---|---|---|---|"]
     for s in sorted(rows, key=lambda s: s.get("p_value") if s.get("p_value") is not None else 1):
         p = s.get("p_value")
-        lines.append(f"| {s['versus']} | {s['mean_diff']:+.3f} | {s['wins']} / {s['losses']} / {s['ties']} | "
-                     f"{'—' if p is None else f'{p:.2e}'} |")
+        ci = (f" [{s['diff_ci_low']:+.3f}, {s['diff_ci_high']:+.3f}]"
+              if s.get("diff_ci_low") is not None and s.get("diff_ci_high") is not None else "")
+        seeds = f"{s['positive_seeds']} / {s['n_seeds']}" if s.get("n_seeds") else "—"
+        lines.append(f"| {s['versus']} | {s['mean_diff']:+.3f}{ci} | {seeds} | {'—' if p is None else f'{p:.2e}'} | "
+                     f"{s['wins']} / {s['losses']} / {s['ties']} |")
     return "\n".join(lines)
 
 
@@ -248,7 +252,7 @@ def main() -> None:
         meta = block["meta"] or {}
         md += [f"Seeds: {meta.get('seeds')} · records: {meta.get('n_records')} · commit `{meta.get('git_commit')}`", ""]
         md += [f"![{proto} methods](../../research_artifacts/figures/{fig_methods(block, proto, titles[proto])})", ""]
-        md += [table_methods(block), "", "**Paired Wilcoxon signed-rank tests (pairs = fold × seed)**", "", table_sig(block), ""]
+        md += [table_methods(block), "", "**Seed-level paired comparison (folds averaged within each seed; fold W/L/T descriptive only)**", "", table_sig(block), ""]
         if proto == "loafo":
             md += [f"![per family](../../research_artifacts/figures/{fig_loafo_by_family(block)})", "",
                    f"![operating curve](../../research_artifacts/figures/{fig_operating(block, proto)})", ""]

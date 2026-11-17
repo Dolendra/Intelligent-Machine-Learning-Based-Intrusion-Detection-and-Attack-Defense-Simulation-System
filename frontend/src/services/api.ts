@@ -455,16 +455,23 @@ export interface ResearchFold {
   methods: Record<string, { zero_day_recall: CI | null; fpr: CI | null; auroc_unknown: CI | null }>;
 }
 
+/** Primary statistic: paired t-test over independent seeds (folds averaged within a seed).
+ *  `wins/losses/ties` count fold × seed pairs and are descriptive only (pairs are not independent). */
 export interface SignificanceRow {
   metric: string;
   versus: string;
   n: number;
   mean_diff: number;
+  diff_ci_low?: number | null;
+  diff_ci_high?: number | null;
+  n_seeds?: number | null;
+  positive_seeds?: number | null;
   wins: number;
   losses: number;
   ties: number;
-  statistic: number | null;
+  test?: string;
   p_value: number | null;
+  fold_pair_wilcoxon_p?: number | null;
 }
 
 export interface AdaptationRow {

@@ -93,3 +93,28 @@ def paired_test(a, b) -> dict:
     else:
         res.update({"statistic": float("nan"), "p_value": float("nan")})
     return res
+
+
+def seed_level_test(a_by_seed, b_by_seed) -> dict:
+    """Paired comparison over **independent seeds** (each value = fold-average within a seed).
+
+    Folds inside a seed share one data split, so fold × seed pairs are not independent; this is
+    the test to cite. Reports a paired t-test (primary), Wilcoxon signed-rank (n ≥ 5; its minimum
+    two-sided p with n = 5 is 0.0625), and a 95% t-interval for the mean difference.
+    """
+    a, b = np.asarray(a_by_seed, float), np.asarray(b_by_seed, float)
+    ok = ~(np.isnan(a) | np.isnan(b))
+    a, b = a[ok], b[ok]
+    d = a - b
+    res = {"n_seeds": int(d.size), "mean_diff": float(d.mean()) if d.size else float("nan"),
+           "diff_ci_low": float("nan"), "diff_ci_high": float("nan"), "positive_seeds": int((d > 0).sum()),
+           "t_statistic": float("nan"), "t_p_value": float("nan"), "wilcoxon_p_value": float("nan")}
+    if d.size >= 2 and np.any(d != 0):
+        t = stats.ttest_rel(a, b)
+        sem = stats.sem(d)
+        h = sem * stats.t.ppf(0.975, d.size - 1)
+        res.update({"t_statistic": float(t.statistic), "t_p_value": float(t.pvalue),
+                    "diff_ci_low": float(d.mean() - h), "diff_ci_high": float(d.mean() + h)})
+    if d.size >= 5 and np.any(d != 0):
+        res["wilcoxon_p_value"] = float(stats.wilcoxon(a, b, zero_method="zsplit").pvalue)
+    return res

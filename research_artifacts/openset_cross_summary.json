@@ -12643,6 +12643,316 @@
    }
   }
  },
+ "significance_seed_level": {
+  "cross_dataset": {
+   "zero_day_recall": {
+    "Closed-set XGB": {
+     "n_seeds": 5,
+     "mean_diff": 0.27208,
+     "diff_ci_low": 0.2616820592470963,
+     "diff_ci_high": 0.28247794075290367,
+     "positive_seeds": 5,
+     "t_statistic": 72.65046052616358,
+     "t_p_value": 2.1510445889008783e-07,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Closed-set DT (v1.1-style)": {
+     "n_seeds": 5,
+     "mean_diff": 0.353648,
+     "diff_ci_low": 0.32413821729678205,
+     "diff_ci_high": 0.383157782703218,
+     "positive_seeds": 5,
+     "t_statistic": 33.27317820120437,
+     "t_p_value": 4.8659027621065296e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Isolation Forest": {
+     "n_seeds": 5,
+     "mean_diff": 0.401696,
+     "diff_ci_low": 0.38539830601762853,
+     "diff_ci_high": 0.41799369398237146,
+     "positive_seeds": 5,
+     "t_statistic": 68.43219011130617,
+     "t_p_value": 2.732067871510343e-07,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Autoencoder": {
+     "n_seeds": 5,
+     "mean_diff": 0.13422399999999998,
+     "diff_ci_low": 0.12083425099876136,
+     "diff_ci_high": 0.1476137490012386,
+     "positive_seeds": 5,
+     "t_statistic": 27.83215486456055,
+     "t_p_value": 9.913693363842568e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "kNN distance": {
+     "n_seeds": 5,
+     "mean_diff": -0.27553599999999995,
+     "diff_ci_low": -0.2938924004096004,
+     "diff_ci_high": -0.2571795995903995,
+     "positive_seeds": 0,
+     "t_statistic": -41.67541355796943,
+     "t_p_value": 1.981373835409705e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "XGB + Energy": {
+     "n_seeds": 5,
+     "mean_diff": 0.2832,
+     "diff_ci_low": 0.2500167160723557,
+     "diff_ci_high": 0.3163832839276443,
+     "positive_seeds": 5,
+     "t_statistic": 23.695341772276297,
+     "t_p_value": 1.8808762376506445e-05,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ max fusion": {
+     "n_seeds": 5,
+     "mean_diff": 0.009592,
+     "diff_ci_low": -0.03932970523429216,
+     "diff_ci_high": 0.05851370523429217,
+     "positive_seeds": 2,
+     "t_statistic": 0.5443731227583928,
+     "t_p_value": 0.6151099280456194,
+     "wilcoxon_p_value": 1.0
+    },
+    "Aegis-OSR w/ omnibus fusion": {
+     "n_seeds": 5,
+     "mean_diff": -0.018400000000000007,
+     "diff_ci_low": -0.05045792737228454,
+     "diff_ci_high": 0.01365792737228453,
+     "positive_seeds": 1,
+     "t_statistic": -1.593571204475495,
+     "t_p_value": 0.18625449461507582,
+     "wilcoxon_p_value": 0.1875
+    },
+    "Aegis-OSR w/ AE novelty": {
+     "n_seeds": 5,
+     "mean_diff": 0.005279999999999996,
+     "diff_ci_low": -0.006127371976238958,
+     "diff_ci_high": 0.01668737197623895,
+     "positive_seeds": 3,
+     "t_statistic": 1.285101440189703,
+     "t_p_value": 0.2681210927280178,
+     "wilcoxon_p_value": 0.4375
+    },
+    "Aegis-OSR w/ IForest novelty": {
+     "n_seeds": 5,
+     "mean_diff": 0.288232,
+     "diff_ci_low": 0.22205158937728187,
+     "diff_ci_high": 0.3544124106227181,
+     "positive_seeds": 5,
+     "t_statistic": 12.092102754144301,
+     "t_p_value": 0.0002682858919019641,
+     "wilcoxon_p_value": 0.0625
+    }
+   },
+   "auroc_unknown": {
+    "Closed-set XGB": {
+     "n_seeds": 5,
+     "mean_diff": 0.08665325645109903,
+     "diff_ci_low": 0.07998912081522085,
+     "diff_ci_high": 0.09331739208697722,
+     "positive_seeds": 5,
+     "t_statistic": 36.10190771445767,
+     "t_p_value": 3.5140867074050996e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Closed-set DT (v1.1-style)": {
+     "n_seeds": 5,
+     "mean_diff": 0.1230735781806597,
+     "diff_ci_low": 0.07506661583140126,
+     "diff_ci_high": 0.17108054052991814,
+     "positive_seeds": 5,
+     "t_statistic": 7.117864097146919,
+     "t_p_value": 0.002059026268212075,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Isolation Forest": {
+     "n_seeds": 5,
+     "mean_diff": 0.13865845312635755,
+     "diff_ci_low": 0.12192027718761676,
+     "diff_ci_high": 0.15539662906509832,
+     "positive_seeds": 5,
+     "t_statistic": 22.999972331867777,
+     "t_p_value": 2.1173300700399763e-05,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Autoencoder": {
+     "n_seeds": 5,
+     "mean_diff": 0.02633814576153375,
+     "diff_ci_low": 0.014256704534599852,
+     "diff_ci_high": 0.03841958698846765,
+     "positive_seeds": 5,
+     "t_statistic": 6.052789109015503,
+     "t_p_value": 0.0037597771215923774,
+     "wilcoxon_p_value": 0.0625
+    },
+    "kNN distance": {
+     "n_seeds": 5,
+     "mean_diff": 0.01778994963653735,
+     "diff_ci_low": 0.007451588525948363,
+     "diff_ci_high": 0.028128310747126337,
+     "positive_seeds": 5,
+     "t_statistic": 4.77762558898133,
+     "t_p_value": 0.008790806103453714,
+     "wilcoxon_p_value": 0.0625
+    },
+    "XGB + Energy": {
+     "n_seeds": 5,
+     "mean_diff": 0.08155589788293896,
+     "diff_ci_low": 0.07576261315114974,
+     "diff_ci_high": 0.08734918261472818,
+     "positive_seeds": 5,
+     "t_statistic": 39.085852665688584,
+     "t_p_value": 2.5596469449674044e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ max fusion": {
+     "n_seeds": 5,
+     "mean_diff": -0.019814329838686317,
+     "diff_ci_low": -0.03442824216682708,
+     "diff_ci_high": -0.005200417510545553,
+     "positive_seeds": 1,
+     "t_statistic": -3.764453888741387,
+     "t_p_value": 0.019698766090206554,
+     "wilcoxon_p_value": 0.125
+    },
+    "Aegis-OSR w/ omnibus fusion": {
+     "n_seeds": 5,
+     "mean_diff": -0.017390778562947063,
+     "diff_ci_low": -0.022806458123048257,
+     "diff_ci_high": -0.011975099002845869,
+     "positive_seeds": 0,
+     "t_statistic": -8.915694047409788,
+     "t_p_value": 0.0008748979844824594,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ AE novelty": {
+     "n_seeds": 5,
+     "mean_diff": 0.013470990037359899,
+     "diff_ci_low": 0.004303535071749378,
+     "diff_ci_high": 0.02263844500297042,
+     "positive_seeds": 5,
+     "t_statistic": 4.079808899165432,
+     "t_p_value": 0.015100794231440383,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ IForest novelty": {
+     "n_seeds": 5,
+     "mean_diff": 0.08915672301543627,
+     "diff_ci_low": 0.08380203573587801,
+     "diff_ci_high": 0.09451141029499453,
+     "positive_seeds": 5,
+     "t_statistic": 46.22842274219686,
+     "t_p_value": 1.3096684350979537e-06,
+     "wilcoxon_p_value": 0.0625
+    }
+   },
+   "fpr": {
+    "Closed-set XGB": {
+     "n_seeds": 5,
+     "mean_diff": 0.3110182744939036,
+     "diff_ci_low": 0.2699556169593304,
+     "diff_ci_high": 0.35208093202847685,
+     "positive_seeds": 5,
+     "t_statistic": 21.029451518538625,
+     "t_p_value": 3.022182964559924e-05,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Closed-set DT (v1.1-style)": {
+     "n_seeds": 5,
+     "mean_diff": 0.2122751889715891,
+     "diff_ci_low": 0.11449673999786351,
+     "diff_ci_high": 0.31005363794531465,
+     "positive_seeds": 5,
+     "t_statistic": 6.0276105375068605,
+     "t_p_value": 0.0038177254531728388,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Isolation Forest": {
+     "n_seeds": 5,
+     "mean_diff": 0.33689796982246806,
+     "diff_ci_low": 0.3102891327260688,
+     "diff_ci_high": 0.36350680691886733,
+     "positive_seeds": 5,
+     "t_statistic": 35.152934939469446,
+     "t_p_value": 3.908098744272586e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Autoencoder": {
+     "n_seeds": 5,
+     "mean_diff": 0.07822699759622345,
+     "diff_ci_low": 0.02604238136236974,
+     "diff_ci_high": 0.13041161383007716,
+     "positive_seeds": 5,
+     "t_statistic": 4.162011340603759,
+     "t_p_value": 0.014122161223815164,
+     "wilcoxon_p_value": 0.0625
+    },
+    "kNN distance": {
+     "n_seeds": 5,
+     "mean_diff": -0.24105100060818438,
+     "diff_ci_low": -0.2731468622097078,
+     "diff_ci_high": -0.20895513900666096,
+     "positive_seeds": 0,
+     "t_statistic": -20.852061211214135,
+     "t_p_value": 3.125544428753903e-05,
+     "wilcoxon_p_value": 0.0625
+    },
+    "XGB + Energy": {
+     "n_seeds": 5,
+     "mean_diff": 0.3136609806249818,
+     "diff_ci_low": 0.2854585916871932,
+     "diff_ci_high": 0.34186336956277047,
+     "positive_seeds": 5,
+     "t_statistic": 30.879032846075454,
+     "t_p_value": 6.553391789143447e-06,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ max fusion": {
+     "n_seeds": 5,
+     "mean_diff": 0.0010498421616611964,
+     "diff_ci_low": -0.03342481161859028,
+     "diff_ci_high": 0.03552449594191267,
+     "positive_seeds": 2,
+     "t_statistic": 0.08454991744236848,
+     "t_p_value": 0.9366818258211742,
+     "wilcoxon_p_value": 1.0
+    },
+    "Aegis-OSR w/ omnibus fusion": {
+     "n_seeds": 5,
+     "mean_diff": -0.04711257204089318,
+     "diff_ci_low": -0.10383223737971861,
+     "diff_ci_high": 0.009607093297932245,
+     "positive_seeds": 1,
+     "t_statistic": -2.306174926365055,
+     "t_p_value": 0.08237780158347371,
+     "wilcoxon_p_value": 0.125
+    },
+    "Aegis-OSR w/ AE novelty": {
+     "n_seeds": 5,
+     "mean_diff": 0.11532914361840771,
+     "diff_ci_low": 0.09183309892908496,
+     "diff_ci_high": 0.13882518830773044,
+     "positive_seeds": 5,
+     "t_statistic": 13.628039975234277,
+     "t_p_value": 0.00016787538383930832,
+     "wilcoxon_p_value": 0.0625
+    },
+    "Aegis-OSR w/ IForest novelty": {
+     "n_seeds": 5,
+     "mean_diff": 0.31815285701873786,
+     "diff_ci_low": 0.27199547796677115,
+     "diff_ci_high": 0.36431023607070456,
+     "positive_seeds": 5,
+     "t_statistic": 19.137437192433698,
+     "t_p_value": 4.392904737851163e-05,
+     "wilcoxon_p_value": 0.0625
+    }
+   }
+  }
+ },
  "meta": {
   "generated_at": "2026-11-10T11:12:46.055752+00:00",
   "git_commit": "775e9a9",
@@ -12677,6 +12987,6 @@
   "quick": false,
   "pilot_seed_excluded": 0,
   "n_records": 5,
-  "summarized_at": "2026-11-10T11:54:07.743599+00:00"
+  "summarized_at": "2026-11-17T09:33:09.329164+00:00"
  }
 }

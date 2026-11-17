@@ -1,6 +1,31 @@
 """Builds the Aegis research paper (.docx). Every number is taken from the project's result files
-(see the provenance notes in the companion checklist)."""
+(see the provenance notes in the companion checklist).
+
+R1a: the sections touched by the claim audit (significance, gate head-to-head, explanation study,
+abstract statistics) now read their numbers from docs/research/paper_numbers.json and the result
+JSON files at build time instead of hand-typed strings. Run scripts/59_paper_numbers.py first."""
+import json as _json
 from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[3]
+_NUM = _json.loads((_ROOT / "docs" / "research" / "paper_numbers.json").read_text(encoding="utf-8"))
+_SUMMARY = _json.loads((_ROOT / "research_artifacts" / "openset_loafo_summary.json").read_text(encoding="utf-8"))
+_GATE = _json.loads((_ROOT / "research_artifacts" / "zero_day_gate_report.json").read_text(encoding="utf-8"))["evaluation"]
+_XAI = _json.loads((_ROOT / "models" / "trained_models" / "xai_stability_report.json").read_text(encoding="utf-8"))
+
+
+def N(key: str) -> str:
+    """Display string of a paper number, converted from LaTeX to plain text."""
+    s = _NUM[key]["display"].replace("\\%", "%")
+    if "\\times10^{" in s:
+        mant, exp = s.split("\\times10^{")
+        s = f"{mant}×10^{{{exp.rstrip('}').replace('-', '−')}}}"
+    return s
+
+
+def _sci(v: float) -> str:
+    m, e = f"{v:.1e}".split("e")
+    return f"{m}×10^{{{str(int(e)).replace('-', '−')}}}"
 
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
@@ -41,10 +66,12 @@ P.para("**Abstract—**Machine-learning intrusion detectors routinely report F1 
        "distance and calibrates the sum with split-conformal prediction, so that the benign false-alarm rate is "
        "chosen in advance. Under leave-one-attack-family-out evaluation (six families, five seeds) it detected 70.6% "
        "(95% CI 68.9–72.3%) of flows from the withheld family at a realised 1.00% false-alarm rate, against 49.0% for "
-       "the same classifier alone (30 of 30 paired wins, p = 1.9×10^{−9}); ten closed-set classifier families, including SVMs and MLP, CNN and LSTM networks, caught on average no more than 48% of a withheld family at the same budget. The guarantee does not "
+       f"the same classifier alone (difference {N('DeltaXgb')}, 95% CI {N('DeltaXgbLo')} to {N('DeltaXgbHi')}, "
+       f"paired t-test over independent seeds p = {N('TpXgb')}, better in {N('PosSeedsXgb')} of {N('LoafoSeeds')} seeds); ten closed-set classifier families, including SVMs and MLP, CNN and LSTM networks, caught on average no more than 48% of a withheld family at the same budget. The guarantee does not "
        "survive distribution shift: false alarms rose to 7.1% on a later capture day and to 35% on the 2018 dataset. "
-       "Re-calibrating on 2,000 benign flows from the new day, without retraining, restored the rate (0.82%; 0.97% "
-       "with a random sample), but not the cross-dataset case, where the unseen family was barely separable from "
+       f"Re-calibrating on 2,000 benign flows from the new day, without retraining, brought it back under budget "
+       f"({N('TempFriRecalTwoKFpr')}; {N('TempFriOracleTwoKFpr')} with a random sample), but the effect depended on the "
+       f"window (5,000 early-morning flows left it at {N('TempFriRecalFiveKFpr')}) and failed in the cross-dataset case, where the unseen family was barely separable from "
        "benign traffic (AUROC 0.58). To measure what such numbers mean operationally, we built a trace-driven cyber "
        "range that replays recorded flows through the real detectors on a seeded clock and lets a human choose the "
        "response. Across 1,190 runs, the frozen detector never raised an incident in a zero-day scenario while the "
@@ -106,7 +133,7 @@ P.numbered([
     "programme over defenses, intensity, attacker count, detector choice, alert threshold and approval delay "
     "(Sections VIII, X-H).",
     "**An integrated, human-gated platform** with SHAP/LIME explanations and an explanation-stability study, "
-    "MITRE ATT&CK context for every detection and campaign, an approval-based response workflow, and frozen, "
+    "MITRE ATT&CK context for every known-family detection and campaign (unnamed zero-day candidates carry none), an approval-based response workflow, and frozen, "
     "hashed, reproducible artefacts (Sections III, VII, X-I).",
 ])
 P.para("The rest of the paper is organised as follows. Section II reviews related work. Section III describes the "
@@ -571,8 +598,9 @@ P.para("The primary metric is *zero-day recall*: the fraction of unknown-group f
        "threshold. For attribution we report the share of unknown flows labelled UNKNOWN-ATTACK or "
        "ZERO-DAY-ANOMALY, the share wrongly attributed to a known family, and the accuracy of family labels on "
        "known attacks. Each LOAFO metric is averaged over the six folds within a seed, and we give the mean and a "
-       "95% Student-t interval over the five seeds. Methods are compared with the two-sided Wilcoxon signed-rank "
-       "test [39] over the 30 paired (fold, seed) runs. All experiments ran on a single Windows desktop "
+       "95% Student-t interval over the five seeds. Folds within a seed share one data split and are not "
+       "independent, so methods are compared with a paired t-test over the five seed-level means (a Wilcoxon "
+       "signed-rank test [39] on five seeds cannot fall below p = 0.0625); fold-level win counts are descriptive only. All experiments ran on a single Windows desktop "
        "(Intel, 20 threads) with Python 3.11.9, scikit-learn 1.9.0, XGBoost 3.2.0, and SHAP 0.51.0; a LOAFO run "
        "took 84 s to fit on average and scored about 68 ms per 1,000 flows with all eleven methods enabled.")
 
@@ -615,23 +643,20 @@ P.para("The ablations isolate the two design choices. Holding the novelty detect
        "high false-alarm regions no SOC would operate in; at the 1% operating point that we actually use, k-NN is "
        "clearly better. This is a concrete instance of the point made in [14] about choosing metrics that match the "
        "deployment.")
-P.para("Table V gives the paired tests. Aegis-OSR beat closed-set XGBoost, the Decision Tree, the energy baseline, "
-       "and the Isolation Forest ablation in all 30 pairs. For 30 pairs with no ties, a clean sweep gives the smallest "
-       "attainable two-sided Wilcoxon p-value, 2/2^{30} ≈ 1.9×10^{−9}. Against the strongest ablation (omnibus fusion), "
-       "Aegis-OSR won 24 pairs and lost 6, and the difference is still significant (p = 1.1×10^{−4}).")
-P.table("Paired Two-Sided Wilcoxon Signed-Rank Tests on Zero-Day Recall (30 Fold × Seed Pairs)",
-        ["Aegis-OSR vs.", "Mean Δ recall", "Wins / losses / ties", "p-value"],
-        [["Closed-set XGB", "+0.216", "30 / 0 / 0", "1.86×10^{−9}"],
-         ["Closed-set DT (v1.1-style)", "+0.465", "30 / 0 / 0", "1.86×10^{−9}"],
-         ["XGB + Energy", "+0.249", "30 / 0 / 0", "1.73×10^{−6}"],
-         ["Aegis-OSR w/ IForest novelty", "+0.228", "30 / 0 / 0", "1.73×10^{−6}"],
-         ["Isolation Forest", "+0.694", "27 / 2 / 1", "3.69×10^{−6}"],
-         ["Autoencoder", "+0.475", "27 / 3 / 0", "4.73×10^{−6}"],
-         ["Aegis-OSR w/ max fusion", "+0.175", "24 / 6 / 0", "6.92×10^{−6}"],
-         ["Aegis-OSR w/ AE novelty", "+0.144", "25 / 5 / 0", "6.92×10^{−6}"],
-         ["k-NN distance", "+0.327", "25 / 5 / 0", "7.68×10^{−6}"],
-         ["Aegis-OSR w/ omnibus fusion", "+0.092", "24 / 6 / 0", "1.11×10^{−4}"]],
-        widths=[2.4, 1.2, 1.5, 1.2], label="wilcoxon")
+_SEED = _SUMMARY["significance_seed_level"]["loafo"]["zero_day_recall"]
+_PAIRS = _SUMMARY["significance"]["loafo"]["zero_day_recall"]
+_SIG_ROWS = sorted(_SEED, key=lambda m: -_SEED[m]["mean_diff"])
+P.para(f"Table V gives the paired tests over independent seeds. Aegis-OSR improved zero-day recall over every "
+       f"baseline and every single-change ablation in all {N('LoafoSeeds')} seeds; against closed-set XGBoost the "
+       f"difference was {N('DeltaXgb')} (95% CI {N('DeltaXgbLo')} to {N('DeltaXgbHi')}, p = {N('TpXgb')}) and against the "
+       f"strongest ablation (omnibus fusion) {N('DeltaAblOmni')} (p = {N('TpAblOmni')}). Fold-level win counts are shown "
+       "for completeness only, because the six folds of a seed are not independent observations.")
+P.table("Seed-Level Paired Comparison of Zero-Day Recall (Folds Averaged Within Each Seed)",
+        ["Aegis-OSR vs.", "Mean Δ recall [95% CI]", "Seeds better", "Paired t p", "Fold wins (descriptive)"],
+        [[m, f"{_SEED[m]['mean_diff']:+.3f} [{_SEED[m]['diff_ci_low']:+.3f}, {_SEED[m]['diff_ci_high']:+.3f}]",
+          f"{_SEED[m]['positive_seeds']} / {_SEED[m]['n_seeds']}", _sci(_SEED[m]["t_p_value"]),
+          f"{_PAIRS[m]['wins']} / {_PAIRS[m]['n']}"] for m in _SIG_ROWS],
+        widths=[2.2, 1.7, 0.9, 1.0, 1.2], label="wilcoxon")
 P.subsection("Which Families Can Be Caught, and How They Are Labelled")
 P.para("The average hides large differences between families (Fig. 3, Table VI). DoS, DDoS, and web attacks are "
        "caught almost completely when withheld (96.5–99.1%). Brute force shows the clearest benefit of fusion: the "
@@ -730,32 +755,41 @@ P.figure(FIG / "fig5_adaptation.png",
          "false-positive rate; bottom: zero-day recall. Dotted lines show the unadapted model; the star is the oracle "
          "that re-calibrates on a random benign sample of the target day.", 0.95)
 P.subsection("Naturally Unseen Attacks and the Deployed Gate")
+_H = _GATE["head_to_head"]
+_HN = _H["n"]
+_UN = sum(u["n"] for u in _GATE["natural_unknowns"])
+_PF = _H["per_family_recall"]
 P.para("CICIDS2017 contains two attack types that are too rare to train on: 36 Infiltration flows and 11 Heartbleed "
-       "flows. Neither the frozen detector nor the deployed gate saw them. Table IX and Fig. 6 report the gate's "
-       "operating points on a held-out split of 200,000 benign flows, 76,390 known attacks, and these 47 flows.")
-P.table("Deployed Zero-Day Gate on Held-Out Flows, with the Frozen v1.1 Detector for Reference",
+       "flows. Neither the frozen detector nor the deployed gate saw them. Table IX compares the gate with the frozen "
+       "detector on the *same* flows: those in both models' test splits and in neither model's training or validation "
+       f"data ({_HN['benign']:,} benign flows, {_HN['known_attacks']:,} known attacks, and the {_UN} never-seen flows). "
+       "Restricting the comparison this way matters: an earlier version of this table scored the frozen detector on "
+       "the gate's test split, about 70% of which was in the frozen detector's training split.")
+P.table("Deployed Zero-Day Gate vs. the Frozen v1.1 Detector on Flows Neither Model Trained On",
         ["Operating point", "Benign FPR (%)", "Known-attack recall", "Never-seen attacks flagged"],
-        [["Gate, α = 0.05%", "0.032", "0.865", "3 / 47 (6.4%)"],
-         ["Gate, α = 0.1%", "0.073", "0.893", "14 / 47 (29.8%)"],
-         ["Gate, α = 0.5%", "0.467", "0.994", "25 / 47 (53.2%)"],
-         ["**Gate, α = 1% (deployed)**", "**0.921**", "**0.999**", "**29 / 47 (61.7%)**"],
-         ["Gate, α = 5%", "4.943", "1.000", "46 / 47 (97.9%)"],
-         ["Frozen v1.1 detector (τ = 0.85)", "0.064", "0.993", "0 / 47 (0%)"]],
+        [[("**Gate, α = 1% (deployed)**" if o["alpha"] == 0.01 else f"Gate, α = {100 * o['alpha']:g}%"),
+          f"{100 * o['benign_fpr']:.3f}", f"{o['known_attack_recall']:.3f}",
+          f"{round(o['natural_unknown_alert_rate'] * _UN)} / {_UN} ({100 * o['natural_unknown_alert_rate']:.1f}%)"]
+         for o in _H["gate_operating_points"]]
+        + [[f"Frozen v1.1 detector (τ = {_H['frozen_v11']['threshold']:g})", f"{100 * _H['frozen_v11']['benign_fpr']:.3f}",
+            f"{_H['frozen_v11']['known_attack_recall']:.3f}",
+            f"{round(_H['frozen_v11']['natural_unknown_attack_rate'] * _UN)} / {_UN}"]],
         widths=[2.2, 1.2, 1.4, 1.8], label="gate",
-        notes="At α = 1%: Heartbleed 11/11 flagged (all ZERO-DAY-ANOMALY); Infiltration 18/36 flagged (all ZERO-DAY-ANOMALY), "
-              "the rest labelled BENIGN. Per-family recall of known attacks, gate vs. v1.1: Bot 0.879 vs. 0.617; "
-              "WebAttack 1.000 vs. 0.420; BruteForce, DDoS, DoS, PortScan ≥ 0.995 for both.")
+        notes="Per-family recall of known attacks at α = 1%, gate vs. v1.1 (n): "
+              + "; ".join(f"{f} {r['gate']:.3f} vs. {r['frozen_v11']:.3f} (n = {r['n']:,})" for f, r in _PF.items())
+              + ". Bot and WebAttack have fewer than 100 eligible flows; treat their rates as indicative.")
 P.figure(FIG / "fig6_gate.png",
          "Operating points of the deployed gate. The realised benign false-positive rate (solid) tracks the nominal α "
          "(dotted) across two orders of magnitude.", 0.6)
 P.para("The frozen detector flagged none of the 47 flows. At its deployed setting of α = 1%, the gate flagged all 11 "
        "Heartbleed flows and half of the Infiltration flows, and labelled every one of them ZERO-DAY-ANOMALY rather "
        "than forcing it into a known family. With only 47 flows these rates carry wide intervals and we regard them "
-       "as illustrative. Table IX also exposes something the aggregate scores in Table III hide: on this split the "
-       "frozen detector's binary stage caught only 42.0% of web-attack flows and 61.7% of botnet flows, while its "
-       "overall recall was 0.993; these two families make up about 1% of the attacks, so an aggregate F1 of 0.99 is "
-       "compatible with missing most of them. We measured this on the gate's split rather than the frozen detector's "
-       "own test split, so we treat it as a reason to report per-family recall, not as a definitive score for v1.1.")
+       "as illustrative. Table IX also exposes something the aggregate scores in Table III hide: on flows it never "
+       f"trained on, the frozen detector's binary stage caught only {N('HthWebAttackFrozen')} of web-attack flows "
+       f"(n = {N('HthWebAttackN')}) and {N('HthBotFrozen')} of botnet flows (n = {N('HthBotN')}), while its overall "
+       f"known-attack recall was {N('HthFrozenKnown')}; these two families are about 1% of the attacks, so an aggregate "
+       "F1 of 0.99 is compatible with missing most of them. The samples are small, so we treat this as a reason to "
+       "report per-family recall rather than as a definitive score for v1.1.")
 P.subsection("Transfer to Another Network: CSE-CIC-IDS2018")
 P.para("Table X scores the *unchanged* frozen detector on CSE-CIC-IDS2018. Its benign false-positive rate stayed "
        "low (0.08%) and its precision high (0.992), but its recall collapsed to 0.102 and its F1 from 0.990 to "
@@ -863,8 +897,10 @@ P.figure(FIG / "fig7_range_tradeoff.png",
          "attack but cuts off about a quarter of legitimate traffic.", 0.7)
 P.para("**Choosing the defense matters more than detecting faster.** Blocking the detected source stopped every "
        "attack with no collateral; rate limiting left about 20% of attack traffic through, as designed, but kept the "
-       "service available; isolating the target stopped the attack too, but blocked 27.4% of legitimate traffic and "
-       "took about 52 s to recover, because isolation can only be lifted once the attacker falls quiet. In a DDoS, "
+       f"service available; isolating the target stopped the attack too, but blocked {N('RangeIsolateCollateral')} of "
+       "legitimate flows and needed about 52 s to recover. That recovery time is a property of the range's rule (isolation "
+       "is lifted 5 s after the attacker falls quiet), so it mostly reflects scenario length rather than a measured "
+       "recovery behaviour. In a DDoS, "
        "*block source* acts per detected source, so each new source leaks a little traffic until it, too, is "
        "detected: with eight sources, availability dipped to 36.5% before the block took hold, against 95.2% with two.")
 P.para("**The analyst's decision time is the dominant cost for floods.** With the response applied immediately, "
@@ -887,24 +923,26 @@ P.table("Cyber Range: Which Detector Raises the Incident (Ten Seeds per Cell)",
         notes="False incidents were zero for every detector at the default threshold (3 alerts within 5 s). The remaining five "
               "scenarios were detected by both detectors in every run within 0.0–0.8 s.")
 P.subsection("Do the Explanations Hold Up?")
-P.para("Table XV reports the explanation-stability study. SHAP attributions were robust to ±1% feature noise for "
-       "most classes—the top-five overlap was 0.90–1.00 for benign, brute-force, DoS, DDoS and port-scan flows—but not "
-       "for botnet (0.51) and web-attack flows (0.66), whose rank correlations under noise fell to 0.34 and 0.51. These "
-       "are the same two families on which the frozen detector is weakest (Table IX), which suggests that unstable "
-       "explanations are a symptom of a fragile decision boundary and could serve as a warning signal. Within a "
-       "family, port-scan flows always received the same explanation (1.00) and DDoS flows nearly so (0.85), while "
-       "DoS, web-attack and botnet explanations were flow-specific (0.45–0.54). SHAP and LIME agreed poorly overall "
-       "(0.26), and for web attacks hardly at all (0.06). Different explainers can point at different features for "
-       "the same decision, which supports presenting explanations as decision support rather than as evidence.")
-P.table("Explanation Stability of the Frozen Detector (20 Held-Out Flows per Class)",
+_XF = _XAI["per_family"]
+_rob = {f: v["robustness_jaccard_top5"]["mean"] for f, v in _XF.items()}
+_weak = sorted((f for f in _rob if _rob[f] < 0.9), key=_rob.get)
+_strong = sorted(f for f in _rob if _rob[f] >= 0.9)
+P.para("Table XV reports the explanation-stability study on replay flows that neither model trained on. SHAP "
+       "attributions were robust to ±1% feature noise (top-five overlap ≥ 0.90) for "
+       + ", ".join(_strong) + ", but not for " + ", ".join(f"{f} ({_rob[f]:.2f})" for f in _weak)
+       + ". Bot and WebAttack are also the families on which the frozen detector is weakest (Table IX), which is "
+       "consistent with, but does not establish, a link between unstable explanations and a fragile decision "
+       f"boundary. SHAP and LIME agreed poorly overall ({N('XaiShapLime')} top-five overlap). The LIME runs were not "
+       "seeded and used discretized features, which may account for part of the disagreement. Different explainers "
+       "can point at different features for the same decision, so explanations are presented as decision support, "
+       "not as evidence of causation.")
+P.table(f"Explanation Stability of the Frozen Detector ({_XAI['per_family_flows']} Flows per Class, Seed {_XAI['seed']})",
         ["Class", "Consistency within family", "Robustness to ±1% noise", "Rank stability (Spearman)", "SHAP–LIME agreement"],
-        [["Benign", "0.54", "0.98", "0.98", "0.14"],
-         ["Bot", "0.45", "**0.51**", "**0.34**", "0.44"],
-         ["BruteForce", "0.74", "0.92", "0.99", "0.20"],
-         ["DDoS", "0.85", "0.90", "0.91", "0.38"],
-         ["DoS", "0.53", "0.90", "0.95", "0.38"],
-         ["PortScan", "1.00", "1.00", "1.00", "0.24"],
-         ["WebAttack", "0.54", "**0.66**", "**0.51**", "**0.06**"]],
+        [[("Benign" if f == "BENIGN" else f),
+          f"{v['consistency_jaccard_top5']['mean']:.2f}",
+          (f"**{v['robustness_jaccard_top5']['mean']:.2f}**" if f in _weak else f"{v['robustness_jaccard_top5']['mean']:.2f}"),
+          f"{v['robustness_spearman_top10']['mean']:.2f}",
+          f"{v['shap_lime_jaccard_top5']['mean']:.2f}"] for f, v in _XF.items()],
         widths=[1.2, 1.4, 1.4, 1.4, 1.3], label="xai",
         notes="Consistency, robustness and agreement are mean Jaccard overlaps of top-five SHAP features (1 = identical). "
               "Rank stability is the Spearman correlation of the top-ten attribution magnitudes with and without noise.")

@@ -18,7 +18,7 @@ import pandas as pd
 
 from research.data import cap_per_family, feature_columns, stratified_split
 from research.features import SignedLogScaler
-from research.metrics import detection_metrics, mean_ci, openset_attribution, paired_test
+from research.metrics import detection_metrics, mean_ci, openset_attribution, paired_test, seed_level_test
 from research.openset import PROPOSED, AegisOSR, method_scores
 
 LOAFO_FAMILIES = ["Bot", "BruteForce", "DDoS", "DoS", "PortScan", "WebAttack"]
@@ -275,6 +275,13 @@ def summarize(records: list[dict]) -> dict:
         out["significance"][proto] = {
             k: {m: paired_test([_f(r["methods"][PROPOSED][k]) for r in keyed], [_f(r["methods"][m][k]) for r in keyed])
                 for m in methods if m != PROPOSED}
+            for k in ("zero_day_recall", "auroc_unknown", "fpr")
+        }
+        # Cite this one: fold-averaged per seed, paired over independent seeds.
+        seeds = sorted({r["seed"] for r in recs})
+        per_seed = lambda m, k: [_nanmean([r["methods"][m][k] for r in recs if r["seed"] == s]) for s in seeds]  # noqa: E731
+        out.setdefault("significance_seed_level", {})[proto] = {
+            k: {m: seed_level_test(per_seed(PROPOSED, k), per_seed(m, k)) for m in methods if m != PROPOSED}
             for k in ("zero_day_recall", "auroc_unknown", "fpr")
         }
         out["attribution"][proto] = {

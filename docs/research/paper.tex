@@ -15,210 +15,151 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{definition}{Definition}
 
+% Every number below comes from result artifacts via scripts/59_paper_numbers.py
+% (paper_numbers.json lists the source file and JSON path of each macro).
+% tests/test_paper_claims.py fails if a stale or hand-typed headline number reappears.
+\input{paper_numbers.tex}
+
 \begin{document}
 
-\title{Aegis-OSR: Finite-Sample False-Alarm Guarantees in Open-Set Network Intrusion Detection via Conformal Evidence Fusion}
+\title{Aegis-OSR: Open-Set Network Intrusion Detection with Conformal False-Alarm Control, and When That Control Breaks}
 
 \author{
-\IEEEauthorblockN{Dolendra\IEEEauthorrefmark{1}, Research Team Members\IEEEauthorrefmark{2}}
-\IEEEauthorblockA{Advanced Network Security and Applied Machine Learning Laboratory\\
-Email: \{dolendra\}@ids-aegis.org}
+\IEEEauthorblockN{Nelluri Dolendra Sai Teja, Edla Harshavardhan, Chittuluri Naveen, and R Rahul (guide)}
+\IEEEauthorblockA{Department of Computer Science and Engineering\\
+Rajiv Gandhi University of Knowledge Technologies (RGUKT), Basar, Telangana, India}
 }
 
 \maketitle
 
 \begin{abstract}
-Supervised Network Intrusion Detection Systems (NIDS) operating under the closed-world assumption inevitably misclassify unseen, zero-day attack families as benign traffic or force them into an incorrect known family. Conversely, unconstrained anomaly detectors yield prohibitive false-alarm rates that destabilize security operations center (SOC) workflows. In this paper, we propose \textbf{Aegis-OSR}, an open-set intrusion detection framework that provides a finite-sample mathematical guarantee on the benign false-alarm rate while maximizing the detection recall of previously unseen attack families.
+Supervised network intrusion detection systems (NIDS) operate under a closed-world assumption: an attack family absent from training is either called benign or forced into a wrong known family. Anomaly detectors can flag novelty but offer no control over their false-alarm rate. We propose \textbf{Aegis-OSR}, which adds the evidence of a supervised gradient-boosted classifier to the distance of a flow from its nearest benign neighbours, converts the sum into a split-conformal $p$-value, and thereby bounds the benign false-alarm rate by a user-chosen $\alpha$ \emph{whenever test benign traffic is exchangeable with the calibration traffic}. Class-conditional (Mondrian) conformal attribution separates known families from unknown attacks.
 
-Aegis-OSR combines supervised attack-evidence surprisals from an unconstrained multi-class gradient-boosted tree ensemble with non-parametric benign-novelty distances ($k$-nearest neighbors) evaluated in a signed-log standardized space. Tail risks exceeding the empirical calibration support are extrapolated via peaks-over-threshold Extreme Value Theory (EVT). The resulting empirical tail probabilities are fused via Fisher's omnibus method and calibrated over an exchangeable benign holdout split using split-conformal prediction. Under standard exchangeability, Aegis-OSR theoretically guarantees that the marginal probability of a false alarm on benign traffic does not exceed a user-specified significance level $\alpha \in (0, 1)$. Furthermore, class-conditional Mondrian conformal calibration assigns honest attribution verdicts: \textit{Known-Family}, \textit{Unknown-Attack}, or \textit{Zero-Day-Anomaly}.
-
-We evaluate Aegis-OSR across 30 experimental runs comprising a 6-family Leave-One-Attack-Family-Out (LOAFO) benchmark across 5 independent random seeds on CICIDS2017, a true non-leaking temporal holdout benchmark across distinct capture days, and cross-dataset evaluation on CSE-CIC-IDS2018. At a strict nominal false-alarm budget of $\alpha = 1.0\%$, Aegis-OSR achieves a mean zero-day recall of 0.706 (95\% CI: [0.689, 0.723]) and an unknown AUROC of 0.946 ([0.943, 0.950]), maintaining a realized benign false-positive rate of 1.00\% ([0.92\%, 1.07\%]). Across 30 fold-seed evaluation pairs, Aegis-OSR significantly outperforms closed-set XGBoost ($\Delta = +0.216, p = 1.86 \times 10^{-9}$), closed-set Decision Trees ($\Delta = +0.465, p = 1.86 \times 10^{-9}$), Energy-based OOD detection ($\Delta = +0.249, p = 1.73 \times 10^{-6}$), and deep Autoencoders ($\Delta = +0.475, p = 4.73 \times 10^{-6}$) under paired two-sided Wilcoxon signed-rank tests. Under severe temporal distribution shift where exchangeability degrades, a label-light recalibration window ($W = 2000$ benign flows) restores the false-alarm constraint without requiring model retraining.
+In leave-one-attack-family-out (LOAFO) experiments on CICIDS2017 (6 families $\times$ \LoafoSeeds\ seeds), Aegis-OSR detects \LoafoOsrZdr\ [\LoafoOsrZdrLo, \LoafoOsrZdrHi] of unseen-family flows at $\alpha=1\%$ with a realized benign false-alarm rate of \LoafoOsrFpr, versus \LoafoXgbZdr\ for the same classifier alone and \LoafoDtZdr\ for a decision tree; the improvement over the classifier is \DeltaXgb\ [\DeltaXgbLo, \DeltaXgbHi] (paired $t$ over independent seeds, $p=\TpXgb$, positive in \PosSeedsXgb/\LoafoSeeds\ seeds). We also report where the method fails. Under a true day-ordered split, benign drift raises the realized false-alarm rate to \TempFriOsrFpr\ on Friday; re-calibrating on a small benign warm-up window lowers it, but the effect depends on the window and does not reach the budget for every size. Transferred to CSE-CIC-IDS2018 the false-alarm rate reaches \CrossOsrFpr, and the frozen baseline's F1 drops to \FrozenEighteenFone; evidence points to a confound between network shift and flow-extractor differences.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Network Intrusion Detection, Open-Set Recognition, Conformal Prediction, Extreme Value Theory, Evidence Fusion, Concept Drift.
+Network intrusion detection, open-set recognition, conformal prediction, evidence fusion, distribution shift.
 \end{IEEEkeywords}
 
 \section{Introduction}
-Statistical and machine-learning-based Network Intrusion Detection Systems (NIDS) are foundational components of contemporary defensive cyber infrastructure. Over the past decade, tree ensembles and neural architectures trained on benchmark flow captures have consistently reported detection accuracies exceeding 99\% \cite{sharafaldin2018generating}. Despite these metrics, operational deployments in enterprise Security Operations Centers (SOCs) face persistent failure modes. As systematically analyzed by Sommer and Paxson \cite{sommer2010outside} and reinforced by Arp et al. \cite{arp2022dos}, supervised NIDS operate under the \textit{closed-world assumption}: the hypothesis that classes observed during training span the entire universe of network traffic encountered during production inference.
+Machine-learning NIDS routinely report accuracies above 99\% on benchmark captures \cite{sharafaldin2018generating}, yet operational deployments struggle \cite{sommer2010outside,arp2022dos}. Supervised models assume that training classes span all traffic. A flow from an unseen attack family is then either silently labelled benign or forced into an arbitrary known family, triggering the wrong playbook. Unsupervised detectors avoid class semantics but their false-alarm rate is uncontrolled and drifts with benign traffic \cite{axelsson2000base}.
 
-When a network flow originating from an unprecedented zero-day exploit or structurally distinct attack family enters a closed-set classifier, the model's softmax or probabilistic output vector is mathematically constrained to distribute its mass entirely across known categories. Consequently, the novel attack is either:
+This paper makes three contributions, each with an explicit scope:
 \begin{enumerate}
-    \item \textbf{Silently misclassified as benign traffic}, yielding critical false negatives; or
-    \item \textbf{Forced into an arbitrary known attack class}, triggering inaccurate mitigation playbooks and wasting analyst resources.
-\end{enumerate}
-
-Conversely, unsupervised anomaly detection paradigms (e.g., One-Class SVMs, Isolation Forests, deep autoencoders) dispense with attack-class semantics and flag any deviation from baseline benign traffic. However, benign network traffic is intrinsically non-stationary: diurnal cycles, software upgrades, and network configuration changes trigger frequent distributional deviations. Unsupervised detectors exhibit unconstrained, drifting false-positive rates (FPR), rapidly overwhelming SOC analysts with alert fatigue \cite{axelsson2000base}.
-
-To bridge this divide, this paper introduces \textbf{Aegis-OSR}, a mathematically grounded framework for open-set network intrusion detection that achieves three key objectives:
-\begin{enumerate}
-    \item \textbf{Conformal Evidence Fusion:} Combines supervised multi-class attack evidence with non-parametric benign spatial novelty ($k$-NN) via Extreme Value Theory (EVT) Peaks-Over-Threshold (POT) extrapolation and Fisher fusion.
-    \item \textbf{Finite-Sample False-Alarm Guarantees:} Using split-conformal calibration on exchangeable benign holdouts, Aegis-OSR guarantees that the marginal probability of a false alarm on benign traffic is bounded by $\alpha \in (0, 1)$.
-    \item \textbf{Label-Light Drift Adaptation:} Restores false-alarm validity under non-stationary temporal drift via a sliding window of benign flows without retraining model parameters.
+    \item \textbf{Conformal evidence fusion.} Supervised attack evidence and $k$-NN benign novelty are mapped to benign surprisals, summed, and calibrated with split-conformal $p$-values; every baseline is calibrated through the identical pipeline, so comparisons hold the false-alarm budget fixed.
+    \item \textbf{A conditional false-alarm guarantee, tested where it fails.} The bound holds under exchangeability. We measure how far it is violated under day-to-day drift and cross-network transfer instead of assuming it.
+    \item \textbf{Label-light recalibration.} Re-estimating only the calibration statistics on a small window of confirmed-benign target flows, without retraining, partly restores the budget; we report its sensitivity to window size and its failure across networks.
 \end{enumerate}
 
 \section{Related Work}
 \subsection{The Closed-World Trap in NIDS}
-The fundamental gap between synthetic benchmark evaluations and operational network defense was formalized by Sommer and Paxson \cite{sommer2010outside}. Supervised models partition the feature space into closed decision regions. Arp et al. \cite{arp2022dos} demonstrated that published NIDS literature routinely suffers from experimental pitfalls, including sampling bias where random cross-validation leaks identical flow instances between training and test sets, and reporting unconstrained threshold metrics that ignore base-rate real-world false-alarm costs \cite{axelsson2000base}.
+Sommer and Paxson \cite{sommer2010outside} formalized the gap between benchmark evaluations and operational network defense. Arp et al. \cite{arp2022dos} catalogued common pitfalls, including leakage between training and test data and threshold-free metrics that ignore base-rate costs \cite{axelsson2000base}.
 
 \subsection{Open-Set Recognition and OOD Detection}
-Open-Set Recognition (OSR) was formalized by Scheirer et al. \cite{scheirer2012toward} and extended to deep networks by Bendale and Boult \cite{bendale2016towards} (OpenMax). Liu et al. \cite{liu2020energy} proposed energy-based OOD detection, demonstrating that free-energy scores derived from logits provide superior separation over softmax scores. Sun et al. \cite{sun2022out} demonstrated that non-parametric $k$-nearest neighbor ($k$-NN) distances in normalized feature embeddings frequently outperform parametric density estimators. However, these methods only produce ranking scores; they lack a finite-sample mechanism to calibrate decision thresholds to a provable false-alarm rate.
+Scheirer et al. \cite{scheirer2012toward} formalized open-set recognition; Bendale and Boult extended it to deep networks (OpenMax) \cite{bendale2016towards}. Energy scores \cite{liu2020energy} and $k$-NN distances in normalized feature spaces \cite{sun2022out} are strong OOD rankers but do not by themselves set a threshold with a false-alarm guarantee.
 
 \subsection{Conformal Prediction}
-Conformal prediction, pioneered by Vovk et al. \cite{vovk2005algorithmic}, provides a distribution-free framework for quantifying predictive uncertainty. Bates, Cand{\`e}s, et al. \cite{bates2023testing} developed conformal methods for outlier and anomaly detection, proving that ranking test points against a calibration set of inliers controls the false-discovery rate. Jordaney et al. \cite{jordaney2017transcend} applied conformal evaluation (Transcend) to detect concept drift in malware classification, but operated as an offline statistical filter rather than an integrated multi-source evidence fusion pipeline with tail risk extrapolation and class attribution.
+Conformal prediction \cite{vovk2005algorithmic} gives distribution-free guarantees under exchangeability; Bates et al. \cite{bates2023testing} developed conformal $p$-values for outlier detection. Transcend \cite{jordaney2017transcend} used conformal evaluation to detect drift in malware classifiers. Aegis-OSR applies split-conformal calibration to a fusion of supervised and novelty evidence for open-set NIDS and measures the guarantee under shift.
 
-\section{The Aegis-OSR Methodology}
+\section{The Aegis-OSR Method}
 \subsection{Feature Transformation}
-Let $\mathcal{X} \subset \mathbb{R}^d$ denote the flow feature space ($d = 77$ numerical features extracted via CICFlowMeter). Let $\mathcal{Y} = \{0, 1, \dots, K\}$ represent the closed-set label space, where $y = 0$ designates \texttt{BENIGN} traffic and $y \in \{1, \dots, K\}$ designates one of $K$ known attack families. Let $\mathcal{Y}^* = \mathcal{Y} \cup \{\text{UNKNOWN}\}$ represent the true open-set universe.
+Let $x \in \mathbb{R}^d$ be a flow ($d=77$ CICFlowMeter features; the duplicated \texttt{Fwd Header Length.1} column of CICIDS2017 is dropped). Labels are $y=0$ (benign) or $y \in \{1,\dots,K\}$ (known families). Each feature is signed-log transformed, $\tilde{x}_i = \operatorname{sign}(x_i)\ln(1+|x_i|)$, standardized with training means and standard deviations, and clipped to $[-8, 8]$.
 
-Because raw flow distributions span several orders of magnitude, we apply a robust signed-log standardization to each feature vector $x$:
-\begin{equation}
-\tilde{x}_i = \text{sign}(x_i) \cdot \ln(1 + |x_i|)
-\end{equation}
-Features are subsequently centered and scaled via robust training statistics:
-\begin{equation}
-z_i = \frac{\tilde{x}_i - \mu_i}{\sigma_i + \epsilon}
-\end{equation}
+\subsection{Evidence}
+\textbf{Supervised evidence.} An XGBoost classifier over $K+1$ classes is trained with class weights $w_c = \sqrt{n_{\max}/n_c}$, where $n_c$ is the number of training flows of class $c$. The supervised score is $s_{\text{sup}}(z) = 1-\hat{P}(y=0\mid z)$.
 
-\subsection{Dual Evidence Generation}
-Aegis-OSR extracts two complementary streams of evidence:
+\textbf{Novelty evidence.} The novelty score is the mean Euclidean distance to the $k=5$ nearest flows of a benign training reference set $\mathcal{R}$ ($|\mathcal{R}|=40{,}000$ in the experiments; $20{,}000$ in the deployed gate):
+$s_{\text{nov}}(z) = \frac{1}{k}\sum_{j=1}^{k}\|z-\mathrm{NN}_j(z,\mathcal{R})\|_2$.
 
-\textbf{1. Supervised Attack Evidence ($s_{\text{sup}}$):} We train an unconstrained multi-class gradient-boosted tree ensemble (XGBoost) over $K+1$ classes using square-root inverse frequency sample weights:
+\subsection{Benign Surprisal with Exponential Tail Extrapolation}
+On a benign calibration split $\mathcal{C}_1$ disjoint from training, the empirical survival function of stream $j$ is
 \begin{equation}
-w_c = \sqrt{\frac{|\mathcal{D}_{\text{train}}|}{(K+1) \cdot |\mathcal{D}_{\text{train}, c}|}}
+S_j(s) = \frac{1+\sum_{u\in\mathcal{C}_1}\mathbb{I}(s_j(u)\ge s)}{1+|\mathcal{C}_1|},
 \end{equation}
-The supervised attack score represents the complementary probability of benignity:
-\begin{equation}
-s_{\text{sup}}(z) = 1 - \hat{P}(y = 0 \mid z)
-\end{equation}
+and the surprisal is $t_j = -\ln S_j(s_j(z))$. Beyond the largest calibration score $s_{j,\max}$ the surprisal is extended linearly, $t_j(z) = -\ln S_j(s_{j,\max}) + (s_j(z)-s_{j,\max})/\tau_j$, where $\tau_j$ is the mean excess of the top 1\% of calibration scores. This is an exponential-tail extrapolation in the spirit of peaks-over-threshold modelling; no extreme-value distribution is fitted.
 
-\textbf{2. Benign-Novelty Distance ($s_{\text{nov}}$):} Using a benign spatial reference set $\mathcal{R}_{\text{benign}} \subset \mathcal{D}_{\text{train}}$ of $N_{\text{ref}} = 20{,}000$ vectors, the novelty score is the mean Euclidean distance to the $k = 5$ nearest benign neighbors:
-\begin{equation}
-s_{\text{nov}}(z) = \frac{1}{k} \sum_{j=1}^k \|z - \text{NN}_j(z, \mathcal{R}_{\text{benign}})\|_2
-\end{equation}
-
-\subsection{Benign Surprisal via Extreme Value Theory}
-Let $\mathcal{C}_1 \subset \mathcal{D}_{\text{val}}$ be a dedicated benign calibration partition disjoint from $\mathcal{D}_{\text{train}}$. For score stream $j \in \{\text{sup}, \text{nov}\}$, the empirical survival function on $\mathcal{C}_1$ is:
-\begin{equation}
-S_j(s) = \frac{1 + \sum_{u \in \mathcal{C}_1} \mathbb{I}(s_j(u) \ge s)}{1 + |\mathcal{C}_1|}
-\end{equation}
-The base surprisal is $t_j^{\text{base}}(z) = -\ln\left(S_j(s_j(z))\right)$.
-
-For scores exceeding the empirical maximum $s_{j, \max} = \max_{u \in \mathcal{C}_1} s_j(u)$, we extrapolate linearly using the mean excess $\tau_j$ of the top 1\% calibration scores:
-\begin{equation}
-t_j(z) = \begin{cases}
-t_j^{\text{base}}(z), & s_j(z) \le s_{j, \max} \\
-t_j^{\text{base}}(s_{j, \max}) + \dfrac{s_j(z) - s_{j, \max}}{\tau_j}, & s_j(z) > s_{j, \max}
-\end{cases}
-\end{equation}
-
-\subsection{Fisher Evidence Fusion}
-Under the null hypothesis that flow $z$ is benign, the tail probabilities are approximately uniform on $(0, 1]$. We fuse evidence across both channels using Fisher's method:
-\begin{equation}
-f(z) = \sum_{j \in \{\text{sup}, \text{nov}\}} t_j(z) = t_{\text{sup}}(z) + t_{\text{nov}}(z)
-\end{equation}
+\subsection{Fusion}
+The fused score is the sum of surprisals, $f(z)=t_{\text{sup}}(z)+t_{\text{nov}}(z)$, the statistic of Fisher's method. The two streams are not independent, so we do not use Fisher's $\chi^2$ null distribution; the conformal step below calibrates $f$ directly.
 
 \subsection{Split-Conformal Calibration}
-We evaluate $f(z)$ through a second disjoint benign calibration split $\mathcal{C}_2 \subset \mathcal{D}_{\text{val}}$ ($\mathcal{C}_1 \cap \mathcal{C}_2 = \emptyset$). For a test flow $z_{\text{test}}$, the conformal $p$-value is:
+On a second disjoint benign split $\mathcal{C}_2$,
 \begin{equation}
-p(z_{\text{test}}) = \frac{1 + \sum_{v \in \mathcal{C}_2} \mathbb{I}(f(v) \ge f(z_{\text{test}}))}{1 + |\mathcal{C}_2|}
-\end{equation}
-The decision rule at significance level $\alpha \in (0, 1)$ is:
-\begin{equation}
-\text{Decision}(z_{\text{test}}) = \begin{cases}
-\text{ALERT}, & p(z_{\text{test}}) \le \alpha \\
-\text{BENIGN}, & p(z_{\text{test}}) > \alpha
-\end{cases}
+p(z) = \frac{1+\sum_{v\in\mathcal{C}_2}\mathbb{I}(f(v)\ge f(z))}{1+|\mathcal{C}_2|},\qquad \text{alert} \iff p(z)\le\alpha .
 \end{equation}
 
-\begin{theorem}[Finite-Sample Marginal False-Alarm Guarantee]
-Assume calibration flows in $\mathcal{C}_2$ and test flow $z_{\text{test}}$ are drawn exchangeably from $\mathcal{D}_{\text{benign}}$. Then, for any significance level $\alpha \in (0, 1)$:
-\begin{equation}
-\mathbb{P}_{z_{\text{test}} \sim \mathcal{D}_{\text{benign}}}\left(p(z_{\text{test}}) \le \alpha\right) \le \alpha
-\end{equation}
+\begin{theorem}[Conditional finite-sample false-alarm bound]
+If the calibration flows in $\mathcal{C}_2$ and a benign test flow are exchangeable, then $\mathbb{P}(p(z)\le\alpha)\le\alpha$ for every $\alpha\in(0,1)$.
 \end{theorem}
 \begin{proof}
-Under exchangeability of the scores $\{f(v)\}_{v \in \mathcal{C}_2} \cup \{f(z_{\text{test}})\}$, the rank of $f(z_{\text{test}})$ among the $|\mathcal{C}_2| + 1$ scores is uniformly distributed on $\{1, \dots, |\mathcal{C}_2| + 1\}$. The probability that the normalized rank does not exceed $\alpha$ is bounded above by $\lfloor \alpha(|\mathcal{C}_2| + 1) \rfloor / (|\mathcal{C}_2| + 1) \le \alpha$.
+Under exchangeability the rank of $f(z)$ among the $|\mathcal{C}_2|+1$ scores is uniform, so $\mathbb{P}(p(z)\le\alpha) = \lfloor\alpha(|\mathcal{C}_2|+1)\rfloor/(|\mathcal{C}_2|+1)\le\alpha$ (ties only lower this probability).
 \end{proof}
+The condition matters in practice: Sections~\ref{sec:temporal} and \ref{sec:cross} show it failing.
 
-\subsection{Mondrian Conformal Family Attribution}
-For an alert ($p(z) \le \alpha$), let $\hat{k} = \arg\max_{c \in \{1, \dots, K\}} \hat{P}(y = c \mid z)$. We compute class-conditional non-conformity $\alpha_{\text{fam}}(z) = 1 - \hat{P}(y = \hat{k} \mid z)$ against calibration instances of that family to obtain $p_{\text{fam}}(z \mid \hat{k})$. If $p_{\text{fam}}(z \mid \hat{k}) \le \alpha_{\text{family}}$, the flow is labeled \texttt{UNKNOWN-ATTACK}; if novelty alone triggered the alert, it is labeled \texttt{ZERO-DAY-ANOMALY}; otherwise, it is attributed to \texttt{KNOWN-FAMILY} $\hat{k}$.
+\subsection{Mondrian Family Attribution}
+For an alert in which the classifier itself predicts an attack ($\hat{P}(\text{attack})\ge 0.5$), let $\hat{k}$ be the most likely family. Its class-conditional conformal $p$-value is computed from the non-conformity $1-\hat{P}(\hat{k}\mid z,\text{attack})$ against validation flows of family $\hat{k}$. If that $p$-value is at most $\alpha_{\text{fam}}=0.01$ the alert is labelled \texttt{UNKNOWN-ATTACK}; otherwise it is attributed to $\hat{k}$. Alerts raised without the classifier predicting an attack are labelled \texttt{ZERO-DAY-ANOMALY}.
 
 \section{Experimental Evaluation}
-\subsection{Experimental Setup}
-We evaluate Aegis-OSR on CICIDS2017 \cite{sharafaldin2018generating} using Leave-One-Attack-Family-Out (LOAFO) across 6 families (\textit{Bot, BruteForce, DDoS, DoS, PortScan, WebAttack}) over 5 independent random seeds (seeds 1 to 5), yielding 30 distinct experimental runs. All compared baselines and ablations are calibrated through the identical split-conformal calibration pipeline at nominal $\alpha = 1.0\%$.
+\subsection{Setup}
+\textbf{Data.} CICIDS2017 MachineLearningCVE flows, de-duplicated, with capture day retained. Infiltration and Heartbleed (47 flows) are never trained on and serve as natural unknowns.
+
+\textbf{Protocols.} (i) LOAFO: one of six families (Bot, BruteForce, DDoS, DoS, PortScan, WebAttack) is removed from training and validation and appears only at test time; \LoafoRecords\ runs (6 folds $\times$ \LoafoSeeds\ seeds). (ii) Temporal: train on Mon--Wed and test on Thursday, or train on Mon--Thu and test on Friday; Friday's families never occur earlier in the week. (iii) Cross-dataset: train on CICIDS2017 and test on CSE-CIC-IDS2018 mapped to the 2017 schema.
+
+\textbf{Design selection.} The fusion rule and novelty detector were chosen on a pilot run with seed~0 over the same six LOAFO families; reported results use seeds 1--5. Seeds are disjoint but families are not, so a mild selection effect cannot be excluded.
+
+\textbf{Statistics.} Folds within a seed share a data split and are not independent. We therefore average folds within each seed and compare methods with a paired $t$-test over seeds (Wilcoxon on 5 seeds cannot fall below $p=0.0625$). Fold-level win counts are reported descriptively only.
 
 \begin{table*}[t]
 \centering
-\caption{Leave-One-Attack-Family-Out (LOAFO) performance on CICIDS2017 at nominal $\alpha = 1.0\%$. Values report mean and 95\% confidence intervals across 5 seeds.}
+\caption{LOAFO on CICIDS2017 at $\alpha=1\%$: mean and 95\% $t$-interval over \LoafoSeeds\ seeds (folds averaged within a seed).}
 \label{tab:loafo}
 \begin{tabular}{llcccc}
 \toprule
-\textbf{Method} & \textbf{Type} & \textbf{Zero-Day Recall @ 1\%} & \textbf{AUROC (Unknown)} & \textbf{Known-Attack Recall} & \textbf{Realized Benign FPR} \\
+\textbf{Method} & \textbf{Type} & \textbf{Zero-day recall} & \textbf{AUROC (unknown)} & \textbf{Known-attack recall} & \textbf{Realized benign FPR} \\
 \midrule
-\textbf{Aegis-OSR (Proposed)} & Proposed & \textbf{0.706} [0.689, 0.723] & \textbf{0.946} [0.943, 0.950] & \textbf{1.000} [0.999, 1.000] & \textbf{1.00\%} [0.92\%, 1.07\%] \\
-Aegis-OSR w/ Omnibus Fusion & Ablation & 0.614 [0.587, 0.642] & 0.946 [0.941, 0.951] & 1.000 [1.000, 1.000] & 0.99\% [0.92\%, 1.06\%] \\
-Aegis-OSR w/ AE Novelty & Ablation & 0.562 [0.527, 0.597] & 0.955 [0.952, 0.957] & 1.000 [1.000, 1.000] & 0.97\% [0.88\%, 1.05\%] \\
-Aegis-OSR w/ Max Fusion & Ablation & 0.531 [0.500, 0.563] & 0.944 [0.939, 0.948] & 1.000 [1.000, 1.000] & 0.99\% [0.95\%, 1.04\%] \\
-Aegis-OSR w/ IForest Novelty & Ablation & 0.478 [0.438, 0.518] & 0.929 [0.924, 0.934] & 1.000 [1.000, 1.000] & 0.99\% [0.96\%, 1.02\%] \\
-Closed-Set XGBoost & Baseline & 0.490 [0.447, 0.533] & 0.938 [0.932, 0.945] & 1.000 [1.000, 1.000] & 1.00\% [0.97\%, 1.02\%] \\
-XGBoost + Energy Score \cite{liu2020energy} & Baseline & 0.457 [0.430, 0.484] & 0.947 [0.943, 0.952] & 1.000 [1.000, 1.000] & 1.00\% [0.95\%, 1.04\%] \\
-$k$-NN Distance Alone \cite{sun2022out} & Baseline & 0.379 [0.358, 0.401] & 0.866 [0.861, 0.871] & 0.546 [0.534, 0.559] & 1.01\% [0.92\%, 1.11\%] \\
-Closed-Set Decision Tree & Baseline & 0.241 [0.177, 0.305] & 0.606 [0.571, 0.640] & 0.999 [0.999, 0.999] & 0.31\% [0.21\%, 0.42\%] \\
-Autoencoder Reconstruction & Baseline & 0.231 [0.197, 0.265] & 0.883 [0.870, 0.897] & 0.430 [0.397, 0.463] & 1.00\% [0.86\%, 1.13\%] \\
-Isolation Forest & Baseline & 0.012 [0.011, 0.012] & 0.840 [0.829, 0.851] & 0.008 [0.007, 0.008] & 0.99\% [0.92\%, 1.06\%] \\
+\input{paper_table_loafo.tex}
 \bottomrule
 \end{tabular}
 \end{table*}
 
-\subsection{LOAFO Results and Significance}
-As documented in Table~\ref{tab:loafo}, Aegis-OSR achieves a zero-day detection recall of \textbf{0.706} at $\alpha = 1.0\%$, outperforming closed-set XGBoost (0.490) by $+21.6$ percentage points and Decision Trees (0.241) by $+46.5$ percentage points while maintaining an empirical FPR of $1.00\% \pm 0.07\%$.
-
-Table~\ref{tab:wilcoxon} reports paired two-sided Wilcoxon signed-rank tests evaluated over all 30 (fold $\times$ seed) experimental pairs. Aegis-OSR achieves statistically significant improvements over all competitors, recording 30 wins and 0 losses against both closed-set XGBoost ($p = 1.86 \times 10^{-9}$) and Decision Trees ($p = 1.86 \times 10^{-9}$).
+\subsection{LOAFO Results}
+Aegis-OSR detects \LoafoOsrZdr\ of unseen-family flows at a realized false-alarm rate of \LoafoOsrFpr, compared with \LoafoXgbZdr\ for closed-set XGBoost and \LoafoDtZdr\ for a closed-set decision tree (Table~\ref{tab:loafo}). Table~\ref{tab:sig} gives seed-level paired comparisons: Aegis-OSR improves on every baseline and every single-change ablation in all \LoafoSeeds\ seeds.
 
 \begin{table}[h]
 \centering
-\caption{Paired two-sided Wilcoxon signed-rank tests across 30 LOAFO pairs.}
-\label{tab:wilcoxon}
-\begin{tabular}{lccc}
+\caption{Seed-level paired comparison of zero-day recall (Aegis-OSR minus method; folds averaged within each seed). Fold-level wins are descriptive.}
+\label{tab:sig}
+\begin{tabular}{lcccc}
 \toprule
-\textbf{Comparison (Aegis-OSR vs.)} & \textbf{Mean $\Delta$ Recall} & \textbf{W / L / T} & \textbf{Wilcoxon $p$} \\
+\textbf{Aegis-OSR vs.} & \textbf{$\Delta$ [95\% CI]} & \textbf{Seeds $>0$} & \textbf{Paired $t$ $p$} & \textbf{Fold wins} \\
 \midrule
-vs. Closed-Set XGBoost & \textbf{+0.216} & \textbf{30 / 0 / 0} & $\mathbf{1.86 \times 10^{-9}}$ \\
-vs. Closed-Set Decision Tree & \textbf{+0.465} & \textbf{30 / 0 / 0} & $\mathbf{1.86 \times 10^{-9}}$ \\
-vs. XGBoost + Energy Score & +0.249 & 30 / 0 / 0 & $1.73 \times 10^{-6}$ \\
-vs. Aegis-OSR w/ IForest & +0.228 & 30 / 0 / 0 & $1.73 \times 10^{-6}$ \\
-vs. Isolation Forest & +0.694 & 27 / 2 / 1 & $3.69 \times 10^{-6}$ \\
-vs. Autoencoder & +0.475 & 27 / 3 / 0 & $4.73 \times 10^{-6}$ \\
-vs. Aegis-OSR w/ Max Fusion & +0.175 & 24 / 6 / 0 & $6.92 \times 10^{-6}$ \\
-vs. Aegis-OSR w/ AE Novelty & +0.144 & 25 / 5 / 0 & $6.92 \times 10^{-6}$ \\
-vs. $k$-NN Distance Alone & +0.327 & 25 / 5 / 0 & $7.68 \times 10^{-6}$ \\
-vs. Aegis-OSR w/ Omnibus Fusion & +0.092 & 24 / 6 / 0 & $1.11 \times 10^{-4}$ \\
+\input{paper_table_significance.tex}
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Per-Family Granular Analysis}
-Examining individual held-out families revealed distinct operational regimes:
-\begin{itemize}
-    \item \textbf{High-Recall Families:} WebAttacks (99.1\%), DoS (97.7\%), DDoS (96.5\%), and BruteForce (92.3\%) achieved $>92\%$ zero-day detection. For BruteForce, closed-set XGBoost achieved only 31.0\% recall, whereas Aegis-OSR reached 92.3\% because spatial $k$-NN novelty captured micro-deviations in header sizes that tree splits ignored.
-    \item \textbf{Moderate Recall:} PortScan achieved 35.7\% recall at $\alpha = 1\%$, rising to 58.7\% at $\alpha = 5\%$.
-    \item \textbf{Adversarial Challenge:} Botnet (ARES) detection achieved only 2.3\% recall across all models. ARES command-and-control flows utilize standard HTTP POST/GET requests whose packet length distributions fall entirely within the convex hull of normal workstation web browsing.
-\end{itemize}
+\subsection{Per-Family Analysis}
+The gain is uneven across families. Held-out WebAttack (\LoafoOsrWebAttack), DoS (\LoafoOsrDoS), DDoS (\LoafoOsrDDoS) and BruteForce (\LoafoOsrBruteForce; closed-set XGBoost \LoafoXgbBruteForce) are detected well. PortScan reaches \LoafoOsrPortScan\ at $\alpha=1\%$ and \LoafoOsrPortScanAtFive\ at $\alpha=5\%$. Held-out Bot is essentially undetected: Aegis-OSR reaches \LoafoOsrBot, and no compared method exceeds \LoafoBotBestAny. A plausible explanation, which we did not test, is that individual Bot flows resemble ordinary web requests; host-level aggregation is the natural next step.
 
-\subsection{Temporal Drift and Adaptation}
-When evaluating a Monday--Thursday trained model on Friday traffic, diurnal drift inflated the realized benign false-alarm rate from $1.0\%$ to \textbf{7.68\%}. Applying label-light recalibration (\texttt{recal+ref} with window size $W = 5000$) suppressed the realized FPR back to \textbf{1.66\%} and retained a zero-day recall of 45.7\% without retraining the classifier.
+\subsection{Temporal Drift and Recalibration}\label{sec:temporal}
+Training on Mon--Thu and testing on Friday raises the realized benign false-alarm rate of Aegis-OSR to \TempFriOsrFpr\ (closed-set XGBoost: \TempFriXgbFpr; $k$-NN alone: \TempFriKnnFpr), so the exchangeability condition fails for the novelty component. Zero-day recall on Friday is \TempFriOsrZdr\ (XGBoost: \TempFriXgbZdr). Recalibrating on the earliest $W$ confirmed-benign Friday flows, without retraining, gives realized false-alarm rates of \TempFriRecalFiveHFpr\ ($W=500$), \TempFriRecalTwoKFpr\ ($W=2000$) and \TempFriRecalFiveKFpr\ ($W=5000$); also extending the $k$-NN reference gives \TempFriRefFiveHFpr, \TempFriRefTwoKFpr\ and \TempFriRefFiveKFpr. The effect is not monotone in $W$: larger early-morning windows represent afternoon traffic less well. A random benign sample of the day ($W=2000$, an oracle upper bound) gives \TempFriOracleTwoKFpr. After recalibration, recall falls to \TempFriRecalTwoKZdr\ ($W=2000$). On Thursday the unadapted rate is \TempThuOsrFpr.
+
+\subsection{Cross-Dataset Transfer}\label{sec:cross}
+On CSE-CIC-IDS2018 the realized false-alarm rate of Aegis-OSR is \CrossOsrFpr\ (closed-set XGBoost: \CrossXgbFpr) with known-family recall \CrossOsrKnown\ and zero-day recall \CrossOsrZdr. Recalibration does not rescue transfer: $W=500$ yields \CrossRecalFiveHFpr\ but zero-day recall \CrossRecalFiveHZdr, while $W=2000$ with reference extension yields \CrossRefTwoKFpr. The warm-up window comes from the first capture day while the test spans ten days, so it is not exchangeable with the test traffic. The frozen two-stage baseline transfers poorly too (F1 \FrozenEighteenFone, recall \FrozenEighteenRecall). Several attack tools present in both datasets lose detection almost entirely: DoS-Hulk (\FrozenEighteenHulk\ alert rate), SSH brute force (\FrozenEighteenSsh) and LOIC-HTTP (\FrozenEighteenLoicHttp), while Slowloris still transfers (\FrozenEighteenSlowloris). Identical tools becoming undetectable suggests that flow-extractor differences between the two releases are confounded with network shift; separating the two requires datasets produced by a single extractor.
+
+\section{Limitations}
+The false-alarm bound is conditional on exchangeability and is violated under the shifts we test. Natural unknowns are few (47 flows), so they are illustrative only. CICIDS2017 has documented labelling and flow-construction errors. Design selection used the same six families as evaluation. All experiments use recorded flows rather than live traffic.
 
 \section{Conclusion}
-Aegis-OSR establishes a rigorous framework for open-set intrusion detection. By uniting supervised tree posteriors with spatial $k$-NN distances through Extreme Value Theory and split-conformal calibration, Aegis-OSR achieves a zero-day detection recall of 70.6\% under a provable 1.0\% false-alarm budget. Label-light recalibration successfully counters non-stationary temporal drift, providing an operationally reliable foundation for next-generation network defense.
+Aegis-OSR improves unseen-family detection over the same classifier at a fixed, calibrated false-alarm budget (\LoafoOsrZdr\ versus \LoafoXgbZdr\ at $\alpha=1\%$), and the improvement is consistent across seeds. Its guarantee is conditional: under day-to-day drift and cross-network transfer it breaks, recalibration helps only partly, and transfer remains unsolved. We consider the honest measurement of these failure modes as much a result as the headline gain.
 
 \bibliographystyle{IEEEtran}
 \begin{thebibliography}{10}
-\bibitem{sharafaldin2018generating} I.~Sharafaldin et al., ``Toward generating a new intrusion detection dataset...,'' in \textit{Proc. ICISSP}, 2018.
+\bibitem{sharafaldin2018generating} I.~Sharafaldin, A.~H. Lashkari, and A.~A. Ghorbani, ``Toward generating a new intrusion detection dataset and intrusion traffic characterization,'' in \textit{Proc. ICISSP}, 2018.
 \bibitem{sommer2010outside} R.~Sommer and V.~Paxson, ``Outside the closed world: On using machine learning for network intrusion detection,'' in \textit{Proc. IEEE S\&P}, 2010.
 \bibitem{arp2022dos} D.~Arp et al., ``Dos and don'ts of machine learning in computer security,'' in \textit{Proc. USENIX Security}, 2022.
 \bibitem{axelsson2000base} S.~Axelsson, ``The base-rate fallacy and the difficulty of intrusion detection,'' \textit{ACM TISSEC}, 2000.
-\bibitem{scheirer2012toward} W.~J. Scheirer et al., ``Toward open set recognition,'' \textit{IEEE TPAMI}, 2012.
+\bibitem{scheirer2012toward} W.~J. Scheirer et al., ``Toward open set recognition,'' \textit{IEEE TPAMI}, 2013.
 \bibitem{bendale2016towards} A.~Bendale and T.~E. Boult, ``Towards open set deep networks,'' in \textit{Proc. CVPR}, 2016.
 \bibitem{liu2020energy} W.~Liu et al., ``Energy-based out-of-distribution detection,'' in \textit{Proc. NeurIPS}, 2020.
 \bibitem{sun2022out} Y.~Sun et al., ``Out-of-distribution detection with deep nearest neighbors,'' in \textit{Proc. ICML}, 2022.
@@ -228,4 +169,3 @@ Aegis-OSR establishes a rigorous framework for open-set intrusion detection. By 
 \end{thebibliography}
 
 \end{document}
-

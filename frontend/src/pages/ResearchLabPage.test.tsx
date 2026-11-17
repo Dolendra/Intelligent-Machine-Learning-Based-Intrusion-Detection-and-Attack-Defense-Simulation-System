@@ -36,7 +36,7 @@ const loafo: ProtocolBlock = {
   ],
   folds: [{ fold: "Bot", methods: { "Aegis-OSR": { zero_day_recall: ci(0.02), fpr: ci(0.01), auroc_unknown: ci(0.8) } } }],
   per_family: {},
-  significance: [{ metric: "zero_day_recall", versus: "Closed-set XGB", n: 6, mean_diff: 0.2, wins: 6, losses: 0, ties: 0, statistic: 0, p_value: 0.03125 }],
+  significance: [{ metric: "zero_day_recall", versus: "Closed-set XGB", n: 6, mean_diff: 0.2, diff_ci_low: 0.15, diff_ci_high: 0.25, n_seeds: 5, positive_seeds: 5, wins: 6, losses: 0, ties: 0, test: "paired t over seeds", p_value: 0.0004 }],
   adaptation: [],
   attribution: {},
   meta: { seeds: [1, 2, 3, 4, 5], alpha: 0.01, generated_at: "2026-11-06T07:36:41Z", git_commit: "775e9a9" },

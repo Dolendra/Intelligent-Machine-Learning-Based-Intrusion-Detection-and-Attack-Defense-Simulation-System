@@ -55,10 +55,21 @@ def _protocol(summary: dict, proto: str) -> dict | None:
             "methods": {m: {"zero_day_recall": _ci(v.get("zero_day_recall")), "fpr": _ci(v.get("fpr")),
                             "auroc_unknown": _ci(v.get("auroc_unknown"))} for m, v in methods.items()},
         })
+    # Primary statistic = seed-level paired test (independent seeds); fold-level W/L/T is descriptive.
     sig = []
+    seed_level = (summary.get("significance_seed_level", {}) or {}).get(proto) or {}
     for metric, by_method in (summary.get("significance", {}).get(proto) or {}).items():
         for method, t in by_method.items():
-            sig.append({"metric": metric, "versus": method, **t})
+            s = (seed_level.get(metric) or {}).get(method) or {}
+            sig.append({
+                "metric": metric, "versus": method,
+                "n": t.get("n"), "wins": t.get("wins"), "losses": t.get("losses"), "ties": t.get("ties"),
+                "mean_diff": s.get("mean_diff", t.get("mean_diff")),
+                "diff_ci_low": s.get("diff_ci_low"), "diff_ci_high": s.get("diff_ci_high"),
+                "n_seeds": s.get("n_seeds"), "positive_seeds": s.get("positive_seeds"),
+                "p_value": s.get("t_p_value"), "test": "paired t over seeds" if s else "wilcoxon over fold×seed pairs",
+                "fold_pair_wilcoxon_p": t.get("p_value"),
+            })
     adaptation = []
     for key, ad in (summary.get("adaptation", {}).get(proto) or {}).items():
         for fold, methods in ad["per_fold"].items():

@@ -136,33 +136,47 @@ function SignificanceTable({ rows }: { rows: SignificanceRow[] }) {
   const columns: Column<SignificanceRow>[] = [
     { key: "metric", header: "Metric", sortable: true, cell: (r) => humanize(r.metric) },
     { key: "versus", header: "Proposed vs", sortable: true },
-    { key: "n", header: "n", align: "right", cell: (r) => <span className="mono">{r.n}</span> },
     {
       key: "mean_diff",
-      header: "Mean diff",
+      header: "Mean diff [95% CI]",
       sortable: true,
       align: "right",
-      cell: (r) => (
-        <span className="mono" style={{ color: r.mean_diff > 0 ? "var(--ok)" : r.mean_diff < 0 ? "var(--danger)" : undefined }}>
-          {r.mean_diff > 0 ? "+" : ""}
-          {/fpr|recall|auroc|auprc/i.test(r.metric) ? `${(r.mean_diff * 100).toFixed(1)} pp` : r.mean_diff.toFixed(3)}
-        </span>
-      ),
+      cell: (r) => {
+        const pp = /fpr|recall|auroc|auprc/i.test(r.metric);
+        const fmt = (v: number) => (pp ? `${v > 0 ? "+" : ""}${(v * 100).toFixed(1)}` : `${v > 0 ? "+" : ""}${v.toFixed(3)}`);
+        return (
+          <span className="mono" style={{ color: r.mean_diff > 0 ? "var(--ok)" : r.mean_diff < 0 ? "var(--danger)" : undefined }}>
+            {fmt(r.mean_diff)}
+            {pp ? " pp" : ""}
+            {r.diff_ci_low != null && r.diff_ci_high != null ? (
+              <span className="muted"> [{fmt(r.diff_ci_low)}, {fmt(r.diff_ci_high)}]</span>
+            ) : null}
+          </span>
+        );
+      },
+    },
+    {
+      key: "seeds",
+      header: "Seeds better",
+      align: "right",
+      accessor: (r) => r.positive_seeds ?? -1,
+      sortable: true,
+      cell: (r) => <span className="mono">{r.positive_seeds != null && r.n_seeds != null ? `${r.positive_seeds} / ${r.n_seeds}` : "—"}</span>,
     },
     {
       key: "wlt",
-      header: "W / L / T",
+      header: "Fold W / L / T (descriptive)",
       accessor: (r) => r.wins - r.losses,
       sortable: true,
       cell: (r) => (
-        <span className="mono">
+        <span className="mono muted">
           {r.wins} / {r.losses} / {r.ties}
         </span>
       ),
     },
     {
       key: "p_value",
-      header: "p (Wilcoxon)",
+      header: "p (paired t, seeds)",
       sortable: true,
       align: "right",
       cell: (r) =>
@@ -399,7 +413,7 @@ function ProtocolView({ protocol, block, overview }: { protocol: ProtocolKey; bl
       {block.significance.length > 0 && (
         <Card
           title="Paired significance"
-          subtitle={`${proposed} vs each method, paired across folds × seeds (Wilcoxon signed-rank). With 6 pairs the smallest attainable two-sided p is 0.031.`}
+          subtitle={`${proposed} vs each method. Folds are averaged within each seed and compared with a paired t-test over independent seeds; fold-level win counts are shown for context only, because folds of one seed share a data split.`}
           icon={Sigma}
         >
           <SignificanceTable rows={block.significance} />

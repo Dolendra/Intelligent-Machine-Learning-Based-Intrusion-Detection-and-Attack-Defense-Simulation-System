@@ -42,14 +42,14 @@ What makes Aegis different from a typical student intrusion-detection project is
 | **F1 score** | One number combining precision and recall (1.0 is perfect). |
 | **False-positive rate (FPR)** | Of all normal flows, the share wrongly flagged. 1% FPR = 1 false alarm per 100 normal flows. |
 | **α (alpha) — false-alarm budget** | The false-alarm rate *you* set for the Zero-Day Gate, e.g. α = 1%. The gate is designed so that, on normal traffic like what it was calibrated on, no more than α of flows raise an alert. |
-| **Calibration / conformal prediction** | The statistical method that makes the α promise hold: the gate compares each new flow with a large set of known-normal flows and only alerts if the flow is more unusual than all but α of them. |
+| **Calibration / conformal prediction** | The statistical method behind the α promise: the gate compares each new flow with a large set of known-normal flows and only alerts if the flow is more unusual than all but α of them. The promise only holds while new normal traffic resembles those calibration flows — when the network changes, it can break (see §7.3). |
 | **p-value** | The gate's "how normal is this?" score between 0 and 1. Small = very unusual. Alert when p ≤ α. |
 | **SHAP / LIME** | Two methods that explain a single decision by showing which measurements pushed the model towards "attack" and which towards "normal". They explain *the model*, not *the attack*; they are hints, not proof. |
 | **Counterfactual ("what-if")** | "If this measurement had been different, would the verdict change?" |
 | **Risk score (0–100) and severity** | How urgent an alert is, combining the attack type, the model's confidence, how intense the traffic is and how important the targeted machine is. Bands: Low, Medium, High, Critical. |
 | **Incident** | A logged alert that an analyst can investigate, annotate and close. |
 | **Campaign** | Several incidents from the same source linked together (for example, a scan followed by password guessing from the same address). |
-| **MITRE ATT&CK** | The industry's shared dictionary of attacker behaviour. Each tactic (goal, e.g. "Reconnaissance") and technique (method, e.g. "T1595 Active Scanning") has a code. Aegis tags every detection with one, so analysts can look it up. |
+| **MITRE ATT&CK** | The industry's shared dictionary of attacker behaviour. Each tactic (goal, e.g. "Reconnaissance") and technique (method, e.g. "T1595 Active Scanning") has a code. Aegis tags every detection of a *known* attack family with one, so analysts can look it up. A gate-only "Zero-Day Candidate" gets no tag — the system cannot know which technique an unnamed attack uses. |
 | **Kill chain** | The usual order of an attack: reconnaissance → getting in → stealing credentials → moving around → control → impact. |
 | **Cyber range** | A safe practice network where attacks and defenses can be tried and measured. |
 | **Seed** | A number that fixes all the randomness of a run. Same seed + same settings = exactly the same run, so results can be checked. |
@@ -118,7 +118,7 @@ If a red **"Backend offline"** banner appears, Terminal A is not running — sta
 
 **What appears after detecting**
 - **Detection result** — the verdict (attack family or "Benign traffic"), a **risk dial**, severity, confidence, the probability of attack and the decision threshold (0.85). If the model is unsure, it says "analyst review recommended".
-- **Zero-Day Gate (advisory)** — the gate's own opinion: *Benign*, a known family, *Unknown attack* or *Zero-day anomaly*, with its p-value on a scale against α. If the gate alerts but the main model said benign, it warns **"Possible zero-day — the frozen model missed it"**. When it alerts, it also shows *which measurements look most unusual* compared with similar normal traffic.
+- **Zero-Day Gate (advisory)** — the gate's own opinion: *Benign*, a known family, *Unknown attack* or *Zero-day anomaly*, with its p-value on a scale against α. If the gate alerts but the main model said benign, it warns **"Possible zero-day — the frozen model missed it"**, and the incident is logged as a **Zero-Day Candidate** (never as a known attack type). Every gate alert is also saved in an audit table with its p-value, α and model version. When it alerts, it also shows *which measurements look most unusual* compared with similar normal traffic.
 - **Attack-family probabilities** — how sure the model is about each family.
 - **Why this risk?** — the risk score broken into its four ingredients.
 - **Explainability (SHAP / LIME tabs)** — bars showing which measurements pushed towards the verdict (and which against it), plus a sentence in words.
@@ -153,7 +153,7 @@ If a red **"Backend offline"** banner appears, Terminal A is not running — sta
 - The **state bar** shows the defender's progress: Normal → Suspicious (first alert on an attacker) → Detected (incident raised) → Explained (SHAP ready) → Response options → Mitigating (defense active) → Contained (attack traffic reaching the server cut by at least 75%) → Recovery (service back to normal) → Completed. Hover over a state for its meaning.
 
 **Step 3 — Your decision** (only in "I decide" mode)
-A red panel appears with the threat-intelligence tag (MITRE ATT&CK tactic and technique, clickable) and six buttons. The **recommended** one is highlighted:
+A red panel appears with the threat-intelligence tag (MITRE ATT&CK tactic and technique, clickable — none for a Zero-Day Candidate, because the detector cannot name it) and six buttons. The **recommended** one is highlighted:
 - **Block source** — drop everything from each detected attacker.
 - **Rate limit** — let only 20% of each detected attacker's traffic through.
 - **Isolate target** — cut the server off until the attack has been quiet for 5 seconds (stops the attack, but normal users are cut off too).
@@ -172,7 +172,7 @@ A red panel appears with the threat-intelligence tag (MITRE ATT&CK tactic and te
 - **Result card** (at the end) — the outcome in words, attackers caught, detection rate of each model, availability, recovery time and mitigation effectiveness. The full record is saved in `results/cyber_range/runs/`.
 
 **Experiments tab**
-- **Compare defenses** — pick a scenario and press the button: the range runs every defense five times and shows a table of attack getting through, availability, users blocked and recovery time.
+- **Compare defenses** — pick a scenario and press the button: the range runs four defenses (block, rate limit, isolate, monitor) five times each and shows a table of attack getting through, availability, users blocked and recovery time.
 - Below it, the saved **full experiment program** (1,190 runs): *Which detector catches what*, *Defense comparison*, *False-alarm control* (alerts needed vs. false incidents) and *Cost of a slow decision* (approval delay vs. availability). To regenerate: `python scripts/56_cyber_range_experiments.py`.
 
 ### 5.4 Attack Storyboard (Operations → Attack Storyboard)
@@ -268,7 +268,7 @@ Only used when security is switched on. Enter username and password; the server 
 3. **Zero-Day Lab** — load a flow and move the α slider; show the false-alarm guarantee chart and the never-seen table (0 of 47 vs. 29 of 47).
 4. **Cyber Range** — choose *Multi-source load (DDoS)*, "I decide", Start. Let the attack begin; when the decision panel appears, choose *Block source*; Run to end. Read the tiles: caught in about one second, availability restored, zero users blocked.
 5. **Cyber Range again** — choose *Zero-day intrusion* with detector *Frozen v1.1 only*: the attack is never detected. Switch to *Both*: the gate catches it in a few seconds. This is the research in one picture.
-6. **Experiments tab** — press *Compare defenses* to show that isolating the server stops the attack but locks out about a quarter of normal users.
+6. **Experiments tab** — press *Compare defenses* to show that isolating the server stops the attack but blocks about a quarter of normal users' traffic.
 7. **Research Lab** — show the LOAFO headline (70.6% vs. 49.0%) and the honest cross-dataset failure.
 
 ---
@@ -279,7 +279,7 @@ Only used when security is switched on. Enter username and password; the server 
 
 Machine-learning intrusion detectors are usually tested on the same kind of traffic they learned from, and they score superbly (F1 ≈ 0.99). We showed three ways that hides the real picture:
 
-1. **New attack types are invisible.** Our own frozen detector scored F1 0.990 on its test set, yet it flagged **none** of the 47 never-seen attacks in the data. When we hid one attack type at a time during training, we tested ten ordinary detectors — decision trees, random forests, XGBoost, LightGBM-style boosting, SVMs and neural networks (MLP, CNN, LSTM). On familiar attacks they all looked excellent (most scored F1 above 0.98). On the hidden type, the best of them caught only **48%** on average, the neural networks only 5–35%, and **none of the ten caught a single hidden botnet flow**. Some hidden types are "lucky" (a hidden DoS looks a lot like other floods, so tree models still caught 90%+), but you cannot know in advance which kind of new attack you will get.
+1. **New attack types are invisible.** Our own frozen detector scored F1 0.990 on its test set, yet it flagged **none** of the 47 never-seen attacks in the data. When we hid one attack type at a time during training, we tested ten ordinary detectors — decision trees, random forests, XGBoost, LightGBM-style boosting, SVMs and neural networks (MLP, CNN, LSTM). On familiar attacks they all looked excellent (most scored F1 above 0.98). On the hidden type, the best of them caught only **48%** on average, the neural networks only 5–35%, and **almost none caught a hidden botnet flow (at most 0.2%)**. Some hidden types are "lucky" (a hidden DoS looks a lot like other floods, so random forest and XGBoost still caught 90%+), but you cannot know in advance which kind of new attack you will get.
 2. **A different network breaks it.** Tested on the 2018 dataset (different network, different year), the same detector's F1 fell from **0.990 to 0.185** — it caught only about 10% of attacks, missing 2018's DDoS, botnet and SSH password-guessing traffic almost entirely.
 3. **Alarm rates are not under control.** Anomaly detectors can catch new things, but nobody can say in advance how many false alarms they will produce.
 
@@ -296,15 +296,15 @@ Each is turned into a "surprise" score using thousands of known-normal flows; th
 
 | Question | Result |
 |---|---|
-| Does it catch unseen attack types? (6 types × 5 repeats = 30 tests) | **70.6%** caught vs. **49.0%** for the same classifier alone and **24.1%** for a decision tree like v1.1 — at the same 1% false-alarm rate. It won **30 out of 30** head-to-head comparisons (p = 1.9×10⁻⁹). |
+| Does it catch unseen attack types? (6 types × 5 repeats = 30 tests) | **70.6%** caught vs. **49.0%** for the same classifier alone and **24.1%** for a decision tree like v1.1 — at the same 1% false-alarm rate. It was better in **every one of the 5 independent repeats** (on average +21.6 points, 95% CI 18.0–25.2; paired t-test p = 7.6×10⁻⁵) and in all 30 individual tests. |
 | Is the false-alarm promise kept? | Yes on matching traffic: measured **1.00%** for a promised 1%, for every method. |
 | Does it label unknowns honestly? | When it alerted on an unseen type it almost never pretended it was a known one (≤ 0.9% mislabelled). |
 | Which unseen types? | Web attacks 99%, DoS 98%, DDoS 97%, brute force **92% (vs. 31% without the gate)**; port scans 36%; botnet only 2% — botnet traffic looks like normal web browsing. |
 | Real never-seen attacks (Heartbleed, Infiltration) | Frozen model **0 of 47**; gate **29 of 47** (all 11 Heartbleed). |
-| When traffic changes day to day | The promise breaks: Friday's false-alarm rate rises to **~7%**. Re-calibrating on **2,000 normal flows** from the new day — **no retraining** — brings it back near 1% (0.82%; with a random sample of the day, 0.97%). After re-calibration the gate and the plain classifier perform about the same on Friday. |
-| On a different network (2018) | **It does not transfer.** False alarms jump to ~35%; re-calibration controls false alarms but then little is caught. We report this openly as the method's main limit. |
-| In the Cyber Range (1,190 measured runs) | Zero-day scenario: frozen model **never** raised an incident (0/10 runs); the gate did in **10/10**, after **4.3 s** on average. Requiring 3 alerts in 5 s instead of 1 cut false incidents from **~18 per run to 0**. Blocking the source stopped attacks with no harm to users; isolating the server also stopped them but locked out **27%** of normal users and took **~52 s** to recover. A 30-second approval delay dropped availability during a DDoS from **99.5% to 62%**. |
-| Are explanations trustworthy? | SHAP explanations barely change under tiny noise for most attack types — except Bot and WebAttack, exactly the types the detector is weakest on. SHAP and LIME often disagree, so explanations should be treated as hints, not proof. |
+| When traffic changes day to day | The promise breaks: Friday's false-alarm rate rises to **~7%**. Re-calibrating on **2,000 normal flows** from the new day — **no retraining** — brings it back under 1% (0.82%; with a random sample of the day, 0.97%). But it depends on the window: 5,000 early-morning flows left it at 2.6%, because morning traffic does not represent the afternoon. After re-calibration the gate and the plain classifier perform about the same on Friday. |
+| On a different network (2018) | **It does not transfer.** False alarms jump to ~35%. Re-calibrating on 500 flows brings them under 1% but then almost nothing is caught (4%); with bigger windows false alarms stay high (up to 51%), because the warm-up flows come only from the first 2018 day. Even well-known attack tools (DoS-Hulk, SSH password guessing) become invisible to the frozen model, which suggests the two datasets were measured with different versions of the flow tool, not just different networks. We report this openly as the method's main limit. |
+| In the Cyber Range (1,190 measured runs) | Zero-day scenario: frozen model **never** raised an incident (0/10 runs); the gate did in **10/10**, after **4.3 s** on average (the 10 runs re-use the same 47 never-seen flows, so they are not 10 independent zero-days). Requiring 3 alerts in 5 s instead of 1 cut false incidents from **~18 per run to 0**. Blocking the source stopped attacks with no harm to users; isolating the server also stopped them but blocked **27%** of normal users' traffic; its ~52 s recovery is set by the range's own rule (isolation is lifted 5 s after the attack stops), so it is not a measured recovery time. A 30-second approval delay dropped availability during a DDoS from **99.5% to 62%**. |
+| Are explanations trustworthy? | SHAP explanations barely change under tiny noise for most attack types — except Bot and WebAttack (and, less so, DoS), Bot and WebAttack being exactly the types the detector is weakest on. SHAP and LIME often disagree, so explanations should be treated as hints, not proof. |
 
 ### 7.4 Where we improved on typical projects
 
@@ -313,7 +313,7 @@ Each is turned into a "surprise" score using thousands of known-normal flows; th
 - **A measuring cyber range, not an animation** — detection time, damage and the effect of each defense are measured, with seeds for exact replay.
 - **Human in control** — no defense runs on a real network; every response is proposed, previewed, approved, verified and reversible.
 - **Honesty** — failures (botnet, cross-network transfer, drift) are reported next to successes; measured, modelled and assumed numbers are labelled separately.
-- **Threat-intelligence language** — every detection carries its MITRE ATT&CK tactic and technique; campaigns are summarised as kill-chain stages.
+- **Threat-intelligence language** — every known-family detection carries its MITRE ATT&CK tactic and technique; campaigns are summarised as kill-chain stages.
 
 ---
 
@@ -328,6 +328,13 @@ These are the most promising directions, in order of expected impact:
 5. **More datasets.** Repeat the study on UNSW-NB15, NSL-KDD and TON_IoT (listed in our proposal) and on re-labelled versions of CICIDS2017, which fixes known labelling errors.
 6. **A human study.** Ask analysts to triage alerts with and without explanations and ATT&CK tags, and measure speed and accuracy — the only real test of whether explanations help.
 7. **Safe language-model assistance.** Let a language model write scenario descriptions or post-incident summaries, but only through validated templates — never direct control of a network.
+
+### Corrections after the research audit (R1a)
+
+- The Live Monitor, Cyber Range and explanation study now replay only flows that **neither** model ever trained on (an earlier replay set overlapped the frozen model's training data). The headline Cyber Range numbers did not change.
+- The frozen model and the Zero-Day Gate now share one rule for raising incidents, and every gate alert is recorded.
+- Statistics now compare the 5 independent repeats instead of 30 linked tests.
+- Full details: `docs/research/CLAIM_AUDIT.md`.
 
 ### What was added in this round of work
 

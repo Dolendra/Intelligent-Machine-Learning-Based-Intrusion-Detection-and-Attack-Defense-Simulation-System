@@ -1,3 +1,9 @@
+> **SUPERSEDED — do not cite.** This markdown draft (Nov 2026) contains numbers that do not match the
+> final result artifacts (e.g. Friday FPR 7.68 % vs. 7.09 %, recal+ref@5000 1.66 % vs. 2.84 %, the whole
+> recalibration table) and statistics that treat 30 non-independent fold × seed pairs as independent.
+> See `docs/research/CLAIM_AUDIT.md`. Current papers: `docs/research/paper.tex` (numbers via
+> `paper_numbers.tex`) and `docs/research/Aegis_Research_Paper.docx/.pdf` (built by `paper_build/paper.py`).
+
 # Aegis-OSR: Finite-Sample False-Alarm Guarantees in Open-Set Network Intrusion Detection via Conformal Evidence Fusion
 
 **Authors:** Dolendra et al.  
