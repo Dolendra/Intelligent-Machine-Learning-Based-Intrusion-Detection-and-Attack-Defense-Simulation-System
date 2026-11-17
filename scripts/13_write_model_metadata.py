@@ -142,6 +142,13 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     meta = build_metadata()
     path = out_dir / "model_metadata.json"
+    if path.exists():
+        old = json.loads(path.read_text(encoding="utf-8"))
+        if old.get("artifact_hashes") == meta.get("artifact_hashes"):
+            # Same model files → same training run. Re-running this script must not rewrite
+            # *when/where the models were trained* (R1a: a re-run had replaced c99d2d3 with HEAD).
+            print("Model artifacts unchanged since last metadata write; keeping training provenance as-is.")
+            return
     path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
     print(f"Wrote {path}")
     print(json.dumps({"binary_model": meta["binary_model"], "git": meta["training_git_commit"]}, indent=2))
