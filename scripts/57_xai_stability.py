@@ -1,6 +1,7 @@
 """E9 — explanation stability study for the frozen v1.1 detector.
 
-Three questions, answered on held-out replay flows (never used to train v1.1's explainer background):
+Three questions, answered on replay flows that neither v1.1 nor the gate trained or validated on
+(leakage-free pool since R1a — see research_artifacts/replay/replay_pool_manifest.json):
 
 1. Consistency   Do flows of the same attack family get the same top-5 SHAP features?
                  (mean pairwise Jaccard of top-5 sets within a family)
@@ -138,7 +139,7 @@ def main() -> None:
     }
     OUT_JSON.write_text(json.dumps(report, indent=2), encoding="utf-8")
     md = ["# E9 — Explanation stability (auto-generated)", "",
-          f"_Generated {report['generated_at'][:19]}Z by `scripts/57_xai_stability.py`; {args.per_family} held-out replay flows per family; seed {args.seed}._", "",
+          f"_Generated {report['generated_at'][:19]}Z by `scripts/57_xai_stability.py`; {args.per_family} replay flows per family (frozen-test ∩ gate-test, zero train overlap; pool v2); seed {args.seed}._", "",
           "| Family | Flows | Consistency (Jaccard top-5, within family) | Robustness to ±1% noise (Jaccard top-5) | Rank stability (Spearman top-10) | SHAP–LIME agreement (Jaccard top-5) |",
           "|---|---|---|---|---|---|"]
     for fam, d in per_family.items():

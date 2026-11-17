@@ -30,6 +30,7 @@
   },
   "advisory_only": true,
   "evaluation": {
+    "protocol_version": 2,
     "operating_points": [
       {
         "alpha": 0.0005,
@@ -102,9 +103,11 @@
         }
       }
     ],
+    "operating_points_scope": "gate test split (gate never trained on these rows)",
     "frozen_v11_operating_point": {
       "threshold": 0.85,
-      "benign_fpr": 0.00064
+      "benign_fpr": 0.0007903929017618113,
+      "scope": "clean head-to-head flows"
     },
     "test_sizes": {
       "benign": 200000,
@@ -117,13 +120,15 @@
       "known_attack_recall": 0.9987956538813981,
       "known_family_accuracy": 0.9891870663699437,
       "natural_unknown_alert_rate": 0.6170212765957447,
-      "latency_ms_per_flow_batch": 0.0601,
+      "latency_ms_per_flow_batch": 0.0631,
       "served_vs_research_parity": 0.999963825392404
     },
     "frozen_v11": {
-      "benign_fpr": 0.00064,
-      "known_attack_recall": 0.993075009818039,
-      "natural_unknown_attack_rate": 0.0
+      "threshold": 0.85,
+      "benign_fpr": 0.0007903929017618113,
+      "known_attack_recall": 0.9926863016406404,
+      "natural_unknown_attack_rate": 0.0,
+      "scope": "clean head-to-head flows"
     },
     "natural_unknowns": [
       {
@@ -156,30 +161,163 @@
     ],
     "per_family_recall": {
       "Bot": {
-        "gate": 0.8791773778920309,
-        "frozen_v11": 0.6169665809768637
+        "gate": 0.926829268292683,
+        "frozen_v11": 0.5853658536585366,
+        "n": 82
       },
       "BruteForce": {
         "gate": 1.0,
-        "frozen_v11": 0.9978142076502732
+        "frozen_v11": 0.9945945945945946,
+        "n": 370
       },
       "DDoS": {
-        "gate": 0.9999609420771003,
-        "frozen_v11": 0.9999218841542007
+        "gate": 1.0,
+        "frozen_v11": 0.9996069954804481,
+        "n": 5089
       },
       "DoS": {
-        "gate": 0.9985333333333334,
-        "frozen_v11": 0.9959333333333333
+        "gate": 0.9993282955499581,
+        "frozen_v11": 0.9952980688497062,
+        "n": 5955
       },
       "PortScan": {
         "gate": 1.0,
-        "frozen_v11": 0.9998346105077457
+        "frozen_v11": 1.0,
+        "n": 3604
       },
       "WebAttack": {
         "gate": 1.0,
-        "frozen_v11": 0.4195804195804196
+        "frozen_v11": 0.4155844155844156,
+        "n": 77
       }
     },
-    "note": "Natural unknowns (Infiltration n=36, Heartbleed n=11) are tiny; treat rates as illustrative, the LOAFO / temporal / cross-dataset protocols are the statistical evidence."
-  }
+    "head_to_head": {
+      "rule": "flows in the frozen v1.1 test split AND the gate test split, never in either model's train/val (exact float32 match), plus all Infiltration/Heartbleed",
+      "n": {
+        "benign": 39221,
+        "known_attacks": 15177,
+        "natural_unknown": 47,
+        "per_family": {
+          "Bot": 82,
+          "BruteForce": 370,
+          "DDoS": 5089,
+          "DoS": 5955,
+          "PortScan": 3604,
+          "WebAttack": 77
+        }
+      },
+      "frozen_v11": {
+        "threshold": 0.85,
+        "benign_fpr": 0.0007903929017618113,
+        "known_attack_recall": 0.9926863016406404,
+        "natural_unknown_attack_rate": 0.0
+      },
+      "gate_operating_points": [
+        {
+          "alpha": 0.0005,
+          "benign_fpr": 0.00033145508783559825,
+          "known_attack_recall": 0.86631086512486,
+          "natural_unknown_alert_rate": 0.06382978723404255,
+          "per_family_recall": {
+            "Bot": 0.4268292682926829,
+            "BruteForce": 0.9594594594594594,
+            "DDoS": 0.9996069954804481,
+            "DoS": 0.9704450041981528,
+            "PortScan": 0.5241398446170921,
+            "WebAttack": 0.03896103896103896
+          }
+        },
+        {
+          "alpha": 0.001,
+          "benign_fpr": 0.0006374136304530736,
+          "known_attack_recall": 0.893193648283587,
+          "natural_unknown_alert_rate": 0.2978723404255319,
+          "per_family_recall": {
+            "Bot": 0.4268292682926829,
+            "BruteForce": 0.9864864864864865,
+            "DDoS": 0.999803497740224,
+            "DoS": 0.9869017632241813,
+            "PortScan": 0.5893451720310766,
+            "WebAttack": 0.8701298701298701
+          }
+        },
+        {
+          "alpha": 0.005,
+          "benign_fpr": 0.004538385048825884,
+          "known_attack_recall": 0.9933451933847269,
+          "natural_unknown_alert_rate": 0.5319148936170213,
+          "per_family_recall": {
+            "Bot": 0.7560975609756098,
+            "BruteForce": 1.0,
+            "DDoS": 1.0,
+            "DoS": 0.9959697732997481,
+            "PortScan": 0.9841842397336293,
+            "WebAttack": 1.0
+          }
+        },
+        {
+          "alpha": 0.01,
+          "benign_fpr": 0.00935723209505112,
+          "known_attack_recall": 0.9993411082559136,
+          "natural_unknown_alert_rate": 0.6170212765957447,
+          "per_family_recall": {
+            "Bot": 0.926829268292683,
+            "BruteForce": 1.0,
+            "DDoS": 1.0,
+            "DoS": 0.9993282955499581,
+            "PortScan": 1.0,
+            "WebAttack": 1.0
+          }
+        },
+        {
+          "alpha": 0.05,
+          "benign_fpr": 0.04877489100226919,
+          "known_attack_recall": 1.0,
+          "natural_unknown_alert_rate": 0.9787234042553191,
+          "per_family_recall": {
+            "Bot": 1.0,
+            "BruteForce": 1.0,
+            "DDoS": 1.0,
+            "DoS": 1.0,
+            "PortScan": 1.0,
+            "WebAttack": 1.0
+          }
+        }
+      ],
+      "per_family_recall": {
+        "Bot": {
+          "gate": 0.926829268292683,
+          "frozen_v11": 0.5853658536585366,
+          "n": 82
+        },
+        "BruteForce": {
+          "gate": 1.0,
+          "frozen_v11": 0.9945945945945946,
+          "n": 370
+        },
+        "DDoS": {
+          "gate": 1.0,
+          "frozen_v11": 0.9996069954804481,
+          "n": 5089
+        },
+        "DoS": {
+          "gate": 0.9993282955499581,
+          "frozen_v11": 0.9952980688497062,
+          "n": 5955
+        },
+        "PortScan": {
+          "gate": 1.0,
+          "frozen_v11": 1.0,
+          "n": 3604
+        },
+        "WebAttack": {
+          "gate": 1.0,
+          "frozen_v11": 0.4155844155844156,
+          "n": 77
+        }
+      }
+    },
+    "note": "Gate metrics use the gate's own test split. Every frozen-vs-gate comparison uses only flows neither model trained on (protocol v2, R1a). Natural unknowns (Infiltration n=36, Heartbleed n=11) are tiny; treat rates as illustrative \u2014 LOAFO / temporal / cross-dataset protocols are the statistical evidence."
+  },
+  "evaluated_at": "2026-11-17T09:19:37.743518+00:00"
 }

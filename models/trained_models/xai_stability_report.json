@@ -1,23 +1,23 @@
 {
   "experiment": "E9_xai_stability",
-  "generated_at": "2026-11-10T11:19:10.924989+00:00",
+  "generated_at": "2026-11-17T09:36:28.287025+00:00",
   "seed": 7,
   "per_family_flows": 20,
   "perturbation": "independent multiplicative noise U(-1%, +1%) on every feature",
   "overall": {
     "robustness_jaccard_top5": {
-      "mean": 0.8372,
-      "sd": 0.2474,
+      "mean": 0.8599,
+      "sd": 0.2623,
       "n": 140
     },
     "robustness_spearman_top10": {
-      "mean": 0.8109,
-      "sd": 0.3524,
+      "mean": 0.8125,
+      "sd": 0.3831,
       "n": 140
     },
     "shap_lime_jaccard_top5": {
-      "mean": 0.2619,
-      "sd": 0.1819,
+      "mean": 0.2726,
+      "sd": 0.1814,
       "n": 140
     }
   },
@@ -28,23 +28,23 @@
         "BENIGN": 20
       },
       "consistency_jaccard_top5": {
-        "mean": 0.5392,
-        "sd": 0.1877,
+        "mean": 0.4607,
+        "sd": 0.1724,
         "n": 190
       },
       "robustness_jaccard_top5": {
-        "mean": 0.9833,
-        "sd": 0.0745,
+        "mean": 1.0,
+        "sd": 0.0,
         "n": 20
       },
       "robustness_spearman_top10": {
-        "mean": 0.9786,
-        "sd": 0.0934,
+        "mean": 1.0,
+        "sd": 0.0,
         "n": 20
       },
       "shap_lime_jaccard_top5": {
-        "mean": 0.1431,
-        "sd": 0.0893,
+        "mean": 0.1687,
+        "sd": 0.0889,
         "n": 20
       },
       "most_frequent_top5": [
@@ -54,52 +54,52 @@
         ],
         [
           "Average Packet Size",
-          20
+          19
         ],
         [
           "Bwd Packet Length Std",
-          18
-        ],
-        [
-          "Packet Length Variance",
-          9
+          17
         ],
         [
           "Destination Port",
           9
+        ],
+        [
+          "Packet Length Variance",
+          7
         ]
       ]
     },
     "Bot": {
       "n_flows": 20,
       "predicted_as": {
-        "BENIGN": 6,
-        "Bot": 14
+        "BENIGN": 5,
+        "Bot": 15
       },
       "consistency_jaccard_top5": {
-        "mean": 0.4486,
-        "sd": 0.3316,
+        "mean": 0.4704,
+        "sd": 0.3266,
         "n": 190
       },
       "robustness_jaccard_top5": {
-        "mean": 0.5065,
-        "sd": 0.2462,
+        "mean": 0.5673,
+        "sd": 0.3315,
         "n": 20
       },
       "robustness_spearman_top10": {
-        "mean": 0.3351,
-        "sd": 0.4532,
+        "mean": 0.4049,
+        "sd": 0.4779,
         "n": 20
       },
       "shap_lime_jaccard_top5": {
-        "mean": 0.4379,
-        "sd": 0.2354,
+        "mean": 0.478,
+        "sd": 0.2272,
         "n": 20
       },
       "most_frequent_top5": [
         [
           "Destination Port",
-          18
+          19
         ],
         [
           "Init_Win_bytes_backward",
@@ -125,23 +125,23 @@
         "BruteForce": 20
       },
       "consistency_jaccard_top5": {
-        "mean": 0.7393,
-        "sd": 0.2069,
+        "mean": 0.6654,
+        "sd": 0.2592,
         "n": 190
       },
       "robustness_jaccard_top5": {
-        "mean": 0.9167,
-        "sd": 0.1481,
+        "mean": 0.95,
+        "sd": 0.1221,
         "n": 20
       },
       "robustness_spearman_top10": {
-        "mean": 0.9945,
-        "sd": 0.0073,
+        "mean": 0.9964,
+        "sd": 0.0057,
         "n": 20
       },
       "shap_lime_jaccard_top5": {
-        "mean": 0.2036,
-        "sd": 0.1637,
+        "mean": 0.1268,
+        "sd": 0.1457,
         "n": 20
       },
       "most_frequent_top5": [
@@ -151,19 +151,19 @@
         ],
         [
           "min_seg_size_forward",
-          20
+          19
         ],
         [
           "Fwd Packet Length Max",
-          20
-        ],
-        [
-          "Bwd Header Length",
-          17
+          19
         ],
         [
           "Packet Length Mean",
-          11
+          14
+        ],
+        [
+          "Bwd Header Length",
+          13
         ]
       ]
     },
@@ -173,23 +173,23 @@
         "DDoS": 20
       },
       "consistency_jaccard_top5": {
-        "mean": 0.8526,
-        "sd": 0.166,
+        "mean": 0.8105,
+        "sd": 0.1655,
         "n": 190
       },
       "robustness_jaccard_top5": {
-        "mean": 0.8958,
-        "sd": 0.2039,
+        "mean": 0.9625,
+        "sd": 0.1677,
         "n": 20
       },
       "robustness_spearman_top10": {
-        "mean": 0.9132,
-        "sd": 0.249,
+        "mean": 0.9203,
+        "sd": 0.2511,
         "n": 20
       },
       "shap_lime_jaccard_top5": {
-        "mean": 0.375,
-        "sd": 0.084,
+        "mean": 0.3571,
+        "sd": 0.0898,
         "n": 20
       },
       "most_frequent_top5": [
@@ -211,34 +211,33 @@
         ],
         [
           "min_seg_size_forward",
-          14
+          12
         ]
       ]
     },
     "DoS": {
       "n_flows": 20,
       "predicted_as": {
-        "BENIGN": 1,
-        "DoS": 19
+        "DoS": 20
       },
       "consistency_jaccard_top5": {
-        "mean": 0.5277,
-        "sd": 0.2467,
+        "mean": 0.6236,
+        "sd": 0.2378,
         "n": 190
       },
       "robustness_jaccard_top5": {
-        "mean": 0.9,
-        "sd": 0.1567,
+        "mean": 0.8278,
+        "sd": 0.2849,
         "n": 20
       },
       "robustness_spearman_top10": {
-        "mean": 0.9485,
-        "sd": 0.0445,
+        "mean": 0.7992,
+        "sd": 0.415,
         "n": 20
       },
       "shap_lime_jaccard_top5": {
-        "mean": 0.3754,
-        "sd": 0.1315,
+        "mean": 0.4038,
+        "sd": 0.0796,
         "n": 20
       },
       "most_frequent_top5": [
@@ -247,20 +246,20 @@
           20
         ],
         [
-          "Fwd Packet Length Max",
-          17
+          "Init_Win_bytes_backward",
+          19
         ],
         [
-          "Init_Win_bytes_backward",
-          17
+          "Fwd Packet Length Max",
+          18
         ],
         [
           "Idle Mean",
-          11
+          15
         ],
         [
           "Packet Length Mean",
-          10
+          11
         ]
       ]
     },
@@ -275,18 +274,18 @@
         "n": 190
       },
       "robustness_jaccard_top5": {
-        "mean": 1.0,
-        "sd": 0.0,
+        "mean": 0.9833,
+        "sd": 0.0745,
         "n": 20
       },
       "robustness_spearman_top10": {
-        "mean": 0.9965,
-        "sd": 0.0058,
+        "mean": 0.9915,
+        "sd": 0.0155,
         "n": 20
       },
       "shap_lime_jaccard_top5": {
-        "mean": 0.2361,
-        "sd": 0.0427,
+        "mean": 0.256,
+        "sd": 0.0897,
         "n": 20
       },
       "most_frequent_top5": [
@@ -315,27 +314,27 @@
     "WebAttack": {
       "n_flows": 20,
       "predicted_as": {
-        "BENIGN": 13,
-        "WebAttack": 7
+        "BENIGN": 9,
+        "WebAttack": 11
       },
       "consistency_jaccard_top5": {
-        "mean": 0.5393,
-        "sd": 0.302,
+        "mean": 0.4473,
+        "sd": 0.2833,
         "n": 190
       },
       "robustness_jaccard_top5": {
-        "mean": 0.6583,
-        "sd": 0.2829,
+        "mean": 0.7282,
+        "sd": 0.313,
         "n": 20
       },
       "robustness_spearman_top10": {
-        "mean": 0.5095,
-        "sd": 0.4054,
+        "mean": 0.5753,
+        "sd": 0.5071,
         "n": 20
       },
       "shap_lime_jaccard_top5": {
-        "mean": 0.0625,
-        "sd": 0.0709,
+        "mean": 0.1181,
+        "sd": 0.091,
         "n": 20
       },
       "most_frequent_top5": [
@@ -345,24 +344,24 @@
         ],
         [
           "Max Packet Length",
-          18
+          17
         ],
         [
           "Destination Port",
           16
         ],
         [
-          "Avg Fwd Segment Size",
-          15
+          "Packet Length Mean",
+          9
         ],
         [
-          "Bwd Packet Length Mean",
+          "Avg Fwd Segment Size",
           8
         ]
       ]
     }
   },
-  "runtime_seconds": 42.5,
+  "runtime_seconds": 38.2,
   "notes": [
     "Jaccard 1.0 = identical top-5 sets; 0.0 = disjoint.",
     "Consistency measures whether one family has one 'explanation signature'; low values mean explanations are flow-specific.",

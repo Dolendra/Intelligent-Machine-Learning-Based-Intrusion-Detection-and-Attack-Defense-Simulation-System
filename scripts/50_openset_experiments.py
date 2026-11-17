@@ -82,13 +82,15 @@ def main() -> None:
     ap.add_argument("--alpha", type=float, default=0.01)
     ap.add_argument("--quick", action="store_true", help="small caps for a smoke test (not for reporting)")
     ap.add_argument("--resume", action="store_true", help="skip (fold, seed) pairs already in the records file")
+    ap.add_argument("--tag", default="", help="suffix for output files, e.g. 'repro' → openset_loafo_records_repro.json "
+                                               "(used to reproduce results without overwriting the originals)")
     args = ap.parse_args()
 
     if args.quick:
         P.TRAIN_CAPS = {"BENIGN": 40_000, "_attack": 5_000}
         P.VAL_CAPS = {"BENIGN": 10_000, "_attack": 1_500}
         P.TEST_CAPS = {"BENIGN": 20_000, "_attack": 3_000}
-    suffix = "_quick" if args.quick else ""
+    suffix = ("_quick" if args.quick else "") + (f"_{args.tag}" if args.tag else "")
     ae_kwargs = {"epochs": 8} if args.quick else {"epochs": 25}
 
     print("loading CICIDS2017 research cache ...", flush=True)

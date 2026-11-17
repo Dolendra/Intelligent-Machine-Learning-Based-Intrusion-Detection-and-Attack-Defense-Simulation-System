@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "generated_at": "2026-11-17T09:17:28.023258+00:00",
+  "rule": "frozen v1.1 test split \u2229 gate test split, minus any row seen in either model's train/val (exact float32 match on 77 features); plus all Infiltration/Heartbleed (never trained on)",
+  "seed": 42,
+  "gate_test_rows": 504150,
+  "gate_test_rows_in_frozen_test": 102356,
+  "gate_test_rows_in_frozen_train_or_val": 404810,
+  "eligible_rows": 99049,
+  "available_per_family": {
+    "BENIGN": 82111,
+    "Bot": 82,
+    "BruteForce": 370,
+    "DDoS": 5089,
+    "DoS": 7721,
+    "PortScan": 3599,
+    "WebAttack": 77,
+    "Infiltration": 36,
+    "Heartbleed": 11
+  },
+  "sampled_per_family": {
+    "BENIGN": 8000,
+    "Bot": 82,
+    "BruteForce": 370,
+    "DDoS": 700,
+    "DoS": 700,
+    "PortScan": 700,
+    "WebAttack": 77,
+    "Infiltration": 36,
+    "Heartbleed": 11
+  },
+  "overlap_check": {
+    "frozen_train": 0,
+    "frozen_val": 0,
+    "gate_train_or_val": 0
+  },
+  "rows": 10676,
+  "sha256": "5505ffb3ecf94ba640235ca42945a41b5102e13e6019c6226e3bc8ac79468e7d",
+  "supersedes": "legacy/replay_pool_v1_INVALID_for_frozen.parquet (~70% in frozen train split)"
+}
