@@ -102,13 +102,14 @@ Legend: ✅ verified · ⚠️ true but needs a caveat or rewording · ❌ wrong
 * **Real environment shift in benign traffic:** 2018 benign is dominated by port **445 (SMB)** vs 80; median
   flow duration **34× longer**; 75 % vs 42 % of flows with zero minimum packet length.
 * **Same attack tools stop being detected:** DoS-Hulk 99 % → **0.8 %**, SSH-Patator → SSH-Bruteforce **0 %**,
-  LOIC-HTTP **0 %**, while Slowloris still transfers (95.6 %). Identical tools vanishing points to
+  LOIC-HTTP **0 %**, while Slowloris still transfers (95.6 %). *(R1b update: on the corrected v2 sample — random per-day attack sampling — DoS-Hulk is 1.1%, SSH 0.0%, but **LOIC-HTTP 45.0%**: the v1 file-order sample saw only the start of that attack. LOIC-HTTP is no longer evidence for the extractor hypothesis; Hulk and SSH still are.)* Identical tools vanishing points to
   **feature-extraction shift** (different CICFlowMeter versions; the 2017 one has documented bugs) confounded
   with network shift. Domain adaptation alone cannot separate the two.
 * **2018 duplication:** after exact de-duplication FTP-BruteForce has **51** unique flows and SlowHTTPTest
   **55** (from ~190 k / ~140 k raw rows) — report per-label *unique* counts.
 * **Protocol flaw in our cross-dataset adaptation:** the warm-up window is the earliest benign traffic of the
   *first* 2018 day while the test spans 10 days, so recalibration cannot be exchangeable with the test set.
+* **Sampling defect found in R1b:** the v1 2018 sample capped every label *globally* in file order, so benign flows came from only 4 of 10 days. All 2018 numbers above were computed on that sample. Fixed in R1b (sample v2); see §8.
 
 ## 6. Recommended plan (maps to the reviewer's R1–R7)
 
@@ -168,3 +169,70 @@ its recommended defense from the scenario's ground truth for unnamed detections 
 **Still open (R1b and later):** the docx paper's remaining hand-typed tables (temporal, cross-dataset, range,
 model families) should be generated like the LOAFO ones; the cross-dataset warm-up protocol (first-day window)
 should be per-day; the 2017→2018 extractor-vs-network confound (R2); host-level detection for Bot/PortScan (R3).
+
+---
+
+## 8. R1b status — publication evidence consistency (2026-11-17)
+
+Branch `v3-openset-research` (local, not pushed). `main` = `775e9a9` and tag `v1.1-research` untouched.
+
+### What was built
+
+* **One canonical pipeline** — `research/publication.py`: 18 table builders and 256 prose facts, each computed
+  from a committed artifact and recorded with its source file and JSON path. Rendered three ways from the same
+  objects: LaTeX (`docs/research/publication/tables/*.tex`, `\input` by `paper.tex`), Markdown
+  (`docs/research/publication/TABLES.md`) and DOCX (`paper_build/paper.py` calls `PT(key)` for every table and
+  interpolates `F[...]` in prose). `scripts/59_paper_numbers.py` emits the same facts as LaTeX macros.
+* **No hand-typed numbers.** All 17 previously hand-typed DOCX tables were replaced (plus the new per-day table);
+  43 prose paragraphs and 5 fragments now read their numbers from facts; table cross-references are computed.
+  `research/literal_scan.py` finds result-like literals; the only allowed literals are design/configuration
+  constants listed with a reason.
+* **Duplicates removed:** the second LOAFO/significance table generator in script 59 and its two `.tex` files;
+  stale builder backups moved to `paper_build/legacy/`; the stale markdown paper was archived in R1a.
+* **Figures:** paper figures 3, 4 and 7 are now copied from their generators on every build. Figure 7 had been a
+  pre-rerun Cyber Range image with no matching source.
+
+### Corrected 2018 evidence
+
+* **Sample v2** (`research/data.py`, `load_cic2018(version=2)`): 5 % of every day's benign flows, attacks capped per
+  (day, label) by seeded random sampling — 1,098,993 flows, benign on all 10 days. v1 kept
+  benign from 4 days. v1 records and summaries are retained unchanged; v2 results are written to new
+  files (`*_v2.json`, `frozen_v11_on_cic2018_v2.json`).
+* **Per-day recalibration protocol** (`research/protocols.py: cross_dataset_perday`): trained once per seed on
+  CICIDS2017; for each 2018 day independently, warm-up = that day's earliest benign flows, evaluation = the rest of
+  that day; `warmup_eval_overlap` is recorded per record and is 0 in all 50 records (10 days × 5 seeds).
+* **Results (v2):** frozen v1.1 F1 0.278 (was 0.185 on v1; F1 depends on the sample's benign-to-attack mix),
+  recall 0.162; Aegis-OSR unadapted FPR 36.7%; per-day recalibration at W = 2,000 → mean FPR
+  1.62% (8 of 10 days ≤ 1.5 %; range 0.00%–8.84%), but
+  known-family recall 0.088 and unseen-family recall 0.027. **Recalibration restores
+  false-alarm control on most days but not detection — a negative transfer result.**
+* **Data anomaly reported, not removed:** flows labelled benign on 2018-02-21 have median
+  842,917 bytes/s vs 1,129 on other days and all alert before recalibration
+  (100.0%); excluding the day gives a W = 2,000 mean FPR of 1.80%.
+
+### Acceptance criteria
+
+| Criterion | Result | Evidence |
+|---|---|---|
+| All 30 LOAFO reproduction pairs verified, none missing | 30/30, 1,320/1,320 values identical | `research_artifacts/reproduction_loafo_repro.json` |
+| RESULTS.md: only the seed-level table | Wilcoxon table removed | `docs/research/RESULTS.md` |
+| Range tests write only to temp dirs | enforced | `tests/test_range_output_isolation.py` |
+| Every DOCX table generated from artifacts | 18/18 via `PT()`; DOCX cells equal canonical tables | `tests/test_publication_tables.py` |
+| Equivalent LaTeX + Markdown tables from the same data | 18 `.tex` + `TABLES.md` from one build | same test (fresh rebuild equality) |
+| No manually duplicated numerical results | 0 result-like literals in the DOCX builder; paper.tex uses only macros/generated tables | `research/literal_scan.py`; `tests/test_paper_claims.py` |
+| 2018 recalibration per day, non-overlapping | 50 records, overlap 0 | `research_artifacts/openset_cross_perday_records.json` |
+| Tables/figures regenerated; DOCX + PDF rebuilt | 18 tables, 7 figures; PDF 26 pages (Word export) | `docs/research/Aegis_Research_Paper.docx/.pdf` |
+| Cited sources committed | test checks git-ignore status | `tests/test_publication_tables.py::test_cited_sources_are_committed` |
+| Frozen baseline unchanged | model files, training report, thresholds, metadata identical to `v1.1-research` | `git diff v1.1-research` |
+| **paper.tex compiled** | **NOT DONE** — no LaTeX engine on this machine; downloading one was not permitted in this session | structure checked by tests only |
+
+### Remaining limitations
+
+1. `paper.tex` has not been compiled (needs a TeX engine or Overleaf); macros and `\input` files are verified to exist.
+2. The plain-language guide is hand-written prose; its 2018 statements were regenerated from the facts, but it is not
+   covered by the literal scan.
+3. 2018 conclusions rest on one public export whose labels are known to contain errors (e.g. 2018-02-21).
+4. Bot/WebAttack replay counts are small (82/77 flows); the model-family comparison is
+   single-seed.
+5. Novelty: the R2 review found close prior work (conformal false-alarm control for an IDS; one-class-held-out
+   zero-day evaluation on corrected CICIDS2017 with code). See `RESEARCH_GAP_ANALYSIS.md`.
