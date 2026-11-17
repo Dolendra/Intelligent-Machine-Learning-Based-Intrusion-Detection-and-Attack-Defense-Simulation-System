@@ -40,22 +40,28 @@ def test_numbers_file_matches_artifacts(fresh):
     assert set(stored) == set(nums), "number keys changed — rerun scripts/59_paper_numbers.py"
     stale = {k: (stored[k]["display"], nums[k]["display"]) for k in nums if stored[k]["display"] != nums[k]["display"]}
     assert not stale, f"paper_numbers.json is stale vs artifacts: {stale}"
-
-
-def test_generated_tables_match_artifacts(fresh):
     mod, _ = fresh
-    main_t, sig_t = mod.loafo_tables()
-    assert (RESEARCH / "paper_table_loafo.tex").read_text(encoding="utf-8") == main_t
-    assert (RESEARCH / "paper_table_significance.tex").read_text(encoding="utf-8") == sig_t
+    assert (RESEARCH / "paper_numbers.tex").read_text(encoding="utf-8") == mod.render_tex(nums), \
+        "paper_numbers.tex (incl. prose-fact macros) is stale — rerun scripts/59_paper_numbers.py"
+
+
+def test_paper_tex_tables_are_canonical():
+    """paper.tex must include tables only from research/publication.py output (no second generator)."""
+    tex = PAPER_TEX.read_text(encoding="utf-8")
+    inputs = re.findall(r"\\input\{([^}]*)\}", tex)
+    assert all(i == "paper_numbers.tex" or i.startswith("publication/tables/") for i in inputs), inputs
+    for i in inputs:
+        assert (RESEARCH / i).exists(), f"missing generated file {i}"
+    assert r"\begin{tabular}" not in tex, "hand-written tabular in paper.tex"
 
 
 def test_paper_tex_uses_generated_numbers_only():
     tex = PAPER_TEX.read_text(encoding="utf-8")
-    for inc in ("paper_numbers.tex", "paper_table_loafo.tex", "paper_table_significance.tex"):
+    for inc in ("paper_numbers.tex", "publication/tables/loafo.tex", "publication/tables/significance.tex"):
         assert f"\\input{{{inc}}}" in tex, f"paper.tex must \\input {inc}"
     defined = set(re.findall(r"\\newcommand\{\\([A-Za-z]+)\}", (RESEARCH / "paper_numbers.tex").read_text(encoding="utf-8")))
     used = set(re.findall(r"\\([A-Z][A-Za-z]+)", tex)) - {"IEEEoverridecommandlockouts", "Delta"}  # LaTeX built-ins
-    number_like = {u for u in used if u in defined or re.match(r"(Loafo|Temp|Cross|Delta|Tp|Pos|Frozen|Gate|Hth|Unseen|Range|Fam|Xai|Pool|Pair)", u)}
+    number_like = {u for u in used if u in defined or re.match(r"(Loafo|Temp|Cross|Delta|Tp|Pos|Frozen|Gate|Hth|Unseen|Range|Fam|Xai|Pool|Pair|Fact)", u)}
     undefined = number_like - defined
     assert not undefined, f"paper.tex uses undefined number macros: {sorted(undefined)}"
     # headline values must come from macros, not literals

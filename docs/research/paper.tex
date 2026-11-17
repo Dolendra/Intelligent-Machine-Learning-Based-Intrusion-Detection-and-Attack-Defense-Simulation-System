@@ -35,7 +35,7 @@ Rajiv Gandhi University of Knowledge Technologies (RGUKT), Basar, Telangana, Ind
 \begin{abstract}
 Supervised network intrusion detection systems (NIDS) operate under a closed-world assumption: an attack family absent from training is either called benign or forced into a wrong known family. Anomaly detectors can flag novelty but offer no control over their false-alarm rate. We propose \textbf{Aegis-OSR}, which adds the evidence of a supervised gradient-boosted classifier to the distance of a flow from its nearest benign neighbours, converts the sum into a split-conformal $p$-value, and thereby bounds the benign false-alarm rate by a user-chosen $\alpha$ \emph{whenever test benign traffic is exchangeable with the calibration traffic}. Class-conditional (Mondrian) conformal attribution separates known families from unknown attacks.
 
-In leave-one-attack-family-out (LOAFO) experiments on CICIDS2017 (6 families $\times$ \LoafoSeeds\ seeds), Aegis-OSR detects \LoafoOsrZdr\ [\LoafoOsrZdrLo, \LoafoOsrZdrHi] of unseen-family flows at $\alpha=1\%$ with a realized benign false-alarm rate of \LoafoOsrFpr, versus \LoafoXgbZdr\ for the same classifier alone and \LoafoDtZdr\ for a decision tree; the improvement over the classifier is \DeltaXgb\ [\DeltaXgbLo, \DeltaXgbHi] (paired $t$ over independent seeds, $p=\TpXgb$, positive in \PosSeedsXgb/\LoafoSeeds\ seeds). We also report where the method fails. Under a true day-ordered split, benign drift raises the realized false-alarm rate to \TempFriOsrFpr\ on Friday; re-calibrating on a small benign warm-up window lowers it, but the effect depends on the window and does not reach the budget for every size. Transferred to CSE-CIC-IDS2018 the false-alarm rate reaches \CrossOsrFpr, and the frozen baseline's F1 drops to \FrozenEighteenFone; evidence points to a confound between network shift and flow-extractor differences.
+In leave-one-attack-family-out (LOAFO) experiments on CICIDS2017 (6 families $\times$ \LoafoSeeds\ seeds), Aegis-OSR detects \LoafoOsrZdr\ [\LoafoOsrZdrLo, \LoafoOsrZdrHi] of unseen-family flows at $\alpha=1\%$ with a realized benign false-alarm rate of \LoafoOsrFpr, versus \LoafoXgbZdr\ for the same classifier alone and \LoafoDtZdr\ for a decision tree; the improvement over the classifier is \DeltaXgb\ [\DeltaXgbLo, \DeltaXgbHi] (paired $t$ over independent seeds, $p=\TpXgb$, positive in \PosSeedsXgb/\LoafoSeeds\ seeds). We also report where the method fails. Under a true day-ordered split, benign drift raises the realized false-alarm rate to \TempFriOsrFpr\ on Friday; re-calibrating on a small benign warm-up window lowers it, but the effect depends on the window and does not reach the budget for every size. Transferred to CSE-CIC-IDS2018 the false-alarm rate reaches \CrossOsrFpr, and the frozen baseline's F1 drops to \FrozenEighteenFone; recalibrating separately on each 2018 capture day's own benign flows lowers false alarms to \FactPdRecalTwoZeroZeroZeroFpr\ on average but leaves known-family recall at \FactPdRecalTwoZeroZeroZeroKnown. Evidence points to a confound between network shift and flow-extractor differences.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -109,43 +109,28 @@ For an alert in which the classifier itself predicts an attack ($\hat{P}(\text{a
 
 \textbf{Statistics.} Folds within a seed share a data split and are not independent. We therefore average folds within each seed and compare methods with a paired $t$-test over seeds (Wilcoxon on 5 seeds cannot fall below $p=0.0625$). Fold-level win counts are reported descriptively only.
 
-\begin{table*}[t]
-\centering
-\caption{LOAFO on CICIDS2017 at $\alpha=1\%$: mean and 95\% $t$-interval over \LoafoSeeds\ seeds (folds averaged within a seed).}
-\label{tab:loafo}
-\begin{tabular}{llcccc}
-\toprule
-\textbf{Method} & \textbf{Type} & \textbf{Zero-day recall} & \textbf{AUROC (unknown)} & \textbf{Known-attack recall} & \textbf{Realized benign FPR} \\
-\midrule
-\input{paper_table_loafo.tex}
-\bottomrule
-\end{tabular}
-\end{table*}
+\input{publication/tables/loafo.tex}
 
 \subsection{LOAFO Results}
-Aegis-OSR detects \LoafoOsrZdr\ of unseen-family flows at a realized false-alarm rate of \LoafoOsrFpr, compared with \LoafoXgbZdr\ for closed-set XGBoost and \LoafoDtZdr\ for a closed-set decision tree (Table~\ref{tab:loafo}). Table~\ref{tab:sig} gives seed-level paired comparisons: Aegis-OSR improves on every baseline and every single-change ablation in all \LoafoSeeds\ seeds.
+Aegis-OSR detects \LoafoOsrZdr\ of unseen-family flows at a realized false-alarm rate of \LoafoOsrFpr, compared with \LoafoXgbZdr\ for closed-set XGBoost and \LoafoDtZdr\ for a closed-set decision tree (Table~\ref{tab:loafo}). Table~\ref{tab:significance} gives seed-level paired comparisons: Aegis-OSR improves on every baseline and every single-change ablation in all \LoafoSeeds\ seeds.
 
-\begin{table}[h]
-\centering
-\caption{Seed-level paired comparison of zero-day recall (Aegis-OSR minus method; folds averaged within each seed). Fold-level wins are descriptive.}
-\label{tab:sig}
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Aegis-OSR vs.} & \textbf{$\Delta$ [95\% CI]} & \textbf{Seeds $>0$} & \textbf{Paired $t$ $p$} & \textbf{Fold wins} \\
-\midrule
-\input{paper_table_significance.tex}
-\bottomrule
-\end{tabular}
-\end{table}
+\input{publication/tables/significance.tex}
 
 \subsection{Per-Family Analysis}
 The gain is uneven across families. Held-out WebAttack (\LoafoOsrWebAttack), DoS (\LoafoOsrDoS), DDoS (\LoafoOsrDDoS) and BruteForce (\LoafoOsrBruteForce; closed-set XGBoost \LoafoXgbBruteForce) are detected well. PortScan reaches \LoafoOsrPortScan\ at $\alpha=1\%$ and \LoafoOsrPortScanAtFive\ at $\alpha=5\%$. Held-out Bot is essentially undetected: Aegis-OSR reaches \LoafoOsrBot, and no compared method exceeds \LoafoBotBestAny. A plausible explanation, which we did not test, is that individual Bot flows resemble ordinary web requests; host-level aggregation is the natural next step.
 
 \subsection{Temporal Drift and Recalibration}\label{sec:temporal}
-Training on Mon--Thu and testing on Friday raises the realized benign false-alarm rate of Aegis-OSR to \TempFriOsrFpr\ (closed-set XGBoost: \TempFriXgbFpr; $k$-NN alone: \TempFriKnnFpr), so the exchangeability condition fails for the novelty component. Zero-day recall on Friday is \TempFriOsrZdr\ (XGBoost: \TempFriXgbZdr). Recalibrating on the earliest $W$ confirmed-benign Friday flows, without retraining, gives realized false-alarm rates of \TempFriRecalFiveHFpr\ ($W=500$), \TempFriRecalTwoKFpr\ ($W=2000$) and \TempFriRecalFiveKFpr\ ($W=5000$); also extending the $k$-NN reference gives \TempFriRefFiveHFpr, \TempFriRefTwoKFpr\ and \TempFriRefFiveKFpr. The effect is not monotone in $W$: larger early-morning windows represent afternoon traffic less well. A random benign sample of the day ($W=2000$, an oracle upper bound) gives \TempFriOracleTwoKFpr. After recalibration, recall falls to \TempFriRecalTwoKZdr\ ($W=2000$). On Thursday the unadapted rate is \TempThuOsrFpr.
+Training on Mon--Thu and testing on Friday raises the realized benign false-alarm rate of Aegis-OSR to \TempFriOsrFpr\ (closed-set XGBoost: \TempFriXgbFpr; $k$-NN alone: \TempFriKnnFpr), so the exchangeability condition fails for the novelty component. Zero-day recall on Friday is \TempFriOsrZdr\ (XGBoost: \TempFriXgbZdr). Recalibrating on the earliest $W$ confirmed-benign Friday flows, without retraining, gives realized false-alarm rates of \TempFriRecalFiveHFpr\ ($W=500$), \TempFriRecalTwoKFpr\ ($W=2000$) and \TempFriRecalFiveKFpr\ ($W=5000$); also extending the $k$-NN reference gives \TempFriRefFiveHFpr, \TempFriRefTwoKFpr\ and \TempFriRefFiveKFpr. The effect is not monotone in $W$: larger early-morning windows represent afternoon traffic less well. A random benign sample of the day ($W=2000$, an oracle upper bound) gives \TempFriOracleTwoKFpr. After recalibration, recall falls to \TempFriRecalTwoKZdr\ ($W=2000$). On Thursday the unadapted rate is \TempThuOsrFpr. Tables~\ref{tab:temporal} and \ref{tab:adapt} give all methods and windows.
+
+\input{publication/tables/temporal.tex}
+\input{publication/tables/adapt.tex}
 
 \subsection{Cross-Dataset Transfer}\label{sec:cross}
-On CSE-CIC-IDS2018 the realized false-alarm rate of Aegis-OSR is \CrossOsrFpr\ (closed-set XGBoost: \CrossXgbFpr) with known-family recall \CrossOsrKnown\ and zero-day recall \CrossOsrZdr. Recalibration does not rescue transfer: $W=500$ yields \CrossRecalFiveHFpr\ but zero-day recall \CrossRecalFiveHZdr, while $W=2000$ with reference extension yields \CrossRefTwoKFpr. The warm-up window comes from the first capture day while the test spans ten days, so it is not exchangeable with the test traffic. The frozen two-stage baseline transfers poorly too (F1 \FrozenEighteenFone, recall \FrozenEighteenRecall). Several attack tools present in both datasets lose detection almost entirely: DoS-Hulk (\FrozenEighteenHulk\ alert rate), SSH brute force (\FrozenEighteenSsh) and LOIC-HTTP (\FrozenEighteenLoicHttp), while Slowloris still transfers (\FrozenEighteenSlowloris). Identical tools becoming undetectable suggests that flow-extractor differences between the two releases are confounded with network shift; separating the two requires datasets produced by a single extractor.
+All 2018 results use a corrected sample with benign traffic from all \FactXSampleDays\ capture days; an earlier sample capped each label globally and kept benign flows from only \FactXVOneBenignDays\ days. On CSE-CIC-IDS2018 the realized false-alarm rate of Aegis-OSR is \CrossOsrFpr\ (closed-set XGBoost: \CrossXgbFpr) with known-family recall \CrossOsrKnown\ and zero-day recall \CrossOsrZdr\ (Table~\ref{tab:cross}). We then recalibrate \emph{per capture day}: for each day independently the earliest benign flows of that day form the warm-up window and evaluation uses only the rest of the day, so calibration and evaluation never overlap (Table~\ref{tab:cross_perday}). Averaged over days and seeds, $W=2000$ brings the false-alarm rate to \FactPdRecalTwoZeroZeroZeroFpr\ (\FactPdDaysWithin\ of \FactPdDays\ days within 1.5\%), but recall falls to \FactPdRecalTwoZeroZeroZeroKnown\ on known families and \FactPdRecalTwoZeroZeroZeroZdr\ on the unseen family. Recalibration controls false alarms where a day's early traffic resembles the rest of it; it cannot create separation the evidence lacks. The frozen two-stage baseline transfers poorly too (Table~\ref{tab:v11_2018}; F1 \FrozenEighteenFone, recall \FrozenEighteenRecall; F1 depends on the sample's benign-to-attack mix). Two attack tools present in both datasets lose detection almost entirely, DoS-Hulk (\FrozenEighteenHulk\ alert rate) and SSH brute force (\FrozenEighteenSsh), while LOIC-HTTP transfers partly (\FrozenEighteenLoicHttp) and Slowloris largely (\FrozenEighteenSlowloris); the earlier file-order sample had shown LOIC-HTTP as undetected, so per-label rates depend on how the sample is drawn. On \FactPdAnomalyDay\ the flows labelled benign differ sharply from benign traffic on every other day (median \FactPdAnomalyBytes\ versus \FactPdOtherBytesMedian\ bytes/s) and all of them alert before recalibration (\FactPdAnomalyNoneFpr), consistent with documented labelling problems in this release; we report the day as is, and excluding it changes the $W=2000$ average false-alarm rate to \FactPdRecalTwoZeroZeroZeroFprExcl. Identical tools becoming undetectable suggests that flow-extractor differences between the two releases are confounded with network shift; separating the two requires datasets produced by a single extractor.
+
+\input{publication/tables/cross.tex}
+\input{publication/tables/cross_perday.tex}
+\input{publication/tables/v11_2018.tex}
 
 \section{Limitations}
 The false-alarm bound is conditional on exchangeability and is violated under the shifts we test. Natural unknowns are few (47 flows), so they are illustrative only. CICIDS2017 has documented labelling and flow-construction errors. Design selection used the same six families as evaluation. All experiments use recorded flows rather than live traffic.

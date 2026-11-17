@@ -101,8 +101,10 @@ def _protocol(summary: dict, proto: str) -> dict | None:
 
 def build_overview(artifacts: Path) -> dict:
     summaries = {p: _load(artifacts / f"openset_{p}_summary.json") for p in ("loafo", "temporal", "cross")}
+    # R1b: prefer results on the corrected CSE-CIC-IDS2018 sample (benign traffic from every capture day)
+    summaries["cross"] = _load(artifacts / "openset_cross_summary_v2.json") or summaries["cross"]
     gate = _load(artifacts / "zero_day_gate_report.json")
-    frozen_2018 = _load(artifacts / "frozen_v11_on_cic2018.json")
+    frozen_2018 = _load(artifacts / "frozen_v11_on_cic2018_v2.json") or _load(artifacts / "frozen_v11_on_cic2018.json")
     out = {
         "proposed": PROPOSED,
         "baseline": BASELINE,

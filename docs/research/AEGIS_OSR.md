@@ -85,6 +85,7 @@ The classifier is never retrained.
 | **LOAFO** | CICIDS2017 minus one family (stratified 60/10/30 split per seed) | test split + *all* rows of the held-out family | held-out family + Infiltration + Heartbleed |
 | **Temporal** | earlier capture days | later day (earliest 5 000 benign flows reserved as warm-up) | families absent from the training days |
 | **Cross-dataset** | CICIDS2017 | CSE-CIC-IDS2018 mapped to the 2017 schema | 2018 families unseen in 2017 (Infiltration) |
+| **Cross-dataset, per day** (R1b) | CICIDS2017 | each 2018 capture day separately; warm-up = that day's earliest benign flows, evaluation = rest of that day (no overlap) | as above |
 
 * **Pilot / selection.** The fusion rule (Fisher) and novelty detector (kNN) were chosen on
   seed 0 only (`research_artifacts/pilot_seed0_fusion_selection.csv`). Reported results use
@@ -123,6 +124,9 @@ never occur Monday–Thursday, a true temporal split is also a natural zero-day 
   earliest-window variant is realistic, the "oracle" random window is an upper bound only.
 * **Natural unknowns are tiny** (Infiltration n = 36, Heartbleed n = 11) — illustrative only.
 * **Feature mapping 2017→2018** relies on CICFlowMeter column aliases; the tool versions differ.
+* **2018 sample (v2, R1b).** 5% of every day's benign flows + per-(day, label) random attack caps. The v1 sample
+  capped labels globally and kept benign flows from only 4 of 10 days; v1 results are retained but superseded.
+  The flows labelled benign on 2018-02-21 look like flood traffic (documented labelling problems); kept as is.
 
 ## 6. Related work to position against (verify each citation before submission)
 
@@ -149,11 +153,13 @@ never occur Monday–Thursday, a true temporal split is also a natural zero-day 
 
 ```bash
 python scripts/50_openset_experiments.py --protocol loafo temporal --seeds 1 2 3 4 5
-python scripts/50_openset_experiments.py --protocol cross --seeds 1 2 3 4 5   # needs CSE-CIC-IDS2018/
+python scripts/50_openset_experiments.py --protocol cross cross_perday --seeds 1 2 3 4 5   # needs CSE-CIC-IDS2018/ (v2 sample)
 python scripts/53_summarize_research.py
 python scripts/51_train_zero_day_gate.py     # production gate (advisory)
 python scripts/52_build_replay_pool.py       # live monitor replay data
-python scripts/54_frozen_v11_on_cic2018.py   # EXP-009: frozen v1.1 on 2018
+python scripts/54_frozen_v11_on_cic2018.py   # EXP-009: frozen v1.1 on 2018 (v2 sample)
+python scripts/61_dataset_summary.py && python scripts/53_summarize_research.py
+python scripts/59_paper_numbers.py && python scripts/62_publication_tables.py   # all paper numbers/tables
 python scripts/55_research_figures.py        # figures + RESULTS.md
 ```
 

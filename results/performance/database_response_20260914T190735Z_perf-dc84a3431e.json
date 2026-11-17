@@ -1,0 +1,92 @@
+{
+  "schema_version": "p8.1",
+  "experiment_id": "perf-dc84a3431e",
+  "timestamp": "2026-09-14T19:07:35.069943+00:00",
+  "commit": "2d74bfb",
+  "phase": "P8",
+  "workload": "database_response",
+  "scenario": "component",
+  "configuration": {
+    "iterations": 30,
+    "concurrent_approves": 8
+  },
+  "environment": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python": "3.11.9",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "cpu_count": 20,
+    "aegis_env": "development",
+    "cpu_percent_sample": null,
+    "memory": {
+      "note": "psutil optional \u2014 not required for P8"
+    }
+  },
+  "metrics": {
+    "incident_insert": {
+      "count": 30,
+      "mean_ms": 4.7552,
+      "p50_ms": 4.7537,
+      "p95_ms": 5.2755,
+      "p99_ms": 5.3421,
+      "min_ms": 4.2863,
+      "max_ms": 5.3583
+    },
+    "incident_query": {
+      "count": 30,
+      "mean_ms": 0.3484,
+      "p50_ms": 0.3369,
+      "p95_ms": 0.4381,
+      "p99_ms": 0.5796,
+      "min_ms": 0.2936,
+      "max_ms": 0.6217
+    },
+    "concurrent_approve_claim_ms": 76.813,
+    "approve_outcomes": {
+      "ALREADY_DECIDED": 7,
+      "ok": 1
+    }
+  },
+  "throughput": {
+    "approve_ok": 1,
+    "approve_rejected": 7
+  },
+  "stages_ms": {
+    "insert": {
+      "count": 30,
+      "mean_ms": 4.7552,
+      "p50_ms": 4.7537,
+      "p95_ms": 5.2755,
+      "p99_ms": 5.3421,
+      "min_ms": 4.2863,
+      "max_ms": 5.3583
+    },
+    "query": {
+      "count": 30,
+      "mean_ms": 0.3484,
+      "p50_ms": 0.3369,
+      "p95_ms": 0.4381,
+      "p99_ms": 0.5796,
+      "min_ms": 0.2936,
+      "max_ms": 0.6217
+    }
+  },
+  "error_rate": 0.0,
+  "prototype_only": true,
+  "not_a_capacity_claim": true,
+  "ml_baseline_untouched": true,
+  "notes": [
+    "Atomic response status claim must yield a single ok under concurrency.",
+    "SQLite/default local DB \u2014 not a Postgres cluster benchmark."
+  ],
+  "resources": {
+    "cpu_count": 20,
+    "cpu_percent": null,
+    "ram_percent": null,
+    "disk": {
+      "total_gb": 200.0,
+      "free_gb": 108.92,
+      "percent_used": 45.54
+    },
+    "db_size_mb": 0.492
+  }
+}

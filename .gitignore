@@ -44,6 +44,8 @@ Thumbs.db
 results/performance/*
 !results/performance/.gitkeep
 !results/performance/operating_envelope_latest.json
+# R1b: cited by the publication 'perf' table (concurrent approval measurement)
+!results/performance/database_response_20260914T190735Z_perf-dc84a3431e.json
 
 # P11 empirical mitigation outputs (keep latest report)
 results/empirical/*

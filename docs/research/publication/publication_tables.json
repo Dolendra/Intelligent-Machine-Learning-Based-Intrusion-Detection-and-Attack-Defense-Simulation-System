@@ -1,0 +1,2705 @@
+{
+ "tables": {
+  "data": {
+   "key": "data",
+   "title": "Composition of the Cleaned CICIDS2017 Corpus",
+   "header": [
+    "Family",
+    "Flows",
+    "Capture day(s)",
+    "Role in this study"
+   ],
+   "rows": [
+    [
+     "BENIGN",
+     "2,095,057",
+     "Mon–Fri",
+     "negative class; calibration"
+    ],
+    [
+     "DoS",
+     "193,745",
+     "Wed",
+     "known / held out in LOAFO"
+    ],
+    [
+     "DDoS",
+     "128,014",
+     "Fri",
+     "known / held out in LOAFO"
+    ],
+    [
+     "PortScan",
+     "90,694",
+     "Fri",
+     "known / held out in LOAFO"
+    ],
+    [
+     "BruteForce",
+     "9,150",
+     "Tue",
+     "known / held out in LOAFO"
+    ],
+    [
+     "WebAttack",
+     "2,143",
+     "Thu",
+     "known / held out in LOAFO"
+    ],
+    [
+     "Bot",
+     "1,948",
+     "Fri",
+     "known / held out in LOAFO"
+    ],
+    [
+     "Infiltration",
+     "36",
+     "Thu",
+     "natural unknown (never trained on)"
+    ],
+    [
+     "Heartbleed",
+     "11",
+     "Wed",
+     "natural unknown (never trained on)"
+    ],
+    [
+     "Total",
+     "2,520,798",
+     "",
+     "77 features after cleaning"
+    ]
+   ],
+   "notes": "",
+   "sources": [
+    "research_artifacts/dataset_summary.json:cic2017"
+   ],
+   "docx": {
+    "widths": [
+     1.4,
+     1.2,
+     1.3,
+     2.6
+    ]
+   }
+  },
+  "cand": {
+   "key": "cand",
+   "title": "Binary Candidates on the Validation Split (252,075 Flows)",
+   "header": [
+    "Model",
+    "Precision",
+    "Recall",
+    "F1",
+    "FPR",
+    "PR-AUC",
+    "MCC",
+    "Score S"
+   ],
+   "rows": [
+    [
+     "Logistic regression",
+     "0.7206",
+     "0.9706",
+     "0.8272",
+     "0.0765",
+     "0.9405",
+     "0.7991",
+     "0.9239"
+    ],
+    [
+     "**Decision Tree (selected)**",
+     "0.9845",
+     "**0.9966**",
+     "0.9905",
+     "0.0032",
+     "0.9972",
+     "0.9886",
+     "**0.9940**"
+    ],
+    [
+     "Random Forest",
+     "0.9863",
+     "0.9961",
+     "0.9912",
+     "0.0028",
+     "0.9997",
+     "0.9894",
+     "0.9877"
+    ],
+    [
+     "XGBoost",
+     "**0.9961**",
+     "0.9899",
+     "**0.9930**",
+     "**0.0008**",
+     "0.9997",
+     "**0.9916**",
+     "0.9918"
+    ]
+   ],
+   "notes": "Score S is the project's weighted selection score (recall, F1, PR-AUC, FPR, latency; config.yaml).",
+   "sources": [
+    "models/trained_models/training_report.json:binary.validation",
+    "models/trained_models/training_report.json:binary.best"
+   ],
+   "docx": {
+    "widths": [
+     1.9,
+     0.75,
+     0.75,
+     0.75,
+     0.75,
+     0.75,
+     0.75,
+     0.8
+    ],
+    "size": 8
+   }
+  },
+  "v11": {
+   "key": "v11",
+   "title": "Frozen Closed-Set Detector (v1.1) on the Stratified Test Split",
+   "header": [
+    "Stage",
+    "Metric",
+    "Value",
+    "Metric",
+    "Value"
+   ],
+   "rows": [
+    [
+     "Binary (DT, τ = 0.85)",
+     "Precision",
+     "0.98404",
+     "F1",
+     "**0.99048**"
+    ],
+    [
+     "",
+     "Recall",
+     "0.99700",
+     "ROC-AUC",
+     "0.99916"
+    ],
+    [
+     "",
+     "FPR",
+     "0.00329",
+     "PR-AUC",
+     "0.99744"
+    ],
+    [
+     "",
+     "TP / FN",
+     "84,884 / 255",
+     "TN / FP",
+     "417,635 / 1,377"
+    ],
+    [
+     "",
+     "Brier",
+     "0.00229",
+     "ECE",
+     "0.00242"
+    ],
+    [
+     "Multiclass (RF, attack-only)",
+     "Accuracy",
+     "0.99979",
+     "Macro-F1",
+     "**0.99813**"
+    ],
+    [
+     "",
+     "Macro precision",
+     "0.99762",
+     "Macro recall",
+     "0.99864"
+    ],
+    [
+     "",
+     "Weighted F1",
+     "0.99979",
+     "Misattributed",
+     "18 / 85,139"
+    ]
+   ],
+   "notes": "",
+   "sources": [
+    "models/trained_models/training_report.json:binary.test",
+    "models/trained_models/training_report.json:multiclass.test"
+   ],
+   "docx": {
+    "widths": [
+     1.9,
+     1.2,
+     1.1,
+     1.2,
+     1.1
+    ]
+   }
+  },
+  "loafo": {
+   "key": "loafo",
+   "title": "Leave-One-Attack-Family-Out on CICIDS2017 at α = 1% (Mean and 95% CI over 5 Seeds)",
+   "header": [
+    "Method",
+    "Group",
+    "Zero-day recall",
+    "AUROC_u",
+    "Known recall",
+    "Benign FPR (%)"
+   ],
+   "rows": [
+    [
+     "**Aegis-OSR**",
+     "proposed",
+     "**0.706 [0.689, 0.723]**",
+     "0.946 [0.943, 0.950]",
+     "1.000 [0.999, 1.000]",
+     "1.00 [0.92, 1.07]"
+    ],
+    [
+     "  w/ omnibus fusion",
+     "ablation",
+     "0.614 [0.587, 0.642]",
+     "0.946 [0.941, 0.951]",
+     "1.000 [1.000, 1.000]",
+     "0.99 [0.92, 1.06]"
+    ],
+    [
+     "  w/ AE novelty",
+     "ablation",
+     "0.562 [0.527, 0.597]",
+     "**0.955 [0.952, 0.957]**",
+     "1.000 [1.000, 1.000]",
+     "0.97 [0.88, 1.05]"
+    ],
+    [
+     "  w/ max fusion",
+     "ablation",
+     "0.531 [0.500, 0.563]",
+     "0.944 [0.939, 0.948]",
+     "1.000 [1.000, 1.000]",
+     "0.99 [0.95, 1.04]"
+    ],
+    [
+     "  w/ IForest novelty",
+     "ablation",
+     "0.478 [0.438, 0.518]",
+     "0.929 [0.924, 0.934]",
+     "1.000 [1.000, 1.000]",
+     "0.99 [0.96, 1.02]"
+    ],
+    [
+     "Closed-set XGB",
+     "baseline",
+     "0.490 [0.447, 0.533]",
+     "0.938 [0.932, 0.945]",
+     "1.000 [1.000, 1.000]",
+     "1.00 [0.97, 1.02]"
+    ],
+    [
+     "XGB + Energy",
+     "baseline",
+     "0.457 [0.430, 0.484]",
+     "0.947 [0.943, 0.952]",
+     "1.000 [1.000, 1.000]",
+     "1.00 [0.95, 1.04]"
+    ],
+    [
+     "k-NN distance",
+     "baseline",
+     "0.379 [0.358, 0.401]",
+     "0.866 [0.861, 0.871]",
+     "0.546 [0.534, 0.559]",
+     "1.01 [0.92, 1.11]"
+    ],
+    [
+     "Closed-set DT (v1.1-style)",
+     "baseline",
+     "0.241 [0.177, 0.305]",
+     "0.606 [0.571, 0.640]",
+     "0.999 [0.999, 0.999]",
+     "0.31 [0.21, 0.42]"
+    ],
+    [
+     "Autoencoder",
+     "baseline",
+     "0.231 [0.197, 0.265]",
+     "0.883 [0.870, 0.897]",
+     "0.430 [0.397, 0.463]",
+     "1.00 [0.86, 1.13]"
+    ],
+    [
+     "Isolation Forest",
+     "baseline",
+     "0.012 [0.011, 0.012]",
+     "0.840 [0.829, 0.851]",
+     "0.008 [0.007, 0.008]",
+     "0.99 [0.92, 1.06]"
+    ]
+   ],
+   "notes": "Folds are averaged within each seed; intervals are 95% Student-t intervals over seeds. AUROC_u: area under the ROC curve for unknown versus benign flows.",
+   "sources": [
+    "research_artifacts/openset_loafo_summary.json:overall.loafo"
+   ],
+   "docx": {
+    "widths": [
+     1.8,
+     0.8,
+     1.35,
+     1.35,
+     1.1,
+     1.1
+    ],
+    "size": 8
+   }
+  },
+  "significance": {
+   "key": "significance",
+   "title": "Seed-Level Paired Comparison of Zero-Day Recall (Folds Averaged Within Each Seed)",
+   "header": [
+    "Aegis-OSR vs.",
+    "Mean Δ recall [95% CI]",
+    "Seeds better",
+    "Paired t p",
+    "Fold wins (descriptive)"
+   ],
+   "rows": [
+    [
+     "Isolation Forest",
+     "+0.694 [+0.677, +0.712]",
+     "5 / 5",
+     "3.8×10^{−8}",
+     "27 / 30"
+    ],
+    [
+     "Autoencoder",
+     "+0.475 [+0.435, +0.514]",
+     "5 / 5",
+     "4.7×10^{−6}",
+     "27 / 30"
+    ],
+    [
+     "Closed-set DT (v1.1-style)",
+     "+0.465 [+0.402, +0.528]",
+     "5 / 5",
+     "3.3×10^{−5}",
+     "30 / 30"
+    ],
+    [
+     "kNN distance",
+     "+0.327 [+0.304, +0.350]",
+     "5 / 5",
+     "2.4×10^{−6}",
+     "25 / 30"
+    ],
+    [
+     "XGB + Energy",
+     "+0.249 [+0.231, +0.267]",
+     "5 / 5",
+     "2.6×10^{−6}",
+     "30 / 30"
+    ],
+    [
+     "Aegis-OSR w/ IForest novelty",
+     "+0.228 [+0.194, +0.262]",
+     "5 / 5",
+     "4.8×10^{−5}",
+     "30 / 30"
+    ],
+    [
+     "Closed-set XGB",
+     "+0.216 [+0.180, +0.252]",
+     "5 / 5",
+     "7.6×10^{−5}",
+     "30 / 30"
+    ],
+    [
+     "Aegis-OSR w/ max fusion",
+     "+0.175 [+0.152, +0.197]",
+     "5 / 5",
+     "2.6×10^{−5}",
+     "24 / 30"
+    ],
+    [
+     "Aegis-OSR w/ AE novelty",
+     "+0.144 [+0.119, +0.169]",
+     "5 / 5",
+     "8.7×10^{−5}",
+     "25 / 30"
+    ],
+    [
+     "Aegis-OSR w/ omnibus fusion",
+     "+0.092 [+0.078, +0.106]",
+     "5 / 5",
+     "5.2×10^{−5}",
+     "24 / 30"
+    ]
+   ],
+   "notes": "Paired t-test over independent seeds; the six folds of one seed share a data split, so fold-level wins are not independent observations and are shown for context only.",
+   "sources": [
+    "research_artifacts/openset_loafo_summary.json:significance_seed_level.loafo.zero_day_recall",
+    "research_artifacts/openset_loafo_summary.json:significance.loafo.zero_day_recall"
+   ],
+   "docx": {
+    "widths": [
+     2.2,
+     1.7,
+     0.9,
+     1.0,
+     1.2
+    ]
+   }
+  },
+  "family": {
+   "key": "family",
+   "title": "Per-Family Zero-Day Recall and Aegis-OSR Attribution (LOAFO, α = 1%, Mean over 5 Seeds)",
+   "header": [
+    "Held-out family",
+    "Aegis-OSR",
+    "Closed-set XGB",
+    "w/ AE novelty",
+    "DT (v1.1-style)",
+    "Flagged unknown",
+    "Mis-attributed",
+    "Known-family acc."
+   ],
+   "rows": [
+    [
+     "WebAttack",
+     "**0.991**",
+     "0.946",
+     "0.960",
+     "0.688",
+     "0.990",
+     "0.001",
+     "0.990"
+    ],
+    [
+     "DoS",
+     "0.977",
+     "0.824",
+     "**0.987**",
+     "0.246",
+     "0.968",
+     "0.009",
+     "0.989"
+    ],
+    [
+     "DDoS",
+     "**0.965**",
+     "0.742",
+     "0.920",
+     "0.499",
+     "0.963",
+     "0.002",
+     "0.989"
+    ],
+    [
+     "BruteForce",
+     "**0.923**",
+     "0.310",
+     "0.316",
+     "0.001",
+     "0.923",
+     "0.001",
+     "0.990"
+    ],
+    [
+     "PortScan",
+     "**0.357**",
+     "0.112",
+     "0.177",
+     "0.011",
+     "0.355",
+     "0.002",
+     "0.990"
+    ],
+    [
+     "Bot",
+     "**0.023**",
+     "0.004",
+     "0.012",
+     "0.000",
+     "0.023",
+     "0.000",
+     "0.990"
+    ]
+   ],
+   "notes": "The last three columns refer to Aegis-OSR. Flagged unknown: share of the withheld family labelled UNKNOWN-ATTACK or ZERO-DAY-ANOMALY. Mis-attributed: share wrongly given a known-family label. Known-family acc.: accuracy of family labels on attacks from the five known families.",
+   "sources": [
+    "research_artifacts/openset_loafo_summary.json:per_fold.loafo",
+    "research_artifacts/openset_loafo_summary.json:attribution.loafo"
+   ],
+   "docx": {
+    "widths": [
+     1.1,
+     0.75,
+     0.85,
+     0.8,
+     0.85,
+     0.85,
+     0.8,
+     0.85
+    ],
+    "size": 8
+   }
+  },
+  "temporal": {
+   "key": "temporal",
+   "title": "Temporal Split by Capture Day, No Adaptation (α = 1%, Mean over 5 Seeds)",
+   "header": [
+    "Method",
+    "Mon–Wed → Thu recall",
+    "FPR (%)",
+    "Mon–Thu → Fri recall",
+    "FPR (%)"
+   ],
+   "rows": [
+    [
+     "Aegis-OSR",
+     "0.992",
+     "1.72",
+     "0.495",
+     "7.09"
+    ],
+    [
+     "Aegis-OSR w/ AE novelty",
+     "0.986",
+     "1.66",
+     "0.490",
+     "5.94"
+    ],
+    [
+     "Closed-set XGB",
+     "0.982",
+     "1.25",
+     "0.471",
+     "1.27"
+    ],
+    [
+     "XGB + Energy",
+     "0.983",
+     "1.27",
+     "0.447",
+     "1.28"
+    ],
+    [
+     "k-NN distance",
+     "0.055",
+     "11.01",
+     "0.423",
+     "8.82"
+    ],
+    [
+     "Autoencoder",
+     "0.015",
+     "9.65",
+     "0.264",
+     "8.14"
+    ],
+    [
+     "Closed-set DT (v1.1-style)",
+     "0.857",
+     "0.10",
+     "0.127",
+     "0.16"
+    ]
+   ],
+   "notes": "Unknown-family recall of Aegis-OSR (closed-set XGB in brackets) — Thursday: WebAttack 0.998 (0.999), Infiltration 0.650 (0.000); Friday: DDoS 0.992 (0.950), PortScan 0.036 (0.027), Bot 0.009 (0.000). Recall is not comparable across rows when the realised FPR differs from the budget.",
+   "sources": [
+    "research_artifacts/openset_temporal_summary.json:per_fold.temporal",
+    "research_artifacts/openset_temporal_summary.json:per_family.temporal"
+   ],
+   "docx": {
+    "widths": [
+     2.2,
+     1.3,
+     0.8,
+     1.3,
+     0.8
+    ]
+   }
+  },
+  "adapt": {
+   "key": "adapt",
+   "title": "Re-Calibration on Benign Flows from the Target Day (Zero-Day Recall / Benign FPR, Mean over 5 Seeds)",
+   "header": [
+    "Fold",
+    "Variant",
+    "W",
+    "Aegis-OSR",
+    "Closed-set XGB",
+    "XGB + Energy"
+   ],
+   "rows": [
+    [
+     "Mon–Thu → Fri",
+     "none",
+     "0",
+     "0.495 / 7.09%",
+     "0.471 / 1.27%",
+     "0.447 / 1.28%"
+    ],
+    [
+     "",
+     "recal",
+     "500",
+     "0.345 / 0.36%",
+     "0.366 / 0.61%",
+     "0.341 / 0.59%"
+    ],
+    [
+     "",
+     "recal",
+     "2,000",
+     "0.429 / 0.82%",
+     "0.367 / 0.68%",
+     "0.344 / 0.54%"
+    ],
+    [
+     "",
+     "recal",
+     "5,000",
+     "0.441 / 2.57%",
+     "0.365 / 0.66%",
+     "0.347 / 0.60%"
+    ],
+    [
+     "",
+     "recal+ref",
+     "500",
+     "0.329 / 0.46%",
+     "0.344 / 0.47%",
+     "0.329 / 0.49%"
+    ],
+    [
+     "",
+     "recal+ref",
+     "2,000",
+     "0.383 / 0.63%",
+     "0.368 / 0.63%",
+     "0.354 / 0.57%"
+    ],
+    [
+     "",
+     "recal+ref",
+     "5,000",
+     "0.444 / 2.84%",
+     "0.356 / 0.55%",
+     "0.339 / 0.53%"
+    ],
+    [
+     "",
+     "oracle",
+     "2,000",
+     "0.390 / 0.97%",
+     "0.397 / 0.81%",
+     "0.392 / 0.84%"
+    ],
+    [
+     "Mon–Wed → Thu",
+     "none",
+     "0",
+     "0.992 / 1.72%",
+     "0.982 / 1.25%",
+     "0.983 / 1.27%"
+    ],
+    [
+     "",
+     "recal",
+     "500",
+     "0.938 / 0.27%",
+     "0.951 / 0.43%",
+     "0.974 / 0.91%"
+    ],
+    [
+     "",
+     "recal",
+     "2,000",
+     "0.951 / 0.49%",
+     "0.980 / 0.97%",
+     "0.982 / 0.95%"
+    ],
+    [
+     "",
+     "recal",
+     "5,000",
+     "0.882 / 0.67%",
+     "0.982 / 1.00%",
+     "0.982 / 1.08%"
+    ],
+    [
+     "",
+     "recal+ref",
+     "500",
+     "0.926 / 0.24%",
+     "0.931 / 0.26%",
+     "0.955 / 0.44%"
+    ],
+    [
+     "",
+     "recal+ref",
+     "2,000",
+     "0.954 / 0.49%",
+     "0.960 / 0.79%",
+     "0.978 / 0.94%"
+    ],
+    [
+     "",
+     "recal+ref",
+     "5,000",
+     "0.961 / 0.77%",
+     "0.981 / 1.02%",
+     "0.983 / 1.09%"
+    ],
+    [
+     "",
+     "oracle",
+     "2,000",
+     "0.981 / 0.92%",
+     "0.970 / 0.85%",
+     "0.979 / 0.89%"
+    ]
+   ],
+   "notes": "Warm-up windows are the earliest W benign flows of the target day and are excluded from evaluation; the oracle re-calibrates on 2,000 benign flows sampled at random from the day. recal+ref also adds one third of the window to the k-NN reference; methods without a k-NN component change only through the smaller calibration split.",
+   "sources": [
+    "research_artifacts/openset_temporal_summary.json:per_fold.temporal",
+    "research_artifacts/openset_temporal_summary.json:adaptation.temporal"
+   ],
+   "docx": {
+    "widths": [
+     1.1,
+     0.8,
+     0.6,
+     1.4,
+     1.4,
+     1.4
+    ],
+    "size": 8
+   }
+  },
+  "gate": {
+   "key": "gate",
+   "title": "Deployed Zero-Day Gate vs. the Frozen v1.1 Detector on Flows Neither Model Trained On",
+   "header": [
+    "Operating point",
+    "Benign FPR (%)",
+    "Known-attack recall",
+    "Never-seen attacks flagged"
+   ],
+   "rows": [
+    [
+     "Gate, α = 0.05%",
+     "0.033",
+     "0.866",
+     "3 / 47 (6.4%)"
+    ],
+    [
+     "Gate, α = 0.1%",
+     "0.064",
+     "0.893",
+     "14 / 47 (29.8%)"
+    ],
+    [
+     "Gate, α = 0.5%",
+     "0.454",
+     "0.993",
+     "25 / 47 (53.2%)"
+    ],
+    [
+     "**Gate, α = 1% (deployed)**",
+     "0.936",
+     "0.999",
+     "29 / 47 (61.7%)"
+    ],
+    [
+     "Gate, α = 5%",
+     "4.877",
+     "1.000",
+     "46 / 47 (97.9%)"
+    ],
+    [
+     "Frozen v1.1 detector (τ = 0.85)",
+     "0.079",
+     "0.993",
+     "0 / 47"
+    ]
+   ],
+   "notes": "Flows in both models' test splits and in neither model's training or validation data (39,221 benign, 15,177 known attacks, 47 never-seen). Per-family recall at α = 1%, gate vs. v1.1 (n): Bot 0.927 vs. 0.585 (n = 82); BruteForce 1.000 vs. 0.995 (n = 370); DDoS 1.000 vs. 1.000 (n = 5,089); DoS 0.999 vs. 0.995 (n = 5,955); PortScan 1.000 vs. 1.000 (n = 3,604); WebAttack 1.000 vs. 0.416 (n = 77). Bot and WebAttack have fewer than 100 eligible flows; treat their rates as indicative.",
+   "sources": [
+    "research_artifacts/zero_day_gate_report.json:evaluation.head_to_head",
+    "research_artifacts/zero_day_gate_report.json:evaluation.natural_unknowns"
+   ],
+   "docx": {
+    "widths": [
+     2.2,
+     1.2,
+     1.4,
+     1.8
+    ]
+   }
+  },
+  "v11_2018": {
+   "key": "v11_2018",
+   "title": "Frozen v1.1 Detector Scored Unchanged on CSE-CIC-IDS2018",
+   "header": [
+    "2018 label",
+    "Family",
+    "n",
+    "Alert rate",
+    "Correct family"
+   ],
+   "rows": [
+    [
+     "Benign",
+     "BENIGN",
+     "200,000",
+     "0.15%",
+     "—"
+    ],
+    [
+     "DoS attacks-Slowloris",
+     "DoS",
+     "9,908",
+     "95.58%",
+     "95.58%"
+    ],
+    [
+     "DoS attacks-SlowHTTPTest",
+     "DoS",
+     "53",
+     "69.81%",
+     "0.00%"
+    ],
+    [
+     "FTP-BruteForce",
+     "BruteForce",
+     "51",
+     "68.63%",
+     "68.63%"
+    ],
+    [
+     "DDoS attacks-LOIC-HTTP",
+     "DDoS",
+     "20,000",
+     "44.98%",
+     "0.00%"
+    ],
+    [
+     "DoS attacks-GoldenEye",
+     "DoS",
+     "20,000",
+     "27.43%",
+     "27.43%"
+    ],
+    [
+     "Brute Force -XSS",
+     "WebAttack",
+     "228",
+     "10.96%",
+     "0.88%"
+    ],
+    [
+     "Brute Force -Web",
+     "WebAttack",
+     "555",
+     "3.06%",
+     "0.00%"
+    ],
+    [
+     "SQL Injection",
+     "WebAttack",
+     "84",
+     "2.38%",
+     "0.00%"
+    ],
+    [
+     "Infilteration",
+     "Infiltration",
+     "20,000",
+     "1.47%",
+     "0.00%"
+    ],
+    [
+     "DoS attacks-Hulk",
+     "DoS",
+     "20,000",
+     "1.11%",
+     "0.83%"
+    ],
+    [
+     "DDOS attack-HOIC",
+     "DDoS",
+     "20,000",
+     "0.45%",
+     "0.00%"
+    ],
+    [
+     "SSH-Bruteforce",
+     "BruteForce",
+     "20,000",
+     "0.01%",
+     "0.01%"
+    ],
+    [
+     "Bot",
+     "Bot",
+     "20,000",
+     "0.00%",
+     "0.00%"
+    ],
+    [
+     "DDOS attack-LOIC-UDP",
+     "DDoS",
+     "1,730",
+     "0.00%",
+     "0.00%"
+    ],
+    [
+     "**All attacks**",
+     "",
+     "152,609",
+     "**recall 0.162**",
+     "precision 0.988, **F1 0.278**"
+    ]
+   ],
+   "notes": "CSE-CIC-IDS2018 sample v2: up to 20,000 flows per attack label and 200,000 benign flows from 10 capture days; labels mapped to CICIDS2017 families; features mapped to the 2017 schema. Nothing was retrained or re-thresholded. IID CICIDS2017 test F1 for reference: 0.990.",
+   "sources": [
+    "research_artifacts/frozen_v11_on_cic2018_v2.json:per_label",
+    "research_artifacts/frozen_v11_on_cic2018_v2.json:binary"
+   ],
+   "docx": {
+    "widths": [
+     2.2,
+     1.1,
+     0.9,
+     1.0,
+     1.6
+    ],
+    "size": 8
+   }
+  },
+  "cross": {
+   "key": "cross",
+   "title": "Open-Set Detection Trained on CICIDS2017, Tested on CSE-CIC-IDS2018 (α = 1%, Mean over 5 Seeds, Sample v2)",
+   "header": [
+    "Method",
+    "Zero-day recall",
+    "AUROC_u",
+    "Known recall",
+    "Benign FPR (%)"
+   ],
+   "rows": [
+    [
+     "Aegis-OSR",
+     "0.438",
+     "0.568",
+     "0.855",
+     "36.7"
+    ],
+    [
+     "Aegis-OSR w/ AE novelty",
+     "0.432",
+     "0.546",
+     "0.918",
+     "29.8"
+    ],
+    [
+     "Aegis-OSR w/ IForest novelty",
+     "0.154",
+     "0.511",
+     "0.776",
+     "3.8"
+    ],
+    [
+     "k-NN distance",
+     "0.715",
+     "0.552",
+     "0.500",
+     "59.8"
+    ],
+    [
+     "Autoencoder",
+     "0.304",
+     "0.533",
+     "0.493",
+     "29.4"
+    ],
+    [
+     "Closed-set XGB",
+     "0.168",
+     "0.513",
+     "0.861",
+     "4.6"
+    ],
+    [
+     "XGB + Energy",
+     "0.157",
+     "0.516",
+     "0.819",
+     "4.2"
+    ],
+    [
+     "Closed-set DT (v1.1-style)",
+     "0.083",
+     "0.455",
+     "0.351",
+     "14.6"
+    ],
+    [
+     "Isolation Forest",
+     "0.037",
+     "0.467",
+     "0.007",
+     "1.9"
+    ]
+   ],
+   "notes": "Unknown family: Infiltration (never in CICIDS2017 training). No CSE-CIC-IDS2018 data was used for training; recalibration results per capture day are in the next table.",
+   "sources": [
+    "research_artifacts/openset_cross_summary_v2.json:per_fold.cross_dataset"
+   ],
+   "docx": {
+    "widths": [
+     2.2,
+     1.1,
+     0.9,
+     1.1,
+     1.1
+    ]
+   }
+  },
+  "cross_perday": {
+   "key": "cross_perday",
+   "title": "CSE-CIC-IDS2018 per Capture Day: Aegis-OSR before and after Same-Day Re-Calibration (α = 1%)",
+   "header": [
+    "Day",
+    "Benign n",
+    "Attack n",
+    "FPR, none",
+    "Recall, none",
+    "recal 500",
+    "recal 2,000",
+    "recal 5,000"
+   ],
+   "rows": [
+    [
+     "2018-02-14",
+     "20,000",
+     "8,000",
+     "26.8%",
+     "1.000",
+     "0.058 / 0.47%",
+     "0.191 / 1.00%",
+     "0.008 / 0.92%"
+    ],
+    [
+     "2018-02-15",
+     "20,000",
+     "8,000",
+     "24.1%",
+     "0.882",
+     "0.179 / 0.82%",
+     "0.266 / 1.80%",
+     "0.286 / 0.89%"
+    ],
+    [
+     "2018-02-16",
+     "17,320",
+     "8,000",
+     "46.9%",
+     "0.413",
+     "0.004 / 0.01%",
+     "0.041 / 0.95%",
+     "0.275 / 0.99%"
+    ],
+    [
+     "2018-02-20",
+     "20,000",
+     "8,000",
+     "34.8%",
+     "0.942",
+     "0.084 / 1.05%",
+     "0.106 / 1.36%",
+     "0.107 / 1.33%"
+    ],
+    [
+     "2018-02-21",
+     "12,762",
+     "8,000",
+     "100.0%",
+     "0.500",
+     "0.015 / 0.00%",
+     "0.029 / 0.00%",
+     "0.029 / 0.00%"
+    ],
+    [
+     "2018-02-22",
+     "20,000",
+     "324",
+     "37.4%",
+     "0.676",
+     "0.015 / 0.14%",
+     "0.015 / 0.40%",
+     "0.015 / 0.70%"
+    ],
+    [
+     "2018-02-23",
+     "20,000",
+     "543",
+     "34.1%",
+     "0.745",
+     "0.035 / 0.13%",
+     "0.048 / 0.46%",
+     "0.064 / 0.80%"
+    ],
+    [
+     "2018-02-28",
+     "19,193",
+     "8,000",
+     "39.5%",
+     "0.330",
+     "0.035 / 8.69%",
+     "0.034 / 8.84%",
+     "0.017 / 2.16%"
+    ],
+    [
+     "2018-03-01",
+     "6,167",
+     "8,000",
+     "39.2%",
+     "0.511",
+     "0.015 / 0.69%",
+     "0.020 / 0.70%",
+     "0.015 / 0.58%"
+    ],
+    [
+     "2018-03-02",
+     "20,000",
+     "8,000",
+     "36.2%",
+     "0.979",
+     "0.019 / 1.14%",
+     "0.008 / 0.66%",
+     "0.007 / 1.15%"
+    ]
+   ],
+   "notes": "Trained once on CICIDS2017 per seed. For each 2018 day independently the warm-up window is that day's earliest benign flows; evaluation uses only the rest of that day (no overlap). Recall is attack recall on the day's attacks (Infiltration days: zero-day recall). Re-calibration cells: recall / benign FPR. '—' = no benign flows left for that window size. On 2018-02-21 the flows labelled benign have a median of 842,917 bytes/s against 1,129 on the other days, consistent with documented labelling problems in CSE-CIC-IDS2018; the day is reported as is.",
+   "sources": [
+    "research_artifacts/openset_cross_perday_summary.json:per_fold.cross_perday",
+    "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday",
+    "research_artifacts/openset_cross_perday_records.json:records[*].n_test"
+   ],
+   "docx": {
+    "widths": [
+     0.9,
+     0.7,
+     0.7,
+     0.75,
+     0.75,
+     1.05,
+     1.05,
+     1.05
+    ],
+    "size": 8
+   }
+  },
+  "families": {
+   "key": "families",
+   "title": "10 Classifier Families at a 1% Benign False-Alarm Budget: Seen vs. Withheld Families (Seed 1)",
+   "header": [
+    "Model",
+    "IID F1",
+    "IID FPR (%)",
+    "Withheld: mean recall",
+    "Bot",
+    "Brute",
+    "DDoS",
+    "DoS",
+    "Scan",
+    "Web"
+   ],
+   "rows": [
+    [
+     "Hist. gradient boosting (LightGBM-style)",
+     "0.989",
+     "1.06",
+     "0.483",
+     "0.00",
+     "0.30",
+     "0.66",
+     "0.81",
+     "0.17",
+     "0.96"
+    ],
+    [
+     "XGBoost",
+     "0.989",
+     "1.06",
+     "0.457",
+     "0.00",
+     "0.15",
+     "0.64",
+     "0.94",
+     "0.05",
+     "0.96"
+    ],
+    [
+     "Random forest",
+     "0.990",
+     "1.03",
+     "0.455",
+     "0.00",
+     "0.24",
+     "0.64",
+     "0.90",
+     "0.03",
+     "0.92"
+    ],
+    [
+     "1-D CNN (PyTorch)",
+     "0.989",
+     "1.01",
+     "0.350",
+     "0.00",
+     "0.23",
+     "0.73",
+     "0.18",
+     "0.05",
+     "0.91"
+    ],
+    [
+     "Decision tree",
+     "0.997",
+     "0.23",
+     "0.304",
+     "0.00",
+     "0.00",
+     "0.62",
+     "0.31",
+     "0.01",
+     "0.87"
+    ],
+    [
+     "MLP / ANN (PyTorch)",
+     "0.989",
+     "0.95",
+     "0.249",
+     "0.00",
+     "0.24",
+     "0.64",
+     "0.54",
+     "0.01",
+     "0.07"
+    ],
+    [
+     "Kernel SVM (RBF, Nyström)",
+     "0.986",
+     "0.97",
+     "0.201",
+     "0.00",
+     "0.23",
+     "0.64",
+     "0.26",
+     "0.01",
+     "0.07"
+    ],
+    [
+     "Logistic regression",
+     "0.936",
+     "1.03",
+     "0.127",
+     "0.00",
+     "0.00",
+     "0.62",
+     "0.10",
+     "0.03",
+     "0.00"
+    ],
+    [
+     "Linear SVM",
+     "0.951",
+     "0.99",
+     "0.110",
+     "0.00",
+     "0.00",
+     "0.55",
+     "0.05",
+     "0.04",
+     "0.01"
+    ],
+    [
+     "LSTM (PyTorch)",
+     "0.928",
+     "1.03",
+     "0.048",
+     "0.00",
+     "0.00",
+     "0.09",
+     "0.20",
+     "0.00",
+     "0.00"
+    ]
+   ],
+   "notes": "Single seed, no confidence intervals. Thresholds set on validation benign flows for a 1% false-alarm rate. 'Hist. gradient boosting' is scikit-learn's LightGBM-style implementation; the CNN and LSTM read the 77 features as a 1-D sequence (no time axis).",
+   "sources": [
+    "research_artifacts/model_family_comparison.json:results"
+   ],
+   "docx": {
+    "widths": [
+     1.6,
+     0.55,
+     0.65,
+     0.85,
+     0.45,
+     0.5,
+     0.5,
+     0.45,
+     0.5,
+     0.45
+    ],
+    "size": 8
+   }
+  },
+  "range_def": {
+   "key": "range_def",
+   "title": "Cyber Range: Defense Comparison",
+   "header": [
+    "Defense",
+    "Attack success after defense",
+    "Availability during attack (mean / min)",
+    "Legitimate traffic blocked",
+    "Recovery after defense (s)"
+   ],
+   "rows": [
+    [
+     "Block source",
+     "0.0%",
+     "99.8% / 96.4%",
+     "0.0%",
+     "2.6"
+    ],
+    [
+     "Rate limit",
+     "19.7%",
+     "99.6% / 95.9%",
+     "0.0%",
+     "3.7"
+    ],
+    [
+     "Isolate target",
+     "0.0%",
+     "10.9% / 0.0%",
+     "27.4%",
+     "52.4"
+    ],
+    [
+     "Monitor only",
+     "—",
+     "89.7% / 84.7%",
+     "0.0%",
+     "—"
+    ],
+    [
+     "Increase inspection",
+     "100.0%",
+     "89.7% / 84.7%",
+     "0.0%",
+     "47.4"
+    ]
+   ],
+   "notes": "Mean over 9 scenarios, 10 seeds each, automatic response. Means hide that most scenarios are cheap for the server; with monitoring only, availability during the attack averaged 66% (DOS; worst second 37%) and 41% (DDOS; worst second 25%). Availability is modelled (capacity / load), not measured on a real service; isolation is lifted 5 s after the attack stops, so its recovery time reflects scenario length. '—' = not applicable.",
+   "sources": [
+    "results/cyber_range/experiments/latest.json:suites.defense"
+   ],
+   "docx": {
+    "widths": [
+     1.3,
+     1.2,
+     1.5,
+     1.2,
+     1.2
+    ],
+    "size": 8
+   }
+  },
+  "range_det": {
+   "key": "range_det",
+   "title": "Cyber Range: Which Detector Raises the Incident",
+   "header": [
+    "Scenario",
+    "Detector",
+    "Runs detected",
+    "Detection latency (s)",
+    "Attack-flow recall",
+    "Benign flow FPR"
+   ],
+   "rows": [
+    [
+     "Zero-day intrusion",
+     "Frozen v1.1",
+     "0 / 10",
+     "—",
+     "0.000",
+     "0.08%"
+    ],
+    [
+     "",
+     "Zero-Day Gate",
+     "10 / 10",
+     "4.3 [2.6, 6.0]",
+     "0.645",
+     "0.81%"
+    ],
+    [
+     "Beacon-style bot",
+     "Frozen v1.1",
+     "10 / 10",
+     "4.1 [2.3, 5.9]",
+     "0.563",
+     "0.09%"
+    ],
+    [
+     "",
+     "Zero-Day Gate",
+     "10 / 10",
+     "2.8 [1.2, 4.4]",
+     "0.877",
+     "0.78%"
+    ],
+    [
+     "Web request burst",
+     "Frozen v1.1",
+     "10 / 10",
+     "2.6 [0.6, 4.6]",
+     "0.907",
+     "0.09%"
+    ],
+    [
+     "",
+     "Zero-Day Gate",
+     "10 / 10",
+     "2.6 [0.6, 4.6]",
+     "1.000",
+     "0.87%"
+    ]
+   ],
+   "notes": "10 seeds per cell; incident rule 3 alerts within 5 s. Shown: scenarios where a detector missed runs or had attack-flow recall below 0.99. The other 6 scenarios were detected by both detectors in every run (mean latency 0.0–2.4 s). Mean false incidents per run across all cells: 0.01. The zero-day scenario redraws the same 47 never-seen flows, so its runs are not independent zero-days.",
+   "sources": [
+    "results/cyber_range/experiments/latest.json:suites.detector"
+   ],
+   "docx": {
+    "widths": [
+     1.6,
+     1.2,
+     1.0,
+     1.4,
+     1.2,
+     1.1
+    ],
+    "size": 8
+   }
+  },
+  "xai": {
+   "key": "xai",
+   "title": "Explanation Stability of the Frozen Detector (20 Flows per Class, Seed 7)",
+   "header": [
+    "Class",
+    "Consistency within family",
+    "Robustness to ±1% noise",
+    "Rank stability (Spearman)",
+    "SHAP–LIME agreement"
+   ],
+   "rows": [
+    [
+     "Benign",
+     "0.46",
+     "1.00",
+     "1.00",
+     "0.17"
+    ],
+    [
+     "Bot",
+     "0.47",
+     "**0.57**",
+     "0.40",
+     "0.48"
+    ],
+    [
+     "BruteForce",
+     "0.67",
+     "0.95",
+     "1.00",
+     "0.13"
+    ],
+    [
+     "DDoS",
+     "0.81",
+     "0.96",
+     "0.92",
+     "0.36"
+    ],
+    [
+     "DoS",
+     "0.62",
+     "**0.83**",
+     "0.80",
+     "0.40"
+    ],
+    [
+     "PortScan",
+     "1.00",
+     "0.98",
+     "0.99",
+     "0.26"
+    ],
+    [
+     "WebAttack",
+     "0.45",
+     "**0.73**",
+     "0.58",
+     "0.12"
+    ]
+   ],
+   "notes": "Consistency, robustness and agreement are mean Jaccard overlaps of top-five SHAP features (1 = identical); bold marks robustness below 0.90. Rank stability is the Spearman correlation of the top-ten attribution magnitudes with and without noise. Flows come from the leakage-free replay pool (neither model trained on them).",
+   "sources": [
+    "models/trained_models/xai_stability_report.json:per_family"
+   ],
+   "docx": {
+    "widths": [
+     1.2,
+     1.4,
+     1.4,
+     1.4,
+     1.3
+    ]
+   }
+  },
+  "p11": {
+   "key": "p11",
+   "title": "Mitigation Measured on the Controlled Test Plane (10 Repetitions, Frozen-ML Detection)",
+   "header": [
+    "Scenario",
+    "No defence",
+    "Recommendation only",
+    "Approved response",
+    "Storyboard prior",
+    "Δ"
+   ],
+   "rows": [
+    [
+     "DDoS, BLOCK_SOURCE",
+     "0.00",
+     "0.00",
+     "**1.00**",
+     "0.82",
+     "+0.18"
+    ],
+    [
+     "DoS, RATE_LIMIT",
+     "0.00",
+     "0.00",
+     "**0.80**",
+     "0.78",
+     "+0.02"
+    ]
+   ],
+   "notes": "Measured effectiveness on the CONTROLLED test adapter (no live firewall). Δ = measured − assumed storyboard prior.",
+   "sources": [
+    "models/trained_models/empirical_mitigation_report.json:comparisons",
+    "models/trained_models/empirical_mitigation_report.json:repetitions"
+   ],
+   "docx": {
+    "widths": [
+     1.6,
+     0.9,
+     1.1,
+     1.1,
+     1.0,
+     0.6
+    ]
+   }
+  },
+  "perf": {
+   "key": "perf",
+   "title": "Measured Operating Envelope (Single Windows Desktop, 20 Threads)",
+   "header": [
+    "Workload",
+    "Measured value"
+   ],
+   "rows": [
+    [
+     "Single-flow prediction, no explanation",
+     "68 flows/s; p50 14.8 ms, p95 16.3 ms; 0% errors"
+    ],
+    [
+     "Pipeline batch, 100 / 500 flows",
+     "113 / 125 flows/s (wall clock)"
+    ],
+    [
+     "Vectorised DT/RF inference, 1,000 / 5,000 flows",
+     "15,469 / 21,819 flows/s"
+    ],
+    [
+     "Zero-Day Gate, batch scoring",
+     "0.063 ms per flow"
+    ],
+    [
+     "Cyber-range run",
+     "0.04–0.37 s per run; 1,190 runs in 2.1 min"
+    ],
+    [
+     "SHAP TreeExplainer on frozen DT vs. prediction",
+     "p50 ratio 0.73"
+    ],
+    [
+     "Concurrent approval of one action",
+     "1 of 8 concurrent approvers succeeds"
+    ]
+   ],
+   "notes": "Prototype measurements on one workstation; not a capacity claim.",
+   "sources": [
+    "results/performance/operating_envelope_latest.json:metrics.envelope",
+    "research_artifacts/zero_day_gate_report.json:evaluation.gate.latency_ms_per_flow_batch",
+    "results/performance/database_response_20260914T190735Z_perf-dc84a3431e.json:metrics",
+    "results/cyber_range/experiments/latest.json:suites[*].cells[*].summary.wall_seconds"
+   ],
+   "docx": {
+    "widths": [
+     2.8,
+     3.4
+    ]
+   }
+  }
+ },
+ "facts": {
+  "a_fri_oracle_2000_osr_fpr": {
+   "display": "0.97%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr"
+  },
+  "a_fri_oracle_2000_osr_zdr": {
+   "display": "0.390",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Thu→Fri.Aegis-OSR.zero_day_recall"
+  },
+  "a_fri_oracle_2000_xgb_fpr": {
+   "display": "0.81%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Thu→Fri.Closed-set XGB.fpr"
+  },
+  "a_fri_oracle_2000_xgb_zdr": {
+   "display": "0.397",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Thu→Fri.Closed-set XGB.zero_day_recall"
+  },
+  "a_fri_oracle_fpr_ci": {
+   "display": "[0.64, 1.30]",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr"
+  },
+  "a_fri_recal_2000_osr_fpr": {
+   "display": "0.82%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@2000.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr"
+  },
+  "a_fri_recal_2000_osr_zdr": {
+   "display": "0.429",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@2000.per_fold.Mon-Thu→Fri.Aegis-OSR.zero_day_recall"
+  },
+  "a_fri_recal_2000_xgb_fpr": {
+   "display": "0.68%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@2000.per_fold.Mon-Thu→Fri.Closed-set XGB.fpr"
+  },
+  "a_fri_recal_2000_xgb_zdr": {
+   "display": "0.367",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@2000.per_fold.Mon-Thu→Fri.Closed-set XGB.zero_day_recall"
+  },
+  "a_fri_recal_5000_osr_fpr": {
+   "display": "2.57%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@5000.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr"
+  },
+  "a_fri_recal_5000_osr_zdr": {
+   "display": "0.441",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@5000.per_fold.Mon-Thu→Fri.Aegis-OSR.zero_day_recall"
+  },
+  "a_fri_recal_5000_xgb_fpr": {
+   "display": "0.66%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@5000.per_fold.Mon-Thu→Fri.Closed-set XGB.fpr"
+  },
+  "a_fri_recal_5000_xgb_zdr": {
+   "display": "0.365",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@5000.per_fold.Mon-Thu→Fri.Closed-set XGB.zero_day_recall"
+  },
+  "a_fri_recal_500_osr_fpr": {
+   "display": "0.36%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@500.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr"
+  },
+  "a_fri_recal_500_osr_zdr": {
+   "display": "0.345",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@500.per_fold.Mon-Thu→Fri.Aegis-OSR.zero_day_recall"
+  },
+  "a_fri_recal_500_xgb_fpr": {
+   "display": "0.61%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@500.per_fold.Mon-Thu→Fri.Closed-set XGB.fpr"
+  },
+  "a_fri_recal_500_xgb_zdr": {
+   "display": "0.366",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@500.per_fold.Mon-Thu→Fri.Closed-set XGB.zero_day_recall"
+  },
+  "a_fri_recalref_5000_osr_fpr": {
+   "display": "2.84%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@5000.per_fold.Mon-Thu→Fri.Aegis-OSR.fpr"
+  },
+  "a_fri_recalref_5000_osr_zdr": {
+   "display": "0.444",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@5000.per_fold.Mon-Thu→Fri.Aegis-OSR.zero_day_recall"
+  },
+  "a_fri_recalref_5000_xgb_fpr": {
+   "display": "0.55%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@5000.per_fold.Mon-Thu→Fri.Closed-set XGB.fpr"
+  },
+  "a_fri_recalref_5000_xgb_zdr": {
+   "display": "0.356",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@5000.per_fold.Mon-Thu→Fri.Closed-set XGB.zero_day_recall"
+  },
+  "a_thu_oracle_2000_osr_fpr": {
+   "display": "0.92%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Wed→Thu.Aegis-OSR.fpr"
+  },
+  "a_thu_oracle_2000_osr_zdr": {
+   "display": "0.981",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Wed→Thu.Aegis-OSR.zero_day_recall"
+  },
+  "a_thu_oracle_2000_xgb_fpr": {
+   "display": "0.85%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Wed→Thu.Closed-set XGB.fpr"
+  },
+  "a_thu_oracle_2000_xgb_zdr": {
+   "display": "0.970",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.oracle@2000.per_fold.Mon-Wed→Thu.Closed-set XGB.zero_day_recall"
+  },
+  "a_thu_recal_2000_osr_fpr": {
+   "display": "0.49%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@2000.per_fold.Mon-Wed→Thu.Aegis-OSR.fpr"
+  },
+  "a_thu_recal_2000_osr_zdr": {
+   "display": "0.951",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@2000.per_fold.Mon-Wed→Thu.Aegis-OSR.zero_day_recall"
+  },
+  "a_thu_recal_2000_xgb_fpr": {
+   "display": "0.97%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@2000.per_fold.Mon-Wed→Thu.Closed-set XGB.fpr"
+  },
+  "a_thu_recal_2000_xgb_zdr": {
+   "display": "0.980",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@2000.per_fold.Mon-Wed→Thu.Closed-set XGB.zero_day_recall"
+  },
+  "a_thu_recal_5000_osr_fpr": {
+   "display": "0.67%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@5000.per_fold.Mon-Wed→Thu.Aegis-OSR.fpr"
+  },
+  "a_thu_recal_5000_osr_zdr": {
+   "display": "0.882",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@5000.per_fold.Mon-Wed→Thu.Aegis-OSR.zero_day_recall"
+  },
+  "a_thu_recal_5000_xgb_fpr": {
+   "display": "1.00%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@5000.per_fold.Mon-Wed→Thu.Closed-set XGB.fpr"
+  },
+  "a_thu_recal_5000_xgb_zdr": {
+   "display": "0.982",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@5000.per_fold.Mon-Wed→Thu.Closed-set XGB.zero_day_recall"
+  },
+  "a_thu_recal_500_osr_fpr": {
+   "display": "0.27%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@500.per_fold.Mon-Wed→Thu.Aegis-OSR.fpr"
+  },
+  "a_thu_recal_500_osr_zdr": {
+   "display": "0.938",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@500.per_fold.Mon-Wed→Thu.Aegis-OSR.zero_day_recall"
+  },
+  "a_thu_recal_500_xgb_fpr": {
+   "display": "0.43%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@500.per_fold.Mon-Wed→Thu.Closed-set XGB.fpr"
+  },
+  "a_thu_recal_500_xgb_zdr": {
+   "display": "0.951",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal@500.per_fold.Mon-Wed→Thu.Closed-set XGB.zero_day_recall"
+  },
+  "a_thu_recalref_5000_osr_fpr": {
+   "display": "0.77%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@5000.per_fold.Mon-Wed→Thu.Aegis-OSR.fpr"
+  },
+  "a_thu_recalref_5000_osr_zdr": {
+   "display": "0.961",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@5000.per_fold.Mon-Wed→Thu.Aegis-OSR.zero_day_recall"
+  },
+  "a_thu_recalref_5000_xgb_fpr": {
+   "display": "1.02%",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@5000.per_fold.Mon-Wed→Thu.Closed-set XGB.fpr"
+  },
+  "a_thu_recalref_5000_xgb_zdr": {
+   "display": "0.981",
+   "source": "research_artifacts/openset_temporal_summary.json:adaptation.temporal.recal+ref@5000.per_fold.Mon-Wed→Thu.Closed-set XGB.zero_day_recall"
+  },
+  "abl_ae_pp": {
+   "display": "14.4",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR w/ AE novelty.zero_day_recall"
+  },
+  "abl_if_pp": {
+   "display": "22.8",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR w/ IForest novelty.zero_day_recall"
+  },
+  "abl_max_pp": {
+   "display": "17.5",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR w/ max fusion.zero_day_recall"
+  },
+  "abl_omni_pp": {
+   "display": "9.2",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR w/ omnibus fusion.zero_day_recall"
+  },
+  "ae_auroc": {
+   "display": "0.955",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo"
+  },
+  "calib_brier_after": {
+   "display": "0.0037",
+   "source": "models/trained_models/calibration_hpo_experiment.json:isotonic_calibrated.brier_score"
+  },
+  "calib_brier_before": {
+   "display": "0.0028",
+   "source": "models/trained_models/calibration_hpo_experiment.json:baseline.brier_score"
+  },
+  "calib_recall_after": {
+   "display": "0.982",
+   "source": "models/trained_models/calibration_hpo_experiment.json:isotonic_calibrated.metrics.recall"
+  },
+  "calib_recall_before": {
+   "display": "0.986",
+   "source": "models/trained_models/calibration_hpo_experiment.json:baseline.metrics.recall"
+  },
+  "calib_rows": {
+   "display": "60,000",
+   "source": "models/trained_models/calibration_hpo_experiment.json:sample_train_rows"
+  },
+  "corpus_rows": {
+   "display": "2,520,798",
+   "source": "research_artifacts/dataset_summary.json:cic2017.rows"
+  },
+  "dt_xgb_fpr_ratio": {
+   "display": "4",
+   "source": "models/trained_models/training_report.json:binary.validation.*.fpr"
+  },
+  "dt_xgb_recall_gap_pp": {
+   "display": "0.7",
+   "source": "models/trained_models/training_report.json:binary.validation.*.recall"
+  },
+  "dt_zdr": {
+   "display": "24.1%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Closed-set DT (v1.1-style).zero_day_recall.mean"
+  },
+  "fam_Bot": {
+   "display": "2.3%",
+   "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.Bot.Aegis-OSR.zero_day_recall.mean"
+  },
+  "fam_BruteForce": {
+   "display": "92.3%",
+   "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.BruteForce.Aegis-OSR.zero_day_recall.mean"
+  },
+  "fam_BruteForce_ae": {
+   "display": "31.6%",
+   "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.BruteForce"
+  },
+  "fam_BruteForce_xgb": {
+   "display": "31.0%",
+   "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.BruteForce"
+  },
+  "fam_DDoS": {
+   "display": "96.5%",
+   "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.DDoS.Aegis-OSR.zero_day_recall.mean"
+  },
+  "fam_DoS": {
+   "display": "97.7%",
+   "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.DoS.Aegis-OSR.zero_day_recall.mean"
+  },
+  "fam_PortScan": {
+   "display": "35.7%",
+   "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.PortScan.Aegis-OSR.zero_day_recall.mean"
+  },
+  "fam_WebAttack": {
+   "display": "99.1%",
+   "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo.WebAttack.Aegis-OSR.zero_day_recall.mean"
+  },
+  "fam_above_098": {
+   "display": "7",
+   "source": "research_artifacts/model_family_comparison.json:results.*.iid.f1 > 0.98"
+  },
+  "fam_best_heldout": {
+   "display": "48.3%",
+   "source": "research_artifacts/model_family_comparison.json:results.Hist. gradient boosting (LightGBM-style).heldout_mean"
+  },
+  "fam_best_name": {
+   "display": "Hist. gradient boosting (LightGBM-style)",
+   "source": "research_artifacts/model_family_comparison.json:results"
+  },
+  "fam_bot_max": {
+   "display": "0.15%",
+   "source": "research_artifacts/model_family_comparison.json:results.*.heldout.Bot"
+  },
+  "fam_flood_web_range": {
+   "display": "96.5–99.1%",
+   "source": "research_artifacts/openset_loafo_summary.json:per_fold.loafo"
+  },
+  "fam_iid_f1_range": {
+   "display": "0.928 to 0.997",
+   "source": "research_artifacts/model_family_comparison.json:results.*.iid.f1"
+  },
+  "fam_n_nns": {
+   "display": "3",
+   "source": "research_artifacts/model_family_comparison.json:results"
+  },
+  "fam_n_trees": {
+   "display": "4",
+   "source": "research_artifacts/model_family_comparison.json:results"
+  },
+  "fam_nn_mean": {
+   "display": "21.6%",
+   "source": "research_artifacts/model_family_comparison.json:results[MLP / ANN (PyTorch), 1-D CNN (PyTorch), LSTM (PyTorch)]"
+  },
+  "fam_tree_mean": {
+   "display": "42.5%",
+   "source": "research_artifacts/model_family_comparison.json:results[Decision tree, Random forest, XGBoost, Hist. gradient boosting (LightGBM-style)]"
+  },
+  "feature_overlap": {
+   "display": "27",
+   "source": "models/trained_models/training_report.json:feature_overlap"
+  },
+  "fpr_range_calibrated": {
+   "display": "0.97% and 1.01%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.*.fpr (excl. DT)"
+  },
+  "gate_cal_rows": {
+   "display": "40,000",
+   "source": "research_artifacts/zero_day_gate_report.json:training.calibration_split"
+  },
+  "gate_latency_ms": {
+   "display": "0.06",
+   "source": "research_artifacts/zero_day_gate_report.json:evaluation.gate.latency_ms_per_flow_batch"
+  },
+  "gate_parity": {
+   "display": "99.996%",
+   "source": "research_artifacts/zero_day_gate_report.json:evaluation.gate.served_vs_research_parity"
+  },
+  "gate_train_rows": {
+   "display": "662,365",
+   "source": "research_artifacts/zero_day_gate_report.json:training.n_train"
+  },
+  "global_top": {
+   "display": "Bwd Packet Length Std (0.40), Average Packet Size (0.28), Max Packet Length (0.10), Destination Port (0.08), Init_Win_bytes_backward (0.06)",
+   "source": "models/trained_models/global_shap_summary.json:global.binary_top"
+  },
+  "if_known": {
+   "display": "0.8%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Isolation Forest"
+  },
+  "if_zdr": {
+   "display": "1.2%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Isolation Forest"
+  },
+  "known_acc_min": {
+   "display": "99%",
+   "source": "research_artifacts/openset_loafo_summary.json:attribution.loafo.*.known_family_accuracy"
+  },
+  "legacy_overlap": {
+   "display": "80%",
+   "source": "research_artifacts/replay/replay_pool_manifest.json:gate_test_rows_in_frozen_train_or_val ÷ gate_test_rows"
+  },
+  "loafo_benign_test": {
+   "display": "150,000",
+   "source": "research_artifacts/openset_loafo_records.json:records[0].n_test.benign"
+  },
+  "loafo_fit_s": {
+   "display": "84",
+   "source": "research_artifacts/openset_loafo_records.json:records[*].fit_seconds"
+  },
+  "loafo_runs": {
+   "display": "30",
+   "source": "research_artifacts/openset_loafo_summary.json:meta.n_records"
+  },
+  "loafo_score_ms": {
+   "display": "68",
+   "source": "research_artifacts/openset_loafo_records.json:records[*].score_ms_per_1k_flows"
+  },
+  "loafo_seeds": {
+   "display": "5",
+   "source": "research_artifacts/openset_loafo_summary.json:meta.seeds"
+  },
+  "loafo_unknown_max": {
+   "display": "25,047",
+   "source": "research_artifacts/openset_loafo_records.json:records[*].n_test.unknown"
+  },
+  "loafo_unknown_min": {
+   "display": "1,995",
+   "source": "research_artifacts/openset_loafo_records.json:records[*].n_test.unknown"
+  },
+  "mc_misattributed": {
+   "display": "18",
+   "source": "models/trained_models/training_report.json:multiclass.test.confusion_matrix"
+  },
+  "mc_score_random_forest": {
+   "display": "0.99877",
+   "source": "models/trained_models/training_report.json:multiclass.validation.random_forest.selection_score"
+  },
+  "mc_score_xgboost": {
+   "display": "0.99802",
+   "source": "models/trained_models/training_report.json:multiclass.validation.xgboost.selection_score"
+  },
+  "mc_test_attacks": {
+   "display": "85,139",
+   "source": "models/trained_models/training_report.json:multiclass.test.confusion_matrix"
+  },
+  "mc_worst_cell": {
+   "display": "6 PortScan flows labelled DoS",
+   "source": "models/trained_models/training_report.json:multiclass.test.confusion_matrix"
+  },
+  "mis_max": {
+   "display": "0.9%",
+   "source": "research_artifacts/openset_loafo_summary.json:attribution.loafo.*.unknown_misattributed_to_known"
+  },
+  "mis_max_fold": {
+   "display": "DoS",
+   "source": "research_artifacts/openset_loafo_summary.json:attribution.loafo"
+  },
+  "mis_small_folds": {
+   "display": "5 of 6",
+   "source": "research_artifacts/openset_loafo_summary.json:attribution.loafo (≤ 0.2%)"
+  },
+  "n_Heartbleed": {
+   "display": "11",
+   "source": "research_artifacts/dataset_summary.json:cic2017.by_family.Heartbleed"
+  },
+  "n_Infiltration": {
+   "display": "36",
+   "source": "research_artifacts/dataset_summary.json:cic2017.by_family.Infiltration"
+  },
+  "n_features": {
+   "display": "77",
+   "source": "research_artifacts/dataset_summary.json:cic2017.n_features"
+  },
+  "osr_auroc": {
+   "display": "0.946",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo"
+  },
+  "osr_fpr": {
+   "display": "1.00%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.fpr.mean"
+  },
+  "osr_fpr_a001": {
+   "display": "0.10%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.fpr@0.001"
+  },
+  "osr_fpr_a05": {
+   "display": "5.00%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.fpr@0.05"
+  },
+  "osr_fpr_ci": {
+   "display": "0.92–1.07%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.fpr"
+  },
+  "osr_known": {
+   "display": "1.000",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.known_recall.mean"
+  },
+  "osr_minus_dt_pp": {
+   "display": "46.5",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo"
+  },
+  "osr_minus_xgb_pp": {
+   "display": "21.6",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo"
+  },
+  "osr_zdr": {
+   "display": "70.6%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.zero_day_recall.mean"
+  },
+  "osr_zdr_a001": {
+   "display": "28.2%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.zero_day_recall@0.001"
+  },
+  "osr_zdr_a05": {
+   "display": "81.2%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.zero_day_recall@0.05"
+  },
+  "osr_zdr_ci": {
+   "display": "68.9–72.3%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Aegis-OSR.zero_day_recall"
+  },
+  "p11_ddos_prior": {
+   "display": "0.82",
+   "source": "models/trained_models/empirical_mitigation_report.json:comparisons.ddos_block_source.simulation_assumption"
+  },
+  "p11_dos_eff": {
+   "display": "80%",
+   "source": "models/trained_models/empirical_mitigation_report.json:comparisons.dos_rate_limit"
+  },
+  "p12_categories": {
+   "display": "10",
+   "source": "reports/final_security_validation_report.json:categories"
+  },
+  "p12_overall": {
+   "display": "PASS",
+   "source": "reports/final_security_validation_report.json:overall"
+  },
+  "pd_anomaly_bytes": {
+   "display": "842,917",
+   "source": "research_artifacts/dataset_summary.json:cic2018_v2.benign_median_by_day.2018-02-21"
+  },
+  "pd_anomaly_day": {
+   "display": "2018-02-21",
+   "source": "research_artifacts/dataset_summary.json:cic2018_v2.benign_median_by_day (max Flow Bytes/s ratio)"
+  },
+  "pd_anomaly_none_fpr": {
+   "display": "100.0%",
+   "source": "research_artifacts/openset_cross_perday_summary.json:per_fold.cross_perday.2018-02-21.Aegis-OSR.fpr"
+  },
+  "pd_days": {
+   "display": "10",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@2000.per_fold"
+  },
+  "pd_days_within": {
+   "display": "8",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@2000.per_fold (FPR ≤ 1.5%)"
+  },
+  "pd_none_fpr": {
+   "display": "41.9%",
+   "source": "research_artifacts/openset_cross_perday_summary.json:overall.cross_perday.Aegis-OSR.fpr"
+  },
+  "pd_other_bytes_median": {
+   "display": "1,129",
+   "source": "research_artifacts/dataset_summary.json:cic2018_v2.benign_median_by_day (median over other days)"
+  },
+  "pd_recal2000_fpr": {
+   "display": "1.62%",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@2000.overall.Aegis-OSR.fpr"
+  },
+  "pd_recal2000_fpr_excl": {
+   "display": "1.80%",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@2000.per_fold (day mean excl. 2018-02-21)"
+  },
+  "pd_recal2000_fpr_range": {
+   "display": "0.00%–8.84%",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@2000.per_fold.*.Aegis-OSR.fpr"
+  },
+  "pd_recal2000_known": {
+   "display": "0.088",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@2000.overall.Aegis-OSR.known_recall"
+  },
+  "pd_recal2000_zdr": {
+   "display": "0.027",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@2000.overall.Aegis-OSR.zero_day_recall"
+  },
+  "pd_recal5000_fpr": {
+   "display": "0.95%",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@5000.overall.Aegis-OSR.fpr"
+  },
+  "pd_recal5000_known": {
+   "display": "0.099",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@5000.overall.Aegis-OSR.known_recall"
+  },
+  "pd_recal5000_zdr": {
+   "display": "0.016",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@5000.overall.Aegis-OSR.zero_day_recall"
+  },
+  "pd_recal500_fpr": {
+   "display": "1.31%",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@500.overall.Aegis-OSR.fpr"
+  },
+  "pd_recal500_known": {
+   "display": "0.051",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@500.overall.Aegis-OSR.known_recall"
+  },
+  "pd_recal500_zdr": {
+   "display": "0.025",
+   "source": "research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday.recal@500.overall.Aegis-OSR.zero_day_recall"
+  },
+  "perf_batch500": {
+   "display": "125",
+   "source": "results/performance/operating_envelope_latest.json:metrics.envelope.batch.500"
+  },
+  "perf_vec_range": {
+   "display": "15,469–21,819",
+   "source": "results/performance/operating_envelope_latest.json:metrics.envelope.batch"
+  },
+  "pool_attack_range": {
+   "display": "77–700",
+   "source": "research_artifacts/replay/replay_pool_manifest.json:sampled_per_family"
+  },
+  "pool_benign": {
+   "display": "8,000",
+   "source": "research_artifacts/replay/replay_pool_manifest.json:sampled_per_family.BENIGN"
+  },
+  "pool_n_Bot": {
+   "display": "82",
+   "source": "research_artifacts/replay/replay_pool_manifest.json:sampled_per_family.Bot"
+  },
+  "pool_n_WebAttack": {
+   "display": "77",
+   "source": "research_artifacts/replay/replay_pool_manifest.json:sampled_per_family.WebAttack"
+  },
+  "pool_rows": {
+   "display": "10,676",
+   "source": "research_artifacts/replay/replay_pool_manifest.json:rows"
+  },
+  "r_avail_ddos_0": {
+   "display": "99.5%",
+   "source": "results/cyber_range/experiments/latest.json:suites.delay[ddos,0].availability_mean_during_attack"
+  },
+  "r_avail_ddos_10": {
+   "display": "89.9%",
+   "source": "results/cyber_range/experiments/latest.json:suites.delay[ddos,10].availability_mean_during_attack"
+  },
+  "r_avail_ddos_3": {
+   "display": "98.0%",
+   "source": "results/cyber_range/experiments/latest.json:suites.delay[ddos,3].availability_mean_during_attack"
+  },
+  "r_avail_ddos_30": {
+   "display": "62.0%",
+   "source": "results/cyber_range/experiments/latest.json:suites.delay[ddos,30].availability_mean_during_attack"
+  },
+  "r_avail_dos_0": {
+   "display": "100.0%",
+   "source": "results/cyber_range/experiments/latest.json:suites.delay[dos,0].availability_mean_during_attack"
+  },
+  "r_avail_dos_10": {
+   "display": "99.8%",
+   "source": "results/cyber_range/experiments/latest.json:suites.delay[dos,10].availability_mean_during_attack"
+  },
+  "r_avail_dos_3": {
+   "display": "100.0%",
+   "source": "results/cyber_range/experiments/latest.json:suites.delay[dos,3].availability_mean_during_attack"
+  },
+  "r_avail_dos_30": {
+   "display": "85.3%",
+   "source": "results/cyber_range/experiments/latest.json:suites.delay[dos,30].availability_mean_during_attack"
+  },
+  "r_ddos_2src_min_avail": {
+   "display": "95.2%",
+   "source": "results/cyber_range/experiments/latest.json:suites.attackers[2].availability_min_during_attack"
+  },
+  "r_ddos_8src_min_avail": {
+   "display": "36.5%",
+   "source": "results/cyber_range/experiments/latest.json:suites.attackers[8].availability_min_during_attack"
+  },
+  "r_fi_k1": {
+   "display": "17–19",
+   "source": "results/cyber_range/experiments/latest.json:suites.threshold[k=1].false_incidents"
+  },
+  "r_fi_k2": {
+   "display": "0.8",
+   "source": "results/cyber_range/experiments/latest.json:suites.threshold[k=2].false_incidents (mean)"
+  },
+  "r_fi_k3plus_max": {
+   "display": "0.1",
+   "source": "results/cyber_range/experiments/latest.json:suites.threshold[k≥3].false_incidents (max)"
+  },
+  "r_flows_range": {
+   "display": "2,713–6,017",
+   "source": "results/cyber_range/experiments/latest.json:suites[*].cells[*].flows_total"
+  },
+  "r_fpr_ratio": {
+   "display": "10",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector fpr_flows gate ÷ frozen"
+  },
+  "r_frozen_fpr": {
+   "display": "0.08%",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[*,frozen].fpr_flows (mean)"
+  },
+  "r_gate_fpr": {
+   "display": "0.83%",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[*,gate].fpr_flows (mean)"
+  },
+  "r_iso_collateral": {
+   "display": "27.4%",
+   "source": "results/cyber_range/experiments/latest.json:suites.defense[isolate_host].collateral_rate"
+  },
+  "r_iso_recovery": {
+   "display": "52",
+   "source": "results/cyber_range/experiments/latest.json:suites.defense[isolate_host].recovery_time_s"
+  },
+  "r_kmax": {
+   "display": "8",
+   "source": "results/cyber_range/experiments/latest.json:suites.threshold"
+  },
+  "r_known_latency_max": {
+   "display": "4.1",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[known scenarios].detection_latency_s"
+  },
+  "r_lat_beacon_k1": {
+   "display": "1.2",
+   "source": "results/cyber_range/experiments/latest.json:suites.threshold[k=1,bot_beacon]"
+  },
+  "r_lat_beacon_kmax": {
+   "display": "7.4",
+   "source": "results/cyber_range/experiments/latest.json:suites.threshold[k=8,bot_beacon]"
+  },
+  "r_lat_dos_k1": {
+   "display": "0.0",
+   "source": "results/cyber_range/experiments/latest.json:suites.threshold[k=1,dos]"
+  },
+  "r_lat_dos_kmax": {
+   "display": "0.9",
+   "source": "results/cyber_range/experiments/latest.json:suites.threshold[k=8,dos]"
+  },
+  "r_lat_hostdisc_k1": {
+   "display": "1.2",
+   "source": "results/cyber_range/experiments/latest.json:suites.threshold[k=1,host_discovery]"
+  },
+  "r_lat_hostdisc_kmax": {
+   "display": "6.8",
+   "source": "results/cyber_range/experiments/latest.json:suites.threshold[k=8,host_discovery]"
+  },
+  "r_rl_success": {
+   "display": "20%",
+   "source": "results/cyber_range/experiments/latest.json:suites.defense[rate_limit].attack_success_after_defense"
+  },
+  "r_wall_range": {
+   "display": "0.04–0.37",
+   "source": "results/cyber_range/experiments/latest.json:suites[*].cells[*].wall_seconds"
+  },
+  "range_runs": {
+   "display": "1,190",
+   "source": "results/cyber_range/experiments/latest.json:suites (cells × seeds)"
+  },
+  "range_runtime_min": {
+   "display": "2.1",
+   "source": "results/cyber_range/experiments/latest.json:suites[*].runtime_seconds"
+  },
+  "range_scenarios": {
+   "display": "9",
+   "source": "results/cyber_range/experiments/latest.json:scenarios"
+  },
+  "range_seeds": {
+   "display": "10",
+   "source": "results/cyber_range/experiments/latest.json:seeds"
+  },
+  "rb_frozen_latency": {
+   "display": "4.1",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[bot_beacon].detection_latency_s"
+  },
+  "rb_frozen_recall": {
+   "display": "0.563",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[bot_beacon].attack_flow_recall"
+  },
+  "rb_gate_latency": {
+   "display": "2.8",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[bot_beacon].detection_latency_s"
+  },
+  "rb_gate_recall": {
+   "display": "0.877",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[bot_beacon].attack_flow_recall"
+  },
+  "risk_band_changes": {
+   "display": "0",
+   "source": "models/trained_models/risk_weight_sensitivity.json:results (cases with >1 severity)"
+  },
+  "risk_max_move": {
+   "display": "6.6",
+   "source": "models/trained_models/risk_weight_sensitivity.json:results (max per-case spread)"
+  },
+  "rz_frozen_detected": {
+   "display": "0",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[zero_day,frozen].detected"
+  },
+  "rz_frozen_recall": {
+   "display": "0.000",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[zero_day,frozen].attack_flow_recall"
+  },
+  "rz_gate_detected": {
+   "display": "10",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[zero_day,gate].detected"
+  },
+  "rz_gate_latency": {
+   "display": "4.3",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[zero_day,gate].detection_latency_s"
+  },
+  "rz_gate_latency_ci": {
+   "display": "[2.6, 6.0]",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[zero_day,gate].detection_latency_s"
+  },
+  "rz_gate_recall": {
+   "display": "0.645",
+   "source": "results/cyber_range/experiments/latest.json:suites.detector[zero_day,gate].attack_flow_recall"
+  },
+  "t_fam_Bot": {
+   "display": "0.9%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_family.temporal.Bot.Aegis-OSR"
+  },
+  "t_fam_Bot_xgb": {
+   "display": "0.0%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_family.temporal.Bot.Closed-set XGB"
+  },
+  "t_fam_DDoS": {
+   "display": "99.2%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_family.temporal.DDoS.Aegis-OSR"
+  },
+  "t_fam_DDoS_xgb": {
+   "display": "95.0%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_family.temporal.DDoS.Closed-set XGB"
+  },
+  "t_fam_Infiltration": {
+   "display": "65.0%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_family.temporal.Infiltration.Aegis-OSR"
+  },
+  "t_fam_Infiltration_xgb": {
+   "display": "0.0%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_family.temporal.Infiltration.Closed-set XGB"
+  },
+  "t_fam_PortScan": {
+   "display": "3.6%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_family.temporal.PortScan.Aegis-OSR"
+  },
+  "t_fam_PortScan_xgb": {
+   "display": "2.7%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_family.temporal.PortScan.Closed-set XGB"
+  },
+  "t_fam_WebAttack": {
+   "display": "99.8%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_family.temporal.WebAttack.Aegis-OSR"
+  },
+  "t_fam_WebAttack_xgb": {
+   "display": "99.9%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_family.temporal.WebAttack.Closed-set XGB"
+  },
+  "t_fri_knn_fpr": {
+   "display": "8.82%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Thu→Fri.kNN distance.fpr"
+  },
+  "t_fri_knn_zdr": {
+   "display": "0.423",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Thu→Fri.kNN distance.zero_day_recall"
+  },
+  "t_fri_osr_fpr": {
+   "display": "7.09%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Thu→Fri.Aegis-OSR.fpr"
+  },
+  "t_fri_osr_fpr_ratio": {
+   "display": "7",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal (÷ α)"
+  },
+  "t_fri_osr_zdr": {
+   "display": "0.495",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Thu→Fri.Aegis-OSR.zero_day_recall"
+  },
+  "t_fri_xgb_fpr": {
+   "display": "1.27%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Thu→Fri.Closed-set XGB.fpr"
+  },
+  "t_fri_xgb_zdr": {
+   "display": "0.471",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Thu→Fri.Closed-set XGB.zero_day_recall"
+  },
+  "t_thu_knn_fpr": {
+   "display": "11.01%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Wed→Thu.kNN distance.fpr"
+  },
+  "t_thu_knn_zdr": {
+   "display": "0.055",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Wed→Thu.kNN distance.zero_day_recall"
+  },
+  "t_thu_osr_fpr": {
+   "display": "1.72%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Wed→Thu.Aegis-OSR.fpr"
+  },
+  "t_thu_osr_zdr": {
+   "display": "0.992",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Wed→Thu.Aegis-OSR.zero_day_recall"
+  },
+  "t_thu_xgb_fpr": {
+   "display": "1.25%",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Wed→Thu.Closed-set XGB.fpr"
+  },
+  "t_thu_xgb_zdr": {
+   "display": "0.982",
+   "source": "research_artifacts/openset_temporal_summary.json:per_fold.temporal.Mon-Wed→Thu.Closed-set XGB.zero_day_recall"
+  },
+  "thr_val_rows": {
+   "display": "150,000",
+   "source": "models/trained_models/threshold_operating_point.json:val_rows"
+  },
+  "unseen_frozen": {
+   "display": "0",
+   "source": "research_artifacts/zero_day_gate_report.json:evaluation.natural_unknowns[*].frozen_v11_attack_rate"
+  },
+  "unseen_gate": {
+   "display": "29",
+   "source": "research_artifacts/zero_day_gate_report.json:evaluation.natural_unknowns[*].gate_alert_rate"
+  },
+  "unseen_total": {
+   "display": "47",
+   "source": "research_artifacts/zero_day_gate_report.json:evaluation.natural_unknowns[*].n"
+  },
+  "v11_f1": {
+   "display": "0.990",
+   "source": "models/trained_models/training_report.json:binary.test.f1"
+  },
+  "v11_rows": {
+   "display": "2,520,751",
+   "source": "research_artifacts/dataset_summary.json:cic2017 minus Infiltration/Heartbleed"
+  },
+  "v11_test_rows": {
+   "display": "504,151",
+   "source": "models/trained_models/training_report.json:binary.test.confusion_matrix"
+  },
+  "v11_train_rows": {
+   "display": "1,764,525",
+   "source": "v11_rows − test − validation"
+  },
+  "v11_val_rows": {
+   "display": "252,075",
+   "source": "models/trained_models/training_report.json:binary.validation.<best>.confusion_matrix"
+  },
+  "x_auroc_range": {
+   "display": "0.46–0.58",
+   "source": "research_artifacts/openset_cross_summary_v2.json:per_fold.cross_dataset.*.auroc_unknown"
+  },
+  "x_family_acc": {
+   "display": "8.1%",
+   "source": "research_artifacts/openset_cross_summary_v2.json:attribution.cross_dataset.known_family_accuracy"
+  },
+  "x_frozen_f1": {
+   "display": "0.278",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:binary.f1"
+  },
+  "x_frozen_fpr": {
+   "display": "0.15%",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:binary.benign_fpr"
+  },
+  "x_frozen_ftp": {
+   "display": "68.6%",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:per_label[FTP-BruteForce].alert_rate"
+  },
+  "x_frozen_ftp_n": {
+   "display": "51",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:per_label[FTP-BruteForce].n"
+  },
+  "x_frozen_hulk": {
+   "display": "1.1%",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:per_label[DoS attacks-Hulk].alert_rate"
+  },
+  "x_frozen_hulk_n": {
+   "display": "20,000",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:per_label[DoS attacks-Hulk].n"
+  },
+  "x_frozen_loichttp": {
+   "display": "45.0%",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:per_label[DDoS attacks-LOIC-HTTP].alert_rate"
+  },
+  "x_frozen_loichttp_n": {
+   "display": "20,000",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:per_label[DDoS attacks-LOIC-HTTP].n"
+  },
+  "x_frozen_n_benign": {
+   "display": "200,000",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:n.benign"
+  },
+  "x_frozen_n_total": {
+   "display": "352,609",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:n"
+  },
+  "x_frozen_per_label_cap": {
+   "display": "20,000",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:sampling.per_attack_label"
+  },
+  "x_frozen_precision": {
+   "display": "0.988",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:binary.precision"
+  },
+  "x_frozen_recall": {
+   "display": "0.162",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:binary.recall"
+  },
+  "x_frozen_slowloris": {
+   "display": "95.6%",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:per_label[DoS attacks-Slowloris].alert_rate"
+  },
+  "x_frozen_slowloris_n": {
+   "display": "9,908",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:per_label[DoS attacks-Slowloris].n"
+  },
+  "x_frozen_ssh": {
+   "display": "0.0%",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:per_label[SSH-Bruteforce].alert_rate"
+  },
+  "x_frozen_ssh_n": {
+   "display": "20,000",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:per_label[SSH-Bruteforce].n"
+  },
+  "x_osr_auroc": {
+   "display": "0.57",
+   "source": "research_artifacts/openset_cross_summary_v2.json:per_fold.cross_dataset.Aegis-OSR.auroc_unknown"
+  },
+  "x_osr_fpr": {
+   "display": "36.7%",
+   "source": "research_artifacts/openset_cross_summary_v2.json:per_fold.cross_dataset.Aegis-OSR.fpr"
+  },
+  "x_osr_fpr_ratio": {
+   "display": "37",
+   "source": "research_artifacts/openset_cross_summary_v2.json:per_fold.cross_dataset (÷ α)"
+  },
+  "x_osr_known": {
+   "display": "0.855",
+   "source": "research_artifacts/openset_cross_summary_v2.json:per_fold.cross_dataset.Aegis-OSR.known_recall"
+  },
+  "x_sample_benign": {
+   "display": "604,938",
+   "source": "research_artifacts/dataset_summary.json:cic2018_v2.by_family.BENIGN"
+  },
+  "x_sample_benign_days": {
+   "display": "10",
+   "source": "research_artifacts/dataset_summary.json:cic2018_v2.by_day_family"
+  },
+  "x_sample_days": {
+   "display": "10",
+   "source": "research_artifacts/dataset_summary.json:cic2018_v2.by_day_family"
+  },
+  "x_sample_rows": {
+   "display": "1,098,993",
+   "source": "research_artifacts/dataset_summary.json:cic2018_v2.rows"
+  },
+  "x_sample_version": {
+   "display": "v2",
+   "source": "research_artifacts/frozen_v11_on_cic2018_v2.json:sampling"
+  },
+  "x_v1_benign_days": {
+   "display": "4",
+   "source": "research_artifacts/dataset_summary.json:cic2018_v1.by_day_family"
+  },
+  "x_xgb_auroc": {
+   "display": "0.51",
+   "source": "research_artifacts/openset_cross_summary_v2.json:per_fold.cross_dataset.Closed-set XGB.auroc_unknown"
+  },
+  "x_xgb_fpr": {
+   "display": "4.6%",
+   "source": "research_artifacts/openset_cross_summary_v2.json:per_fold.cross_dataset.Closed-set XGB.fpr"
+  },
+  "x_xgb_known": {
+   "display": "0.861",
+   "source": "research_artifacts/openset_cross_summary_v2.json:per_fold.cross_dataset.Closed-set XGB.known_recall"
+  },
+  "xai_shap_lime": {
+   "display": "0.27",
+   "source": "models/trained_models/xai_stability_report.json:overall.shap_lime_jaccard_top5"
+  },
+  "xgb_zdr": {
+   "display": "49.0%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Closed-set XGB.zero_day_recall.mean"
+  },
+  "xgb_zdr_a001": {
+   "display": "11.2%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Closed-set XGB.zero_day_recall@0.001"
+  },
+  "xgb_zdr_a05": {
+   "display": "73.2%",
+   "source": "research_artifacts/openset_loafo_summary.json:overall.loafo.Closed-set XGB.zero_day_recall@0.05"
+  }
+ }
+}

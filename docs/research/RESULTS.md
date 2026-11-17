@@ -1,6 +1,6 @@
 # Aegis-OSR — results (auto-generated)
 
-_Generated 2026-11-17T09:45:47+00:00 by `scripts/55_research_figures.py`. Do not edit by hand — rerun the script._
+_Generated 2026-11-17T11:04:21+00:00 by `scripts/55_research_figures.py`. Do not edit by hand — rerun the script._
 
 Design selected on pilot seed 0; all numbers below use fresh seeds (see `meta`). α = 1% benign false-alarm budget unless stated; brackets are 95% t-intervals over seeds.
 
@@ -119,44 +119,44 @@ Seeds: [1, 2, 3, 4, 5] · records: 10 · commit `775e9a9`
 
 ## Cross-dataset: CICIDS2017 → CSE-CIC-IDS2018
 
-Seeds: [1, 2, 3, 4, 5] · records: 5 · commit `775e9a9`
+Seeds: [1, 2, 3, 4, 5] · records: 5 · commit `a20552f`
 
 ![cross methods](../../research_artifacts/figures/cross_methods.png)
 
 | Method | Group | Zero-day recall @1% | AUROC (unknown) | Known recall | Realized FPR |
 |---|---|---|---|---|---|
-| **Aegis-OSR** | proposed | 0.438 [0.423, 0.454] | 0.576 [0.570, 0.583] | 0.864 [0.842, 0.886] | 35.20% [32.15, 38.25] |
-| Aegis-OSR w/ omnibus fusion | ablation | 0.457 [0.416, 0.498] | 0.594 [0.586, 0.601] | 0.921 [0.915, 0.926] | 39.91% [35.66, 44.16] |
-| Aegis-OSR w/ AE novelty | ablation | 0.433 [0.414, 0.452] | 0.563 [0.551, 0.575] | 0.926 [0.923, 0.928] | 23.66% [21.43, 25.90] |
-| Aegis-OSR w/ max fusion | ablation | 0.429 [0.390, 0.467] | 0.596 [0.579, 0.613] | 0.902 [0.893, 0.911] | 35.09% [34.46, 35.73] |
-| Aegis-OSR w/ IForest novelty | ablation | 0.150 [0.093, 0.207] | 0.487 [0.478, 0.496] | 0.757 [0.681, 0.833] | 3.38% [1.63, 5.13] |
-| kNN distance | baseline | 0.714 [0.706, 0.722] | 0.559 [0.550, 0.567] | 0.519 [0.516, 0.522] | 59.30% [59.05, 59.55] |
-| Autoencoder | baseline | 0.304 [0.286, 0.322] | 0.550 [0.536, 0.564] | 0.514 [0.511, 0.517] | 27.38% [22.79, 31.96] |
-| Closed-set XGB | baseline | 0.166 [0.154, 0.179] | 0.490 [0.477, 0.502] | 0.842 [0.815, 0.868] | 4.10% [1.92, 6.28] |
-| XGB + Energy | baseline | 0.155 [0.133, 0.177] | 0.495 [0.483, 0.507] | 0.799 [0.744, 0.855] | 3.83% [3.07, 4.59] |
-| Closed-set DT (v1.1-style) | baseline | 0.085 [0.045, 0.124] | 0.453 [0.406, 0.501] | 0.331 [0.281, 0.381] | 13.97% [5.16, 22.78] |
-| Isolation Forest | baseline | 0.037 [0.033, 0.040] | 0.438 [0.419, 0.456] | 0.007 [0.006, 0.007] | 1.51% [0.99, 2.03] |
+| **Aegis-OSR** | proposed | 0.438 [0.427, 0.450] | 0.568 [0.562, 0.574] | 0.855 [0.837, 0.873] | 36.73% [34.72, 38.73] |
+| Aegis-OSR w/ omnibus fusion | ablation | 0.457 [0.424, 0.490] | 0.580 [0.574, 0.586] | 0.911 [0.906, 0.917] | 37.95% [33.18, 42.72] |
+| Aegis-OSR w/ AE novelty | ablation | 0.432 [0.418, 0.447] | 0.546 [0.538, 0.554] | 0.918 [0.915, 0.921] | 29.84% [28.20, 31.48] |
+| Aegis-OSR w/ max fusion | ablation | 0.431 [0.388, 0.473] | 0.581 [0.568, 0.593] | 0.890 [0.881, 0.899] | 33.74% [32.93, 34.55] |
+| Aegis-OSR w/ IForest novelty | ablation | 0.154 [0.097, 0.210] | 0.511 [0.506, 0.516] | 0.776 [0.700, 0.851] | 3.78% [2.72, 4.84] |
+| kNN distance | baseline | 0.715 [0.708, 0.722] | 0.552 [0.547, 0.557] | 0.500 [0.497, 0.502] | 59.79% [59.31, 60.26] |
+| Autoencoder | baseline | 0.304 [0.289, 0.318] | 0.533 [0.520, 0.545] | 0.493 [0.491, 0.496] | 29.39% [28.87, 29.91] |
+| Closed-set XGB | baseline | 0.168 [0.158, 0.178] | 0.513 [0.508, 0.519] | 0.861 [0.836, 0.886] | 4.62% [2.26, 6.97] |
+| XGB + Energy | baseline | 0.157 [0.134, 0.180] | 0.516 [0.509, 0.522] | 0.819 [0.766, 0.873] | 4.23% [3.59, 4.86] |
+| Closed-set DT (v1.1-style) | baseline | 0.083 [0.046, 0.121] | 0.455 [0.426, 0.485] | 0.351 [0.297, 0.405] | 14.59% [7.44, 21.74] |
+| Isolation Forest | baseline | 0.037 [0.034, 0.040] | 0.467 [0.451, 0.482] | 0.007 [0.007, 0.008] | 1.95% [1.39, 2.51] |
 
 **Seed-level paired comparison (folds averaged within each seed; fold W/L/T descriptive only)**
 
 | Aegis-OSR vs | Mean Δ zero-day recall [95% CI] | Seeds better | Paired t p (seeds) | Fold W / L / T (descriptive) |
 |---|---|---|---|---|
-| Closed-set XGB | +0.272 [+0.262, +0.282] | 5 / 5 | 2.15e-07 | 5 / 0 / 0 |
-| Isolation Forest | +0.402 [+0.385, +0.418] | 5 / 5 | 2.73e-07 | 5 / 0 / 0 |
-| kNN distance | -0.276 [-0.294, -0.257] | 0 / 5 | 1.98e-06 | 0 / 5 / 0 |
-| Closed-set DT (v1.1-style) | +0.354 [+0.324, +0.383] | 5 / 5 | 4.87e-06 | 5 / 0 / 0 |
-| Autoencoder | +0.134 [+0.121, +0.148] | 5 / 5 | 9.91e-06 | 5 / 0 / 0 |
-| XGB + Energy | +0.283 [+0.250, +0.316] | 5 / 5 | 1.88e-05 | 5 / 0 / 0 |
-| Aegis-OSR w/ IForest novelty | +0.288 [+0.222, +0.354] | 5 / 5 | 2.68e-04 | 5 / 0 / 0 |
-| Aegis-OSR w/ omnibus fusion | -0.018 [-0.050, +0.014] | 1 / 5 | 1.86e-01 | 1 / 4 / 0 |
-| Aegis-OSR w/ AE novelty | +0.005 [-0.006, +0.017] | 3 / 5 | 2.68e-01 | 3 / 2 / 0 |
-| Aegis-OSR w/ max fusion | +0.010 [-0.039, +0.059] | 2 / 5 | 6.15e-01 | 2 / 3 / 0 |
+| Closed-set XGB | +0.270 [+0.262, +0.279] | 5 / 5 | 1.07e-07 | 5 / 0 / 0 |
+| Isolation Forest | +0.401 [+0.388, +0.415] | 5 / 5 | 1.40e-07 | 5 / 0 / 0 |
+| kNN distance | -0.276 [-0.292, -0.261] | 0 / 5 | 1.01e-06 | 0 / 5 / 0 |
+| Closed-set DT (v1.1-style) | +0.355 [+0.327, +0.383] | 5 / 5 | 3.99e-06 | 5 / 0 / 0 |
+| Autoencoder | +0.135 [+0.122, +0.148] | 5 / 5 | 9.29e-06 | 5 / 0 / 0 |
+| XGB + Energy | +0.281 [+0.252, +0.310] | 5 / 5 | 1.13e-05 | 5 / 0 / 0 |
+| Aegis-OSR w/ IForest novelty | +0.285 [+0.224, +0.345] | 5 / 5 | 1.98e-04 | 5 / 0 / 0 |
+| Aegis-OSR w/ omnibus fusion | -0.019 [-0.048, +0.010] | 1 / 5 | 1.42e-01 | 1 / 4 / 0 |
+| Aegis-OSR w/ AE novelty | +0.006 [-0.004, +0.016] | 4 / 5 | 1.68e-01 | 4 / 1 / 0 |
+| Aegis-OSR w/ max fusion | +0.008 [-0.041, +0.056] | 1 / 5 | 6.80e-01 | 1 / 4 / 0 |
 
 **Per fold (zero-day recall, realized FPR)**
 
 | Fold | Aegis-OSR | Closed-set XGB | Aegis-OSR w/ AE novelty | Closed-set DT (v1.1-style) |
 |---|---|---|---|---|
-| CICIDS2017→CSE-CIC-IDS2018 | 0.438 [0.423, 0.454]<br/>FPR 35.20% [32.15, 38.25] | 0.166 [0.154, 0.179]<br/>FPR 4.10% [1.92, 6.28] | 0.433 [0.414, 0.452]<br/>FPR 23.66% [21.43, 25.90] | 0.085 [0.045, 0.124]<br/>FPR 13.97% [5.16, 22.78] |
+| CICIDS2017→CSE-CIC-IDS2018 | 0.438 [0.427, 0.450]<br/>FPR 36.73% [34.72, 38.73] | 0.168 [0.158, 0.178]<br/>FPR 4.62% [2.26, 6.97] | 0.432 [0.418, 0.447]<br/>FPR 29.84% [28.20, 31.48] | 0.083 [0.046, 0.121]<br/>FPR 14.59% [7.44, 21.74] |
 
 **Label-light adaptation (no retraining)**
 
@@ -164,12 +164,13 @@ Seeds: [1, 2, 3, 4, 5] · records: 5 · commit `775e9a9`
 
 | Fold | Variant | Window | Zero-day recall | Realized FPR |
 |---|---|---|---|---|
-| CICIDS2017→CSE-CIC-IDS2018 | recal | 500 | 0.043 [0.017, 0.069] | 0.83% [0.66, 1.01] |
-| CICIDS2017→CSE-CIC-IDS2018 | recal | 2000 | 0.152 [0.127, 0.177] | 2.36% [2.24, 2.49] |
-| CICIDS2017→CSE-CIC-IDS2018 | recal | 5000 | 0.167 [0.138, 0.196] | 4.42% [1.71, 7.14] |
-| CICIDS2017→CSE-CIC-IDS2018 | recal+ref | 500 | 0.183 [0.036, 0.329] | 6.88% [-3.56, 17.31] |
-| CICIDS2017→CSE-CIC-IDS2018 | recal+ref | 2000 | 0.644 [0.449, 0.840] | 50.96% [35.21, 66.72] |
-| CICIDS2017→CSE-CIC-IDS2018 | recal+ref | 5000 | 0.501 [0.412, 0.589] | 40.37% [35.49, 45.24] |
+| CICIDS2017→CSE-CIC-IDS2018 | oracle | 2000 | 0.020 [0.012, 0.028] | 0.92% [0.52, 1.32] |
+| CICIDS2017→CSE-CIC-IDS2018 | recal | 500 | 0.073 [0.034, 0.112] | 3.11% [1.22, 5.01] |
+| CICIDS2017→CSE-CIC-IDS2018 | recal | 2000 | 0.013 [0.008, 0.018] | 0.93% [0.68, 1.17] |
+| CICIDS2017→CSE-CIC-IDS2018 | recal | 5000 | 0.015 [0.011, 0.019] | 0.88% [0.78, 0.98] |
+| CICIDS2017→CSE-CIC-IDS2018 | recal+ref | 500 | 0.039 [-0.052, 0.130] | 1.66% [-2.51, 5.83] |
+| CICIDS2017→CSE-CIC-IDS2018 | recal+ref | 2000 | 0.126 [0.053, 0.199] | 3.40% [1.82, 4.98] |
+| CICIDS2017→CSE-CIC-IDS2018 | recal+ref | 5000 | 0.132 [0.041, 0.223] | 2.95% [1.79, 4.12] |
 
 ## Production Zero-Day Gate
 
@@ -189,23 +190,23 @@ Frozen v1.1 reference: benign FPR 0.079%, known recall 0.9927, never-seen attack
 
 ## Frozen v1.1 on CSE-CIC-IDS2018 (EXP-009, no retraining)
 
-Precision 0.992 · recall 0.102 · F1 0.185 · benign FPR 0.08% (IID CICIDS2017 F1 reference: None)
+Precision 0.988 · recall 0.162 · F1 0.278 · benign FPR 0.15% (IID CICIDS2017 F1 reference: 0.9904784130688448)
 
 | 2018 label | Family | n | Alert rate | Family match |
 |---|---|---|---|---|
-| Benign | BENIGN | 143116 | 0.001 | — |
+| Benign | BENIGN | 200000 | 0.002 | — |
 | Bot | Bot | 20000 | 0.000 | 0.000 |
 | Brute Force -Web | WebAttack | 555 | 0.031 | 0.000 |
 | Brute Force -XSS | WebAttack | 228 | 0.110 | 0.009 |
-| DDOS attack-HOIC | DDoS | 20000 | 0.001 | 0.000 |
+| DDOS attack-HOIC | DDoS | 20000 | 0.004 | 0.000 |
 | DDOS attack-LOIC-UDP | DDoS | 1730 | 0.000 | 0.000 |
-| DDoS attacks-LOIC-HTTP | DDoS | 20000 | 0.000 | 0.000 |
+| DDoS attacks-LOIC-HTTP | DDoS | 20000 | 0.450 | 0.000 |
 | DoS attacks-GoldenEye | DoS | 20000 | 0.274 | 0.274 |
-| DoS attacks-Hulk | DoS | 20000 | 0.008 | 0.007 |
-| DoS attacks-SlowHTTPTest | DoS | 55 | 0.709 | 0.000 |
+| DoS attacks-Hulk | DoS | 20000 | 0.011 | 0.008 |
+| DoS attacks-SlowHTTPTest | DoS | 53 | 0.698 | 0.000 |
 | DoS attacks-Slowloris | DoS | 9908 | 0.956 | 0.956 |
 | FTP-BruteForce | BruteForce | 51 | 0.686 | 0.686 |
-| Infilteration | Infiltration | 20000 | 0.014 | 0.000 |
+| Infilteration | Infiltration | 20000 | 0.015 | 0.000 |
 | SQL Injection | WebAttack | 84 | 0.024 | 0.000 |
 | SSH-Bruteforce | BruteForce | 20000 | 0.000 | 0.000 |
 

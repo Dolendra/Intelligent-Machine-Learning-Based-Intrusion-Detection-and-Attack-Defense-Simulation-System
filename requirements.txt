@@ -29,6 +29,8 @@ pyyaml>=6.0.0
 pyarrow>=14.0.0
 
 python-docx>=1.1.0
+# research paper build (docs/research/paper_build): inline equations in the DOCX
+latex2mathml>=3.77
 python-pptx>=1.0.0
 
 # Testing

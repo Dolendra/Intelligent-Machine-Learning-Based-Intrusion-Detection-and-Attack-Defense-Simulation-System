@@ -145,7 +145,7 @@ def fig_gate():
     ax2 = ax.twinx()
     ax2.plot(a, [o["known_attack_recall"] for o in ops], marker="s", ls="--", color="0.25", lw=1, ms=4, label="known-attack recall")
     ax2.plot(a, [o["natural_unknown_alert_rate"] for o in ops], marker="^", ls="-.", color="0.5", lw=1, ms=4,
-             label="alert rate, never-seen attacks (n=47)")
+             label=f"alert rate, never-seen attacks (n={sum(u['n'] for u in g['natural_unknowns'])})")
     ax2.set_ylim(0, 1.05); ax2.set_ylabel("rate"); ax2.spines["right"].set_visible(True)
     h1, l1 = ax.get_legend_handles_labels(); h2, l2 = ax2.get_legend_handles_labels()
     ax.legend(h1 + h2, l1 + l2, fontsize=6.5, frameon=False, loc="lower right")
@@ -154,6 +154,21 @@ def fig_gate():
     plt.close(fig)
 
 
+GENERATED = {  # paper figure <- figure regenerated from artifacts by scripts/55 and scripts/56
+    "fig3_loafo_by_family.png": "research_artifacts/figures/loafo_by_family.png",
+    "fig4_operating_curve.png": "research_artifacts/figures/loafo_operating_curve.png",
+    "fig7_range_tradeoff.png": "research_artifacts/figures/range_defense_tradeoff.png",
+}
+
+
+def sync_generated():
+    """Copy data figures from their generators so the paper never shows a stale image (R1b)."""
+    import shutil
+
+    for dst, src in GENERATED.items():
+        shutil.copyfile(ROOT / src, OUT / dst)
+
+
 if __name__ == "__main__":
-    fig_architecture(); fig_osr(); fig_adaptation(); fig_gate()
+    fig_architecture(); fig_osr(); fig_adaptation(); fig_gate(); sync_generated()
     print("ok", sorted(p.name for p in OUT.iterdir()))
