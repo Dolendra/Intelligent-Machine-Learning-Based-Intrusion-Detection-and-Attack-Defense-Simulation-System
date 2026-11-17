@@ -3,7 +3,6 @@
 
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts,amsthm}
-\usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
@@ -11,6 +10,14 @@
 \usepackage{microtype}
 \usepackage{url}
 \usepackage{multirow}
+\usepackage{adjustbox}  % generated tables shrink to the column/page width, never enlarge
+\usepackage{iftex}
+\ifXeTeX  % e.g. Tectonic: IEEEtran's Times (ptm) has no TU encoding, so use the metric-compatible TeX Gyre Termes
+  \usepackage{fontspec}
+  % by file name, so it resolves from the TeX distribution (reproducible), not from system fonts
+  \setmainfont{texgyretermes}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold,
+                              ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+\fi
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{definition}{Definition}
@@ -85,8 +92,9 @@ The fused score is the sum of surprisals, $f(z)=t_{\text{sup}}(z)+t_{\text{nov}}
 \subsection{Split-Conformal Calibration}
 On a second disjoint benign split $\mathcal{C}_2$,
 \begin{equation}
-p(z) = \frac{1+\sum_{v\in\mathcal{C}_2}\mathbb{I}(f(v)\ge f(z))}{1+|\mathcal{C}_2|},\qquad \text{alert} \iff p(z)\le\alpha .
+p(z) = \frac{1+\sum_{v\in\mathcal{C}_2}\mathbb{I}(f(v)\ge f(z))}{1+|\mathcal{C}_2|},
 \end{equation}
+and a flow raises an alert if and only if $p(z)\le\alpha$.
 
 \begin{theorem}[Conditional finite-sample false-alarm bound]
 If the calibration flows in $\mathcal{C}_2$ and a benign test flow are exchangeable, then $\mathbb{P}(p(z)\le\alpha)\le\alpha$ for every $\alpha\in(0,1)$.

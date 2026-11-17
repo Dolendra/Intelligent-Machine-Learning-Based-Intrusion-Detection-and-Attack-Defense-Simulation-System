@@ -4,6 +4,7 @@
 \footnotesize
 \caption{CSE-CIC-IDS2018 per Capture Day: Aegis-OSR before and after Same-Day Re-Calibration ($\alpha$ = 1\%)}
 \label{tab:cross_perday}
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lccccccc}
 \toprule
 \textbf{Day} & \textbf{Benign n} & \textbf{Attack n} & \textbf{FPR, none} & \textbf{Recall, none} & \textbf{recal 500} & \textbf{recal 2,000} & \textbf{recal 5,000} \\
@@ -20,5 +21,6 @@
 2018-03-02 & 20,000 & 8,000 & 36.2\% & 0.979 & 0.019 / 1.14\% & 0.008 / 0.66\% & 0.007 / 1.15\% \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \\[2pt]\parbox{0.95\linewidth}{\scriptsize Trained once on CICIDS2017 per seed. For each 2018 day independently the warm-up window is that day's earliest benign flows; evaluation uses only the rest of that day (no overlap). Recall is attack recall on the day's attacks (Infiltration days: zero-day recall). Re-calibration cells: recall / benign FPR. '---' = no benign flows left for that window size. On 2018-02-21 the flows labelled benign have a median of 842,917 bytes/s against 1,129 on the other days, consistent with documented labelling problems in CSE-CIC-IDS2018; the day is reported as is.}
 \end{table*}

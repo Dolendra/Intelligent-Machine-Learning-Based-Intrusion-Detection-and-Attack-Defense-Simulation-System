@@ -5,6 +5,7 @@
 3. The DOCX builder has no hand-typed tables and no result-like literal numbers in its prose.
 4. Paper figures that show data are byte-identical to the figures regenerated from artifacts.
 5. Every artifact a table cites is committed (not git-ignored).
+6. The compiled LaTeX PDF passed scripts/63 and its recorded input hashes match the current sources.
 """
 from __future__ import annotations
 
@@ -136,3 +137,15 @@ def test_every_fact_has_a_source(fresh):
     assert all(f.source for f in fx.values())
     assert all(f.display not in ("", "None", "nan", "nan%") for f in fx.values()), \
         [k for k, f in fx.items() if f.display in ("", "None", "nan", "nan%")]
+
+
+def test_compiled_latex_paper_is_validated_and_current():
+    """R1b: the committed IEEE PDF passed scripts/63 and was built from the LaTeX sources now in the repo."""
+    rep = json.loads((PUBDIR / "latex_validation.json").read_text(encoding="utf-8"))
+    assert rep["pass"] and all(c["pass"] for c in rep["checks"].values())
+    assert rep["checks"]["latex_log"]["overfull_boxes"] == 0 and not rep["checks"]["latex_log"]["undefined"]
+    pdf = ROOT / "docs" / "research" / "Aegis_OSR_paper_ieee.pdf"
+    assert hashlib.sha256(pdf.read_bytes()).hexdigest() == rep["pdf_sha256"]
+    stale = [p for p, h in rep["inputs_sha256"].items()
+             if hashlib.sha256((ROOT / p).read_bytes()).hexdigest() != h]
+    assert not stale, f"LaTeX sources changed after the last compile+validation (rerun scripts/63): {stale}"

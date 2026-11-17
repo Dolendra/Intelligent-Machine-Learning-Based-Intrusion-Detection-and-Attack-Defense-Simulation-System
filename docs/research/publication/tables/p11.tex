@@ -4,6 +4,7 @@
 \footnotesize
 \caption{Mitigation Measured on the Controlled Test Plane (10 Repetitions, Frozen-ML Detection)}
 \label{tab:p11}
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lccccc}
 \toprule
 \textbf{Scenario} & \textbf{No defence} & \textbf{Recommendation only} & \textbf{Approved response} & \textbf{Storyboard prior} & \textbf{$\Delta$} \\
@@ -12,5 +13,6 @@ DDoS, BLOCK\_SOURCE & 0.00 & 0.00 & \textbf{1.00} & 0.82 & +0.18 \\
 DoS, RATE\_LIMIT & 0.00 & 0.00 & \textbf{0.80} & 0.78 & +0.02 \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \\[2pt]\parbox{0.95\linewidth}{\scriptsize Measured effectiveness on the CONTROLLED test adapter (no live firewall). $\Delta$ = measured - assumed storyboard prior.}
 \end{table*}

@@ -4,6 +4,7 @@
 \footnotesize
 \caption{Per-Family Zero-Day Recall and Aegis-OSR Attribution (LOAFO, $\alpha$ = 1\%, Mean over 5 Seeds)}
 \label{tab:family}
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lccccccc}
 \toprule
 \textbf{Held-out family} & \textbf{Aegis-OSR} & \textbf{Closed-set XGB} & \textbf{w/ AE novelty} & \textbf{DT (v1.1-style)} & \textbf{Flagged unknown} & \textbf{Mis-attributed} & \textbf{Known-family acc.} \\
@@ -16,5 +17,6 @@ PortScan & \textbf{0.357} & 0.112 & 0.177 & 0.011 & 0.355 & 0.002 & 0.990 \\
 Bot & \textbf{0.023} & 0.004 & 0.012 & 0.000 & 0.023 & 0.000 & 0.990 \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \\[2pt]\parbox{0.95\linewidth}{\scriptsize The last three columns refer to Aegis-OSR. Flagged unknown: share of the withheld family labelled UNKNOWN-ATTACK or ZERO-DAY-ANOMALY. Mis-attributed: share wrongly given a known-family label. Known-family acc.: accuracy of family labels on attacks from the five known families.}
 \end{table*}

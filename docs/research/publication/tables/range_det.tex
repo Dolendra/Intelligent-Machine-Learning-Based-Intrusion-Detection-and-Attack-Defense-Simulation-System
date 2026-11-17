@@ -4,6 +4,7 @@
 \footnotesize
 \caption{Cyber Range: Which Detector Raises the Incident}
 \label{tab:range_det}
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lccccc}
 \toprule
 \textbf{Scenario} & \textbf{Detector} & \textbf{Runs detected} & \textbf{Detection latency (s)} & \textbf{Attack-flow recall} & \textbf{Benign flow FPR} \\
@@ -16,5 +17,6 @@ Web request burst & Frozen v1.1 & 10 / 10 & 2.6 [0.6, 4.6] & 0.907 & 0.09\% \\
  & Zero-Day Gate & 10 / 10 & 2.6 [0.6, 4.6] & 1.000 & 0.87\% \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \\[2pt]\parbox{0.95\linewidth}{\scriptsize 10 seeds per cell; incident rule 3 alerts within 5 s. Shown: scenarios where a detector missed runs or had attack-flow recall below 0.99. The other 6 scenarios were detected by both detectors in every run (mean latency 0.0--2.4 s). Mean false incidents per run across all cells: 0.01. The zero-day scenario redraws the same 47 never-seen flows, so its runs are not independent zero-days.}
 \end{table*}

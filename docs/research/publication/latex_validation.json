@@ -1,0 +1,101 @@
+{
+ "generated_at": "2026-11-17T12:57:25.725637+00:00",
+ "pdf_sha256": "f6a49aed695ea194679ba1edddee87ad57ac7f1c358fcdb7b4d15dfc11a19b23",
+ "pages": 5,
+ "checks": {
+  "tables": {
+   "included": [
+    "loafo",
+    "significance",
+    "temporal",
+    "adapt",
+    "cross",
+    "cross_perday",
+    "v11_2018"
+   ],
+   "missing_numeric_tokens": {},
+   "pass": true
+  },
+  "macros": {
+   "used": 58,
+   "missing": {},
+   "pass": true
+  },
+  "placeholders": {
+   "found": [],
+   "pass": true
+  },
+  "headline_cross_document": {
+   "facts": {
+    "osr_zdr": {
+     "value": "70.6%",
+     "in_latex_pdf": true,
+     "in_docx_pdf": true
+    },
+    "xgb_zdr": {
+     "value": "49.0%",
+     "in_latex_pdf": true,
+     "in_docx_pdf": true
+    },
+    "dt_zdr": {
+     "value": "24.1%",
+     "in_latex_pdf": true,
+     "in_docx_pdf": true
+    },
+    "osr_fpr": {
+     "value": "1.00%",
+     "in_latex_pdf": true,
+     "in_docx_pdf": true
+    },
+    "x_frozen_f1": {
+     "value": "0.278",
+     "in_latex_pdf": true,
+     "in_docx_pdf": true
+    },
+    "x_osr_fpr": {
+     "value": "36.7%",
+     "in_latex_pdf": true,
+     "in_docx_pdf": true
+    },
+    "pd_recal2000_fpr": {
+     "value": "1.62%",
+     "in_latex_pdf": true,
+     "in_docx_pdf": true
+    },
+    "pd_recal2000_known": {
+     "value": "0.088",
+     "in_latex_pdf": true,
+     "in_docx_pdf": true
+    },
+    "pd_recal2000_zdr": {
+     "value": "0.027",
+     "in_latex_pdf": true,
+     "in_docx_pdf": true
+    },
+    "t_fri_osr_fpr": {
+     "value": "7.09%",
+     "in_latex_pdf": true,
+     "in_docx_pdf": true
+    }
+   },
+   "pass": true
+  },
+  "latex_log": {
+   "undefined": [],
+   "overfull_boxes": 0,
+   "pass": true
+  }
+ },
+ "inputs_sha256": {
+  "docs/research/paper.tex": "6c4ee9b8df44d7f1c4bccf087d7141522045b60cd28266c116448c662e632c3f",
+  "docs/research/paper_numbers.tex": "5b01a570f9dce66e33ddb31f5c55f39d925ae92f87639e578e7a8b9c7fac3d64",
+  "docs/research/publication/tables/loafo.tex": "72c00122baa7ef59e985159177a2ebb38dfbaf31aaa0177b4576ef404fe86236",
+  "docs/research/publication/tables/significance.tex": "5f856d437345754894b228775519a30e3a32e0d105c46047880865bdd70079fa",
+  "docs/research/publication/tables/temporal.tex": "3a6c54ad695b6d1c3d451c712b3ffd2f35a76888ce0583f451e1a9a6b98624f0",
+  "docs/research/publication/tables/adapt.tex": "342c61ef205a355cbc4208d14cca38278a5122f559a8e94c9d0ba59434244d80",
+  "docs/research/publication/tables/cross.tex": "c8fd32845b56dcc087198f70d440a8d04ab6303365e093ac6c644e34e4ec1210",
+  "docs/research/publication/tables/cross_perday.tex": "6ed80a626ddc928c49a940b0c7dd42db530d53968a29bf6c314009ec8a902a7c",
+  "docs/research/publication/tables/v11_2018.tex": "10daa018e3f5f634bb8374b2d07fd21c9d1a0b5259250a23335eb5d977a2799d"
+ },
+ "pass": true
+}

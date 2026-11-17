@@ -4,6 +4,7 @@
 \footnotesize
 \caption{Leave-One-Attack-Family-Out on CICIDS2017 at $\alpha$ = 1\% (Mean and 95\% CI over 5 Seeds)}
 \label{tab:loafo}
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lccccc}
 \toprule
 \textbf{Method} & \textbf{Group} & \textbf{Zero-day recall} & \textbf{AUROC\_u} & \textbf{Known recall} & \textbf{Benign FPR (\%)} \\
@@ -21,5 +22,6 @@ Autoencoder & baseline & 0.231 [0.197, 0.265] & 0.883 [0.870, 0.897] & 0.430 [0.
 Isolation Forest & baseline & 0.012 [0.011, 0.012] & 0.840 [0.829, 0.851] & 0.008 [0.007, 0.008] & 0.99 [0.92, 1.06] \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \\[2pt]\parbox{0.95\linewidth}{\scriptsize Folds are averaged within each seed; intervals are 95\% Student-t intervals over seeds. AUROC\_u: area under the ROC curve for unknown versus benign flows.}
 \end{table*}

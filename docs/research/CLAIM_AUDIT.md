@@ -224,11 +224,38 @@ Branch `v3-openset-research` (local, not pushed). `main` = `775e9a9` and tag `v1
 | Tables/figures regenerated; DOCX + PDF rebuilt | 18 tables, 7 figures; PDF 26 pages (Word export) | `docs/research/Aegis_Research_Paper.docx/.pdf` |
 | Cited sources committed | test checks git-ignore status | `tests/test_publication_tables.py::test_cited_sources_are_committed` |
 | Frozen baseline unchanged | model files, training report, thresholds, metadata identical to `v1.1-research` | `git diff v1.1-research` |
-| **paper.tex compiled** | **NOT DONE** — no LaTeX engine on this machine; downloading one was not permitted in this session | structure checked by tests only |
+| **paper.tex compiled** | **PASS** — Tectonic 0.17.0 (XeTeX), 5 pages, 0 overfull boxes, 0 undefined references/citations | `docs/research/Aegis_OSR_paper_ieee.pdf` (SHA-256 `f6a49aed695ea194…`) |
+| Compiled PDF matches canonical data | PASS — every numeric token of the 7 included tables and all 58 number macros found in the PDF text; no `??`/TODO/TBD/placeholder text; 10 headline facts present in both the LaTeX PDF and the DOCX-exported PDF | `scripts/63_validate_latex_pdf.py` → `docs/research/publication/latex_validation.json` |
+| Validation not stale | PASS — the report records SHA-256 of `paper.tex`, `paper_numbers.tex` and each included table; the test fails if any source changes after validation | `tests/test_publication_tables.py::test_compiled_latex_paper_is_validated_and_current` |
+
+### LaTeX build record
+
+* Engine: Tectonic 0.17.0, official GitHub release `tectonic-0.17.0-x86_64-pc-windows-msvc.zip`; SHA-256
+  `f61ce51f0b0ade1015b7de7ef368541c5424e9756ecbd0d7af97d6d48030845f` checked against the release-asset digest
+  before first execution. Installed in a session scratch directory, not in the repository.
+* Command: `cd docs/research && tectonic --keep-logs --outdir <out> paper.tex`, then
+  `python scripts/63_validate_latex_pdf.py --pdf <out>/paper.pdf --log <out>/paper.log`.
+* Formatting-only changes made to compile cleanly (no result changed): generated tables with > 4 columns use
+  `table*` and shrink-to-width `adjustbox` (`research/publication.py: to_latex`); TeX Gyre Termes loaded by file name
+  under XeTeX; the conformal alert rule moved from the display equation into the text; unused `algorithmic`
+  package removed.
+* All 5 pages were rendered and inspected: no clipped tables, no overlapping floats, no missing glyphs.
+* Tests after the change: backend 281 passed; frontend 49 passed.
+* Frozen v1.1 model, threshold, metadata and training-report files are byte-identical to `v1.1-research`
+  (`git diff --quiet`). The v1.1 figure PNGs under `models/trained_models/figures/` were re-rendered in the
+  pre-R1a checkpoint (`e84ab79`); they are images only, not model or metric files.
+
+**R1b status: complete** — compilation and validation pass; the open items below are scope/positioning, not
+consistency defects.
 
 ### Remaining limitations
 
-1. `paper.tex` has not been compiled (needs a TeX engine or Overleaf); macros and `\input` files are verified to exist.
+1. `paper.tex` is the **condensed IEEE paper** (5 pages: method, LOAFO, temporal, 2018 transfer). It omits the system,
+   cyber range, explanation, model-family and gate sections of the 26-page DOCX manuscript, has no figures and cites
+   11 works. Its related work does **not yet position against the closest prior work** found in R2 (CLOSR, FIRCE);
+   that must be added once the comparison in `RESEARCH_GAP_ANALYSIS.md` is reviewed. Remaining log items are
+   cosmetic: 4 underfull boxes and IEEEtran's Times (`ptm`) shape warnings emitted before `fontspec` replaces it;
+   the embedded text fonts are TeX Gyre Termes only (checked in the PDF font dictionary).
 2. The plain-language guide is hand-written prose; its 2018 statements were regenerated from the facts, but it is not
    covered by the literal scan.
 3. 2018 conclusions rest on one public export whose labels are known to contain errors (e.g. 2018-02-21).
