@@ -444,11 +444,14 @@ def run_prediction(
         # Gate-only incident: risk/playbook for an unnamed attack; frozen-verdict fields stay untouched.
         p_val = float(zero_day.get("p_value", 1.0))
         g_conf = max(0.0, min(1.0, 1.0 - p_val))
+        # R-01 (ML-5/ARCH-19): use the flow's measured intensity. The frozen verdict is BENIGN
+        # here, and the benign risk branch hard-codes intensity 0.0.
         g_risk = compute_risk(GATE_ONLY_LABEL, g_conf, True,
-                              traffic_intensity=(payload.get("risk_factors") or {}).get("intensity"),
+                              traffic_intensity=intensity_report(features)["value"],
                               asset_criticality=asset_criticality)
         g_rec = recommend(GATE_ONLY_LABEL, g_risk.get("severity"), confidence=g_conf, is_attack=True)
-        inc_risk = {"score": g_risk.get("score", 0.0), "severity": g_risk.get("severity", "MEDIUM"),
+        # R-01 (ARCH-2): compute_risk returns "risk_score"; the old "score" lookup always gave 0.
+        inc_risk = {"score": g_risk["risk_score"], "severity": g_risk["severity"],
                     "recommendation": g_rec.get("primary", ""), "confidence": g_conf}
         payload["incident_risk"] = {"risk_score": inc_risk["score"], "severity": inc_risk["severity"],
                                     "recommendation": inc_risk["recommendation"]}

@@ -234,7 +234,8 @@ class LiveSession:
             g = gate_res[i]
             g_alert = bool(g["alert"]) if g else False
             confidence = (fp.multiclass_confidence if f_alert else fp.binary_confidence) if fp is not None else 0.0
-            risk = compute_risk(fp.attack_type, confidence, f_alert) if fp is not None else {"score": 0, "severity": "LOW"}
+            risk = (compute_risk(fp.attack_type, confidence, f_alert) if fp is not None
+                    else {"risk_score": 0.0, "severity": "LOW"})
             if is_attack_truth:
                 outcome = ("caught_both" if f_alert and g_alert else "caught_frozen_only" if f_alert
                            else "caught_gate_only" if g_alert else "missed")
@@ -275,7 +276,7 @@ class LiveSession:
                     "is_attack": f_alert,
                     "attack_type": fp.attack_type if fp is not None else None,
                     "confidence": float(confidence),
-                    "risk_score": float(risk.get("score", 0)),
+                    "risk_score": float(risk["risk_score"]),  # R-01 (ARCH-2): was .get("score") -> 0
                     "severity": risk.get("severity"),
                 },
                 "gate": None if g is None else {

@@ -1,9 +1,20 @@
 """Risk / severity scoring for detected attacks."""
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TypedDict
 
 from ids_config import load_config
+
+
+class RiskResult(TypedDict):
+    """Return type of :func:`compute_risk` (R-01): a wrong key fails type checking."""
+
+    risk_score: float
+    severity: str
+    factors: dict[str, float]
+    weights: dict[str, float]
+    contributions: dict[str, float]
+    why: str
 
 
 def severity_label(score: float) -> str:
@@ -35,7 +46,7 @@ def compute_risk(
     is_attack: bool,
     traffic_intensity: float | None = None,
     asset_criticality: float | None = None,
-) -> dict[str, Any]:
+) -> RiskResult:
     """
     Combine attack-family base severity + model confidence + intensity + asset criticality.
 
