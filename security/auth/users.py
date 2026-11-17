@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
+import secrets
 import threading
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -12,13 +14,28 @@ from database.db import SessionLocal, UserAccount
 from security.auth.passwords import hash_password, verify_password
 from security.rbac import ROLE_PERMISSIONS, normalize_role
 
-# Dev seed credentials — override via AEGIS_SEED_PASSWORD_<USER> or disable in prod docs.
-_DEFAULT_SEEDS: list[tuple[str, str, str]] = [
-    ("admin", "admin", "ChangeMeAdmin!"),
-    ("responder", "responder", "ChangeMeResponder!"),
-    ("analyst", "analyst", "ChangeMeAnalyst!"),
-    ("viewer", "viewer", "ChangeMeViewer!"),
+log = logging.getLogger("aegis.auth")
+
+# Seed accounts (user_id, username). R-05 (SEC-2): no password is published in source.
+# A seed gets AEGIS_SEED_PASSWORD_<USER> if set, otherwise a random password that is never
+# shown or logged (the account cannot log in until rotated with
+# scripts/70_rotate_credentials.py). AEGIS_SEED_USERS_JSON replaces the whole seed list.
+_DEFAULT_SEEDS: list[tuple[str, str]] = [
+    ("admin", "admin"),
+    ("responder", "responder"),
+    ("analyst", "analyst"),
+    ("viewer", "viewer"),
 ]
+
+# Passwords that were published in earlier versions of this repository. They are kept ONLY
+# as a deny-list: startup refuses to run with auth enabled while any active account still
+# accepts one of them, and the rotation script replaces them.
+LEGACY_PUBLISHED_PASSWORDS: tuple[str, ...] = (
+    "ChangeMeAdmin!",
+    "ChangeMeResponder!",
+    "ChangeMeAnalyst!",
+    "ChangeMeViewer!",
+)
 
 
 @dataclass
@@ -94,16 +111,25 @@ class UserStore:
                     return
                 except (json.JSONDecodeError, KeyError, TypeError, ValueError):
                     pass
-            for user_id, username, password in _DEFAULT_SEEDS:
+            unset: list[str] = []
+            for user_id, username in _DEFAULT_SEEDS:
                 env_pw = os.getenv(f"AEGIS_SEED_PASSWORD_{username.upper()}")
+                if not env_pw:
+                    unset.append(username)
                 self._upsert_db(
                     db,
                     username=username,
                     role=username if username in ROLE_PERMISSIONS else "viewer",
-                    password=env_pw or password,
+                    password=env_pw or secrets.token_urlsafe(24),
                     user_id=user_id,
                 )
             db.commit()
+            if unset:
+                log.warning(
+                    "seed accounts %s created with random, undisclosed passwords; set them with "
+                    "scripts/70_rotate_credentials.py or AEGIS_SEED_PASSWORD_<USER> before first use",
+                    unset,
+                )
 
     def _upsert_db(
         self,
@@ -172,6 +198,34 @@ class UserStore:
         if not verify_password(password, user.password_hash):
             return None
         return user
+
+    def set_password(self, username: str, password: str) -> bool:
+        """Replace a user's password hash. Returns False if the user does not exist."""
+        if not password:
+            raise ValueError("password must not be empty")
+        self._ensure_ready()
+        with self._lock, SessionLocal() as db:
+            row = (
+                db.query(UserAccount)
+                .filter(UserAccount.username == username.strip().lower())
+                .first()
+            )
+            if row is None:
+                return False
+            row.password_hash = hash_password(password)
+            db.commit()
+            return True
+
+    def users_with_legacy_passwords(self) -> list[str]:
+        """Active usernames whose password is one of LEGACY_PUBLISHED_PASSWORDS."""
+        self._ensure_ready()
+        with SessionLocal() as db:
+            rows = db.query(UserAccount).filter(UserAccount.active != 0).all()
+            return sorted(
+                r.username
+                for r in rows
+                if any(verify_password(pw, r.password_hash) for pw in LEGACY_PUBLISHED_PASSWORDS)
+            )
 
     def list_public(self) -> list[dict[str, Any]]:
         self._ensure_ready()

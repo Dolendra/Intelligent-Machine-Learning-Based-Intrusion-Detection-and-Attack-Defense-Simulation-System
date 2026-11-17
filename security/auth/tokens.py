@@ -6,6 +6,7 @@ import hashlib
 import hmac
 import json
 import os
+import secrets
 import time
 from typing import Any
 
@@ -19,12 +20,15 @@ def _b64d(data: str) -> bytes:
     return base64.urlsafe_b64decode(data + pad)
 
 
+# R-05 (SEC-1, SEC-7): there is no published fallback constant and the API key is never
+# reused as the signing key. Without AEGIS_AUTH_SECRET, a random per-process secret is used,
+# so tokens cannot be forged and do not survive a restart. With auth enabled, startup
+# (security.auth.posture) refuses to run without a strong AEGIS_AUTH_SECRET.
+_EPHEMERAL_SECRET = secrets.token_urlsafe(48)
+
+
 def auth_secret() -> str:
-    return (
-        os.getenv("AEGIS_AUTH_SECRET")
-        or os.getenv("AEGIS_API_KEY")
-        or "aegis-dev-only-change-me"
-    )
+    return os.getenv("AEGIS_AUTH_SECRET") or _EPHEMERAL_SECRET
 
 
 def token_ttl_seconds() -> int:

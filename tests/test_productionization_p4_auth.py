@@ -16,14 +16,15 @@ from security.auth.passwords import hash_password, verify_password
 from security.auth.tokens import mint_token, verify_token
 from security.rbac import OPERATION_MATRIX, has_permission
 from security.response.store import response_store
+from tests._seed_passwords import SEED_PASSWORDS
 
 client = TestClient(app)
 
 
 def test_password_hash_not_plaintext():
-    encoded = hash_password("ChangeMeAnalyst!")
-    assert "ChangeMeAnalyst!" not in encoded
-    assert verify_password("ChangeMeAnalyst!", encoded)
+    encoded = hash_password(SEED_PASSWORDS["analyst"])
+    assert SEED_PASSWORDS["analyst"] not in encoded
+    assert verify_password(SEED_PASSWORDS["analyst"], encoded)
     assert not verify_password("wrong", encoded)
 
 
@@ -39,7 +40,7 @@ def test_token_expiry_rejected(monkeypatch):
 
 def test_login_and_me_when_auth_disabled():
     # Default research baseline — auth off
-    r = client.post("/api/auth/login", json={"username": "analyst", "password": "ChangeMeAnalyst!"})
+    r = client.post("/api/auth/login", json={"username": "analyst", "password": SEED_PASSWORDS["analyst"]})
     assert r.status_code == 200
     assert "access_token" in r.json()
     me = client.get("/api/auth/me")
@@ -85,8 +86,8 @@ def test_analyst_cannot_approve_via_direct_api():
     # Build real tokens via auth service
     from security.auth.service import login
 
-    analyst = login("analyst", "ChangeMeAnalyst!")
-    responder = login("responder", "ChangeMeResponder!")
+    analyst = login("analyst", SEED_PASSWORDS["analyst"])
+    responder = login("responder", SEED_PASSWORDS["responder"])
 
     # Re-mount with only bearer path — empty api key forces bearer
     app_b = Starlette(
@@ -162,7 +163,7 @@ def test_full_app_analyst_forbidden_approve(monkeypatch):
     from security.response import propose_action, approve_action
     from security.response.service import ResponseError
 
-    analyst = login("analyst", "ChangeMeAnalyst!")
+    analyst = login("analyst", SEED_PASSWORDS["analyst"])
     # Propose as analyst identity string
     action = propose_action(
         attack_type="DDoS",

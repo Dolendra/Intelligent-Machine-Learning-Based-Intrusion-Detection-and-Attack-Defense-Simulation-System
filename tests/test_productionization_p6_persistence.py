@@ -19,6 +19,7 @@ from security.response.service import approve_action, propose_action, reject_act
 from security.response.store import ResponseActionStore, response_store
 from security.response.types import ActionStatus
 from security.security_events import security_event
+from tests._seed_passwords import SEED_PASSWORDS
 
 client = TestClient(app)
 
@@ -163,7 +164,7 @@ def test_users_survive_restart():
     user_store.ensure_seeded()
     store2 = UserStore()
     store2.ensure_seeded()
-    admin = store2.authenticate("admin", "ChangeMeAdmin!")
+    admin = store2.authenticate("admin", SEED_PASSWORDS["admin"])
     assert admin is not None
     assert admin.role == "admin"
 

@@ -20,6 +20,7 @@ from ingestion.pcap_validation import validate_pcap_upload
 from ingestion.upload_safety import UnsafeFilenameError, safe_upload_basename
 from security.auth.service import login
 from security.response.store import response_store
+from tests._seed_passwords import SEED_PASSWORDS
 
 client = TestClient(app)
 
@@ -163,9 +164,9 @@ def test_response_action_abuse_matrix():
         allow_role_header=False,
     )
     c = StarletteTestClient(app_s)
-    analyst = login("analyst", "ChangeMeAnalyst!")
-    viewer = login("viewer", "ChangeMeViewer!")
-    responder = login("responder", "ChangeMeResponder!")
+    analyst = login("analyst", SEED_PASSWORDS["analyst"])
+    viewer = login("viewer", SEED_PASSWORDS["viewer"])
+    responder = login("responder", SEED_PASSWORDS["responder"])
 
     assert (
         c.post(
@@ -241,7 +242,7 @@ def test_ws_requires_auth_when_enabled(monkeypatch):
 def test_ws_accepts_bearer_token_when_auth_enabled(monkeypatch):
     monkeypatch.setenv("AEGIS_AUTH_ENABLED", "true")
     monkeypatch.setenv("AEGIS_AUTH_SECRET", "p5-ws-secret-for-ws")
-    tok = login("viewer", "ChangeMeViewer!")["access_token"]
+    tok = login("viewer", SEED_PASSWORDS["viewer"])["access_token"]
     with client.websocket_connect(f"/api/ws/events?token={tok}") as ws:
         msg = ws.receive_json()
     assert msg["type"] == "connected"

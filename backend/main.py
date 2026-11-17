@@ -46,6 +46,19 @@ async def lifespan(_app: FastAPI):
         logging.getLogger("aegis.api").exception("Database init failed: %s", exc)
         raise RuntimeError(f"Database initialization failed: {exc}") from exc
 
+    # R-05 (SEC-2): with auth enabled, refuse to serve while any active account still accepts
+    # a password that was published in this repository.
+    if SECURITY_POSTURE.auth_enabled:
+        from security.auth.posture import InsecureConfigurationError
+        from security.auth.users import user_store
+
+        legacy = user_store.users_with_legacy_passwords()
+        if legacy:
+            raise InsecureConfigurationError(
+                f"Refusing to start: accounts {legacy} still use a published default password; "
+                "rotate them with scripts/70_rotate_credentials.py"
+            )
+
     # Stage-2 Phase B: in-process ingest→detect queue (prototype, single process)
     try:
         from backend.services import pipeline as svc

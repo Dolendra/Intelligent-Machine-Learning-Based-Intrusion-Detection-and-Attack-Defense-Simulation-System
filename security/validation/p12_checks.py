@@ -4,6 +4,8 @@ No new product features; verifies the productionization boundary holds.
 """
 from __future__ import annotations
 
+import os
+
 import hashlib
 import json
 import time
@@ -131,9 +133,16 @@ def check_auth_rbac() -> dict[str, Any]:
             api_key_role="admin",
         )
         c = StarletteTestClient(app_b)
-        viewer = login("viewer", "ChangeMeViewer!")
-        analyst = login("analyst", "ChangeMeAnalyst!")
-        responder = login("responder", "ChangeMeResponder!")
+        # R-05: no seed password in source; the operator (or the test suite) supplies them.
+        def _pw(user: str) -> str:
+            pw = os.getenv(f"AEGIS_SEED_PASSWORD_{user.upper()}")
+            if not pw:
+                raise RuntimeError(f"set AEGIS_SEED_PASSWORD_{user.upper()} to run the RBAC check")
+            return pw
+
+        viewer = login("viewer", _pw("viewer"))
+        analyst = login("analyst", _pw("analyst"))
+        responder = login("responder", _pw("responder"))
 
         vh = {"Authorization": f"Bearer {viewer['access_token']}"}
         ah = {"Authorization": f"Bearer {analyst['access_token']}"}
