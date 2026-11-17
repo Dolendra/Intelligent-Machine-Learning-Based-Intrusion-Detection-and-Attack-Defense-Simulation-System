@@ -70,3 +70,6 @@ research_artifacts/cache/
 research_artifacts/r3/**/scores/**/*.parquet
 research_artifacts/r3/**/tuning/
 research_artifacts/r3/**/models/
+
+# R3 isolated research environments (documented in docs/research/R3_ENVIRONMENT.md)
+.venvs/

@@ -101,6 +101,20 @@ def feature_columns(df: pd.DataFrame) -> list[str]:
     return [c for c in df.columns if c not in META_COLS]
 
 
+def dedup_float32(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
+    """R3: drop rows that are exact duplicates of (features, fine_label) at the float32 precision the models use.
+
+    ``_finalize`` de-duplicates at the *source* precision and only then casts to float32, so rows that differ
+    beyond float32 precision survive as exact float32 duplicates (≈0.9 % of CICIDS2017, almost all benign) and can
+    fall on both sides of a split. The historical protocols keep the original behaviour (exact reproduction);
+    R3 applies this before splitting. Returns (deduplicated frame, number of rows removed).
+    """
+    feats = feature_columns(df)
+    h = pd.util.hash_pandas_object(df[feats + ["fine_label"]], index=False)
+    keep = ~h.duplicated(keep="first").to_numpy()
+    return df.loc[keep].reset_index(drop=True), int((~keep).sum())
+
+
 # --------------------------------------------------------------------------- CICIDS2017
 def build_cic2017(raw_dir: Path = CIC2017_DIR) -> pd.DataFrame:
     files = sorted(raw_dir.glob("*.csv"))

@@ -372,3 +372,24 @@ Each metric is reported per record and per family, then aggregated (§11):
 * That any method detects zero-days in general.
 * That the FPR bound holds under shift.
 * Anything from P4 as confirmation of the fusion mechanism. P4 is the discovery data; confirmation belongs to the Contribution-1 protocol on new targets.
+
+---
+
+## 14. Stage 0 amendments (2026-11-17, proposed for approval)
+
+Stage 0 produced the following changes. Each is backed by a measurement or finding recorded in `R3_ENVIRONMENT.md`, `CLOSR_PILOT_REPORT.md`, `DATASET_LICENCE_CHECK.md` or `CLAIM_AUDIT.md` §10.
+
+| # | Change | Reason |
+|---|---|---|
+| A1 | **De-duplicate at float32 precision before any split** (`research/data.dedup_float32`). The historical protocols keep the original behaviour, so the regression gate still reproduces them exactly. | `_finalize` de-duplicates before the float32 cast. 22,818 CICIDS2017 rows (0.9 %, nearly all benign) and 18,839 CSE-CIC-IDS2018 rows are exact float32 duplicates and can fall on both sides of a split. The R3 leakage check caught this on its first smoke run. |
+| A2 | **Two isolated environments.** `.venvs/r3-cpu` for trees/GBDT and the gate; `.venvs/r3-cuda` (torch 2.12.0+cu126) for CLOSR and TabM. Every torch model pins its device explicitly. | CPU cost for CLOSR is ≈ 19 h per fit and for TabM ≈ 10 h. The GPU brings these to 1.3 h and 0.3 h, using < 2 GB VRAM. |
+| A3 | **CPU/GPU agreement check** on one seed before any GPU campaign, with a tolerance fixed in advance: \|Δ zero-day recall\| ≤ 0.01. | GPU kernels are not bit-identical to CPU. |
+| A4 | **CLOSR Stage 1a/1b is blocked** until LycoS-IDS2017 is approved. Use the official Le Mans source, not the Google Drive copy. Any reproduction writes checkpoints outside the clone. | Licence check; `train_closr.py` overwrites the released weights. |
+| A5 | **CLOSR in Stage 2:** 200 epochs as published (no early stopping), 5 seeds (101–105), LOAFO + per-day only ≈ 46 GPU-h. 10 seeds (≈ 93 GPU-h) only if the user approves the budget. | Measured 1.3 GPU-h per fit. |
+| A6 | **TabM:** GPU, official defaults plus §7 tuning on a 200 k subsample. Before tuning, one full fit measures the real number of epochs to early stopping. | The 30-epoch figure is an assumption. |
+| A7 | **Seeds.** Confirmatory runs use 101–110, with pilot seed 0 only. Smoke and timing runs use seed 0 and are never reported. | Unchanged from §6; now enforced by the runner. |
+| A8 | **Arm A (native argmax)** is computed from the score dumps (`pred_class_idx`). It is not added to the records. | Keeps the historical record format, so the gate can compare exactly. |
+| A9 | **Cross-dataset feature-identical rows** (2017 train vs 2018 test) are logged as informational, not as leakage. Within one dataset (warm-up vs evaluation, train/val/test) any overlap is fatal. | They are different captures. |
+| A10 | **At most two concurrent data-loading jobs** on this machine. | Each job holds 4–6 GB RSS. Running the gate, a smoke test and two pilots together caused swapping (one gate seed took 16× longer). |
+| A11 | **Confirmation targets for Contribution 1:** NF-v3 pairs (shared NetFlow schema, millisecond timestamps). LycoS-Unicas-IDS2018 is unsuitable for per-day work: one file, subsampled benign, timestamps unconfirmed. There is no NF-v3 version of CICIDS2017. | Licence and structure check. |
+| A12 | **Runner safety.** `scripts/67_r3_run.py --campaign` refuses to start without `--i-have-approval`. Outputs go only to `research_artifacts/r3/`, and protected paths are refused. | The user's Stage 0 restrictions. |

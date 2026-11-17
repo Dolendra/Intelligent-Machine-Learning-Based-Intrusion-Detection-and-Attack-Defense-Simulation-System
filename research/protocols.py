@@ -75,6 +75,8 @@ def run_once(
     warmup_oracle: pd.DataFrame | None = None,
     windows: Iterable[int] = WARMUP_WINDOWS,
     dump: Dump | None = None,
+    model_kwargs: dict | None = None,
+    on_split: Callable[[dict, dict], None] | None = None,
 ) -> dict:
     """Fit on train, calibrate on val, evaluate on test.
 
@@ -84,10 +86,13 @@ def run_once(
     """
     unknown = set(unknown_families)
     feats = feature_columns(train)
+    if on_split is not None:  # e.g. R3 leakage checks; must not modify the frames
+        on_split({"protocol": protocol, "fold": fold, "seed": seed, "unknown": sorted(unknown)},
+                 {"train": train, "val": val, "test": test, "warmup": warmup, "warmup_oracle": warmup_oracle})
     t0 = time.time()
     scaler = SignedLogScaler().fit(train[feats].to_numpy())
     Xtr, Xva, Xte = (scaler.transform(d[feats].to_numpy()) for d in (train, val, test))
-    model = AegisOSR(seed=seed, alpha=alpha, ae_kwargs=ae_kwargs)
+    model = AegisOSR(seed=seed, alpha=alpha, ae_kwargs=ae_kwargs, **(model_kwargs or {}))
     model.fit(Xtr, train["family"].to_numpy(), Xva, val["family"].to_numpy(), log=log)
     fit_s = time.time() - t0
 
@@ -114,9 +119,10 @@ def run_once(
         "score_ms_per_1k_flows": round(1e6 * score_s / max(len(test), 1), 3),
         "adaptation": {},
     }
-    p, c = methods[PROPOSED], methods["Closed-set XGB"]
-    log(f"[{protocol}:{fold}:s{seed}] Aegis-OSR ZDR={p['zero_day_recall']:.3f} AUROC_u={p['auroc_unknown']:.3f} "
-        f"FPR={p['fpr']:.4f} | closed-set ZDR={c['zero_day_recall']:.3f} FPR={c['fpr']:.4f} ({fit_s:.0f}s fit)")
+    p = methods[PROPOSED]
+    c = methods.get("Closed-set XGB") or next(iter(methods.values()))
+    log(f"[{protocol}:{fold}:s{seed}] Aegis-OSR ZDR={p['zero_day_recall']} AUROC_u={p['auroc_unknown']} "
+        f"FPR={p['fpr']:.4f} | closed-set ZDR={c['zero_day_recall']} FPR={c['fpr']:.4f} ({fit_s:.0f}s fit)")
 
     if warmup is not None and len(warmup):
         Xw_all = scaler.transform(warmup.sort_values(["day", "seq"])[feats].to_numpy())
@@ -234,7 +240,9 @@ PERDAY_TEST_CAPS = {"BENIGN": 20_000, "_attack": 8_000}
 
 def cross_dataset_perday(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[int], log: Log = print,
                          alpha: float = 0.01, ae_kwargs: dict | None = None,
-                         windows: Iterable[int] = WARMUP_WINDOWS, dump: Dump | None = None) -> list[dict]:
+                         windows: Iterable[int] = WARMUP_WINDOWS, dump: Dump | None = None,
+                         model_kwargs: dict | None = None,
+                         on_split: Callable[[dict, dict], None] | None = None) -> list[dict]:
     """CICIDS2017 → CSE-CIC-IDS2018 with **independent per-day** recalibration (R1b).
 
     The model is trained once per seed on CICIDS2017. For every 2018 capture day separately:
@@ -254,7 +262,7 @@ def cross_dataset_perday(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[i
         val = cap_per_family(va, _caps(va, VAL_CAPS), seed)
         t0 = time.time()
         scaler = SignedLogScaler().fit(train[feats].to_numpy())
-        model = AegisOSR(seed=seed, alpha=alpha, ae_kwargs=ae_kwargs)
+        model = AegisOSR(seed=seed, alpha=alpha, ae_kwargs=ae_kwargs, **(model_kwargs or {}))
         model.fit(scaler.transform(train[feats].to_numpy()), train["family"].to_numpy(),
                   scaler.transform(val[feats].to_numpy()), val["family"].to_numpy(), log=log)
         fit_s = time.time() - t0
@@ -265,6 +273,9 @@ def cross_dataset_perday(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[i
             warm, pool = _split_warmup(day_df, max(windows))
             test = _cap_keep_index(pool, _caps(pool, PERDAY_TEST_CAPS), seed).reset_index(drop=True)
             overlap = int(len(set(warm.index) & set(pool.index)))
+            if on_split is not None:
+                on_split({"protocol": "cross_perday", "fold": day, "seed": seed, "unknown": []},
+                         {"train": train, "val": val, "test": test, "warmup": warm})
             fam = test["family"].astype(str).to_numpy()
             unknown = sorted(set(fam) - known_set - {"BENIGN"})
             groups = np.where(fam == "BENIGN", "benign", np.where(np.isin(fam, unknown), "unknown", "known"))

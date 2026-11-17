@@ -168,7 +168,8 @@ class AegisOSR:
 
     def __init__(self, seed: int = 0, alpha: float = 0.01, alpha_family: float = 0.01,
                  ae_kwargs: dict | None = None, with_baselines: bool = True, knn_ref: int = 40_000,
-                 knn_k: int = 5) -> None:
+                 knn_k: int = 5, clf_factory: Callable[[int, int], object] | None = None,
+                 methods: dict[str, MethodSpec] | None = None) -> None:
         self.seed = seed
         self.alpha = alpha
         self.alpha_family = alpha_family
@@ -177,7 +178,9 @@ class AegisOSR:
         self.knn_ref = knn_ref
         self.knn_k = knn_k
         self.classes_: list[str] = []
-        self.methods = METHODS if with_baselines else {PROPOSED: METHODS[PROPOSED]}
+        # R3: the supervised evidence model and the method set can be swapped; the defaults reproduce v3 exactly
+        self.clf_factory = clf_factory
+        self.methods = methods if methods is not None else (METHODS if with_baselines else {PROPOSED: METHODS[PROPOSED]})
 
     # ------------------------------------------------------------------ evidence
     def _needed(self) -> set[str]:
@@ -221,8 +224,8 @@ class AegisOSR:
         y = np.array([lut[c] for c in fam_train])
         need = self._needed()
 
-        log(f"classifier: XGB over {self.classes_}")
-        self.clf_ = build_classifier(len(self.classes_), self.seed)
+        log(f"classifier: {'XGB' if self.clf_factory is None else 'custom'} over {self.classes_}")
+        self.clf_ = (self.clf_factory or build_classifier)(len(self.classes_), self.seed)
         self.clf_.fit(X_train, y, sample_weight=_balanced_weights(y))
 
         benign_tr = X_train[y == 0]

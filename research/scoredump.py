@@ -55,6 +55,7 @@ class ScoreDump:
             cols[f"p__{m}"] = np.asarray(sc.pvalue[m], dtype=np.float64)
         cols["p_family"] = np.asarray(sc.p_fam, dtype=np.float64)
         cols["pred_family_idx"] = np.asarray(sc.pred_family_idx, dtype=np.int16)
+        cols["pred_class_idx"] = np.asarray(sc.proba.argmax(axis=1), dtype=np.int16)  # native (closed-set) decision, arm A
         df = pd.DataFrame(cols)
         for c in ("family", "group"):
             df[c] = df[c].astype("category")
