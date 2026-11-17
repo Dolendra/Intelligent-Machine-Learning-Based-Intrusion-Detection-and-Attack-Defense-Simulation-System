@@ -293,9 +293,10 @@ def auth_users_list(request: Request):
     from security.rbac import has_permission
 
     role = getattr(request.state, "aegis_role", None)
-    if role != "anonymous" and not has_permission(role, "admin"):
+    # R-06 (SEC-3): the user directory is admin-only; anonymous access is no longer allowed,
+    # even when auth is disabled for local development.
+    if not role or role == "anonymous" or not has_permission(role, "admin"):
         raise HTTPException(status_code=403, detail={"code": "FORBIDDEN", "message": "admin required"})
-    # When auth disabled, still allow for local demo introspection
     return {"items": user_store.list_public()}
 
 

@@ -13,6 +13,7 @@ from security.response.types import (
     ALLOWED_ACTION_TYPES,
     ALLOWED_MODES,
     ActionStatus,
+    ActionType,
     ExecutionMode,
     ResponseAction,
     parse_iso,
@@ -111,6 +112,18 @@ def propose_action(
         reason=reason,
     )
     atype = _validate_action_type(action_type or fields["action_type"])
+    from security.detection_policy import GATE_ONLY_LABEL
+
+    if attack_type == GATE_ONLY_LABEL and atype not in _ADVISORY_ACTION_TYPES:
+        if action_type:
+            raise ResponseError(
+                "GATE_ONLY_ADVISORY",
+                "Zero-Day Candidate evidence is advisory; only ESCALATE or MONITOR can be proposed.",
+                http_status=422,
+            )
+        atype = ActionType.ESCALATE.value
+        if not target:
+            fields["target"] = "soc-queue"
     tgt = _validate_target(target or fields["target"])
     duration = int(duration_minutes if duration_minutes is not None else fields["duration_minutes"])
     if duration < 0 or duration > 24 * 60:
@@ -183,10 +196,34 @@ def run_dry_run(action_id: str, *, actor: str | None = "analyst") -> dict[str, A
     return {"ok": True, "action": action.as_dict(), "dry_run": result}
 
 
+# Identities that do not name a person: anonymous requests (only possible when auth is
+# disabled, i.e. AEGIS_ENV=development/test per R-05) and the development override.
+_UNATTRIBUTED_ACTORS = frozenset({"", "anonymous", "dev-admin", "system"})
+
+# Gate-only (Zero-Day Candidate) evidence is advisory: it may route an incident to an analyst
+# but must not by itself authorize a containment action (user decision 2026-11-18).
+_ADVISORY_ACTION_TYPES = frozenset({ActionType.ESCALATE.value, ActionType.MONITOR.value})
+
+
+def _assert_separation_of_duties(action: ResponseAction, actor: str | None) -> None:
+    """R-27 / SEC-24: the person who proposed an action may not approve or execute it."""
+    who = (actor or "").strip().lower()
+    proposer = (action.created_by or "").strip().lower()
+    if who in _UNATTRIBUTED_ACTORS or proposer in _UNATTRIBUTED_ACTORS:
+        return
+    if who == proposer:
+        raise ResponseError(
+            "SELF_APPROVAL_FORBIDDEN",
+            "The proposer of a response action cannot approve or execute it (four-eyes rule).",
+            http_status=403,
+        )
+
+
 def approve_action(action_id: str, *, actor: str | None = "responder") -> dict[str, Any]:
     existing = response_store.get(action_id)
     if existing is None:
         raise ResponseError("NOT_FOUND", f"Unknown action {action_id}", http_status=404)
+    _assert_separation_of_duties(existing, actor)
     if existing.status == ActionStatus.REJECTED.value:
         raise ResponseError("REJECTED", "Rejected actions cannot be approved", http_status=409)
     try:
@@ -238,6 +275,7 @@ def execute_action(action_id: str, *, actor: str | None = "responder") -> dict[s
     action = response_store.get(action_id)
     if action is None:
         raise ResponseError("NOT_FOUND", f"Unknown action {action_id}", http_status=404)
+    _assert_separation_of_duties(action, actor)
     if action.status == ActionStatus.PROPOSED.value:
         raise ResponseError("NOT_APPROVED", "Unapproved actions cannot execute", http_status=409)
     if action.status == ActionStatus.REJECTED.value:

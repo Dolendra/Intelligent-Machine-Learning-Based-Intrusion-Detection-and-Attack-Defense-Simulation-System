@@ -45,7 +45,7 @@ def test_traffic_decision_block_gates_plane() -> None:
         mode="CONTROLLED",
         actor="tester",
     )
-    approve_action(prop["action_id"], actor="tester")
+    approve_action(prop["action_id"], actor="tester-approver")  # four-eyes (P0-3)
     assert test_network_adapter.snapshot()["count"] == 1
 
     post, _ = plane.run_window(n_attack=20, n_benign=5)
