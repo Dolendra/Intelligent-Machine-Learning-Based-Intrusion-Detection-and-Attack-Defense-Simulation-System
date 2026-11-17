@@ -24,6 +24,7 @@ seed reproduce the same run exactly.
 from __future__ import annotations
 
 import json
+import os
 import threading
 import time
 import uuid
@@ -41,7 +42,8 @@ from cyberrange.scenarios import FLOW_COST, UNSEEN_FAMILIES, Scenario, get_scena
 from ids_config import ROOT
 
 POOL_PATH = ROOT / "research_artifacts" / "replay" / "replay_pool.parquet"
-RUNS_DIR = ROOT / "results" / "cyber_range" / "runs"
+# Overridable so the test suite never writes into the committed results directory.
+RUNS_DIR = Path(os.environ.get("AEGIS_RANGE_RUNS_DIR") or ROOT / "results" / "cyber_range" / "runs")
 EVENT_SCHEMA_VERSION = 1
 RATE_LIMIT_PASS = 0.2  # a rate-limited source keeps 20% of its flows (model parameter)
 TAIL_SECONDS = 25      # observation time after the attacker stops
@@ -59,8 +61,16 @@ DEFENSES: dict[str, dict[str, str]] = {
 RECOMMENDED: dict[str, str] = {
     "DoS": "rate_limit", "BruteForce": "rate_limit", "DDoS": "block_source", "PortScan": "block_source",
     "WebAttack": "block_source", "Bot": "block_source", "Infiltration": "block_source", "Heartbleed": "block_source",
+    # Gate-only incidents cannot be named; containing the alerting source is the conservative default.
+    "Zero-Day Candidate": "block_source",
 }
-DETECTORS = ("frozen", "gate", "union")
+DETECTORS = ("frozen", "gate", "union")  # == security.detection_policy.POLICIES
+
+
+def _default_policy() -> str:
+    from security.detection_policy import configured_policy
+
+    return configured_policy()
 
 CLIENTS = [f"10.20.{3 + i // 20}.{20 + i % 20 * 7}" for i in range(40)]
 EXTERNAL_ATTACKERS = ["203.0.113.24", "198.51.100.17", "198.51.100.44", "198.51.100.71",
@@ -86,6 +96,10 @@ class ScoredPool:
     models: dict[str, bool]
 
 
+class ModelsUnavailable(FileNotFoundError):
+    """Raised instead of silently scoring every flow as benign when a detector cannot load."""
+
+
 @lru_cache(maxsize=1)
 def scored_pool() -> ScoredPool:
     from backend.services.pipeline import get_predictor
@@ -97,6 +111,11 @@ def scored_pool() -> ScoredPool:
     n = len(pool)
     fam = pool["family"].astype(str).to_numpy()
     predictor = get_predictor()
+    gate = get_gate()
+    missing = [name for name, obj in (("frozen v1.1", predictor), ("Zero-Day Gate", gate)) if obj is None]
+    if missing:
+        # Measured results are meaningless with a silent all-benign detector, so refuse to run.
+        raise ModelsUnavailable(f"Cyber Range needs both detectors; unavailable: {', '.join(missing)}")
     if predictor is not None:
         preds = predictor.predict_many_vectorized(pool)
         f_alert = np.array([bool(p.is_attack) for p in preds])
@@ -104,7 +123,6 @@ def scored_pool() -> ScoredPool:
         f_conf = np.array([float(p.multiclass_confidence if p.is_attack else p.binary_confidence) for p in preds])
     else:
         f_alert, f_type, f_conf = np.zeros(n, bool), np.full(n, "BENIGN", dtype=object), np.ones(n)
-    gate = get_gate()
     if gate is not None:
         res = []
         for s in range(0, n, 4000):
@@ -126,7 +144,7 @@ class RangeConfig:
     seed: int = 1
     intensity: float = 1.0          # multiplier on the scenario's attack rate
     attackers: int | None = None    # override the scenario's number of attacking sources
-    detector: str = "union"         # frozen | gate | union
+    detector: str = field(default_factory=lambda: _default_policy())  # frozen | gate | union (shared policy)
     alert_threshold: int = 3        # k alerts ...
     alert_window_s: int = 5         # ... within W seconds make a source an incident
     response_mode: str = "auto"     # auto: apply `defense` after the approval delay; manual: wait for respond()
@@ -263,10 +281,17 @@ class RangeRun:
                 out[m] = idx[self.rng.integers(0, len(idx), size=int(m.sum()))]
         return out
 
+    def _decision(self, i: int):
+        """Same incident semantics as the operational API (security.detection_policy.decide)."""
+        from security.detection_policy import decide
+
+        mode = "union" if self.controls["inspection"] else self.config.detector
+        return decide(bool(self.pool.frozen_alert[i]), str(self.pool.frozen_type[i]),
+                      bool(self.pool.gate_alert[i]), str(self.pool.gate_label[i]), mode)
+
     def _alert(self, i: int) -> tuple[bool, bool, bool]:
         f, g = bool(self.pool.frozen_alert[i]), bool(self.pool.gate_alert[i])
-        mode = "union" if self.controls["inspection"] else self.config.detector
-        return (f or g if mode == "union" else f if mode == "frozen" else g), f, g
+        return self._decision(i).raises_incident, f, g
 
     # ------------------------------------------------------------------ one simulated second
     def _tick(self) -> None:
@@ -367,7 +392,8 @@ class RangeRun:
                     if s.is_attacker and self.explanation is None:
                         self._pending_explain = i
                     if s.is_attacker and self.detected_family is None:
-                        self.detected_family = str(pool.gate_label[i] if not pool.frozen_alert[i] else pool.frozen_type[i])
+                        # frozen family if the frozen model alerted, else "Zero-Day Candidate" (never the truth)
+                        self.detected_family = str(self._decision(i).incident_label)
             self.recent.append(self._flow_row(t, src, dst, i, is_att, "alert" if alert else "passed", (f_al, g_al)))
 
         # service model: the target serves min(1, capacity / load) of what reaches it
@@ -390,7 +416,8 @@ class RangeRun:
         if self.marks["detected"] is None and any(s.detected_at is not None for s in self.sources.values() if s.is_attacker):
             self.marks["detected"] = t
             # the playbook follows what was actually detected (e.g. a scanner caught during recon)
-            self.recommended = RECOMMENDED.get(str(self.detected_family), RECOMMENDED.get(self.scenario.family, "block_source"))
+            # Only what the detector named may drive the recommendation (no ground-truth fallback).
+            self.recommended = RECOMMENDED.get(str(self.detected_family), "block_source")
             self._set_state("DETECTED", f"Incident raised for {self.detected_family}")
             self._explain()
             self.marks["response_options"] = t
@@ -467,16 +494,13 @@ class RangeRun:
         self._set_state("MITIGATING", DEFENSES[action]["effect"])
 
     def _mitre(self) -> dict[str, Any] | None:
-        """ATT&CK context of what was detected; for a novel (gate-only) incident, of the scenario's ground truth."""
+        """ATT&CK context of what the *detector* named. A gate-only "Zero-Day Candidate" has no family,
+        so no technique is shown — the range never leaks the scenario's ground truth into a detection."""
         from security.threat_intel import attack_context
 
         if self.detected_family is None:
             return None
-        ctx = attack_context(self.detected_family)
-        if ctx is None:  # UNKNOWN-ATTACK / ZERO-DAY-ANOMALY: the model cannot name it; truth is known in the range
-            truth = attack_context(self.scenario.family)
-            return None if truth is None else {**truth, "note": "Detector reported an unknown attack; mapping uses the scenario's ground truth."}
-        return ctx
+        return attack_context(self.detected_family)
 
     def _controls_view(self) -> dict[str, Any]:
         c = self.controls

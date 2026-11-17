@@ -267,6 +267,63 @@ def zero_day_assessment(rows: list[dict[str, float]], *, explain_top: int = 5) -
         return [None] * len(rows)
 
 
+def _gate_version() -> str | None:
+    try:
+        from research.serving import get_gate
+
+        gate = get_gate()
+        return getattr(gate, "version", None) if gate is not None else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _record_zero_day_alert(
+    db: Session,
+    zero_day: dict[str, Any],
+    *,
+    pred: PredictionResult,
+    policy: str,
+    raised_incident: bool,
+    incident_code: str | None,
+    source_ref: str | None,
+    origin: str,
+) -> None:
+    """Audit row for every gate alert on a persisted detection (whether or not it raised an incident)."""
+    import json as _json
+
+    from database.db import ZeroDayAlert
+
+    ev = zero_day.get("evidence") or {}
+    fam = zero_day.get("family") or {}
+    db.add(ZeroDayAlert(
+        origin=origin,
+        source_ref=source_ref,
+        incident_code=incident_code,
+        policy=policy,
+        raised_incident=int(bool(incident_code) and raised_incident),
+        gate_label=str(zero_day.get("label")),
+        p_value=float(zero_day.get("p_value", 1.0)),
+        alpha=float(zero_day.get("alpha", 0.0)),
+        fused_surprisal=zero_day.get("fused_surprisal"),
+        p_attack=(ev.get("supervised") or {}).get("p_attack"),
+        knn_distance=(ev.get("novelty") or {}).get("knn_distance"),
+        family_predicted=fam.get("predicted"),
+        family_conformity_p=fam.get("conformity_p"),
+        frozen_is_attack=int(bool(pred.is_attack)),
+        frozen_attack_type=pred.attack_type,
+        gate_model_version=_gate_version() or "unknown",
+        evidence=_json.dumps(zero_day.get("top_deviations") or []),
+    ))
+    try:
+        from backend.observability.registry import domain_metrics
+
+        domain_metrics.incr("detection.zero_day_alerts_total")
+        if not pred.is_attack:
+            domain_metrics.incr("detection.zero_day_gate_only_alerts_total")
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def run_prediction(
     features: dict[str, float],
     db: Session | None = None,
@@ -275,8 +332,11 @@ def run_prediction(
     asset_criticality: float | None = None,
     source_ref: str | None = None,
     asset_id: str | None = None,
+    origin: str = "api",
 ) -> dict[str, Any]:
     import time
+
+    from security.detection_policy import GATE_ONLY_LABEL, configured_policy, decide
 
     _t0 = time.perf_counter()
     predictor = get_predictor()
@@ -294,21 +354,56 @@ def run_prediction(
     payload["campaign_id"] = None
     payload["escalated"] = False
 
+    # Advisory Zero-Day Gate runs BEFORE the incident decision; the shared policy (also used by
+    # the Cyber Range) decides whether an incident is raised and what it is called.
+    zero_day = zero_day_assessment([features])[0]
+    payload["zero_day"] = zero_day
+    policy = configured_policy()
+    decision = decide(pred.is_attack, pred.attack_type, bool(zero_day and zero_day.get("alert")),
+                      (zero_day or {}).get("label"), policy)
+    payload["detection_decision"] = {
+        "policy": policy,
+        "source": decision.source,
+        "raises_incident": decision.raises_incident,
+        "incident_label": decision.incident_label,
+        "known_family": decision.known_family,
+        "gate_hint": decision.gate_hint,
+    }
+    incident_type = decision.incident_label or pred.attack_type
+    gate_only = decision.raises_incident and not pred.is_attack
+    inc_risk = {"score": payload["risk_score"], "severity": payload["severity"],
+                "recommendation": payload["recommendation"]["primary"], "confidence": payload["confidence"]}
+    if gate_only:
+        # Gate-only incident: risk/playbook for an unnamed attack; frozen-verdict fields stay untouched.
+        p_val = float(zero_day.get("p_value", 1.0))
+        g_conf = max(0.0, min(1.0, 1.0 - p_val))
+        g_risk = compute_risk(GATE_ONLY_LABEL, g_conf, True,
+                              traffic_intensity=(payload.get("risk_factors") or {}).get("intensity"),
+                              asset_criticality=asset_criticality)
+        g_rec = recommend(GATE_ONLY_LABEL, g_risk.get("severity"), confidence=g_conf, is_attack=True)
+        inc_risk = {"score": g_risk.get("score", 0.0), "severity": g_risk.get("severity", "MEDIUM"),
+                    "recommendation": g_rec.get("primary", ""), "confidence": g_conf}
+        payload["incident_risk"] = {"risk_score": inc_risk["score"], "severity": inc_risk["severity"],
+                                    "recommendation": inc_risk["recommendation"]}
+
     incident_id = None
-    if persist and db is not None and pred.is_attack:
-        existing = _find_duplicate_incident(db, pred.attack_type, flow_ref)
+    if persist and db is not None and decision.raises_incident:
+        existing = _find_duplicate_incident(db, incident_type, flow_ref)
         if existing is not None:
             incident_id = existing.incident_code
             hits = int(getattr(existing, "hit_count", 1) or 1) + 1
             existing.hit_count = hits
-            existing.confidence = max(float(existing.confidence or 0), float(payload["confidence"]))
-            if float(payload["risk_score"]) >= float(existing.risk_score or 0):
-                existing.risk_score = payload["risk_score"]
-                existing.recommendation = payload["recommendation"]["primary"]
+            existing.confidence = max(float(existing.confidence or 0), float(inc_risk["confidence"]))
+            if float(inc_risk["score"]) >= float(existing.risk_score or 0):
+                existing.risk_score = inc_risk["score"]
+                existing.recommendation = inc_risk["recommendation"]
             old_sev = existing.severity
-            new_sev = escalate_severity(existing.severity, payload["severity"], hit_count=hits)
+            new_sev = escalate_severity(existing.severity, inc_risk["severity"], hit_count=hits)
             existing.severity = new_sev
-            payload["severity"] = new_sev
+            if gate_only:
+                payload["incident_risk"]["severity"] = new_sev
+            else:
+                payload["severity"] = new_sev
             payload["escalated"] = severity_changed(old_sev, new_sev)
             if asset_criticality is not None:
                 existing.asset_criticality = asset_criticality
@@ -330,7 +425,7 @@ def run_prediction(
             db.commit()
             payload["deduplicated"] = True
         else:
-            related = find_related_campaign(db, attack_type=pred.attack_type, source_ref=flow_ref)
+            related = find_related_campaign(db, attack_type=incident_type, source_ref=flow_ref)
             if not flow_ref:
                 # Without a source reference there is nothing to correlate on: do not invent a
                 # one-incident "campaign" for every detection.
@@ -347,12 +442,15 @@ def run_prediction(
             incident_id = f"INC-{uuid.uuid4().hex[:6].upper()}"
             row = Incident(
                 incident_code=incident_id,
-                attack_type=pred.attack_type,
+                attack_type=incident_type,
                 is_attack=1,
-                confidence=payload["confidence"],
-                risk_score=payload["risk_score"],
-                severity=payload["severity"],
-                recommendation=payload["recommendation"]["primary"],
+                confidence=inc_risk["confidence"],
+                risk_score=inc_risk["score"],
+                severity=inc_risk["severity"],
+                recommendation=inc_risk["recommendation"],
+                detector_source=decision.source,
+                zero_day_label=(zero_day or {}).get("label") if zero_day and zero_day.get("alert") else None,
+                zero_day_p_value=(zero_day or {}).get("p_value") if zero_day else None,
                 explanation="",
                 status="Detected",
                 asset_criticality=asset_criticality,
@@ -362,7 +460,8 @@ def run_prediction(
             )
             db.add(row)
             db.flush()
-            note = "Created from prediction"
+            note = ("Created from Zero-Day Gate alert (frozen model: benign)" if gate_only
+                    else "Created from prediction")
             if related is not None:
                 note = f"Created; linked campaign {campaign_id} (related {related.incident_code})"
             _record_incident_event(db, incident_id, None, "Detected", actor="system", notes=note, action="create")
@@ -375,9 +474,10 @@ def run_prediction(
                     {
                         "type": "incident_created",
                         "incident_id": incident_id,
-                        "attack_type": pred.attack_type,
-                        "severity": payload["severity"],
-                        "risk_score": payload["risk_score"],
+                        "attack_type": incident_type,
+                        "detector_source": decision.source,
+                        "severity": inc_risk["severity"],
+                        "risk_score": inc_risk["score"],
                         "campaign_id": campaign_id,
                     }
                 )
@@ -385,7 +485,14 @@ def run_prediction(
                 pass
 
     payload["incident_id"] = incident_id
-    payload["zero_day"] = zero_day_assessment([features])[0]
+    if persist and db is not None and zero_day and zero_day.get("alert"):
+        try:
+            _record_zero_day_alert(db, zero_day, pred=pred, policy=policy,
+                                   raised_incident=decision.raises_incident, incident_code=incident_id,
+                                   source_ref=flow_ref, origin=origin)
+            db.commit()
+        except Exception:  # noqa: BLE001 — auditing must not break detection
+            db.rollback()
     from backend.services.decision_trace import build_trace_from_prediction
 
     payload["decision_trace"] = build_trace_from_prediction(payload)
@@ -465,13 +572,14 @@ def run_prediction_batch(
         item["flow_index"] = i
         item["incident_id"] = None
         item["zero_day"] = zero_day[i]
-        if persist and db is not None and pred.is_attack:
+        if persist and db is not None and (pred.is_attack or (zero_day[i] or {}).get("alert")):
             single = run_prediction(
                 features,
                 db=db,
                 persist=True,
                 allow_missing_features=True,
                 asset_criticality=asset_criticality,
+                origin="batch",
             )
             item["incident_id"] = single.get("incident_id")
         results.append(item)
@@ -593,6 +701,9 @@ def _incident_dict(row: Incident, events: list[IncidentEvent] | None = None) -> 
         "source_ref": getattr(row, "source_ref", None),
         "campaign_id": getattr(row, "campaign_id", None),
         "hit_count": getattr(row, "hit_count", 1),
+        "detector_source": getattr(row, "detector_source", None) or "frozen",
+        "zero_day_label": getattr(row, "zero_day_label", None),
+        "zero_day_p_value": getattr(row, "zero_day_p_value", None),
         "allowed_next_statuses": sorted(INCIDENT_TRANSITIONS.get(row.status or "Detected", set())),
     }
     if events is not None:

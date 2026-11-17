@@ -78,6 +78,10 @@ class ZeroDayGate:
         self.clf = XGBClassifier()
         self.clf.load_model(directory / CLASSIFIER)
         self.clf.set_params(n_jobs=4)
+        import hashlib
+
+        digest = hashlib.sha256((directory / BUNDLE).read_bytes()).hexdigest()[:12]
+        self.version = f"aegis-osr@{digest}"
 
     # ------------------------------------------------------------------ helpers
     def _frame(self, rows: pd.DataFrame | list[dict[str, Any]]) -> np.ndarray:
@@ -158,6 +162,7 @@ class ZeroDayGate:
     def status(self) -> dict[str, Any]:
         return {
             "available": True,
+            "version": self.version,
             "alpha": self.alpha,
             "alpha_family": self.alpha_family,
             "known_classes": self.classes,

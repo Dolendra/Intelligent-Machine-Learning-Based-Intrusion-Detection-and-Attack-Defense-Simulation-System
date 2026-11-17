@@ -12,6 +12,8 @@ os.environ.setdefault("DISABLE_RATE_LIMIT", "true")
 # Must be set before `database.db` / FastAPI app import so CI has no dependency on ids.db
 _test_db = Path(tempfile.gettempdir()) / "aegis_ids_pytest.db"
 os.environ.setdefault("IDS_DB_PATH", str(_test_db))
+# Cyber Range runs from tests go to a temp dir, not results/cyber_range/runs (committed evidence)
+os.environ.setdefault("AEGIS_RANGE_RUNS_DIR", str(Path(tempfile.gettempdir()) / "aegis_pytest_range_runs"))
 
 import pytest
 

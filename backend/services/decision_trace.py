@@ -38,6 +38,21 @@ def build_trace_from_prediction(payload: dict[str, Any], explain: dict[str, Any]
             ),
         }
     )
+    zd = payload.get("zero_day")
+    dd = payload.get("detection_decision") or {}
+    if isinstance(zd, dict):
+        steps.append(
+            {
+                "stage": "zero_day_gate",
+                "title": "Zero-Day Gate (advisory)",
+                "detail": (
+                    f"{'ALERT' if zd.get('alert') else 'no alert'} · label {zd.get('label')} · "
+                    f"p={float(zd.get('p_value') or 1):.4g} vs α={zd.get('alpha')}"
+                    + (f" · incident policy '{dd.get('policy')}' → {dd.get('incident_label') or 'no incident'}"
+                       if dd else "")
+                ),
+            }
+        )
     if explain:
         tops = explain.get("top_features") or []
         names = ", ".join(str(t.get("feature")) for t in tops[:3]) or "n/a"

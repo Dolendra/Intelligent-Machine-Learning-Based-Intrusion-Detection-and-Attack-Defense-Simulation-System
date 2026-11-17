@@ -191,3 +191,10 @@ observability:
     rate_limit_hits_warn: 50
     pcap_extract_failures_warn: 5
     response_verify_failures_warn: 3
+
+# v3 Aegis-OSR Zero-Day Gate (advisory second detector; never changes the frozen v1.1 verdict)
+zero_day_gate:
+  enabled: true
+  # Which detector may raise incidents — shared by the API and the Cyber Range:
+  #   frozen | gate | union. Gate-only incidents are labelled "Zero-Day Candidate", never a known family.
+  incident_policy: union

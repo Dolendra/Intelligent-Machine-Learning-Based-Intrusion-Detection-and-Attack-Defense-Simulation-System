@@ -35,6 +35,36 @@ class Incident(Base):
     asset_criticality = Column(Float, nullable=True)
     campaign_id = Column(String(32), nullable=True, index=True)
     hit_count = Column(Integer, default=1)
+    # R1a: which detector raised the incident (frozen | zero_day_gate | both) + gate evidence
+    detector_source = Column(String(16), nullable=True, default="frozen")
+    zero_day_label = Column(String(32), nullable=True)
+    zero_day_p_value = Column(Float, nullable=True)
+
+
+class ZeroDayAlert(Base):
+    """Every Zero-Day Gate alert on a persisted detection (audit trail; R1a)."""
+
+    __tablename__ = "zero_day_alerts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    origin = Column(String(16), default="api")          # api | batch
+    source_ref = Column(String(128), nullable=True)
+    incident_code = Column(String(32), nullable=True, index=True)
+    policy = Column(String(16))                          # frozen | gate | union at decision time
+    raised_incident = Column(Integer, default=0)
+    gate_label = Column(String(32))
+    p_value = Column(Float)
+    alpha = Column(Float)
+    fused_surprisal = Column(Float, nullable=True)
+    p_attack = Column(Float, nullable=True)
+    knn_distance = Column(Float, nullable=True)
+    family_predicted = Column(String(32), nullable=True)
+    family_conformity_p = Column(Float, nullable=True)
+    frozen_is_attack = Column(Integer)
+    frozen_attack_type = Column(String(64), nullable=True)
+    gate_model_version = Column(String(64))
+    evidence = Column(Text, nullable=True)               # JSON: top deviations
 
 
 class SimulationRecord(Base):
@@ -202,6 +232,10 @@ def init_db() -> None:
             alters.append("ALTER TABLE incidents ADD COLUMN asset_criticality FLOAT")
         if "campaign_id" not in cols:
             alters.append("ALTER TABLE incidents ADD COLUMN campaign_id VARCHAR(32)")
+        for col, ddl in (("detector_source", "VARCHAR(16)"), ("zero_day_label", "VARCHAR(32)"),
+                         ("zero_day_p_value", "FLOAT")):
+            if col not in cols:
+                alters.append(f"ALTER TABLE incidents ADD COLUMN {col} {ddl}")
         if "hit_count" not in cols:
             alters.append("ALTER TABLE incidents ADD COLUMN hit_count INTEGER DEFAULT 1")
         for stmt in alters:

@@ -55,6 +55,10 @@ class PredictResponse(BaseModel):
     intensity_method: str | None = None
     # v3 advisory Aegis-OSR Zero-Day Gate (None when artifacts are unavailable)
     zero_day: dict[str, Any] | None = None
+    # R1a: shared incident policy outcome (security.detection_policy.decide)
+    detection_decision: dict[str, Any] | None = None
+    # risk/playbook of a gate-only incident (frozen-verdict fields above stay untouched)
+    incident_risk: dict[str, Any] | None = None
 
 
 class BatchPredictRequest(BaseModel):
