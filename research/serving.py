@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import threading
+import time
 from pathlib import Path
 from typing import Any
 
@@ -175,22 +176,33 @@ class ZeroDayGate:
 
 _gate: ZeroDayGate | None = None
 _gate_error: str | None = None
+_gate_error_at: float = 0.0
 _lock = threading.Lock()
+RETRY_SECONDS = 60.0  # R-04 (ARCH-10): a failed load is retried, not remembered forever
 
 
 def get_gate() -> ZeroDayGate | None:
-    """Lazy singleton; returns None (and remembers why) when artifacts are missing."""
-    global _gate, _gate_error
-    if _gate is not None or _gate_error is not None:
+    """Lazy singleton; returns None (and remembers why) when artifacts are missing.
+
+    A failed load is retried after ``RETRY_SECONDS``, so gate artifacts restored after
+    startup are picked up without a restart.
+    """
+    global _gate, _gate_error, _gate_error_at
+    if _gate is not None:
         return _gate
+    if _gate_error is not None and (time.monotonic() - _gate_error_at) < RETRY_SECONDS:
+        return None
     with _lock:
-        if _gate is None and _gate_error is None:
+        if _gate is None:
             try:
                 _gate = ZeroDayGate()
+                _gate_error = None
             except FileNotFoundError:
                 _gate_error = "Zero-day gate artifacts not found. Run scripts/51_train_zero_day_gate.py"
+                _gate_error_at = time.monotonic()
             except Exception as exc:  # noqa: BLE001
-                _gate_error = f"Zero-day gate failed to load: {exc}"
+                _gate_error = f"Zero-day gate failed to load: {type(exc).__name__}"
+                _gate_error_at = time.monotonic()
     return _gate
 
 

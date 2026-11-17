@@ -1,6 +1,8 @@
 """Application services wrapping ML + security engines."""
 from __future__ import annotations
 
+import logging
+
 import json
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -38,8 +40,15 @@ INCIDENT_TRANSITIONS: dict[str, set[str]] = {
 }
 
 
-@lru_cache(maxsize=1)
+_predictor: IDSPredictor | None = None
+
+
 def get_predictor() -> IDSPredictor | None:
+    """Load the frozen v1.1 predictor once. A failed load (missing files) is NOT cached, so
+    artifacts restored after startup are picked up without a restart (R-04 / ARCH-10)."""
+    global _predictor
+    if _predictor is not None:
+        return _predictor
     cfg = load_config()
     model_dir = resolve_path(cfg["models"]["output_dir"])
     required = [
@@ -49,7 +58,16 @@ def get_predictor() -> IDSPredictor | None:
     ]
     if not all(p.exists() for p in required):
         return None
-    return IDSPredictor.from_artifacts(model_dir)
+    _predictor = IDSPredictor.from_artifacts(model_dir)
+    return _predictor
+
+
+def _clear_predictor_cache() -> None:
+    global _predictor
+    _predictor = None
+
+
+get_predictor.cache_clear = _clear_predictor_cache  # type: ignore[attr-defined]  # lru_cache-compatible
 
 
 @lru_cache(maxsize=1)
@@ -250,21 +268,68 @@ def _find_duplicate_incident(
     )
 
 
-def zero_day_assessment(rows: list[dict[str, float]], *, explain_top: int = 5) -> list[dict[str, Any] | None]:
-    """Advisory Aegis-OSR Zero-Day Gate verdicts (v3). Never alters the frozen v1.1 decision.
+_gate_log = logging.getLogger("aegis.zero_day")
 
-    Returns ``None`` per row when the gate artifacts are unavailable or the row lacks features,
-    so the frozen prediction path keeps working unchanged.
-    """
+
+def _gate_metric(name: str, n: int = 1) -> None:
     try:
-        from research.serving import get_gate
+        from backend.observability.registry import domain_metrics
+
+        domain_metrics.incr(name, n)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def zero_day_assessment_with_status(
+    rows: list[dict[str, float]], *, explain_top: int = 5,
+) -> tuple[list[dict[str, Any] | None], list[str]]:
+    """Advisory Aegis-OSR Zero-Day Gate verdicts plus a per-row status.
+
+    Status is ``ok``, ``unavailable`` (gate not loaded) or ``error`` (this row could not be
+    scored). The frozen v1.1 decision is never altered and detection never fails because of
+    the gate. R-04 (ARCH-10, ML-22): failures are no longer silent. They are logged
+    (exception class only, no flow data) and counted, and one bad row no longer nullifies the
+    whole batch.
+    """
+    n = len(rows)
+    if not rows:
+        return [], []
+    try:
+        from research.serving import gate_error, get_gate
 
         gate = get_gate()
-        if gate is None or not rows:
-            return [None] * len(rows)
-        return gate.assess(rows, explain_top=explain_top)
-    except Exception:  # noqa: BLE001 — advisory path must never break detection
-        return [None] * len(rows)
+    except Exception as exc:  # noqa: BLE001
+        gate, reason = None, type(exc).__name__
+    else:
+        reason = gate_error() if gate is None else None
+    if gate is None:
+        _gate_metric("detection.zero_day_gate_unavailable", n)
+        _gate_log.warning("zero_day_gate_unavailable rows=%d reason=%s", n, reason)
+        return [None] * n, ["unavailable"] * n
+    try:
+        return gate.assess(rows, explain_top=explain_top), ["ok"] * n
+    except Exception as exc:  # noqa: BLE001 — fall back to per-row scoring
+        _gate_log.warning("zero_day_gate_batch_error rows=%d error=%s; scoring rows individually",
+                          n, type(exc).__name__)
+    results: list[dict[str, Any] | None] = []
+    statuses: list[str] = []
+    for row in rows:
+        try:
+            results.append(gate.assess([row], explain_top=explain_top)[0])
+            statuses.append("ok")
+        except Exception as exc:  # noqa: BLE001
+            results.append(None)
+            statuses.append("error")
+            _gate_log.warning("zero_day_gate_row_error error=%s", type(exc).__name__)
+    errors = statuses.count("error")
+    if errors:
+        _gate_metric("detection.zero_day_gate_errors", errors)
+    return results, statuses
+
+
+def zero_day_assessment(rows: list[dict[str, float]], *, explain_top: int = 5) -> list[dict[str, Any] | None]:
+    """Backwards-compatible wrapper: verdicts only (``None`` where the gate could not score)."""
+    return zero_day_assessment_with_status(rows, explain_top=explain_top)[0]
 
 
 def _gate_version() -> str | None:
@@ -356,8 +421,10 @@ def run_prediction(
 
     # Advisory Zero-Day Gate runs BEFORE the incident decision; the shared policy (also used by
     # the Cyber Range) decides whether an incident is raised and what it is called.
-    zero_day = zero_day_assessment([features])[0]
+    zd_results, zd_status = zero_day_assessment_with_status([features])
+    zero_day = zd_results[0]
     payload["zero_day"] = zero_day
+    payload["zero_day_status"] = zd_status[0]
     policy = configured_policy()
     decision = decide(pred.is_attack, pred.attack_type, bool(zero_day and zero_day.get("alert")),
                       (zero_day or {}).get("label"), policy)
@@ -565,13 +632,14 @@ def run_prediction_batch(
 
     df = pd.DataFrame(rows)
     preds = predictor.predict_many_vectorized(df, allow_missing=allow_missing_features)
-    zero_day = zero_day_assessment(rows, explain_top=3)
+    zero_day, zd_status = zero_day_assessment_with_status(rows, explain_top=3)
     results: list[dict[str, Any]] = []
     for i, (pred, features) in enumerate(zip(preds, rows)):
         item = _enrich_prediction(pred, features, asset_criticality=asset_criticality)
         item["flow_index"] = i
         item["incident_id"] = None
         item["zero_day"] = zero_day[i]
+        item["zero_day_status"] = zd_status[i]
         if persist and db is not None and (pred.is_attack or (zero_day[i] or {}).get("alert")):
             single = run_prediction(
                 features,

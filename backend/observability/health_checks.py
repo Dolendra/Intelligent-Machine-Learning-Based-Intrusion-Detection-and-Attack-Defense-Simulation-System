@@ -34,6 +34,25 @@ def check_models() -> dict[str, Any]:
         return {"status": "unavailable", "detail": "model_check_failed"}
 
 
+def check_zero_day_gate() -> dict[str, Any]:
+    """Zero-Day Gate availability (R-04). Required for readiness only when the configured
+    incident policy lets the gate raise incidents (gate / union)."""
+    try:
+        from research.serving import get_gate
+        from security.detection_policy import configured_policy
+
+        policy = configured_policy()
+        loaded = get_gate() is not None
+        return {
+            "status": "ok" if loaded else "unavailable",
+            "detail": "loaded" if loaded else "not_loaded",
+            "policy": policy,
+            "required": policy in {"gate", "union"},
+        }
+    except Exception:  # noqa: BLE001
+        return {"status": "unavailable", "detail": "gate_check_failed", "policy": None, "required": True}
+
+
 def check_pcap_extractor() -> dict[str, Any]:
     try:
         from ingestion.adapters import pcap_extractor_status
@@ -93,6 +112,7 @@ def dependency_status(*, include_optional: bool = True) -> dict[str, Any]:
         "models": check_models(),
         "queue": check_queue(),
         "filesystem": check_filesystem(),
+        "zero_day_gate": check_zero_day_gate(),
     }
     if include_optional:
         deps["pcap_extractor"] = check_pcap_extractor()
@@ -102,7 +122,9 @@ def dependency_status(*, include_optional: bool = True) -> dict[str, Any]:
 def readiness_report() -> dict[str, Any]:
     """Required deps must be ok for ready=true. Optional deps may be degraded."""
     deps = dependency_status(include_optional=True)
-    required = ("database", "models", "filesystem")
+    required = ["database", "models", "filesystem"]
+    if deps["zero_day_gate"].get("required"):
+        required.append("zero_day_gate")
     missing = [name for name in required if deps[name]["status"] != "ok"]
     ready = not missing
     # Public payload — no filesystem paths or exception text
