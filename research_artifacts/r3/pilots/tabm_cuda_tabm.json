@@ -1,0 +1,64 @@
+{
+ "generated_at": "2026-11-17T15:50:41.761673+00:00",
+ "purpose": "R3 Stage 0 TabM cost pilot \u2014 not a result",
+ "device": "cuda",
+ "torch": "2.12.0+cu126",
+ "cuda": "12.6",
+ "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+ "threads": 14,
+ "python": "3.11.9",
+ "tabm": "0.0.3",
+ "config": {
+  "arch": "tabm",
+  "k": 32,
+  "n_blocks": 3,
+  "d_block": 512,
+  "dropout": 0.1,
+  "batch": 1024,
+  "embeddings": "PiecewiseLinear(48 bins, d=16, version B)",
+  "lr": 0.002,
+  "wd": 0.0003
+ },
+ "dropped_constant_columns": [
+  "Bwd PSH Flags",
+  "Bwd URG Flags",
+  "Fwd Avg Bytes/Bulk",
+  "Fwd Avg Packets/Bulk",
+  "Fwd Avg Bulk Rate",
+  "Bwd Avg Bytes/Bulk",
+  "Bwd Avg Packets/Bulk",
+  "Bwd Avg Bulk Rate"
+ ],
+ "data": {
+  "n_train": 102776,
+  "n_eval": 43972,
+  "d": 69,
+  "classes": [
+   "BENIGN",
+   "BruteForce",
+   "DDoS",
+   "DoS",
+   "PortScan",
+   "WebAttack"
+  ]
+ },
+ "steps": 200,
+ "loss_first10_mean": 1.4239952325820924,
+ "loss_last10_mean": 0.018242843355983494,
+ "smoke_known_accuracy_after_pilot_steps": 0.9969346363049691,
+ "step_seconds": {
+  "median": 0.062020063400268555,
+  "p90": 0.06306447982788085
+ },
+ "inference_ms_per_1k_flows": 20.22,
+ "extrapolation": {
+  "steps_per_epoch_at_600k": 586,
+  "epoch_minutes": 0.6057292858759562,
+  "fit_hours_if_30_epochs": 0.3028646429379781,
+  "note": "TabM trains until early stopping (patience 16); 30 epochs is an assumption"
+ },
+ "memory": {
+  "peak_rss_gb": 3.85,
+  "cuda_peak_allocated_gb": 0.99
+ }
+}

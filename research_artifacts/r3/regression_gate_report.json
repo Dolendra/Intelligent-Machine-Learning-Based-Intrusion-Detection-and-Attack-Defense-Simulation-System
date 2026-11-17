@@ -1,0 +1,74 @@
+{
+ "generated_at": "2026-11-17T13:42:15.078222+00:00",
+ "git_commit": "bf5fd3f",
+ "protocols": [
+  "loafo",
+  "cross_perday"
+ ],
+ "seeds": [
+  1,
+  2,
+  3,
+  4,
+  5
+ ],
+ "checks": {
+  "historical_artifacts_unchanged": {
+   "changed_or_missing": {},
+   "pass": true
+  },
+  "frozen_v11_files_equal_tag": {
+   "differing": [],
+   "pass": true
+  },
+  "overwrite_protection": {
+   "attempts": {
+    "research_artifacts/openset_loafo_records.json": "refused",
+    "models/trained_models/binary_best.joblib": "refused"
+   },
+   "pass": true
+  },
+  "frozen_v11_rescore": {
+   "compared_keys": [
+    "binary",
+    "per_label",
+    "n",
+    "sampling"
+   ],
+   "mismatches": [],
+   "pass": true
+  },
+  "reproduction_loafo": {
+   "records_compared": 30,
+   "values_compared": 6690,
+   "mismatches": [],
+   "n_mismatches": 0,
+   "missing_in_rerun": [],
+   "extra_in_rerun": [],
+   "pass": true
+  },
+  "score_completeness_loafo": {
+   "dumps_checked": 30,
+   "flows_with_scores": 6916915,
+   "problems": [],
+   "pass": true
+  },
+  "reproduction_cross_perday": {
+   "records_compared": 50,
+   "values_compared": 61730,
+   "mismatches": [],
+   "n_mismatches": 0,
+   "missing_in_rerun": [],
+   "extra_in_rerun": [],
+   "pass": true
+  },
+  "score_completeness_cross_perday": {
+   "dumps_checked": 350,
+   "flows_with_scores": 8410815,
+   "problems": [],
+   "pass": true
+  }
+ },
+ "runtime_seconds": 8470.2,
+ "pass": true
+}

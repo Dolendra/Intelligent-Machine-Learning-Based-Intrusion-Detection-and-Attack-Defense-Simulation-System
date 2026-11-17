@@ -1,0 +1,43 @@
+{
+ "files": {
+  "loafo/DoS__s0__none.parquet": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "variant": "none",
+   "rows": 229019,
+   "groups": {
+    "benign": 150000,
+    "known": 53972,
+    "unknown": 25047
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "cfd1f5a7d44d55b84716435ed6926f23a6a2900511c99be4ba919fed9f272881"
+  }
+ }
+}

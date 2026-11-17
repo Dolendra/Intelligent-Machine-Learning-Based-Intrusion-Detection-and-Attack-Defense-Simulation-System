@@ -1,0 +1,95 @@
+{
+ "generated_at": "2026-11-17T15:50:00.134322+00:00",
+ "purpose": "R3 Stage 0 CLOSR execution/cost pilot \u2014 not a reproduction of published numbers",
+ "closr_commit": "79da4d1",
+ "device": "cuda",
+ "torch": "2.12.0+cu126",
+ "cuda": "12.6",
+ "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+ "python": "3.11.9",
+ "threads": 14,
+ "data": {
+  "source": "CICIDS2017 MachineLearningCVE (pilot seed 0)",
+  "n_train": 96776,
+  "n_test_known": 23388,
+  "n_zero_day": 584,
+  "held_out": "Bot",
+  "classes": [
+   "BENIGN",
+   "BruteForce",
+   "DDoS",
+   "DoS",
+   "PortScan",
+   "WebAttack"
+  ],
+  "d_in": 69
+ },
+ "dropped_zero_columns": [
+  "Bwd PSH Flags",
+  "Bwd URG Flags",
+  "Fwd Avg Bytes/Bulk",
+  "Fwd Avg Packets/Bulk",
+  "Fwd Avg Bulk Rate",
+  "Bwd Avg Bytes/Bulk",
+  "Bwd Avg Packets/Bulk",
+  "Bwd Avg Bulk Rate"
+ ],
+ "deviations": [
+  "d_in=69 (official 72; all-zero columns dropped on the training split, not the whole file)",
+  "n_classes=6 (official 12)",
+  "seeds set (official: none)",
+  "no checkpoint written (official overwrites weights/closr.pt.tar)",
+  "pilot data CICIDS2017, not LycoS-IDS2017"
+ ],
+ "batch_size": 4096,
+ "status": "ok",
+ "epochs": [
+  {
+   "epoch": 1,
+   "seconds": 5.6,
+   "steps": 23,
+   "loss_first": 0.37099799513816833,
+   "loss_last": 0.3562553822994232,
+   "loss_mean": 0.36450160975041596
+  },
+  {
+   "epoch": 2,
+   "seconds": 5.04,
+   "steps": 23,
+   "loss_first": 0.356731116771698,
+   "loss_last": 0.3334434926509857,
+   "loss_mean": 0.34535086414088373
+  }
+ ],
+ "step_seconds": {
+  "median": 0.16258597373962402,
+  "p90": 0.16317825317382811,
+  "n": 45
+ },
+ "extrapolation": {
+  "steps_per_epoch_at_600k_rows": 147,
+  "epoch_seconds_at_600k_rows": 23.90013813972473,
+  "hours_200_epochs_one_fit": 1.3277854522069295
+ },
+ "memory": {
+  "peak_rss_gb": 4.65,
+  "cuda_peak_allocated_gb": 1.82
+ },
+ "smoke_metrics_after_pilot_epochs": {
+  "closed_set_acc": 0.7870275354882846,
+  "open_set_auc": 0.44109045061160035,
+  "open_auc": 0.3471503302722648,
+  "fpr_95": 0.8399606635881649,
+  "mean_fpr_95": 0.8399606635881649,
+  "mean_recall": 0.8116669326670575,
+  "mal_recall": 0.8796560569053871,
+  "macro_f1": 0.7993521919178385,
+  "mal_macro_f1": 0.8713386068960747,
+  "closed_set_mean_auroc": 0.8467952499846291,
+  "closed_set_auroc": 0.8549735642810529,
+  "fp_rate": 0.20179999999999998,
+  "mean_average_precision_score": 0.9327059161323954,
+  "mean_precision_recall_auc": 0.9322836096158543,
+  "eval_seconds": 0.37
+ }
+}

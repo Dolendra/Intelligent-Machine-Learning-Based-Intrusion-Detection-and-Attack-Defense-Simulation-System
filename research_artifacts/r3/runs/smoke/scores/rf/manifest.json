@@ -1,0 +1,628 @@
+{
+ "files": {
+  "loafo/DoS__s0__none.parquet": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "variant": "none",
+   "rows": 19274,
+   "groups": {
+    "benign": 10000,
+    "known": 7227,
+    "unknown": 2047
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "04c84d2a34a330d3950358616615d5fa25e61113fce71cc12e575d4cec6ae373"
+  },
+  "loafo/Bot__s0__none.parquet": {
+   "protocol": "loafo",
+   "fold": "Bot",
+   "seed": 0,
+   "variant": "none",
+   "rows": 20638,
+   "groups": {
+    "benign": 10000,
+    "known": 8643,
+    "unknown": 1995
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "babb5dc64b13eb313f24817bcc1d1b0b9d9d106a1ab2ff43e022f1e90a57c28e"
+  },
+  "cross_perday/2018-02-14__s0__none.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "variant": "none",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "c2cddda04b77942877348f8029ed92c312012fdcf3812874db7b29fb1f4930c4"
+  },
+  "cross_perday/2018-02-14__s0__recal_500.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "variant": "recal@500",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "a93982e1c100d416ee60e71078db341d25f6c10a1f9d996a558bc05ca91d7053"
+  },
+  "cross_perday/2018-02-14__s0__recal+ref_500.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "variant": "recal+ref@500",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "f60ef8568fdd82b86822ea6edd62de598e7096ae3d7c93edc59fd4b0b43f5aad"
+  },
+  "cross_perday/2018-02-14__s0__recal_2000.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "variant": "recal@2000",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "256d39dd6fc3c94bee564f8b7234d2d991d78c076162f12551afe06e4c0d8342"
+  },
+  "cross_perday/2018-02-14__s0__recal+ref_2000.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "variant": "recal+ref@2000",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "b884bab0bcd3267dd12e4fe9bd599b57eb2ebf36ff62f4e8d5f8889f85f92b01"
+  },
+  "cross_perday/2018-02-14__s0__recal_5000.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "variant": "recal@5000",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "31687d796943b2aa2b81ac2b5696da6e2f5c5e3e753ecd7f17c87b094b1b9e89"
+  },
+  "cross_perday/2018-02-14__s0__recal+ref_5000.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "variant": "recal+ref@5000",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "9bdf950522c7d7d6f499f4f8416088b6dbb4ef6078c0fb3da1cae3632773e0bb"
+  },
+  "cross_perday/2018-02-16__s0__none.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "variant": "none",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "a89557ead48761a0eddc2b8b18f3e8fa0e005369d1c12641ad87ca163fddcb71"
+  },
+  "cross_perday/2018-02-16__s0__recal_500.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "variant": "recal@500",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "5843e6af596acecb17a194ea6219fa56d189357b493abe668674d2e425a28937"
+  },
+  "cross_perday/2018-02-16__s0__recal+ref_500.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "variant": "recal+ref@500",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "505a686a89b1863e97926a9749f3be758faaeb44cd966fde77a0f67733822300"
+  },
+  "cross_perday/2018-02-16__s0__recal_2000.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "variant": "recal@2000",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "56496be329c241fd435d3306dd645aeb5a5867dafe3bc28e25e6f5a821993986"
+  },
+  "cross_perday/2018-02-16__s0__recal+ref_2000.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "variant": "recal+ref@2000",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "e044cc42b569ac5811656c4185b358ccf8601d3891f9b451e5e37c5586f3ef02"
+  },
+  "cross_perday/2018-02-16__s0__recal_5000.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "variant": "recal@5000",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "4627d445720bf4e42716be24ecf60a23c9148af6c3641f1aaaed35cbda7458e7"
+  },
+  "cross_perday/2018-02-16__s0__recal+ref_5000.parquet": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "variant": "recal+ref@5000",
+   "rows": 4000,
+   "groups": {
+    "benign": 3000,
+    "known": 1000,
+    "unknown": 0
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "e9ecb9a922d746398d7d021d54cf3a49e8fa645c93ba8259f12c95a4df8c4689"
+  }
+ }
+}

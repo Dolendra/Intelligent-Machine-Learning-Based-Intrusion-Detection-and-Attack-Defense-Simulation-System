@@ -1,0 +1,119 @@
+{
+ "mode": "pilot-timing",
+ "models": {
+  "xgb_ref": {
+   "loafo": {
+    "records": 1,
+    "wall_seconds": 74.1,
+    "fit_seconds": [
+     56.4
+    ],
+    "peak_rss_gb": 5.55,
+    "score_ms_per_1k_flows": [
+     46.702
+    ]
+   }
+  },
+  "dt": {
+   "loafo": {
+    "records": 1,
+    "wall_seconds": 21.8,
+    "fit_seconds": [
+     10.3
+    ],
+    "peak_rss_gb": 4.31,
+    "score_ms_per_1k_flows": [
+     30.235
+    ]
+   }
+  },
+  "rf": {
+   "loafo": {
+    "records": 1,
+    "wall_seconds": 46.1,
+    "fit_seconds": [
+     33.4
+    ],
+    "peak_rss_gb": 4.38,
+    "score_ms_per_1k_flows": [
+     35.273
+    ]
+   }
+  },
+  "et": {
+   "loafo": {
+    "records": 1,
+    "wall_seconds": 32.3,
+    "fit_seconds": [
+     19.1
+    ],
+    "peak_rss_gb": 4.36,
+    "score_ms_per_1k_flows": [
+     37.487
+    ]
+   }
+  },
+  "xgb": {
+   "loafo": {
+    "records": 1,
+    "wall_seconds": 24.0,
+    "fit_seconds": [
+     11.8
+    ],
+    "peak_rss_gb": 4.37,
+    "score_ms_per_1k_flows": [
+     32.838
+    ]
+   }
+  },
+  "lgbm": {
+   "loafo": {
+    "records": 1,
+    "wall_seconds": 34.8,
+    "fit_seconds": [
+     14.9
+    ],
+    "peak_rss_gb": 4.41,
+    "score_ms_per_1k_flows": [
+     66.794
+    ]
+   }
+  },
+  "catboost": {
+   "loafo": {
+    "records": 1,
+    "wall_seconds": 243.5,
+    "fit_seconds": [
+     231.4
+    ],
+    "peak_rss_gb": 4.39,
+    "score_ms_per_1k_flows": [
+     30.976
+    ]
+   }
+  }
+ },
+ "started": "2026-11-17T16:32:15.954253+00:00",
+ "dedup_float32_removed": {
+  "cic2017": 22818,
+  "cic2018": 0
+ },
+ "leakage": {
+  "checked_splits": 7,
+  "all_pass": true,
+  "max_overlap": 0
+ },
+ "versions": {
+  "python": "3.11.9",
+  "executable": "D:\\IDS-Project\\.venvs\\r3-cpu\\Scripts\\python.exe",
+  "numpy": "2.4.2",
+  "pandas": "2.3.3",
+  "sklearn": "1.9.0",
+  "xgboost": "3.2.0",
+  "lightgbm": "4.7.0",
+  "catboost": "1.2.10",
+  "torch": "2.12.0+cpu",
+  "optuna": "5.0.0"
+ },
+ "git_commit": "3a0450e"
+}

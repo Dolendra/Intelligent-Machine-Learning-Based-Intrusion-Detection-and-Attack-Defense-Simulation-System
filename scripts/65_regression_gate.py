@@ -199,10 +199,16 @@ def main() -> None:
     ap.add_argument("--protocols", nargs="+", default=["loafo", "cross_perday"], choices=list(COMMITTED))
     ap.add_argument("--seeds", nargs="+", type=int, default=[1, 2, 3, 4, 5])
     ap.add_argument("--skip-frozen-rescore", action="store_true")
+    ap.add_argument("--tag", default="", help="separate output folder/report, e.g. 'r3env' (keeps the full gate report)")
     a = ap.parse_args()
+    global OUT, REPORT
+    if a.tag:
+        OUT = R3_DIR / f"regression_{a.tag}"
+        REPORT = R3_DIR / f"regression_gate_report_{a.tag}.json"
     OUT.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
     report: dict = {"generated_at": datetime.now(timezone.utc).isoformat(), "git_commit": _git_commit(),
+                    "python": sys.executable,
                     "protocols": a.protocols, "seeds": a.seeds, "checks": {}}
 
     bad = verify_manifest()

@@ -1,0 +1,87 @@
+{
+ "generated_at": "2026-11-17T14:31:39.908372+00:00",
+ "purpose": "R3 Stage 0 CLOSR execution/cost pilot \u2014 not a reproduction of published numbers",
+ "closr_commit": "79da4d1",
+ "device": "cpu",
+ "torch": "2.12.0+cpu",
+ "cuda": null,
+ "gpu": null,
+ "python": "3.11.9",
+ "threads": 14,
+ "data": {
+  "source": "CICIDS2017 MachineLearningCVE (pilot seed 0)",
+  "n_train": 96776,
+  "n_test_known": 23388,
+  "n_zero_day": 584,
+  "held_out": "Bot",
+  "classes": [
+   "BENIGN",
+   "BruteForce",
+   "DDoS",
+   "DoS",
+   "PortScan",
+   "WebAttack"
+  ],
+  "d_in": 69
+ },
+ "dropped_zero_columns": [
+  "Bwd PSH Flags",
+  "Bwd URG Flags",
+  "Fwd Avg Bytes/Bulk",
+  "Fwd Avg Packets/Bulk",
+  "Fwd Avg Bulk Rate",
+  "Bwd Avg Bytes/Bulk",
+  "Bwd Avg Packets/Bulk",
+  "Bwd Avg Bulk Rate"
+ ],
+ "deviations": [
+  "d_in=69 (official 72; all-zero columns dropped on the training split, not the whole file)",
+  "n_classes=6 (official 12)",
+  "seeds set (official: none)",
+  "no checkpoint written (official overwrites weights/closr.pt.tar)",
+  "pilot data CICIDS2017, not LycoS-IDS2017"
+ ],
+ "batch_size": 4096,
+ "status": "ok",
+ "epochs": [
+  {
+   "epoch": 1,
+   "seconds": 14.75,
+   "steps": 6,
+   "loss_first": 0.37119361758232117,
+   "loss_last": 0.36713525652885437,
+   "loss_mean": 0.36993655065695447
+  }
+ ],
+ "step_seconds": {
+  "median": 2.299906015396118,
+  "p90": 2.5817759037017822,
+  "n": 5
+ },
+ "extrapolation": {
+  "steps_per_epoch_at_600k_rows": 147,
+  "epoch_seconds_at_600k_rows": 338.08618426322937,
+  "hours_200_epochs_one_fit": 18.78256579240163
+ },
+ "memory": {
+  "peak_rss_gb": 6.29,
+  "cuda_peak_allocated_gb": null
+ },
+ "smoke_metrics_after_pilot_epochs": {
+  "closed_set_acc": 0.779972635539593,
+  "open_set_auc": 0.4487927818621422,
+  "open_auc": 0.3500460888801607,
+  "fpr_95": 0.8252522661193774,
+  "mean_fpr_95": 0.8252522661193774,
+  "mean_recall": 0.8061943157878835,
+  "mal_recall": 0.8816960569053872,
+  "macro_f1": 0.7910614109632981,
+  "mal_macro_f1": 0.874046957950885,
+  "closed_set_mean_auroc": 0.8486946849245255,
+  "closed_set_auroc": 0.8609660974548619,
+  "fp_rate": 0.23319999999999996,
+  "mean_average_precision_score": 0.9251123822105211,
+  "mean_precision_recall_auc": 0.9247161029001341,
+  "eval_seconds": 2.1
+ }
+}

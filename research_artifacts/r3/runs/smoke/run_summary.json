@@ -1,0 +1,224 @@
+{
+ "mode": "smoke",
+ "models": {
+  "xgb_ref": {
+   "loafo": {
+    "records": 2,
+    "wall_seconds": 30.6,
+    "fit_seconds": [
+     16.3,
+     6.8
+    ],
+    "peak_rss_gb": 4.72,
+    "score_ms_per_1k_flows": [
+     45.434,
+     42.177
+    ]
+   },
+   "cross_perday": {
+    "records": 2,
+    "wall_seconds": 24.9,
+    "fit_seconds": [
+     11.0,
+     11.0
+    ],
+    "peak_rss_gb": 4.47,
+    "score_ms_per_1k_flows": [
+     null,
+     null
+    ]
+   }
+  },
+  "dt": {
+   "loafo": {
+    "records": 2,
+    "wall_seconds": 6.8,
+    "fit_seconds": [
+     0.7,
+     1.1
+    ],
+    "peak_rss_gb": 4.21,
+    "score_ms_per_1k_flows": [
+     22.714,
+     21.576
+    ]
+   },
+   "cross_perday": {
+    "records": 2,
+    "wall_seconds": 9.2,
+    "fit_seconds": [
+     1.7,
+     1.7
+    ],
+    "peak_rss_gb": 4.58,
+    "score_ms_per_1k_flows": [
+     null,
+     null
+    ]
+   }
+  },
+  "rf": {
+   "loafo": {
+    "records": 2,
+    "wall_seconds": 15.9,
+    "fit_seconds": [
+     2.5,
+     2.5
+    ],
+    "peak_rss_gb": 4.4,
+    "score_ms_per_1k_flows": [
+     35.179,
+     35.864
+    ]
+   },
+   "cross_perday": {
+    "records": 2,
+    "wall_seconds": 19.0,
+    "fit_seconds": [
+     2.8,
+     2.8
+    ],
+    "peak_rss_gb": 4.5,
+    "score_ms_per_1k_flows": [
+     null,
+     null
+    ]
+   }
+  },
+  "et": {
+   "loafo": {
+    "records": 2,
+    "wall_seconds": 11.3,
+    "fit_seconds": [
+     1.7,
+     1.8
+    ],
+    "peak_rss_gb": 4.49,
+    "score_ms_per_1k_flows": [
+     36.307,
+     34.047
+    ]
+   },
+   "cross_perday": {
+    "records": 2,
+    "wall_seconds": 13.9,
+    "fit_seconds": [
+     1.9,
+     1.9
+    ],
+    "peak_rss_gb": 4.42,
+    "score_ms_per_1k_flows": [
+     null,
+     null
+    ]
+   }
+  },
+  "xgb": {
+   "loafo": {
+    "records": 2,
+    "wall_seconds": 8.2,
+    "fit_seconds": [
+     1.5,
+     1.6
+    ],
+    "peak_rss_gb": 4.25,
+    "score_ms_per_1k_flows": [
+     26.94,
+     25.651
+    ]
+   },
+   "cross_perday": {
+    "records": 2,
+    "wall_seconds": 8.7,
+    "fit_seconds": [
+     1.9,
+     1.9
+    ],
+    "peak_rss_gb": 4.51,
+    "score_ms_per_1k_flows": [
+     null,
+     null
+    ]
+   }
+  },
+  "lgbm": {
+   "loafo": {
+    "records": 2,
+    "wall_seconds": 20.5,
+    "fit_seconds": [
+     10.9,
+     2.9
+    ],
+    "peak_rss_gb": 4.37,
+    "score_ms_per_1k_flows": [
+     23.459,
+     22.973
+    ]
+   },
+   "cross_perday": {
+    "records": 2,
+    "wall_seconds": 9.6,
+    "fit_seconds": [
+     3.1,
+     3.1
+    ],
+    "peak_rss_gb": 4.38,
+    "score_ms_per_1k_flows": [
+     null,
+     null
+    ]
+   }
+  },
+  "catboost": {
+   "loafo": {
+    "records": 2,
+    "wall_seconds": 75.6,
+    "fit_seconds": [
+     37.7,
+     27.7
+    ],
+    "peak_rss_gb": 4.51,
+    "score_ms_per_1k_flows": [
+     33.069,
+     26.444
+    ]
+   },
+   "cross_perday": {
+    "records": 2,
+    "wall_seconds": 38.8,
+    "fit_seconds": [
+     29.8,
+     29.8
+    ],
+    "peak_rss_gb": 4.4,
+    "score_ms_per_1k_flows": [
+     null,
+     null
+    ]
+   }
+  }
+ },
+ "started": "2026-11-17T14:23:49.309338+00:00",
+ "dedup_float32_removed": {
+  "cic2017": 22818,
+  "cic2018": 18839
+ },
+ "leakage": {
+  "checked_splits": 28,
+  "all_pass": true,
+  "max_overlap": 0
+ },
+ "versions": {
+  "python": "3.11.9",
+  "executable": "D:\\IDS-Project\\.venvs\\r3-cpu\\Scripts\\python.exe",
+  "numpy": "2.4.2",
+  "pandas": "2.3.3",
+  "sklearn": "1.9.0",
+  "xgboost": "3.2.0",
+  "lightgbm": "4.7.0",
+  "catboost": "1.2.10",
+  "torch": "2.12.0+cpu",
+  "optuna": "5.0.0"
+ },
+ "git_commit": "2336945"
+}

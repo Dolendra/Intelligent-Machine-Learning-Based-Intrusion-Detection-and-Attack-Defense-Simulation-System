@@ -1,0 +1,67 @@
+{
+ "files": {
+  "loafo/DoS__s0__none.parquet": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "variant": "none",
+   "rows": 229019,
+   "groups": {
+    "benign": 150000,
+    "known": 53972,
+    "unknown": 25047
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "raw_ae",
+    "t_ae",
+    "raw_if",
+    "t_if",
+    "raw_dt",
+    "t_dt",
+    "raw_energy",
+    "t_energy",
+    "fused__Closed-set XGB",
+    "p__Closed-set XGB",
+    "fused__Closed-set DT (v1.1-style)",
+    "p__Closed-set DT (v1.1-style)",
+    "fused__Isolation Forest",
+    "p__Isolation Forest",
+    "fused__Autoencoder",
+    "p__Autoencoder",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "fused__XGB + Energy",
+    "p__XGB + Energy",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "fused__Aegis-OSR w/ AE novelty",
+    "p__Aegis-OSR w/ AE novelty",
+    "fused__Aegis-OSR w/ IForest novelty",
+    "p__Aegis-OSR w/ IForest novelty",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "ae",
+    "dt",
+    "energy",
+    "if",
+    "knn",
+    "sup"
+   ],
+   "sha256": "0da2b5d561a330f8c5d2a72e425e37eb2f4d3599fc5413f08c9f759be0a7b208"
+  }
+ }
+}

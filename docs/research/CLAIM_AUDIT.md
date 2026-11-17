@@ -333,3 +333,59 @@ The new numbers must enter through `research/publication.py` facts sourced from 
   next to the corrected paragraph it implies that the *evidence* lacks separation on 2018. The diagnosis shows that the
   *supervised* evidence keeps it on several days, while the fused score loses it. Suggested wording: "it cannot restore
   separation that the fused score has lost". The DOCX has the same sentence (`paper_build/paper.py`: "cannot create separation that the evidence does not contain").
+
+---
+
+## 10. R3 Stage 0 — environment, regression gate, pilots (2026-11-17)
+
+Stage 0 runs no R3 campaign. All new outputs live under `research_artifacts/r3/`, and the historical artifacts are protected (`PROTECTED_MANIFEST.json`).
+
+### 10.1 Regression gate — PASS (`research_artifacts/r3/regression_gate_report.json`)
+
+The gate ran `scripts/65_regression_gate.py` (code at `bf5fd3f`, main environment, 8,470 s):
+
+| Check | Result |
+|---|---|
+| Historical artifacts (25 files, SHA-256 manifest) | unchanged |
+| Frozen v1.1 model / threshold / report files (16) | byte-identical to tag `v1.1-research` |
+| Frozen v1.1 re-scored on CSE-CIC-IDS2018 v2 | reproduces `frozen_v11_on_cic2018_v2.json` (binary metrics, per-label rows, sampling) |
+| LOAFO, seeds 1–5, re-run **with per-flow score dumps** | 30/30 records; **6,690/6,690 values identical** |
+| Per-day 2018, seeds 1–5, re-run with dumps | 50/50 records; **61,730/61,730 values identical** |
+| Score completeness | 380 record×variant dumps, 15,327,730 evaluated flows; every flow has finite raw / surprisal / fused / p-value scores |
+| Overwrite protection | writes to protected paths are refused (scripts 50, 54, 64, 65, 67) |
+
+### 10.2 Finding: float32-identical duplicates crossed the historical splits
+
+`research/data._finalize` de-duplicates on (features, fine label) at source precision and **then** casts the features to float32. Rows that differ only beyond float32 precision therefore survive as exact float32 duplicates:
+* CICIDS2017: 22,818 extra copies (0.9 % of rows): 22,803 benign and 15 DoS.
+* CSE-CIC-IDS2018 sample: 18,839.
+
+In addition, 718 CICIDS2017 rows have features identical to a row with a *different* label (label conflict).
+
+**Effect on the committed results.** `scripts/69_duplicate_overlap_audit.py` rebuilt the historical splits without training (`research_artifacts/r3/duplicate_overlap_audit.json`):
+
+| Protocol | Twin location | Rows (mean, max) | Share |
+|---|---|---|---|
+| LOAFO | test benign row with a twin in **training** | 469 (max 478) of 150,000 | 0.31 % |
+| LOAFO | test benign row with a twin in the **validation** split (the source of C1/C2) | 96 (max 109) | 0.064 % |
+| Per-day 2018 | evaluation row with a twin in that day's **warm-up** | 0–2 rows on 9 of 10 days | — |
+| Per-day 2018, 2018-02-28 (Infiltration day) | same | 165 of 19,193 | 0.86 % |
+
+The per-day records' `warmup_eval_overlap = 0` counted shared *indices*, not shared *content*. The content check above supersedes it.
+
+**Bound on the effect.** Each realized FPR is a fraction of test benign flows. Even if every twin had flipped its alert decision, the change would be at most:
+* 0.31 percentage points for LOAFO, against the reported 1.00 %;
+* 0.86 points on 2018-02-28, where every method is already near chance.
+
+The likely direction is a slight *under*-estimate of FPR, because a twin of a training or calibration flow looks typical. None of the paper's conclusions depend on effects of this size. The paper and RESULTS keep the committed numbers, with this note.
+
+**Fix (R3 onward).** R3 de-duplicates at float32 precision before any split (`research/data.dedup_float32`, R3_PROTOCOL §14 A1). The R3 leakage checker caught the problem on its first smoke run. The historical code path is unchanged, so the regression gate keeps proving exact reproduction.
+
+### 10.3 Status labels
+
+| Item | Status |
+|---|---|
+| Aegis-OSR LOAFO / temporal / 2018 results | **Reproduced** (exact; LOAFO and per-day checked in Stage 0) |
+| Recalibration diagnosis (fusion loses supervised separation under 2018 shift) | **New exploratory finding** — not yet confirmed on independent data |
+| Evidence-stream reliability gating (Contribution 1) | **Hypothesis** — criteria pre-specified (`RESEARCH_GAP_ANALYSIS.md` §3), untested |
+| CLOSR | **Executed in pilot only** (official modules on CICIDS2017, 2 epochs); published numbers **not** reproduced (LycoS not approved) |

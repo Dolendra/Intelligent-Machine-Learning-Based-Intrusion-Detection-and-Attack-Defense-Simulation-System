@@ -1,0 +1,172 @@
+{
+ "meta": {
+  "mode": "pilot-timing",
+  "versions": {
+   "python": "3.11.9",
+   "executable": "D:\\IDS-Project\\.venvs\\r3-cpu\\Scripts\\python.exe",
+   "numpy": "2.4.2",
+   "pandas": "2.3.3",
+   "sklearn": "1.9.0",
+   "xgboost": "3.2.0",
+   "lightgbm": "4.7.0",
+   "catboost": "1.2.10",
+   "torch": "2.12.0+cpu",
+   "optuna": "5.0.0"
+  }
+ },
+ "records": [
+  {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "alpha": 0.01,
+   "known_families": [
+    "Bot",
+    "BruteForce",
+    "DDoS",
+    "PortScan",
+    "WebAttack"
+   ],
+   "unknown_families": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ],
+   "n_train": 422361,
+   "n_val": 80393,
+   "n_calibration": [
+    30000,
+    30000
+   ],
+   "n_test": {
+    "benign": 150000,
+    "known": 53972,
+    "unknown": 25047
+   },
+   "methods": {
+    "Closed-set (sup only)": {
+     "fpr": 0.010586666666666666,
+     "known_recall": 0.9999814718743052,
+     "zero_day_recall": 0.7095460534195712,
+     "auroc_unknown": 0.9823605908891284,
+     "auprc_unknown": 0.876913669439768,
+     "auroc_all": 0.9943695334455427,
+     "fpr@0.001": 0.0009533333333333334,
+     "zero_day_recall@0.001": 0.01050025951211722,
+     "known_recall@0.001": 0.9989068405840065,
+     "fpr@0.01": 0.010586666666666666,
+     "zero_day_recall@0.01": 0.7095460534195712,
+     "known_recall@0.01": 0.9999814718743052,
+     "fpr@0.05": 0.05211333333333333,
+     "zero_day_recall@0.05": 0.8877310655966782,
+     "known_recall@0.05": 0.9999814718743052,
+     "zero_day_recall_by_family": {
+      "DoS": 0.7104,
+      "Heartbleed": 0.18181818181818182,
+      "Infiltration": 0.2777777777777778
+     }
+    },
+    "Aegis-OSR": {
+     "fpr": 0.010473333333333333,
+     "known_recall": 0.9999444156229156,
+     "zero_day_recall": 0.978799856270212,
+     "auroc_unknown": 0.997783058117406,
+     "auprc_unknown": 0.9833379776256314,
+     "auroc_all": 0.9990119975786413,
+     "fpr@0.001": 0.0014133333333333333,
+     "zero_day_recall@0.001": 0.8498422964826127,
+     "known_recall@0.001": 0.8869784332616912,
+     "fpr@0.01": 0.010473333333333333,
+     "zero_day_recall@0.01": 0.978799856270212,
+     "known_recall@0.01": 0.9999444156229156,
+     "fpr@0.05": 0.05316,
+     "zero_day_recall@0.05": 0.9855072463768116,
+     "known_recall@0.05": 0.9999814718743052,
+     "zero_day_recall_by_family": {
+      "DoS": 0.97924,
+      "Heartbleed": 1.0,
+      "Infiltration": 0.6666666666666666
+     }
+    },
+    "Aegis-OSR w/ max fusion": {
+     "fpr": 0.010633333333333333,
+     "known_recall": 0.9999814718743052,
+     "zero_day_recall": 0.9501736734938316,
+     "auroc_unknown": 0.9947748703104831,
+     "auprc_unknown": 0.9619144468906897,
+     "auroc_all": 0.9982082957263443,
+     "fpr@0.001": 0.0011733333333333333,
+     "zero_day_recall@0.001": 0.2812312851838544,
+     "known_recall@0.001": 0.9932557622470911,
+     "fpr@0.01": 0.010633333333333333,
+     "zero_day_recall@0.01": 0.9501736734938316,
+     "known_recall@0.01": 0.9999814718743052,
+     "fpr@0.05": 0.0518,
+     "zero_day_recall@0.05": 0.9853475466123688,
+     "known_recall@0.05": 0.9999814718743052,
+     "zero_day_recall_by_family": {
+      "DoS": 0.95028,
+      "Heartbleed": 1.0,
+      "Infiltration": 0.8611111111111112
+     }
+    },
+    "Aegis-OSR w/ omnibus fusion": {
+     "fpr": 0.010533333333333334,
+     "known_recall": 0.9999814718743052,
+     "zero_day_recall": 0.961472431828163,
+     "auroc_unknown": 0.9963723900400581,
+     "auprc_unknown": 0.9747694745176418,
+     "auroc_all": 0.998709235331587,
+     "fpr@0.001": 0.0012666666666666666,
+     "zero_day_recall@0.001": 0.41106719367588934,
+     "known_recall@0.001": 0.9930890091158379,
+     "fpr@0.01": 0.010533333333333334,
+     "zero_day_recall@0.01": 0.961472431828163,
+     "known_recall@0.01": 0.9999814718743052,
+     "fpr@0.05": 0.05132,
+     "zero_day_recall@0.05": 0.9855870962590331,
+     "known_recall@0.05": 0.9999814718743052,
+     "zero_day_recall_by_family": {
+      "DoS": 0.96164,
+      "Heartbleed": 1.0,
+      "Infiltration": 0.8333333333333334
+     }
+    },
+    "kNN distance": {
+     "fpr": 0.011773333333333334,
+     "known_recall": 0.4536796857629882,
+     "zero_day_recall": 0.8186609174751467,
+     "auroc_unknown": 0.9852135984349423,
+     "auprc_unknown": 0.9408390040496267,
+     "auroc_all": 0.9383534600539112,
+     "fpr@0.001": 0.0011466666666666667,
+     "zero_day_recall@0.001": 0.4006068591048828,
+     "known_recall@0.001": 0.04439338916475209,
+     "fpr@0.01": 0.011773333333333334,
+     "zero_day_recall@0.01": 0.8186609174751467,
+     "known_recall@0.01": 0.4536796857629882,
+     "fpr@0.05": 0.05026666666666667,
+     "zero_day_recall@0.05": 0.9476983271449675,
+     "known_recall@0.05": 0.7532980063736753,
+     "zero_day_recall_by_family": {
+      "DoS": 0.81848,
+      "Heartbleed": 1.0,
+      "Infiltration": 0.8888888888888888
+     }
+    }
+   },
+   "aegis_osr_attribution": {
+    "unknown_flagged_as_unknown": 0.9690182456980876,
+    "unknown_misattributed_to_known": 0.009781610572124406,
+    "unknown_missed_as_benign": 0.021200143729788,
+    "known_family_accuracy": 0.9892166308456236,
+    "openset_macro_f1": 0.969911484749758
+   },
+   "ae_epochs": null,
+   "fit_seconds": 14.9,
+   "score_ms_per_1k_flows": 66.794,
+   "adaptation": {},
+   "evidence_model": "lgbm"
+  }
+ ]
+}

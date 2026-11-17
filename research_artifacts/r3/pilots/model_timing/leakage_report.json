@@ -1,0 +1,198 @@
+[
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 422361,
+   "val": 80393,
+   "test": 229019
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 422361,
+   "val": 80393,
+   "test": 229019
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 422361,
+   "val": 80393,
+   "test": 229019
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 422361,
+   "val": 80393,
+   "test": 229019
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 422361,
+   "val": 80393,
+   "test": 229019
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 422361,
+   "val": 80393,
+   "test": 229019
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 422361,
+   "val": 80393,
+   "test": 229019
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "pass": true
+ }
+]
