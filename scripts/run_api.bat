@@ -1,3 +1,5 @@
 @echo off
 REM Start IDS API (run from repo root)
-uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+REM Local development only: the API refuses to start unauthenticated outside AEGIS_ENV=development/test.
+set AEGIS_ENV=development
+uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000

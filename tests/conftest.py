@@ -6,6 +6,8 @@ import tempfile
 from pathlib import Path
 
 os.environ.setdefault("MPLBACKEND", "Agg")
+# R-05: the API fails closed unless AEGIS_ENV is development/test; tests run as "test".
+os.environ.setdefault("AEGIS_ENV", "test")
 # P5 enables rate limits by default; keep unit tests deterministic (opt out for dedicated rate-limit tests)
 os.environ.setdefault("DISABLE_RATE_LIMIT", "true")
 

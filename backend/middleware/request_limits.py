@@ -1,6 +1,7 @@
 """Request body size limits (P5 DoS / memory protection)."""
 from __future__ import annotations
 
+from security.auth.posture import kill_switch_allowed
 import os
 from typing import Callable
 
@@ -49,7 +50,7 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         if not self.enabled or request.method in {"GET", "HEAD", "OPTIONS"}:
             return await call_next(request)
-        if os.getenv("DISABLE_REQUEST_LIMITS", "").lower() in {"1", "true", "yes"}:
+        if kill_switch_allowed("DISABLE_REQUEST_LIMITS"):
             return await call_next(request)
 
         cl = request.headers.get("content-length")

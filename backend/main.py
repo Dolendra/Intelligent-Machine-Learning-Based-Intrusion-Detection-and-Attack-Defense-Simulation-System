@@ -26,8 +26,13 @@ from backend.middleware.logging_mw import attach_request_logging
 from backend.middleware.errors import attach_error_handlers
 from database.db import init_db
 from ids_config import load_config
+from security.auth.posture import enforce_startup_posture
 
 cfg = load_config()
+# R-05/R-06: fail closed. Raises InsecureConfigurationError (the process does not start) when
+# auth is off outside AEGIS_ENV=development/test, a security kill switch is set outside
+# development/test, or auth is on without a strong token secret.
+SECURITY_POSTURE = enforce_startup_posture()
 
 
 @asynccontextmanager

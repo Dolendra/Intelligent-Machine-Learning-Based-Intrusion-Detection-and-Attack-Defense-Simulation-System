@@ -1,6 +1,7 @@
 """Standardized API error responses with request IDs (no stack/secret leakage)."""
 from __future__ import annotations
 
+from security.auth.posture import kill_switch_allowed
 import logging
 import os
 
@@ -83,7 +84,7 @@ def attach_error_handlers(app: FastAPI) -> None:
         rid = _request_id(request)
         # Log full detail server-side only
         logger.exception("unhandled request_id=%s path=%s", rid, request.url.path)
-        expose = os.getenv("AEGIS_EXPOSE_ERRORS", "").lower() in {"1", "true", "yes"}
+        expose = kill_switch_allowed("AEGIS_EXPOSE_ERRORS")
         message = f"{type(exc).__name__}: {exc}" if expose else "Unexpected server error"
         return JSONResponse(
             status_code=500,

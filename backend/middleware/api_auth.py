@@ -9,6 +9,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
 from ids_config import load_config
+from security.auth.posture import auth_enabled, kill_switch_allowed
 from security.rbac import has_permission, normalize_role
 
 
@@ -135,7 +136,8 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
         if not self._require_auth or request.method == "OPTIONS" or self._is_public(path):
             return await call_next(request)
 
-        if os.getenv("DISABLE_API_AUTH", "").lower() in {"1", "true", "yes"}:
+        # Kill switch honoured only in development/test (startup refuses it elsewhere).
+        if kill_switch_allowed("DISABLE_API_AUTH"):
             request.state.aegis_role = "admin"
             request.state.aegis_user = {
                 "user_id": "dev",
@@ -252,13 +254,9 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
 def attach_api_auth(app) -> None:
     cfg = load_config().get("api", {}).get("auth", {}) or {}
     key = os.getenv("AEGIS_API_KEY") or str(cfg.get("api_key") or "")
-    enabled_env = os.getenv("AEGIS_AUTH_ENABLED")
-    if enabled_env is not None:
-        enabled = enabled_env.lower() in {"1", "true", "yes"}
-    else:
-        enabled = bool(cfg.get("enabled", False))
+    enabled = auth_enabled()
     allow_role = bool(cfg.get("allow_role_header", False))
-    if os.getenv("AEGIS_ALLOW_ROLE_HEADER", "").lower() in {"1", "true", "yes"}:
+    if kill_switch_allowed("AEGIS_ALLOW_ROLE_HEADER"):
         allow_role = True
     app.add_middleware(
         ApiKeyMiddleware,

@@ -1,6 +1,7 @@
 """Simple in-process rate limiting for security-sensitive API routes (P5 default-on)."""
 from __future__ import annotations
 
+from security.auth.posture import kill_switch_allowed
 import os
 import time
 from collections import defaultdict, deque
@@ -65,7 +66,7 @@ class SimpleRateLimitMiddleware(BaseHTTPMiddleware):
         if not self.enabled or request.method == "OPTIONS":
             return await call_next(request)
 
-        if os.getenv("DISABLE_RATE_LIMIT", "").lower() in {"1", "true", "yes"}:
+        if kill_switch_allowed("DISABLE_RATE_LIMIT"):
             return await call_next(request)
 
         prefix = self._match_prefix(request.url.path)

@@ -91,10 +91,9 @@ def live_scenarios():
 
 
 def _auth_enabled() -> bool:
-    cfg = load_config().get("api", {}).get("auth", {}) or {}
-    env = os.getenv("AEGIS_AUTH_ENABLED")
-    enabled = env.lower() in {"1", "true", "yes"} if env is not None else bool(cfg.get("enabled", False))
-    return enabled and os.getenv("DISABLE_API_AUTH", "").lower() not in {"1", "true", "yes"}
+    from security.auth.posture import auth_enabled, kill_switch_allowed
+
+    return auth_enabled() and not kill_switch_allowed("DISABLE_API_AUTH")
 
 
 async def _authorize_ws(websocket: WebSocket, path: str, permission: str) -> dict | None:

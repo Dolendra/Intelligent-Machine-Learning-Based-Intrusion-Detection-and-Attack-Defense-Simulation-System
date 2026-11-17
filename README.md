@@ -39,7 +39,9 @@ python scripts/05_plot_evaluation.py   # report figures → models/trained_model
 powershell -File scripts/start_all.ps1
 
 # Or manually:
-# Terminal A
+# Terminal A (local development only; the API refuses to start unauthenticated unless
+# AEGIS_ENV=development or test; see docs/roadmap/REMEDIATION_PLAN.md R-05)
+# PowerShell: $env:AEGIS_ENV="development"   bash: export AEGIS_ENV=development
 uvicorn backend.main:app --reload --port 8000
 # Terminal B
 cd frontend && npm install && npm run dev

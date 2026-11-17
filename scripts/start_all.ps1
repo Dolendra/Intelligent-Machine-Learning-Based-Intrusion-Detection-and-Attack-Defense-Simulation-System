@@ -13,7 +13,7 @@ if (-not (Test-Path "models\trained_models\binary_best.joblib")) {
 Write-Host "Starting API on http://127.0.0.1:8000 ..."
 Start-Process powershell -ArgumentList @(
   "-NoExit", "-Command",
-  "Set-Location '$root'; python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload"
+  "Set-Location '$root'; `$env:AEGIS_ENV='development'; python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload"
 )
 
 Start-Sleep -Seconds 2

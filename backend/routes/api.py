@@ -1165,16 +1165,14 @@ async def ws_events(websocket: WebSocket):
     from security.rbac import has_permission
     from security.security_events import security_event
 
-    cfg = load_config().get("api", {}).get("auth", {}) or {}
-    enabled_env = os.getenv("AEGIS_AUTH_ENABLED")
-    if enabled_env is not None:
-        auth_enabled = enabled_env.lower() in {"1", "true", "yes"}
-    else:
-        auth_enabled = bool(cfg.get("enabled", False))
+    from security.auth.posture import auth_enabled as _posture_auth_enabled
+    from security.auth.posture import kill_switch_allowed
+
+    auth_enabled = _posture_auth_enabled()
 
     role = "anonymous"
     username = None
-    if auth_enabled and os.getenv("DISABLE_API_AUTH", "").lower() not in {"1", "true", "yes"}:
+    if auth_enabled and not kill_switch_allowed("DISABLE_API_AUTH"):
         token = websocket.query_params.get("token") or ""
         auth_hdr = websocket.headers.get("authorization") or websocket.headers.get("Authorization") or ""
         if not token and auth_hdr.lower().startswith("bearer "):
