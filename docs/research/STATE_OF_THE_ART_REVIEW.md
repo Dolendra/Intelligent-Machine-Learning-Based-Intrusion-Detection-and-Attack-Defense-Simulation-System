@@ -940,14 +940,14 @@ All Aegis numbers are from RESULTS.md unless marked otherwise. Literature metric
 | **Finite-sample benign-FPR control for a *supervised + novelty* open-set NIDS** | Realized FPR 1.00% [0.92, 1.07] at α = 1% under IID LOAFO | **B17** controls FAR with split conformal for an *unsupervised* AE detector (O-RAN, workshop, no dataset named). **B11** is the general theory. **B13** and **B16** report tuned thresholds or threshold-free AUROC. We found no verified NIDS paper that fuses known-attack and novelty evidence under one conformal FPR guarantee. This is a hypothesis of novelty, pending a broader search (e.g., p-value combination in conformal anomaly detection, which was **not reviewed** here). |
 | **Same calibration pipeline for every compared method** | AEGIS_OSR.md §2: all methods use surprisal → fusion → conformal | Most NIDS papers compare at default or tuned thresholds (B13, B18) or with AUROC (B16), which confounds evidence quality with threshold choice. |
 | **LOAFO with seed-level statistics at a fixed α** | 0.706 [0.689, 0.723] vs closed-set XGB 0.490 [0.447, 0.533]; Δ +0.216 [0.180, 0.252], paired t p = 7.59×10⁻⁵, 5/5 seeds | B16 holds out one class (AUROC only); B18 uses held-out families on ToN-IoT (Recall@1%FPR 0.783, no variance reported). No verified paper reports seed-level paired tests at a calibrated α on CICIDS2017. |
-| **Reporting where the guarantee breaks** | Friday FPR 7.09% [6.66, 7.52]; 2018 FPR 35.20% [32.15, 38.25]; per-window recalibration table | B17, B11 and B12 discuss exchangeability theoretically. We found no NIDS paper that measures conformal FPR violation under temporal and cross-dataset shift. |
-| **Per-tool transfer diagnosis** | Same tools vanish in 2018: DoS-Hulk alert rate 0.008, SSH-Bruteforce 0.000, LOIC-HTTP 0.000, while Slowloris stays at 0.956 (frozen v1.1, RESULTS.md EXP-009) | C12 reports near-random cross-dataset accuracy, but not per-tool detection with an extractor hypothesis. C2 and C8 document the bugs but do not measure their effect on open-set FPR. |
+| **Reporting where the guarantee breaks** | Friday FPR 7.09% [6.66, 7.52]; 2018 FPR 36.73% [34.72, 38.73] (v2 sample, `openset_cross_summary_v2.json`; v1: 35.20%); per-day recalibration table | B17, B11 and B12 discuss exchangeability theoretically. We found no NIDS paper that measures conformal FPR violation under temporal and cross-dataset shift. |
+| **Per-tool transfer diagnosis** | The frozen v1.1 detector misses the same tools in 2018 (v2 sample): DoS-Hulk 1.1%, SSH-Bruteforce 0.0%, LOIC-HTTP 45.0%, Slowloris 95.6% (EXP-009). A retrained, recalibrated XGB detects the brute-force and DoS days at ≤ 1% FPR (PRIOR_WORK_COMPARISON §3) | C12 reports near-random cross-dataset accuracy, but not per-tool detection with an extractor hypothesis. C2 and C8 document the bugs but do not measure their effect on open-set FPR. |
 | **Honest attribution (Mondrian)** | Unknowns are rarely mislabelled as a known family (≤ 0.9%, CLAIM_AUDIT §1) | B3 and B10 do per-class conformal rejection for malware. B16 does open-set recognition (OpenAUC). Attribution with an explicit UNKNOWN-ATTACK versus ZERO-DAY-ANOMALY split is uncommon in the verified NIDS papers. |
 
 ### 4.3 Where Aegis is weaker than the state of the art
 
 * **Bot:** Aegis LOAFO recall is 0.023 [0.019, 0.028]. Graph and host-level methods (D3, D6) and sequences (D2 on CTU13) are designed for exactly this case.
-* **Cross-network:** Aegis AUROC (unknown) is 0.576 on 2018 and realized FPR is 35.20%. The literature (C4, C12, C13, A10) agrees that cross-dataset transfer is poor in general, so Aegis is *not* uniquely bad, but it is not solved either.
+* **Cross-network:** Aegis AUROC (unknown) is 0.568 on 2018 and realized FPR is 36.73% (v2 sample; v1: 0.576 and 35.20%). The literature (C4, C12, C13, A10) agrees that cross-dataset transfer is poor in general, so Aegis is *not* uniquely bad, but it is not solved either.
 * **Data hygiene:** published 2026 zero-day work (B16) uses corrected data. Reviewers will expect Aegis to do so too, or to justify why not.
 
 ---
@@ -1088,3 +1088,30 @@ Grouped as in Section 3. "found." marks a foundational (pre-2023) work. DOIs wer
   Framework for Intrusion Response and Conformal Evaluation*, arXiv 2605.01962 (May 2026) — conformal evaluation
   for concept drift in supervised IDS classifiers. Not yet read; it may overlap with the shift-aware false-alarm
   control contribution (Gap analysis, contribution 2).
+
+---
+
+## Addendum (2026-11-17): close prior work found after the 61-paper review
+
+These papers were found in a targeted novelty re-check (PRIOR_WORK_COMPARISON.md §5). They are **not** counted in the 61
+verified papers. "Read" means the full text or the official abstract page was opened; "snippet only" means the full
+text was behind a login or bot wall and **must be read before it is cited or used to judge novelty**.
+
+| ID | Paper | Status | Code | What it does | Overlap with Aegis-OSR | Checked |
+|---|---|---|---|---|---|---|
+| F1 | S. Barrett, L. Li, G. Dorai, S. Rajaganapathy, *FIRCE: A Framework for Intrusion Response and Conformal Evaluation*, arXiv 2605.01962 | Preprint (v1, 3 May 2026); "accepted by IEEE SmartNets26" per arXiv comment only | github.com/DFAIR-LAB-Augusta/XSecIoT (branch `FIRCE_bkp`) | Transcend-style conformal evaluation (class-conditional) rejects low-confidence predictions of a binary IoT classifier as a drift signal; labelled retraining | Keyword-high, substance-low; calibration is in-sample (invalid p-values) | read (paper + code) |
+| F2 | W. Ahmed, M. A. Rahaman, P. Roy, P. Alam, *The dashboard says "perfect"…* (label-free monitoring), Frontiers in AI 9, 2026, doi:10.3389/frai.2026.1928858 | Peer-reviewed | Zenodo 10.5281/zenodo.22654220 | CIC-IDS2017 ↔ CSE-CIC-IDS2018, HGB/MLP, 16 test-time-adaptation and label-shift variants (none beats the unadapted model in both directions); Mondrian conformal coverage at α = 0.1 collapses (0.016–0.263); abstention rate proposed as a drift alarm; 3 seeds | **Direct** on "conformal validity breaks under 2017→2018 and adaptation does not fix it". Not covered: FPR at fixed α, threshold recalibration on target benign, novelty or fusion evidence, unseen families, per-day analysis | read |
+| F3 | M. Haroush, T. Frostig, R. Heller, D. Soudry, *A statistical framework for efficient out of distribution detection in deep neural networks* (MaSF), arXiv 2102.12967 (ICLR 2022 per our recollection — verify) | Peer-reviewed (to verify) | — | Combines p-values from many network components (Max/Simes/Fisher) into one OOD test with a Type-I-error guarantee | **Direct at method level** for conformal evidence combination (vision, not NIDS) | abstract read; combination details from memory |
+| F4 | *Conformal prediction for network intrusion triage and analysis of unseen attack families*, Springer, 2026, doi:10.1007/s44564-026-00033-y | Peer-reviewed (journal name and authors unverified) | unknown | Per snippets: class-conditional conformal triage, 15 leave-one-family-out runs on UNSW-NB15 and CIC-IDS2017, probability-space vs feature-space novelty scores are family-dependent | **Possibly direct** (Mondrian + leave-one-family-out + supervised vs feature novelty) | snippet only |
+| F5 | *ConFID: a conformal one-class framework for unsupervised zero-day intrusion detection in IoT networks*, Internet of Things (Elsevier), 2026 | Peer-reviewed (authors unverified) | unknown | Per snippets: one-class detector with a conformal finite-sample FPR bound, leave-one-attack-out | **Direct** on a conformal FPR bound for zero-day NIDS | snippet only |
+| F6 | *Adaptive Decision-Level Intrusion Detection for Known and Zero-Day Attacks*, MDPI Network 6(2):23, 2026 | Peer-reviewed (authors unverified) | unknown | Per snippets: supervised + anomaly evidence fused with weights calibrated on validation data under a fixed FPR budget; CSE-CIC-IDS2018 | **Partial/direct** on hybrid fusion at a fixed FPR (apparently without conformal validity) | snippet only |
+| F7 | Ş. Şahin et al., HADAR-UAV, Computers, Materials & Continua 89(1), 2026, doi:10.32604/cmc.2026.080874 | Peer-reviewed | "upon acceptance" | LSTM masked AE + Deep SVDD combined score with a split-conformal threshold; leave-two-families-out (UAVIDS-2025) | Partial (conformal FAR on a combined unsupervised score) | read (agent) |
+| F8 | arXiv 2409.00667, conformal prediction integrated into a botnet NIDS (Information Fusion, per search snippet) | to verify | unknown | Conformal NIDS with adversarial examples | to assess | snippet only |
+| F9 | Li, *Robust Conformal Intrusion Detection via Traffic-Aware Calibration and Attack-Orbit Invariance*, arXiv 2609.19241 | Preprint | none | Conformal calibration for LLM-based NIDS breaks under adversarial perturbation; weighted split conformal does not fix it | Partial (shift breaks the guarantee; adversarial, not natural shift) | abstract read (agent) |
+
+**Corrections to entries above.**
+* **B17** authors: Joohong Rheey, Hyunggon Park (ICML 2026 listing; OpenReview not accessible). The detector uses a
+  Mahalanobis score on autoencoder reconstruction errors; no dataset is named; no shift test in the abstract.
+* **C12** never crosses extractors (e.g. CIC17 → LycoS18), so it does not isolate the extractor effect.
+* **E4** (Youssef, arXiv 2605.24696): v1/v2 were a different paper (CALIBURN, conformal risk control) whose numbers v3
+  states were unsupported; cite only v3, as a critique of stream assembly.

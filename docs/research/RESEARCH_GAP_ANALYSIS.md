@@ -12,6 +12,22 @@
 
 **Status of every claim below:** a *hypothesis pending experiments*. Nothing here establishes novelty. The literature search covered 61 verified papers (see the review, §1). A gap means we did not find the work among verified sources, not that it does not exist.
 
+## Revision 1 (2026-11-17) — read this first
+
+After the critical comparison with CLOSR and FIRCE (`PRIOR_WORK_COMPARISON.md`) and a novelty re-check that found close work missing from the 61-paper review (review addendum F1–F9), this document changed as follows:
+
+1. **2018 numbers now come from the corrected v2 sample.** The v1 values (35.20 % FPR; LOIC-HTTP 0 %) are kept only where they are marked as v1.
+2. **Novelty verdicts tightened** (§2):
+   * "The guarantee breaks under 2017→2018" is a replication of Frontiers in AI 2026 (F2).
+   * Conformal evidence combination exists outside NIDS (MaSF, F3).
+   * Two possibly-direct NIDS papers (F4 Mondrian triage, F6 fusion at a fixed FPR) could not be read and **block any novelty statement**.
+3. **A new, data-grounded gap.** An exploratory analysis of our own per-day records (`scripts/64_recalibration_diagnosis.py`) shows that after label-light recalibration the *supervised* evidence still ranks 2018 attacks well, while the *benign-referenced novelty* stream goes stale. The fusion rule that is best in-distribution therefore becomes the worst. This is now Contribution 1 (§3). It replaces "shift attribution", which becomes Contribution 2.
+4. **The contributions were re-ranked and rewritten** (§3).
+   * Host/window evidence (old Contribution 3) moves to future work.
+   * The R3 shortlist (§4) is superseded by `R3_PROTOCOL.md`.
+
+The R2 v1 text of §3–§5 is in git history (commit `9dd70a8`).
+
 ---
 
 ## 1. Gaps supported by evidence
@@ -40,7 +56,7 @@
 | LOAFO (IID calibration) | 1.00% [0.92, 1.07] | 0.706 [0.689, 0.723] |
 | Temporal Mon–Thu→Fri | **7.09%** [6.66, 7.52] | 0.495 |
 | Temporal Mon–Wed→Thu | 1.72% [1.15, 2.28] | 0.992 |
-| CICIDS2017→CSE-CIC-IDS2018 | **35.20%** [32.15, 38.25] | 0.438 (AUROC 0.576) |
+| CICIDS2017→CSE-CIC-IDS2018 (v2 sample, `openset_cross_summary_v2.json`; v1: 35.20%) | **36.73% [34.72, 38.73]** | 0.438 (AUROC 0.568) |
 
 **Gap.** We found no verified NIDS study that does all three of the following:
 1. measures how far a conformal (or otherwise nominal) benign-FPR guarantee is violated under temporal and cross-network shift;
@@ -48,6 +64,8 @@
 3. evaluates remedies against that violation.
 
 The theory to repair the guarantee exists (B7, B12). Its NIDS evaluation does not, among the sources we verified.
+
+*Revision 1:* item 1 is partly done. F2 (Frontiers in AI 2026) measures conformal *coverage* collapse for supervised classifiers on CIC-IDS2017 ↔ CSE-CIC-IDS2018. The gap that remains is items 2–3 at a benign-FPR operating point, and recall at matched FPR after recalibration (Contribution 1).
 
 ### G2. Separating genuine behavioural novelty from network or measurement-tool shift
 
@@ -69,12 +87,12 @@ The theory to repair the guarantee exists (B7, B12). Its NIDS evaluation does no
   * port 445 dominates in 2018;
   * median flow duration is 34× longer;
   * 75% versus 42% of flows have zero minimum packet length.
-* The same tools stop being detected (frozen v1.1):
-  * DoS-Hulk alert rate 0.008;
-  * SSH-Bruteforce 0.000;
-  * LOIC-HTTP 0.000.
+* The frozen v1.1 detector misses the same tools on 2018 (v2 sample, `frozen_v11_on_cic2018_v2.json`):
+  * DoS-Hulk alert rate 1.1%;
+  * SSH-Bruteforce 0.0%;
+  * LOIC-HTTP 45.0% (it was 0% on the v1 file-order sample, which saw only the start of that attack).
 
-  Meanwhile Slowloris transfers at 0.956.
+  Meanwhile Slowloris transfers at 95.6%. **R2 follow-up:** a retrained XGB recalibrated on 2,000 target-day benign flows detects 2018-02-14 brute force (0.984) and 2018-02-16 DoS (0.920) at ≤ 1% FPR (`recalibration_diagnosis.json`), so these tools are *missed by fixed thresholds*, not undetectable.
 * A protocol flaw: the cross-dataset warm-up window comes from the first 2018 day only.
 
 **Gap.** We found no verified study that uses a **factorial design** to *attribute* the open-set detector's FPR inflation and per-tool recall loss. The design would vary:
@@ -189,199 +207,188 @@ Verdicts:
 
 | # | Candidate contribution | Closest verified prior work | What is already done | What would be genuinely different | Verdict |
 |---|---|---|---|---|---|
-| N1 | Conformal (finite-sample) benign-FPR control for an intrusion detector | B17; B11; B3/B10 | Split-conformal FAR control for an AE-based IDS (B17). General conformal outlier testing with FPR bounds (B11). | Nothing, if stated alone. | **Done.** Aegis must cite B17 and B11 and drop any "first conformal NIDS" phrasing. |
-| N2 | Fusing supervised known-attack evidence with benign-novelty evidence for zero-day detection | B13 (multi-stage), B16 (benign + known-malign contrastive), B21, B20 | Hybrid supervised + anomaly pipelines with zero-day evaluation exist. | Fusion *at the p-value level* (Fisher sum of benign surprisals with exponential tails), giving **one** calibrated FPR for the combined detector. This is only potentially different. The p-value-combination literature for conformal anomaly detection was **not reviewed**. | **Partial.** Incremental at best until that literature is checked. |
+| N1 | Conformal (finite-sample) benign-FPR control for an intrusion detector | B17; F5 (ConFID); F7 (HADAR-UAV); B11; B3/B10 | Split-conformal FAR control for AE / one-class / combined unsupervised detectors (B17, F5, F7). General theory (B11). | Nothing, if stated alone. | **Done.** Cite B17, F5, F7, B11; no "first conformal NIDS" phrasing. |
+| N2 | Fusing supervised known-attack evidence with benign-novelty evidence for zero-day detection | B13, B16, F6 (fixed-FPR fusion, snippet only), F3 (MaSF), B11 | Hybrid pipelines with zero-day evaluation (B13, B16). Fusion weights calibrated under a fixed FPR budget (F6, unread). Conformal combination of many evidence sources with a Type-I guarantee (F3, vision OOD). Naive Fisher combination of dependent conformal p-values is invalid (B11). | Calibrating the *sum* of surprisals on a disjoint benign split keeps validity despite dependence; that is an engineering construction, not a new statistical result. | **Done / partial.** Not a contribution on its own; read F6 before describing the design as distinct. |
 | N3 | LOAFO zero-day protocol on CICIDS2017 | B16 (zero-day class held out), B18 (held-out families), B13 | Hold-out-family protocols are published. | Seed-level paired tests at a calibrated α, with every method passed through the same calibration. This is good practice (E2), not novelty. | **Done** (as a protocol). |
 | N4 | Attributing open-set FPR inflation and per-tool recall loss to **extractor** versus **environment** shift with a factorial design | C2, C8, C9, C3 (tool errors); C15 (exporter effect); C12 (same-extractor 2017/2018 pair, closed-set); C5/C17 (one exporter for many networks) | Extractor effects on *closed-set accuracy* are shown. Corrected data for both CIC datasets exists. | A 2×2 *attribution* of calibrated open-set FPR and per-tool alert rates, including an **extractor-only cell** (same packets, two extractors). We did not find this. | **Open (hyp.).** Most promising. |
-| N5 | Shift-aware FPR control for NIDS: online violation detection plus adaptive or weighted conformal recalibration from label-light benign windows | B7, B12, B3/B10, B4 | The methods exist. Drift rejection is evaluated for malware. | Evaluation on NIDS with detection delay, post-adaptation FPR variance, per-day windows and a **poisoning ablation**. Optionally, a shift-versus-novelty alarm. | **Partial.** The method is not new. The NIDS evaluation and the shift-versus-novelty discrimination are hypotheses. |
+| N5 | Shift-aware FPR control for NIDS: violation detection and label-light recalibration | B7, B12, B3/B10, B4, F1 (FIRCE), F2 (Frontiers 2026) | Conformal drift rejection with labelled retraining for IDS (F1; in-sample calibration). Label-free adaptation and conformal coverage collapse on CIC-IDS2017↔2018 (F2; abstention as a drift alarm). ACI/weighted conformal methods exist (B7, B12). | A *valid* benign-only sequential violation test with detection delay, a poisoning guard, and recall at matched FPR after recalibration. | **Partial, narrowed.** Becomes the deployment part of Contribution 3. |
 | N6 | Host/window-level behavioural evidence for Bot and PortScan, fused into the calibrated detector | D1, D3, D5, D6, D2 | Host and graph detection of botnets and scans exists. | The same features evaluated under LOAFO at a calibrated α, with leakage controls against attacker-IP identity. | **Partial.** Low novelty, high practical value. |
 | N7 | Tabular foundation models (TabICL) or TabM as evidence models in a calibrated open-set NIDS | A9, A10 | Closed-set and cross-dataset IDS evaluations of TabICL and TabPFN exist. | Using them inside the conformal fusion under LOAFO, temporal and cross protocols. | **Partial.** Benchmark value only. |
 | N8 | Stability of open-set alert explanations under shift (evidence-level and feature-level) | C10, C6, E1, B8 | SHAP shifts across datasets. Explanation-method criteria exist. | Measuring stability of *alert* explanations (which evidence fired, and top features) for the same tool across days and networks, with CIs. | **Partial.** A low-moderate add-on, not a headline. |
-| N9 | Mondrian-conformal attribution (known family / UNKNOWN-ATTACK / ZERO-DAY-ANOMALY) | B3/B10 (per-class conformal rejection), B16 (open-set recognition) | Per-class conformal rejection exists (malware). Open-set recognition exists in NIDS. | The three-way label with class-conditional validity in NIDS. | **Partial.** Incremental. |
+| N9 | Mondrian-conformal attribution (known family / UNKNOWN-ATTACK / ZERO-DAY-ANOMALY) | B3/B10, B16, F4 (Mondrian triage with leave-one-family-out on CIC-IDS2017, snippet only) | Per-class conformal rejection (malware); class-conditional conformal triage of unseen NIDS families (F4, unread). | Possibly only the three-way label. | **Probably done** — confirm by reading F4. |
+| N10 | **Evidence-level account of what label-light recalibration restores under cross-network shift, and stream-gated calibrated fusion** | F2, F3, F6, B17, B16 | Coverage collapse and failed adaptation for supervised models (F2); combination rules (F3); fixed fusion weights (F6, unread). | Recall at matched FPR per evidence stream; the stale novelty reference; the in-distribution-optimal fusion becoming the worst; a label-free rule that screens, refreshes or drops streams using benign-only windows, with calibration kept valid. | **Open (hyp.)** — not found in any source we could read; F4/F6 unread. Exploratory evidence exists (PRIOR_WORK_COMPARISON §3). |
 
 **Bottom line.** Aegis-OSR's *existing* contribution is best framed as a careful, calibrated, well-tested integration of known components: conformal outlier testing (B11), kNN OOD (B9) and supervised evidence. Its additions are an honest stress test under shift and seed-level statistics. It is not a new detection principle.
 
-The more defensible *new* research contribution would come from G2/N4 (attribution) and G4/N5 (shift-aware control). These are hypotheses until the experiments below are run.
+**Revised (Revision 1):** the most defensible new contribution is N10 (Contribution 1), followed by N4 (attribution, Contribution 2). N5 is narrowed by F1/F2 and becomes Contribution 3. All remain hypotheses.
 
 ---
 
-## 3. Three candidate original contributions (ranked)
+## 3. Candidate original contributions (Revision 1, ranked)
 
-Scales: **novelty** is our current estimate after the novelty check. **Feasibility** covers this semester and next on our hardware (20 CPU threads, 24 GB RAM, CPU-only PyTorch). **Value** is research value.
+**Scales.**
+* **Novelty:** our estimate after the CLOSR/FIRCE comparison and the novelty re-check.
+* **Feasibility:** CPU-only, this semester and next.
+* **Value:** research value.
 
-| Rank | Contribution | Novelty | Feasibility | Value |
-|---|---|---|---|---|
-| 1 | Shift attribution for calibrated open-set NIDS (extractor × environment) | Moderate (hyp.) | Medium–high | High |
-| 2 | Shift-aware FPR control with violation detection and a poisoning guard | Low–moderate | High | High |
-| 3 | Host/window-level evidence for Bot and PortScan | Low–moderate | High (2017), low (2018) | Medium–high |
+**Evidence labels.**
+* *Exploratory* evidence was found post hoc on data we have already looked at.
+* *Confirmatory* evidence must come from data and protocols not used to form the hypothesis.
 
-Contribution 1 is ranked first because it directly explains Aegis's largest failure (35.20% FPR), and nothing equivalent was found. Contribution 2 is the deployment story. Contribution 3 closes a documented weakness but adds the least to the literature.
-
-### Contribution 1 — Shift attribution for calibrated open-set NIDS
-
-**Idea.** Decompose the 2017→2018 collapse into two parts:
-* **extractor shift:** same packets, different flow tool chain;
-* **environment shift:** different network, same tool chain.
-
-Measure both by their effect on Aegis-OSR's realized benign FPR and on per-tool alert rates.
-
-**Falsifiable hypotheses.**
-* **H1a (extractor-only).** Train and calibrate on the *original* CICIDS2017 export, then test on a *corrected re-extraction of the same 2017 traffic* (C8 tool chain or LycoS, C3). The realized benign FPR at α = 1% will exceed 2% (twice nominal).
-  * *Falsified if* FPR ≤ 2%. In that case the extractor alone does not break exchangeability.
-* **H1b (environment-only).** Train, calibrate and test within *one* corrected tool chain (corrected 2017 → corrected 2018). The DoS-Hulk, SSH-brute-force and LOIC-HTTP alert rates will recover to ≥ 0.5 (from 0.008 / 0.000 / 0.000 in the frozen-model EXP-009). Realized FPR will drop below half of 35.20%.
-  * *Falsified if* alert rates stay below 0.1 and FPR stays above 17.6%. That outcome would mean environment shift dominates, which is consistent with C12's closed-set finding. It would still be a publishable attribution result.
-
-**Required experiments.**
-1. **Data acquisition (first, gating).** Confirm public availability, format and size of:
-   * the C8 recreated CIC-IDS-2017 and CSE-CIC-IDS-2018 (CNS2022 code repository);
-   * LycoS-IDS2017 (C3);
-   * LycoS-Unicas-IDS2018 (C12).
-
-   **Not yet verified.** If only PCAP-level tools are available, estimate re-extraction cost first.
-2. **Feature alignment.** Map each corrected schema to the 77-feature Aegis schema. Report unmapped features. Run with both the intersection and the full sets.
-3. **2×2 grid**, seeds 1–5 (preferably 10; see CLAIM_AUDIT §2):
-   * {original, corrected} extractor × {2017, 2018} network;
-   * plus the existing original→original cell.
-
-   **Metrics:**
-   * realized benign FPR at α ∈ {0.1, 1, 5}%;
-   * zero-day recall;
-   * AUROC;
-   * per-tool alert rate on *de-duplicated* unique flows (CLAIM_AUDIT §5);
-   * per-feature benign KS;
-   * a classifier two-sample test (benign 2017 versus benign 2018) per cell.
-4. **NetFlow replication.** Repeat the grid on NF-v3 (C17), where one exporter covers several networks, so the environment effect is isolated in a different feature space.
-5. **Per-day warm-up windows.** Use these for any recalibration. This fixes the first-day-only flaw in CLAIM_AUDIT §5.
-
-**Risks.**
-* Corrected datasets may be unavailable, too large, or not row-alignable. Mitigation: the factorial needs only distribution-level comparisons, not row matching.
-* Label-logic changes in corrected data confound "extractor" with "relabelling". Mitigation: report both and use benign-only FPR as the primary metric.
-* C12 suggests H1b may fail. This is acceptable: the contribution is the attribution, not a positive result.
-* Feature-name mismatch between the CICFlowMeter versions.
-
-### Contribution 2 — Shift-aware FPR control: violation detection, adaptive recalibration and a poisoning guard
-
-**Idea.** Treat the conformal guarantee as a *monitored* property:
-* a sequential test on confirmed-benign feedback detects when realized FPR exceeds α;
-* adaptive conformal inference (B7) or recency-weighted conformal (B12) restores long-run FPR without retraining;
-* a cap on any single source's share of the calibration window (CLAIM_AUDIT §6, R4) limits poisoning.
-
-As a secondary aim, test whether alert *patterns* separate environment shift from attack novelty.
-
-**Falsifiable hypotheses.**
-* **H2a (detection delay).** A one-sided binomial or sequential test on confirmed-benign flows detects the Mon–Thu→Fri violation (7.09% versus 1%) within ≤ 2,000 confirmed-benign flows, at a false-trigger rate ≤ 5% on the IID LOAFO stream.
-  * *Falsified if* more than 2,000 flows are needed, or if false triggers exceed 5%.
-* **H2b (control).** On Mon–Thu→Fri, ACI-style α tracking keeps the cumulative realized FPR ≤ 1.5% after the warm-up, with zero-day recall ≥ 0.39. 0.39 is the oracle recalibration recall (0.390 at 0.97% FPR, RESULTS.md).
-  * *Falsified if* either bound fails in ≥ 3 of 5 seeds.
-* **H2c (poisoning).** Without the per-source cap, injecting 1% attack flows into the benign window raises the conformal threshold and lowers zero-day recall by ≥ 0.10. With the cap, the loss is ≤ 0.03.
-* **H2d (shift versus novelty, exploratory).** A batch-level statistic separates 2018 benign-shift batches from LOAFO held-out-attack batches with AUROC ≥ 0.8. Candidate statistics: the fraction of novelty-only alerts, and the dispersion of alerts over destination ports and features.
-
-**Required experiments.**
-* Replay CICIDS2017 in `Timestamp` order (`TrafficLabelling/`) and 2018 day by day.
-* Compare static calibration, `recal@W` (W ∈ {500, 2000, 5000}), weighted conformal and ACI.
-* Run the poisoning sweep with 0.1–5% contamination.
-* Seeds 1–5.
-* All on CPU, reusing the existing Aegis-OSR scores. No retraining is needed.
-
-**Risks.**
-* ACI guarantees *long-run* frequency, not per-window FPR. The paper must say so.
-* CICIDS2017 spans five days, so the temporal evidence is thin. 2018 adds about ten days, but with tool confounding (Contribution 1).
-* H2d may simply re-detect the 2018 port-445 dominance, i.e. a trivial statistic. Report it with a baseline.
-* Assumes analysts can confirm benign flows (AEGIS_OSR.md §5).
-
-### Contribution 3 — Host/window-level behavioural evidence for Bot and PortScan
-
-**Idea.** Add a third evidence source to the Fisher fusion:
-* per-source sliding-window aggregates computed **only from past flows**, such as distinct destination ports, fan-out, inter-arrival periodicity and failed-connection ratios;
-* each mapped to benign surprisal and calibrated with the same conformal step.
-
-**Falsifiable hypotheses** (LOAFO, α = 1%, 5 seeds):
-* **H3a (Bot).** Bot zero-day recall rises from 0.023 to ≥ 0.20.
-* **H3b (PortScan).** PortScan zero-day recall rises from 0.357 to ≥ 0.70.
-* **H3c (no regression).** Realized FPR stays ≤ 1.1%, and no other family's recall drops by > 0.02.
-* *Falsified* if H3a or H3b fails in ≥ 3 of 5 seeds.
-
-**Required experiments.**
-* Build window features from the `TrafficLabelling/` CSVs.
-* **Identity-leakage control.** CICIDS2017 attackers use a few fixed hosts, so window features must exclude IP identity. Check this with a permutation test that shuffles source-IP labels within time windows.
-* Ablation: flow-only versus flow + host evidence.
-* Optional graph comparator: E-GraphSAGE or Anomal-E (D3, D5), if the code runs on CPU.
-* Respect the leakage-free sequence lessons (D8).
-
-**Risks.**
-* **Identity leakage**: the model learns *which host*, not *what behaviour*. This is the main risk (cf. C11 label-leak smells).
-* 2018 processed CSVs lack `Src IP` in 9 of 10 files, so cross-dataset validation of this evidence needs re-extracted data or NF-v3. NF-v3 IP columns are **not verified**.
-* Bot traffic may resemble benign HTTP even at host level (AEGIS_OSR.md §5).
-* Novelty is low (N6). Present this as closing a weakness, not as a new method.
-
-**Not ranked in the top three:**
-* Explanation stability of alerts under shift (N8): fold in as a secondary metric of Contribution 2.
-* Tabular foundation models (N7): R3 benchmark content only.
-
----
-
-## 4. Proposed R3 benchmark shortlist (8 methods)
-
-**Selection criteria:**
-* official code;
-* CPU feasibility at our caps (train 300k benign + ≤ 60k per family);
-* evidence from the review that the method is competitive on tabular or NIDS data;
-* coverage of distinct inductive biases.
-
-**Evaluation rules.** Every supervised learner is evaluated twice, with the same splits and seeds:
-* **(i)** as a closed-set detector;
-* **(ii)** as the supervised evidence inside Aegis-OSR (surprisal → Fisher → conformal).
-
-This keeps calibration fixed and isolates the evidence model (AEGIS_OSR.md §2).
-
-| # | Method | Role | Code | CPU | Justification |
+| Rank | Contribution | Novelty | Feasibility | Value | Evidence so far |
 |---|---|---|---|---|---|
-| 1 | **Decision Tree** | Required baseline | scikit-learn (installed) | Yes | Frozen v1.1 style. LOAFO 0.241 (RESULTS.md). |
-| 2 | **Random Forest** | Required baseline | scikit-learn (installed) | Yes | Frozen v1.1 second stage. The most robust model under leakage-free sequence evaluation in D8 (preprint). |
-| 3 | **XGBoost** | Required baseline / current evidence | `xgboost` 3.2.0 (installed) | Yes | Current Aegis evidence (closed-set LOAFO 0.490). Trees remain strong on tabular data (A2, A3). |
-| 4 | **LightGBM** | GBDT variant | PyPI (**install needed**) | Yes | Tests whether Aegis gains are XGBoost-specific. Used in the exporter study (C15). |
-| 5 | **CatBoost** | GBDT variant | PyPI (**install needed**) | Yes | Ordered boosting against target-leakage "prediction shift" (Prokhorenkova et al. 2018). Native categorical handling for `Destination Port`/`Protocol`. The reference GBDT that TabICL is compared against (A7). |
-| 6 | **Extra Trees** | Randomised forest | scikit-learn (installed) | Yes | The classifier used in the NetFlow standard-feature benchmark (C5). Smoother probability estimates may change surprisal tails. Cheap. |
-| 7 | **TabM** | Advanced tabular DL | [yandex-research/tabm](https://github.com/yandex-research/tabm) | Yes (MLP; hours, estimated) | Best-supported tabular DL model (A5, ICLR 2025). Its multiple predictions per object can provide a disagreement evidence term. |
-| 8 | **CLOSR** | Advanced open-set NIDS comparator | [jackwilkie/CLOSR](https://github.com/jackwilkie/CLOSR) | Likely (not verified) | Closest 2026 peer-reviewed zero-day NIDS method with official code (B16, IEEE TNSM). Run through the same calibration to compare at α = 1%. |
+| 1 | What recalibration restores: evidence-level shift diagnosis and stream-gated calibrated fusion | Moderate (hyp.; F4/F6 unread) | High | High | Exploratory (2018 per-day records) |
+| 2 | Extractor × network attribution of calibrated open-set failure | Moderate (hyp.) | Medium (gated on data access) | High | None yet |
+| 3 | Valid, label-light FPR-violation monitoring with a poisoning guard | Low–moderate | High | Medium–high | Temporal FPR violation (7.09 % on Friday) |
 
-**Reserve (conditional).**
-* **TabICL** (A7, official pretrained models). Include it only if a CPU pilot shows that inference on a ≤ 50k-row context over our test caps finishes within a working day. It is motivated by the rare-class recall reported in A9 (closed-set).
-* **CADE** (B8). An alternative drift/novelty comparator with official code (academic licence).
-* **Verkerken-style multi-stage** (B13). Re-implementation only (no code found). It is the closest architectural prior, so a simplified version is worth adding if time allows.
+### Contribution 1 — What recalibration restores: evidence-level diagnosis and stream-gated calibrated fusion
 
-**Excluded, with reasons:**
-* **TabPFN v2** (A6): ≤ 10k-sample regime per abstract, GPU-oriented.
-* **TabR and FT-Transformer** (A4, A1): GPU-oriented, and dominated by TabM in A5's own benchmark.
-* **Graph and sequence models** (D3–D8): belong to Contribution 3, not to the tabular evidence benchmark.
-* **More classifiers in general:** CLAIM_AUDIT §6 explicitly deprioritises adding classifiers. R3 should stay at this size.
+**Problem.** Under cross-network shift, a calibrated open-set NIDS loses its false-alarm guarantee. Recalibrating on a small window of confirmed-benign target traffic restores the false-alarm rate (1.62 % mean on 2018 at W = 2,000), but known-family recall falls to 0.088. An operator cannot tell whether detection is gone or merely hidden, nor which part of the detector to trust.
 
-**R3 protocol notes:**
-* **Selection bias.** Fix hyperparameters on a **selection split** that excludes the LOAFO test families, or use library defaults plus light tuning (A3). This avoids repeating the seed-0 selection bias (CLAIM_AUDIT §2; E2).
-* **What to report:**
-  * realized FPR, zero-day recall at α ∈ {0.1, 1, 5}%, AUROC and per-family recall;
-  * seed-level paired tests;
-  * training and inference time and peak memory, for a pragmatic assessment (E3).
-* **Data.** Run the benchmark on both the original export and, where available, a corrected dataset (G6). Otherwise the whole benchmark inherits known dataset artefacts.
+**Unresolved limitation in prior work.**
+* F2 shows conformal coverage collapse and failed label-free adaptation for *supervised* models. It reports no false-alarm operating point, no recalibration on target benign, and no novelty evidence.
+* B17, F5 and F7 calibrate a *single* score.
+* F3 combines evidence only under no shift. F6 (unread) fixes fusion weights on source validation data.
+* CLOSR sets no threshold.
+
+None of these decomposes the post-recalibration loss by evidence stream, or gives a label-free rule for which evidence to keep.
+
+**Exploratory evidence** (`research_artifacts/recalibration_diagnosis.json`; seed-level, n = 5).
+* **Fisher fusion loses to its own parts.** After recal@2000, the closed-set classifier alone has +0.237 known recall over Aegis-OSR [+0.153, +0.322] (5/5 seeds), at a comparable realized FPR (1.36 % vs 1.62 %).
+* **The novelty stream goes stale.** The kNN stream's target AUROC is 0.51 overall and 0.05 on 2018-02-16.
+* **Refreshing the reference recovers recall but breaks the budget.** With the kNN reference refreshed (recal+ref), recall rises to 0.435–0.532, but FPR is 2.4–2.6 %.
+* **The fusion ordering reverses.** Fusion is ordered Fisher > omnibus > max in LOAFO, and max > omnibus > Fisher on 2018.
+
+**Mechanism (proposed).** The method needs only a benign target window W. W is split by time into three disjoint parts, in order:
+* **W_s** (screen);
+* **W_r** (reference refresh);
+* **W_c** (calibration, the most recent part, closest to deployment).
+
+The rule:
+1. **Screen.** For each evidence stream j, compute its *source-calibrated* exceedance rate e_j on W_s: the fraction of target benign flows with source p_j ≤ α₀ (α₀ = 5 %). Without shift, e_j ≈ α₀.
+2. **Refresh or drop.**
+   * A reference-based stream (kNN) with e_j > 2α₀ has its reference rebuilt from W_r.
+   * A stream with e_j > τ_drop (pre-set at 0.5) that cannot be refreshed is dropped.
+   * All other streams are kept.
+3. **Calibrate.** Fuse the retained streams (Fisher sum of surprisals, surprisal maps re-estimated on W_c's first half). Conformal-calibrate on W_c's second half.
+
+Every decision uses benign target data disjoint from the final calibration split. The bound therefore stays valid under the same (stated) exchangeability condition as before; it is no stronger.
+
+**How it differs from the closest work.**
+* **vs F2:** it acts on a calibrated operating point and on evidence streams, not on a supervised model's coverage.
+* **vs F3 (MaSF):** it is a *shift-time* selection of evidence, not a fixed combination.
+* **vs F6:** it needs no attack labels in the target domain and keeps a conformal guarantee. This must be confirmed by reading F6.
+* **vs recal+ref (our own baseline):**
+  * explicit staleness screening;
+  * time-separated reference and calibration parts, which tests the locality hypothesis H1d;
+  * a drop rule.
+
+**Validation.** Confirmation targets are datasets *not* used to form the hypothesis:
+* **(i) NetFlow NF-v3 cross-network pairs**: one exporter, several networks (C17). Availability is to be verified.
+* **(ii) LycoS-IDS2017 → LycoS-Unicas-IDS2018**: one corrected extractor (C3, C12).
+* **(iii) Guards:** LOAFO (no shift) and Mon–Thu → Fri (within-network shift), to show no harm.
+
+All runs use 10 seeds with seed-level tests (R3_PROTOCOL §11). The 2018 CIC per-day data may be used for development only.
+
+**Support / reject criteria** (pre-registered):
+
+| ID | Hypothesis | Supported if | Rejected if |
+|---|---|---|---|
+| H1a | **Replication.** After recal@2000, Fisher-fused known recall is lower than supervised-only recall at matched FPR on new cross-network targets. | Δ ≥ 0.05 with p < 0.05 on ≥ 2 of the 3 new pairs | No pair shows it. The 2018 inversion is then reported as dataset-specific. |
+| H1b | **Staleness predicts loss.** Across (target, segment, stream, seed), the screen statistic e_j is negatively associated with the stream's target AUROC. | Spearman ρ ≤ −0.5 | \|ρ\| < 0.3. The screen is then useless, and the method falls back to "always refresh reference streams". |
+| H1c | **Method, under shift.** Gated fusion, compared on new targets after W = 2,000, against Fisher and supervised-only. | Known recall ≥ supervised-only and ≥ Fisher + 0.10, with mean realized FPR ≤ 1.5α | Realized FPR > 1.5α, or no gain over supervised-only. |
+| H1c′ | **Method, no shift.** Gated fusion under LOAFO. | Zero-day recall within −0.02 of Fisher (TOST) | Falls outside the margin. |
+| H1d | **FPR overshoot of reference refresh is reference/calibration temporal locality.** With time-separated W_r and W_c, realized FPR under refresh. | ≤ 1.5α | Overshoot persists. It is then within-day drift relative to the test, and Contribution 3's online recalibration is the remedy. |
+
+**Publication value.**
+* A crisp, falsifiable finding: the stream that makes open-set detection work in-distribution is the one that breaks it across networks.
+* A simple, label-free fix with an explicit validity argument.
+* Either outcome of H1c is publishable alongside H1a/H1b, as a diagnostic paper (IEEE TNSM, Computers & Security, ACSAC / RAID-style venues).
+
+**Limitations.**
+* Assumes analysts can confirm a benign window, and is open to window poisoning (Contribution 3).
+* The guarantee remains conditional on exchangeability.
+* Unseen-family evaluation on cross-network targets is weak: 2018's only unseen family, Infiltration, is label-noisy.
+* NF-v3 uses NetFlow features, so Aegis-OSR must be re-run in that feature space (it is feature-agnostic). This is not a like-for-like comparison with CICFlowMeter results.
+* The mechanism behind the Fisher loss ("dilution") is inferred, not yet observed; it needs per-flow score dumps (R3 §8.4).
+
+### Contribution 2 — Extractor × network attribution of calibrated open-set failure
+
+**Problem.** Aegis's cross-network failure mixes two shifts:
+* a different network;
+* a different flow-extractor version.
+
+F2 *assumes* that the shared CICFlowMeter family isolates temporal drift from tooling artefacts. C12 has both extractor versions of both datasets but never crosses them.
+
+**New evidence that sharpens the hypothesis.** The tools the frozen detector misses on 2018 are still separable by a recalibrated supervised score (AUROC 0.999–1.000 on 2018-02-14 and 02-16), while distance-based novelty collapses. This suggests that extractor or network change mostly *re-scales* supervised evidence, which recalibration can fix, but *moves* the benign reference, which it cannot.
+
+**Mechanism.** A 2 × 2 design, with seeds 1–10, metrics as in R3, plus per-stream AUROC and e_j:
+
+| | 2017 network | 2018 network |
+|---|---|---|
+| **Original extractor** | CICIDS2017 (MachineLearningCVE) | CSE-CIC-IDS2018 |
+| **Corrected extractor** | LycoS-IDS2017 | LycoS-Unicas-IDS2018 |
+
+* **Extractor-only cells:** original 2017 → LycoS 2017 (same packets). Feature crosswalk per R3_PROTOCOL §4; unmatched features dropped from both sides.
+* **Network-only cell:** LycoS 2017 → LycoS-Unicas 2018 (same extractor).
+
+**Support / reject criteria.**
+* **H2a (extractor-only).** Unadapted realized FPR exceeds 2 % at α = 1 %. The kNN stream's AUROC falls by ≥ 0.10, while the supervised stream's falls by < 0.05.
+  * *Rejected if* FPR ≤ 2 % and both AUROC drops are < 0.05: the extractor alone then does not break the detector.
+* **H2b (network-only).** After recal@2000, supervised-stream known recall exceeds the original-extractor pair's value (0.325) by ≥ 0.10.
+  * *Rejected if* it does not: environment shift dominates, consistent with C12.
+
+**Distinct from:** C12 (closed-set, no crossing), F2 (assumes the extractor is controlled), C15 (exporter effect within one dataset).
+
+**Publication value.** An attribution result is publishable whichever cell dominates. It also turns a known caveat (dataset errors, C2/C8/C9) into a measured effect on calibrated operation.
+
+**Limitations.**
+* Gated on obtaining LycoS-IDS2017 (project site, licence unverified) and LycoS-Unicas-IDS2018 (github.com/MarcoCantone/LycoS-Unicas-IDS2018).
+* Relabelling differences confound "extractor".
+* The feature crosswalk may lose features.
+* Benign-only FPR is the primary metric, to limit label confounds.
+
+### Contribution 3 — Valid, label-light FPR-violation monitoring with a poisoning guard
+
+**Problem.** In deployment, the bound must be *monitored*: detect when realized FPR exceeds α from confirmed-benign feedback, then recalibrate without letting an attacker poison the window.
+
+**Unresolved limitation in prior work.**
+* F1's conformal drift signal uses in-sample calibration (invalid p-values) and labelled retraining.
+* F2's abstention-rate alarm is label-free but measures coverage of a supervised model, not a false-alarm budget.
+
+**Mechanism.**
+* **Violation test:** a one-sided sequential binomial test (or an e-process) on confirmed-benign alerts.
+* **Recalibration:** windowed or ACI-style (B7), restricted to the streams retained by Contribution 1's screen.
+* **Poisoning guard:** a cap on any single source's share of the calibration window.
+
+**Validation and criteria** (carried over from R2 v1 H2a–H2c):
+* **Detection delay.** The Mon–Thu → Fri violation is detected within ≤ 2,000 confirmed-benign flows, with false triggers ≤ 5 % on IID streams.
+* **Recalibrated FPR and recall.** Cumulative realized FPR ≤ 1.5 % after warm-up, with recall at matched FPR reported.
+* **Poisoning.** With the cap, 1 % injected attack flows cost ≤ 0.03 recall; without the cap, ≥ 0.10.
+
+**Value and limitations.**
+* Deployment-relevant; low–moderate novelty.
+* ACI guarantees only long-run frequency.
+* CICIDS2017's five days give thin temporal evidence.
+
+**Moved to future work.** Host/window-level evidence for Bot and PortScan (old Contribution 3; N6): low novelty and an identity-leakage risk. Explanation stability (N8).
 
 ---
 
-## 5. Immediate next steps (R2 → R3)
+## 4. R3 benchmark
 
-1. Verify availability and format of:
-   * C8 corrected CIC-2017/2018;
-   * LycoS-IDS2017;
-   * LycoS-Unicas-IDS2018;
-   * NF-v3.
+Superseded by [`R3_PROTOCOL.md`](R3_PROTOCOL.md). That protocol keeps the eight-model shortlist (DT, RF, Extra Trees, XGBoost, LightGBM, CatBoost, TabM, CLOSR) with TabICL in reserve. It adds:
+* a faithful CLOSR reproduction on its own protocol;
+* each model run standalone and inside the full pipeline;
+* per-flow score dumps that Contribution 1 needs.
 
-   This gates Contribution 1.
-2. Read the full texts of:
-   * B16 (exact LOAFO protocol on LycoS);
-   * B13 (how it reaches 41/47 zero-day);
-   * C12 (per-attack cross-dataset results);
-   * B17 (scores and data);
-   * the unread Kılıç & Şengül 2026 cross-dataset paper.
+---
 
-   Also run a targeted search on combining conformal p-values for anomaly detection, to settle N2.
-3. Install LightGBM and CatBoost. Run a TabICL CPU pilot.
-4. Pre-register hypotheses H1–H3 (this document) before running R3, so later results cannot reshape them.
+## 5. Immediate next steps (Revision 1)
+
+1. **Read in full before any novelty statement:** F4 (Springer 2026 Mondrian triage), F6 (MDPI Network 2026 fixed-FPR fusion), F5 (ConFID) and F8. These were behind login or bot walls; institutional access may be needed.
+2. **Correct the paper's 2018 tool sentence** (pending approval). The paper says "identical tools becoming undetectable"; it should say they are *missed by the frozen detector at fixed thresholds* but separable after recalibration.
+3. **Add to the paper's related work:** CLOSR, FIRCE, B17, F2, F3, B11.
+4. **Verify availability and licences** of LycoS-IDS2017, LycoS-Unicas-IDS2018 and NF-v3 (gates Contributions 1 and 2).
+5. **R3 Stage 0** (installs, pilots, CLOSR reproduction), only after the user approves `R3_PROTOCOL.md`.
+6. **Pre-register H1a–H1d, H2a–H2b and the Contribution 3 criteria** in a dated commit before any confirmatory run.

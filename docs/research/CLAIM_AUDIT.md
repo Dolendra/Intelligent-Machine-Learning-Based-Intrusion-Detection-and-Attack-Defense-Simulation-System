@@ -263,3 +263,53 @@ consistency defects.
    single-seed.
 5. Novelty: the R2 review found close prior work (conformal false-alarm control for an IDS; one-class-held-out
    zero-day evaluation on corrected CICIDS2017 with code). See `RESEARCH_GAP_ANALYSIS.md`.
+
+---
+
+## 9. R2 follow-up — prior-work comparison and a new exploratory finding (2026-11-17)
+
+**Documents.** `PRIOR_WORK_COMPARISON.md` (CLOSR, FIRCE, novelty re-check), `STATE_OF_THE_ART_REVIEW.md` addendum (F1–F9),
+`RESEARCH_GAP_ANALYSIS.md` Revision 1, `R3_PROTOCOL.md` (proposed, not executed).
+
+### 9.1 Claims affected by prior work
+
+| Claim (paper / docs) | Status | Action |
+|---|---|---|
+| Conformal false-alarm control for NIDS | Done before (B17, F5, F7) | Never claim as new; cite |
+| "The guarantee breaks under 2017→2018" | Replication of F2 (coverage collapse, Frontiers in AI 2026) | Cite F2; claim only the FPR-level and per-day measurements |
+| Fisher-style fusion of evidence | Combination with Type-I control exists (MaSF, F3); naive Fisher of dependent conformal p-values is invalid (B11) | State that the *sum* is re-calibrated on a disjoint split (valid), and that this is engineering, not a new test |
+| Mondrian attribution, hybrid fusion at a fixed FPR | Possibly done (F4, F6 — not readable) | **No novelty statement until F4 and F6 are read** |
+| Better zero-day detection than prior methods | Not established: CLOSR has never been compared at a calibrated α | Forbidden until R3-H3 |
+
+### 9.2 New exploratory finding (post hoc, hypothesis-generating)
+
+`scripts/64_recalibration_diagnosis.py` reads only committed records (`openset_cross_perday_records.json`) and
+writes `research_artifacts/recalibration_diagnosis.json`. Seed-level, n = 5.
+
+* At recal@2000, every method sits at a comparable realized FPR (1.4–1.6 %). Even so, closed-set XGB alone has higher
+  known recall than Aegis-OSR: +0.237 [+0.153, +0.322], 5/5 seeds. XGB + Energy has +0.345, and max fusion +0.215.
+* The kNN novelty stream ranks 2018 attacks at or below chance (AUROC 0.51 mean; 0.05 on 2018-02-16).
+* Refreshing the kNN reference with target benign raises Aegis-OSR known recall to 0.435–0.532, but the FPR rises to
+  2.4–2.6 %, over the 1 % budget.
+* A recalibrated XGB detects 2018-02-14 brute force (0.984) and 2018-02-16 DoS (0.920) at ≤ 1 % FPR.
+
+**Status.**
+* The measurements are read directly from records.
+* The "dilution" mechanism is *inferred*: per-flow scores were not stored.
+* The finding was made on data already inspected, so it motivates Contribution 1 and **cannot confirm it**.
+
+### 9.3 Paper statement that needs correction (pending approval)
+
+`paper.tex` §IV-E and the DOCX say:
+
+> "Two attack tools present in both datasets lose detection almost entirely … Identical tools becoming undetectable
+> suggests that flow-extractor differences between the two releases are confounded with network shift" (paper.tex line 137).
+
+This holds for the **frozen v1.1 detector at its fixed thresholds** only. A retrained classifier recalibrated on 2,000
+target-day benign flows separates the same days' attacks (AUROC 0.999–1.000). Proposed wording:
+
+> "… are missed by the frozen detector at its fixed thresholds; after same-day recalibration a retrained classifier
+> separates them, so the shift moves scores rather than erasing the signal."
+
+The new numbers must enter through `research/publication.py` facts sourced from `recalibration_diagnosis.json`. They are
+not applied yet: the change alters the paper's narrative, and the user reviews it first.

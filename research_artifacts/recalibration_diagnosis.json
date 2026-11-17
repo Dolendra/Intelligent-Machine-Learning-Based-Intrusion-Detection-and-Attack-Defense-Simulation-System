@@ -1,0 +1,3263 @@
+{
+ "generated_at": "2026-11-17T13:04:55.572284+00:00",
+ "status": "exploratory / post-hoc \u2014 hypothesis-generating, not confirmatory",
+ "source": "research_artifacts/openset_cross_perday_records.json",
+ "source_meta": {
+  "generated_at": "2026-11-17T10:28:41.302231+00:00",
+  "git_commit": "a20552f",
+  "seeds": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "alpha": 0.01,
+  "caps": {
+   "train": {
+    "BENIGN": 300000,
+    "_attack": 60000
+   },
+   "val": {
+    "BENIGN": 60000,
+    "_attack": 10000
+   },
+   "test": {
+    "BENIGN": 150000,
+    "_attack": 25000
+   }
+  },
+  "warmup_windows": [
+   500,
+   2000,
+   5000
+  ],
+  "python": "3.11.9",
+  "quick": false,
+  "pilot_seed_excluded": 0,
+  "cic2018_sample_version": 2
+ },
+ "statistics": "seed-level: metric averaged over days within each seed (days share the trained model), then a paired t-test over 5 independent seeds; days are not independent samples",
+ "overall_mean_over_days_and_seeds": {
+  "none": {
+   "Aegis-OSR": {
+    "fpr": 0.4191245005130336,
+    "known_recall": 0.7671752883926745,
+    "zero_day_recall": 0.42095,
+    "auroc_all": 0.7074218648905447
+   },
+   "Aegis-OSR w/ max fusion": {
+    "fpr": 0.42806001883287614,
+    "known_recall": 0.7797542250699133,
+    "zero_day_recall": 0.419475,
+    "auroc_all": 0.703028906897209
+   },
+   "Aegis-OSR w/ omnibus fusion": {
+    "fpr": 0.46463698726752645,
+    "known_recall": 0.8177372316434759,
+    "zero_day_recall": 0.4426625,
+    "auroc_all": 0.717811335733633
+   },
+   "Closed-set XGB": {
+    "fpr": 0.04585210590299849,
+    "known_recall": 0.6873305689840393,
+    "zero_day_recall": 0.148425,
+    "auroc_all": 0.8186819959026714
+   },
+   "XGB + Energy": {
+    "fpr": 0.04247476572750092,
+    "known_recall": 0.6718261544233,
+    "zero_day_recall": 0.1383,
+    "auroc_all": 0.8180903933386983
+   },
+   "kNN distance": {
+    "fpr": 0.6543415514026218,
+    "known_recall": 0.5225734789577792,
+    "zero_day_recall": 0.7042625,
+    "auroc_all": 0.510349703330745
+   }
+  },
+  "recal@500": {
+   "Aegis-OSR": {
+    "fpr": 0.013135310612192934,
+    "known_recall": 0.05119348633278767,
+    "zero_day_recall": 0.0249625,
+    "auroc_all": 0.7535501360845078
+   },
+   "Aegis-OSR w/ max fusion": {
+    "fpr": 0.012889685054976487,
+    "known_recall": 0.09593125639451607,
+    "zero_day_recall": 0.0232375,
+    "auroc_all": 0.7620316936822319
+   },
+   "Aegis-OSR w/ omnibus fusion": {
+    "fpr": 0.013075290421073303,
+    "known_recall": 0.10060057081713389,
+    "zero_day_recall": 0.0241375,
+    "auroc_all": 0.7615825126565187
+   },
+   "Closed-set XGB": {
+    "fpr": 0.011433861775581429,
+    "known_recall": 0.13508979051565378,
+    "zero_day_recall": 0.0178,
+    "auroc_all": 0.8182911536450347
+   },
+   "XGB + Energy": {
+    "fpr": 0.010795367262008087,
+    "known_recall": 0.19255820906657117,
+    "zero_day_recall": 0.02095,
+    "auroc_all": 0.8558469452899206
+   },
+   "kNN distance": {
+    "fpr": 0.004602587447521973,
+    "known_recall": 0.009699736332787668,
+    "zero_day_recall": 0.01205,
+    "auroc_all": 0.5089930032871633
+   }
+  },
+  "recal@2000": {
+   "Aegis-OSR": {
+    "fpr": 0.016171743105638785,
+    "known_recall": 0.08793698886501602,
+    "zero_day_recall": 0.027,
+    "auroc_all": 0.76760458518195
+   },
+   "Aegis-OSR w/ max fusion": {
+    "fpr": 0.01553561599856011,
+    "known_recall": 0.30306115438066983,
+    "zero_day_recall": 0.026175,
+    "auroc_all": 0.7764726102047307
+   },
+   "Aegis-OSR w/ omnibus fusion": {
+    "fpr": 0.016221882867430718,
+    "known_recall": 0.26575657334936226,
+    "zero_day_recall": 0.026775,
+    "auroc_all": 0.7769325690151855
+   },
+   "Closed-set XGB": {
+    "fpr": 0.013618067206809014,
+    "known_recall": 0.32533595231396223,
+    "zero_day_recall": 0.0206375,
+    "auroc_all": 0.8186369572237926
+   },
+   "XGB + Energy": {
+    "fpr": 0.013630497306776979,
+    "known_recall": 0.43259445062581,
+    "zero_day_recall": 0.0213375,
+    "auroc_all": 0.8599106247032149
+   },
+   "kNN distance": {
+    "fpr": 0.007802786699146316,
+    "known_recall": 0.018678574960780302,
+    "zero_day_recall": 0.01815,
+    "auroc_all": 0.510656821399872
+   }
+  },
+  "recal@5000": {
+   "Aegis-OSR": {
+    "fpr": 0.009536969642411396,
+    "known_recall": 0.09895797758508969,
+    "zero_day_recall": 0.0163625,
+    "auroc_all": 0.7726849636442173
+   },
+   "Aegis-OSR w/ max fusion": {
+    "fpr": 0.012508365676822685,
+    "known_recall": 0.33840834825387084,
+    "zero_day_recall": 0.0153,
+    "auroc_all": 0.7821992251427661
+   },
+   "Aegis-OSR w/ omnibus fusion": {
+    "fpr": 0.01269434172218332,
+    "known_recall": 0.3342929223364709,
+    "zero_day_recall": 0.014775,
+    "auroc_all": 0.7826109664866647
+   },
+   "Closed-set XGB": {
+    "fpr": 0.013404463118723814,
+    "known_recall": 0.3264220446678262,
+    "zero_day_recall": 0.0118375,
+    "auroc_all": 0.8186867314550377
+   },
+   "XGB + Energy": {
+    "fpr": 0.012595087964116758,
+    "known_recall": 0.4351822948639247,
+    "zero_day_recall": 0.0122875,
+    "auroc_all": 0.8612952653309829
+   },
+   "kNN distance": {
+    "fpr": 0.012941717578654127,
+    "known_recall": 0.04212551305333879,
+    "zero_day_recall": 0.018537500000000002,
+    "auroc_all": 0.5104522642490019
+   }
+  },
+  "recal+ref@500": {
+   "Aegis-OSR": {
+    "fpr": 0.021819660902064508,
+    "known_recall": 0.14475941059613942,
+    "zero_day_recall": 0.0282,
+    "auroc_all": 0.7610611024678328
+   },
+   "Aegis-OSR w/ max fusion": {
+    "fpr": 0.02019325045205042,
+    "known_recall": 0.11659739359525272,
+    "zero_day_recall": 0.02255,
+    "auroc_all": 0.7649529507280959
+   },
+   "Aegis-OSR w/ omnibus fusion": {
+    "fpr": 0.01904617889519871,
+    "known_recall": 0.13184628904917808,
+    "zero_day_recall": 0.0249625,
+    "auroc_all": 0.7693143174828412
+   },
+   "Closed-set XGB": {
+    "fpr": 0.009960494171709581,
+    "known_recall": 0.07982311809392266,
+    "zero_day_recall": 0.014825,
+    "auroc_all": 0.8173179078952625
+   },
+   "XGB + Energy": {
+    "fpr": 0.01096980565893861,
+    "known_recall": 0.13807905732044198,
+    "zero_day_recall": 0.0186125,
+    "auroc_all": 0.8526561939309377
+   },
+   "kNN distance": {
+    "fpr": 0.02002948469374528,
+    "known_recall": 0.07047239359525272,
+    "zero_day_recall": 0.016587499999999998,
+    "auroc_all": 0.664522024917295
+   }
+  },
+  "recal+ref@2000": {
+   "Aegis-OSR": {
+    "fpr": 0.026220304435641127,
+    "known_recall": 0.4354493466936089,
+    "zero_day_recall": 0.057737500000000004,
+    "auroc_all": 0.8456822297324356
+   },
+   "Aegis-OSR w/ max fusion": {
+    "fpr": 0.02890708966618201,
+    "known_recall": 0.3830130079377259,
+    "zero_day_recall": 0.0244375,
+    "auroc_all": 0.8348585187385698
+   },
+   "Aegis-OSR w/ omnibus fusion": {
+    "fpr": 0.02743226630894099,
+    "known_recall": 0.4417521140270104,
+    "zero_day_recall": 0.024587499999999998,
+    "auroc_all": 0.8438491073295349
+   },
+   "Closed-set XGB": {
+    "fpr": 0.012060909598016785,
+    "known_recall": 0.29126617215742445,
+    "zero_day_recall": 0.018475000000000002,
+    "auroc_all": 0.818697648541804
+   },
+   "XGB + Energy": {
+    "fpr": 0.011206814287225676,
+    "known_recall": 0.4111859670213492,
+    "zero_day_recall": 0.0177375,
+    "auroc_all": 0.8598033150462912
+   },
+   "kNN distance": {
+    "fpr": 0.02856803311337732,
+    "known_recall": 0.2123888515875452,
+    "zero_day_recall": 0.021675,
+    "auroc_all": 0.7264306060370791
+   }
+  },
+  "recal+ref@5000": {
+   "Aegis-OSR": {
+    "fpr": 0.024128125888981992,
+    "known_recall": 0.5322864495941614,
+    "zero_day_recall": 0.023125,
+    "auroc_all": 0.865437649653768
+   },
+   "Aegis-OSR w/ max fusion": {
+    "fpr": 0.02266241943005432,
+    "known_recall": 0.48791501070015686,
+    "zero_day_recall": 0.021625000000000002,
+    "auroc_all": 0.8520186600079167
+   },
+   "Aegis-OSR w/ omnibus fusion": {
+    "fpr": 0.024089750587954532,
+    "known_recall": 0.529094101485233,
+    "zero_day_recall": 0.0220125,
+    "auroc_all": 0.860921232992967
+   },
+   "Closed-set XGB": {
+    "fpr": 0.012807437826093003,
+    "known_recall": 0.32618413605824975,
+    "zero_day_recall": 0.011300000000000001,
+    "auroc_all": 0.8186682438980519
+   },
+   "XGB + Energy": {
+    "fpr": 0.011387921044315028,
+    "known_recall": 0.4392479198639247,
+    "zero_day_recall": 0.010825,
+    "auroc_all": 0.8613354402374468
+   },
+   "kNN distance": {
+    "fpr": 0.025529938730467067,
+    "known_recall": 0.239492363455767,
+    "zero_day_recall": 0.0297875,
+    "auroc_all": 0.7638782634931834
+   }
+  }
+ },
+ "per_day_mean_over_seeds": {
+  "2018-02-14": {
+   "attack_families": {
+    "BruteForce": 8000
+   },
+   "variants": {
+    "none": {
+     "Aegis-OSR": {
+      "fpr": 0.26849,
+      "known_recall": 1.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.977008206875
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.16172,
+      "known_recall": 0.999725,
+      "zero_day_recall": null,
+      "auroc_all": 0.9770060675
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.2371,
+      "known_recall": 0.999875,
+      "zero_day_recall": null,
+      "auroc_all": 0.974596908125
+     },
+     "Closed-set XGB": {
+      "fpr": 0.04718,
+      "known_recall": 0.9999,
+      "zero_day_recall": null,
+      "auroc_all": 0.998639925625
+     },
+     "XGB + Energy": {
+      "fpr": 0.04405,
+      "known_recall": 0.999725,
+      "zero_day_recall": null,
+      "auroc_all": 0.9871322162499999
+     },
+     "kNN distance": {
+      "fpr": 0.43975,
+      "known_recall": 0.000875,
+      "zero_day_recall": null,
+      "auroc_all": 0.40702295125
+     }
+    },
+    "recal@500": {
+     "Aegis-OSR": {
+      "fpr": 0.0047,
+      "known_recall": 0.05825,
+      "zero_day_recall": null,
+      "auroc_all": 0.9821415581249999
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00454,
+      "known_recall": 0.448875,
+      "zero_day_recall": null,
+      "auroc_all": 0.994366794375
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.0046,
+      "known_recall": 0.451025,
+      "zero_day_recall": null,
+      "auroc_all": 0.99266541875
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00209,
+      "known_recall": 0.643475,
+      "zero_day_recall": null,
+      "auroc_all": 0.998550379375
+     },
+     "XGB + Energy": {
+      "fpr": 0.00158,
+      "known_recall": 0.4498,
+      "zero_day_recall": null,
+      "auroc_all": 0.997967255625
+     },
+     "kNN distance": {
+      "fpr": 0.00591,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.40761619812500005
+     }
+    },
+    "recal@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.00999,
+      "known_recall": 0.1906,
+      "zero_day_recall": null,
+      "auroc_all": 0.983012955625
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00839,
+      "known_recall": 0.9797,
+      "zero_day_recall": null,
+      "auroc_all": 0.9971239456250001
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00854,
+      "known_recall": 0.845175,
+      "zero_day_recall": null,
+      "auroc_all": 0.9957057993749999
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00726,
+      "known_recall": 0.984075,
+      "zero_day_recall": null,
+      "auroc_all": 0.998516388125
+     },
+     "XGB + Energy": {
+      "fpr": 0.00631,
+      "known_recall": 0.9843,
+      "zero_day_recall": null,
+      "auroc_all": 0.997873448125
+     },
+     "kNN distance": {
+      "fpr": 0.01136,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.407066121875
+     }
+    },
+    "recal@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.00925,
+      "known_recall": 0.0078,
+      "zero_day_recall": null,
+      "auroc_all": 0.9798863524999999
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00993,
+      "known_recall": 0.98005,
+      "zero_day_recall": null,
+      "auroc_all": 0.996898685
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.01008,
+      "known_recall": 0.98005,
+      "zero_day_recall": null,
+      "auroc_all": 0.9958060974999999
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00562,
+      "known_recall": 0.98405,
+      "zero_day_recall": null,
+      "auroc_all": 0.998592510625
+     },
+     "XGB + Energy": {
+      "fpr": 0.00655,
+      "known_recall": 0.9843,
+      "zero_day_recall": null,
+      "auroc_all": 0.9978575525
+     },
+     "kNN distance": {
+      "fpr": 0.010280000000000001,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.407037734375
+     }
+    },
+    "recal+ref@500": {
+     "Aegis-OSR": {
+      "fpr": 0.00343,
+      "known_recall": 0.448875,
+      "zero_day_recall": null,
+      "auroc_all": 0.996081760625
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.0042499999999999994,
+      "known_recall": 0.25685,
+      "zero_day_recall": null,
+      "auroc_all": 0.9931759
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00325,
+      "known_recall": 0.2549,
+      "zero_day_recall": null,
+      "auroc_all": 0.99370142875
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0009699999999999999,
+      "known_recall": 0.25685,
+      "zero_day_recall": null,
+      "auroc_all": 0.99840620625
+     },
+     "XGB + Energy": {
+      "fpr": 0.00142,
+      "known_recall": 0.257725,
+      "zero_day_recall": null,
+      "auroc_all": 0.99728698875
+     },
+     "kNN distance": {
+      "fpr": 0.00833,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.887481675
+     }
+    },
+    "recal+ref@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.0101,
+      "known_recall": 0.993775,
+      "zero_day_recall": null,
+      "auroc_all": 0.996876685625
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00782,
+      "known_recall": 0.7784,
+      "zero_day_recall": null,
+      "auroc_all": 0.9949897875
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.008870000000000001,
+      "known_recall": 0.7785,
+      "zero_day_recall": null,
+      "auroc_all": 0.9951381525
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00468,
+      "known_recall": 0.98405,
+      "zero_day_recall": null,
+      "auroc_all": 0.9985164400000001
+     },
+     "XGB + Energy": {
+      "fpr": 0.00535,
+      "known_recall": 0.9835,
+      "zero_day_recall": null,
+      "auroc_all": 0.997489871875
+     },
+     "kNN distance": {
+      "fpr": 0.01074,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.952095186875
+     }
+    },
+    "recal+ref@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.00935,
+      "known_recall": 0.9928,
+      "zero_day_recall": null,
+      "auroc_all": 0.997893290625
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.0097,
+      "known_recall": 0.981325,
+      "zero_day_recall": null,
+      "auroc_all": 0.996198244375
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00927,
+      "known_recall": 0.9833,
+      "zero_day_recall": null,
+      "auroc_all": 0.996570206875
+     },
+     "Closed-set XGB": {
+      "fpr": 0.004569999999999999,
+      "known_recall": 0.98385,
+      "zero_day_recall": null,
+      "auroc_all": 0.9985423506250001
+     },
+     "XGB + Energy": {
+      "fpr": 0.00557,
+      "known_recall": 0.984075,
+      "zero_day_recall": null,
+      "auroc_all": 0.997383381875
+     },
+     "kNN distance": {
+      "fpr": 0.01178,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.961874870625
+     }
+    }
+   }
+  },
+  "2018-02-15": {
+   "attack_families": {
+    "DoS": 8000
+   },
+   "variants": {
+    "none": {
+     "Aegis-OSR": {
+      "fpr": 0.24119000000000002,
+      "known_recall": 0.88215,
+      "zero_day_recall": null,
+      "auroc_all": 0.88211384625
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.17482,
+      "known_recall": 0.597675,
+      "zero_day_recall": null,
+      "auroc_all": 0.782437219375
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.22552,
+      "known_recall": 0.773175,
+      "zero_day_recall": null,
+      "auroc_all": 0.836815098125
+     },
+     "Closed-set XGB": {
+      "fpr": 0.04662,
+      "known_recall": 0.8343,
+      "zero_day_recall": null,
+      "auroc_all": 0.96925276875
+     },
+     "XGB + Energy": {
+      "fpr": 0.04772,
+      "known_recall": 0.7827999999999999,
+      "zero_day_recall": null,
+      "auroc_all": 0.96009814875
+     },
+     "kNN distance": {
+      "fpr": 0.49354,
+      "known_recall": 0.3562,
+      "zero_day_recall": null,
+      "auroc_all": 0.50899227125
+     }
+    },
+    "recal@500": {
+     "Aegis-OSR": {
+      "fpr": 0.00821,
+      "known_recall": 0.17905,
+      "zero_day_recall": null,
+      "auroc_all": 0.84860841625
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00962,
+      "known_recall": 0.1493,
+      "zero_day_recall": null,
+      "auroc_all": 0.8533201825
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00857,
+      "known_recall": 0.17905,
+      "zero_day_recall": null,
+      "auroc_all": 0.851260626875
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00052,
+      "known_recall": 0.2675,
+      "zero_day_recall": null,
+      "auroc_all": 0.969068959375
+     },
+     "XGB + Energy": {
+      "fpr": 0.00125,
+      "known_recall": 0.18365,
+      "zero_day_recall": null,
+      "auroc_all": 0.9620085618750001
+     },
+     "kNN distance": {
+      "fpr": 0.01401,
+      "known_recall": 0.00195,
+      "zero_day_recall": null,
+      "auroc_all": 0.509557384375
+     }
+    },
+    "recal@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.01803,
+      "known_recall": 0.26635,
+      "zero_day_recall": null,
+      "auroc_all": 0.89332957
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.02526,
+      "known_recall": 0.47035,
+      "zero_day_recall": null,
+      "auroc_all": 0.920636538125
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.02518,
+      "known_recall": 0.40765,
+      "zero_day_recall": null,
+      "auroc_all": 0.918904625625
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00575,
+      "known_recall": 0.471275,
+      "zero_day_recall": null,
+      "auroc_all": 0.969212385625
+     },
+     "XGB + Energy": {
+      "fpr": 0.0061,
+      "known_recall": 0.476,
+      "zero_day_recall": null,
+      "auroc_all": 0.962826235
+     },
+     "kNN distance": {
+      "fpr": 0.02636,
+      "known_recall": 0.025425,
+      "zero_day_recall": null,
+      "auroc_all": 0.508712020625
+     }
+    },
+    "recal@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.00894,
+      "known_recall": 0.285925,
+      "zero_day_recall": null,
+      "auroc_all": 0.90333303125
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.02312,
+      "known_recall": 0.47125,
+      "zero_day_recall": null,
+      "auroc_all": 0.9321435768749999
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.02313,
+      "known_recall": 0.47125,
+      "zero_day_recall": null,
+      "auroc_all": 0.93041566
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00636,
+      "known_recall": 0.471275,
+      "zero_day_recall": null,
+      "auroc_all": 0.969291189375
+     },
+     "XGB + Energy": {
+      "fpr": 0.00617,
+      "known_recall": 0.475975,
+      "zero_day_recall": null,
+      "auroc_all": 0.9627695
+     },
+     "kNN distance": {
+      "fpr": 0.02505,
+      "known_recall": 0.0251,
+      "zero_day_recall": null,
+      "auroc_all": 0.50875774
+     }
+    },
+    "recal+ref@500": {
+     "Aegis-OSR": {
+      "fpr": 0.02877,
+      "known_recall": 0.263925,
+      "zero_day_recall": null,
+      "auroc_all": 0.882800978125
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.017310000000000002,
+      "known_recall": 0.184125,
+      "zero_day_recall": null,
+      "auroc_all": 0.827660490625
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.0183,
+      "known_recall": 0.2521,
+      "zero_day_recall": null,
+      "auroc_all": 0.848547111875
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00049,
+      "known_recall": 0.295725,
+      "zero_day_recall": null,
+      "auroc_all": 0.9692065999999999
+     },
+     "XGB + Energy": {
+      "fpr": 0.0005,
+      "known_recall": 0.08605,
+      "zero_day_recall": null,
+      "auroc_all": 0.961353835625
+     },
+     "kNN distance": {
+      "fpr": 0.04041,
+      "known_recall": 0.123425,
+      "zero_day_recall": null,
+      "auroc_all": 0.751802065625
+     }
+    },
+    "recal+ref@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.01667,
+      "known_recall": 0.511125,
+      "zero_day_recall": null,
+      "auroc_all": 0.96688023
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.03404,
+      "known_recall": 0.43477499999999997,
+      "zero_day_recall": null,
+      "auroc_all": 0.927658996875
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.02576,
+      "known_recall": 0.448575,
+      "zero_day_recall": null,
+      "auroc_all": 0.944126109375
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0069,
+      "known_recall": 0.47165,
+      "zero_day_recall": null,
+      "auroc_all": 0.969266228125
+     },
+     "XGB + Energy": {
+      "fpr": 0.00698,
+      "known_recall": 0.476025,
+      "zero_day_recall": null,
+      "auroc_all": 0.9631469275
+     },
+     "kNN distance": {
+      "fpr": 0.03677,
+      "known_recall": 0.13305,
+      "zero_day_recall": null,
+      "auroc_all": 0.879706899375
+     }
+    },
+    "recal+ref@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.01858,
+      "known_recall": 0.49870000000000003,
+      "zero_day_recall": null,
+      "auroc_all": 0.971335830625
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.02869,
+      "known_recall": 0.460175,
+      "zero_day_recall": null,
+      "auroc_all": 0.932350399375
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.02755,
+      "known_recall": 0.434525,
+      "zero_day_recall": null,
+      "auroc_all": 0.95106318125
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00575,
+      "known_recall": 0.471275,
+      "zero_day_recall": null,
+      "auroc_all": 0.969205975625
+     },
+     "XGB + Energy": {
+      "fpr": 0.00536,
+      "known_recall": 0.4759,
+      "zero_day_recall": null,
+      "auroc_all": 0.9632333187500001
+     },
+     "kNN distance": {
+      "fpr": 0.03418,
+      "known_recall": 0.157075,
+      "zero_day_recall": null,
+      "auroc_all": 0.89862867625
+     }
+    }
+   }
+  },
+  "2018-02-16": {
+   "attack_families": {
+    "DoS": 8000
+   },
+   "variants": {
+    "none": {
+     "Aegis-OSR": {
+      "fpr": 0.4689838337182448,
+      "known_recall": 0.413225,
+      "zero_day_recall": null,
+      "auroc_all": 0.5271102756928406
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.9880831408775982,
+      "known_recall": 0.949575,
+      "zero_day_recall": null,
+      "auroc_all": 0.932797188221709
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.9875519630484989,
+      "known_recall": 0.94875,
+      "zero_day_recall": null,
+      "auroc_all": 0.9341991606524249
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0002886836027713626,
+      "known_recall": 0.959275,
+      "zero_day_recall": null,
+      "auroc_all": 0.9997348174076213
+     },
+     "XGB + Energy": {
+      "fpr": 0.0002886836027713626,
+      "known_recall": 0.95505,
+      "zero_day_recall": null,
+      "auroc_all": 0.9996133812066974
+     },
+     "kNN distance": {
+      "fpr": 0.9908891454965358,
+      "known_recall": 0.04625,
+      "zero_day_recall": null,
+      "auroc_all": 0.04496044096420323
+     }
+    },
+    "recal@500": {
+     "Aegis-OSR": {
+      "fpr": 9.237875288683602e-05,
+      "known_recall": 0.0043749999999999995,
+      "zero_day_recall": null,
+      "auroc_all": 0.9810045344976905
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00011547344110854503,
+      "known_recall": 0.0054,
+      "zero_day_recall": null,
+      "auroc_all": 0.995545733256351
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00010392609699769053,
+      "known_recall": 0.006699999999999999,
+      "zero_day_recall": null,
+      "auroc_all": 0.9932238928983834
+     },
+     "Closed-set XGB": {
+      "fpr": 5.7736720554272516e-05,
+      "known_recall": 0.060525,
+      "zero_day_recall": null,
+      "auroc_all": 0.9994206791281754
+     },
+     "XGB + Energy": {
+      "fpr": 8.083140877598153e-05,
+      "known_recall": 0.1601,
+      "zero_day_recall": null,
+      "auroc_all": 0.9996806372690531
+     },
+     "kNN distance": {
+      "fpr": 9.237875288683602e-05,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.035726398672055425
+     }
+    },
+    "recal@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.009457274826789838,
+      "known_recall": 0.041475,
+      "zero_day_recall": null,
+      "auroc_all": 0.9880400447459584
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.0010392609699769054,
+      "known_recall": 0.7692,
+      "zero_day_recall": null,
+      "auroc_all": 0.9991975779445726
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.005173210161662818,
+      "known_recall": 0.677575,
+      "zero_day_recall": null,
+      "auroc_all": 0.9962883609988452
+     },
+     "Closed-set XGB": {
+      "fpr": 0.008672055427251732,
+      "known_recall": 0.920475,
+      "zero_day_recall": null,
+      "auroc_all": 0.9995904885969977
+     },
+     "XGB + Energy": {
+      "fpr": 0.007505773672055427,
+      "known_recall": 0.99085,
+      "zero_day_recall": null,
+      "auroc_all": 0.999693861143187
+     },
+     "kNN distance": {
+      "fpr": 0.0013394919168591224,
+      "known_recall": 0.0077,
+      "zero_day_recall": null,
+      "auroc_all": 0.045708808458429555
+     }
+    },
+    "recal@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.0098729792147806,
+      "known_recall": 0.27525,
+      "zero_day_recall": null,
+      "auroc_all": 0.9878073195727483
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.009757505773672055,
+      "known_recall": 0.992875,
+      "zero_day_recall": null,
+      "auroc_all": 0.9993393331408776
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.009942263279445727,
+      "known_recall": 0.980075,
+      "zero_day_recall": null,
+      "auroc_all": 0.9986347105946882
+     },
+     "Closed-set XGB": {
+      "fpr": 0.015184757505773671,
+      "known_recall": 0.9969,
+      "zero_day_recall": null,
+      "auroc_all": 0.9996811200923787
+     },
+     "XGB + Energy": {
+      "fpr": 0.011685912240184757,
+      "known_recall": 0.9973,
+      "zero_day_recall": null,
+      "auroc_all": 0.9996790004330254
+     },
+     "kNN distance": {
+      "fpr": 0.0027020785219399536,
+      "known_recall": 0.00825,
+      "zero_day_recall": null,
+      "auroc_all": 0.045174951645496536
+     }
+    },
+    "recal+ref@500": {
+     "Aegis-OSR": {
+      "fpr": 0.008475750577367207,
+      "known_recall": 0.013225,
+      "zero_day_recall": null,
+      "auroc_all": 0.5603992631351039
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.021478060046189375,
+      "known_recall": 0.015775,
+      "zero_day_recall": null,
+      "auroc_all": 0.6688728305427252
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.008475750577367207,
+      "known_recall": 0.013225,
+      "zero_day_recall": null,
+      "auroc_all": 0.669099376443418
+     },
+     "Closed-set XGB": {
+      "fpr": 5.7736720554272516e-05,
+      "known_recall": 0.007175,
+      "zero_day_recall": null,
+      "auroc_all": 0.9971947401847575
+     },
+     "XGB + Energy": {
+      "fpr": 6.928406466512702e-05,
+      "known_recall": 0.144575,
+      "zero_day_recall": null,
+      "auroc_all": 0.9995581661374134
+     },
+     "kNN distance": {
+      "fpr": 0.029284064665127018,
+      "known_recall": 0.0259,
+      "zero_day_recall": null,
+      "auroc_all": 0.04087129474595842
+     }
+    },
+    "recal+ref@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.025138568129330255,
+      "known_recall": 0.38527500000000003,
+      "zero_day_recall": null,
+      "auroc_all": 0.9442211655600462
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.04661662817551963,
+      "known_recall": 0.74285,
+      "zero_day_recall": null,
+      "auroc_all": 0.972271759526559
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.04663972286374134,
+      "known_recall": 0.7429,
+      "zero_day_recall": null,
+      "auroc_all": 0.9724963683602771
+     },
+     "Closed-set XGB": {
+      "fpr": 0.007413394919168591,
+      "known_recall": 0.7309249999999999,
+      "zero_day_recall": null,
+      "auroc_all": 0.9996273174076212
+     },
+     "XGB + Energy": {
+      "fpr": 0.004191685912240185,
+      "known_recall": 0.910525,
+      "zero_day_recall": null,
+      "auroc_all": 0.9997141512702078
+     },
+     "kNN distance": {
+      "fpr": 0.07610854503464204,
+      "known_recall": 0.0467,
+      "zero_day_recall": null,
+      "auroc_all": 0.1388290018764434
+     }
+    },
+    "recal+ref@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.03318706697459584,
+      "known_recall": 0.468375,
+      "zero_day_recall": null,
+      "auroc_all": 0.972090622834873
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.028464203233256352,
+      "known_recall": 0.993,
+      "zero_day_recall": null,
+      "auroc_all": 0.9872623520496536
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.0274364896073903,
+      "known_recall": 0.99465,
+      "zero_day_recall": null,
+      "auroc_all": 0.9871979994226328
+     },
+     "Closed-set XGB": {
+      "fpr": 0.014780600461893764,
+      "known_recall": 0.99595,
+      "zero_day_recall": null,
+      "auroc_all": 0.9995643944861432
+     },
+     "XGB + Energy": {
+      "fpr": 0.012424942263279446,
+      "known_recall": 0.996725,
+      "zero_day_recall": null,
+      "auroc_all": 0.9997209439953811
+     },
+     "kNN distance": {
+      "fpr": 0.031270207852194,
+      "known_recall": 0.072975,
+      "zero_day_recall": null,
+      "auroc_all": 0.30124253897228637
+     }
+    }
+   }
+  },
+  "2018-02-20": {
+   "attack_families": {
+    "DDoS": 8000
+   },
+   "variants": {
+    "none": {
+     "Aegis-OSR": {
+      "fpr": 0.34778,
+      "known_recall": 0.94245,
+      "zero_day_recall": null,
+      "auroc_all": 0.9425495174999999
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.30463,
+      "known_recall": 0.94235,
+      "zero_day_recall": null,
+      "auroc_all": 0.82874529375
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.34731,
+      "known_recall": 0.942225,
+      "zero_day_recall": null,
+      "auroc_all": 0.90124629375
+     },
+     "Closed-set XGB": {
+      "fpr": 0.04469,
+      "known_recall": 0.94165,
+      "zero_day_recall": null,
+      "auroc_all": 0.977400446875
+     },
+     "XGB + Energy": {
+      "fpr": 0.03949,
+      "known_recall": 0.9364750000000001,
+      "zero_day_recall": null,
+      "auroc_all": 0.979830514375
+     },
+     "kNN distance": {
+      "fpr": 0.58378,
+      "known_recall": 0.941475,
+      "zero_day_recall": null,
+      "auroc_all": 0.811014121875
+     }
+    },
+    "recal@500": {
+     "Aegis-OSR": {
+      "fpr": 0.01054,
+      "known_recall": 0.08360000000000001,
+      "zero_day_recall": null,
+      "auroc_all": 0.938206285
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.01113,
+      "known_recall": 0.08420000000000001,
+      "zero_day_recall": null,
+      "auroc_all": 0.8919682181249999
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.0107,
+      "known_recall": 0.08420000000000001,
+      "zero_day_recall": null,
+      "auroc_all": 0.89870914875
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0018,
+      "known_recall": 0.0895,
+      "zero_day_recall": null,
+      "auroc_all": 0.97751003875
+     },
+     "XGB + Energy": {
+      "fpr": 0.00142,
+      "known_recall": 0.24582500000000002,
+      "zero_day_recall": null,
+      "auroc_all": 0.97876991125
+     },
+     "kNN distance": {
+      "fpr": 0.01267,
+      "known_recall": 0.000525,
+      "zero_day_recall": null,
+      "auroc_all": 0.8065900199999999
+     }
+    },
+    "recal@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.01364,
+      "known_recall": 0.1059,
+      "zero_day_recall": null,
+      "auroc_all": 0.943992291875
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.01668,
+      "known_recall": 0.108625,
+      "zero_day_recall": null,
+      "auroc_all": 0.8893987912500001
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.01695,
+      "known_recall": 0.099325,
+      "zero_day_recall": null,
+      "auroc_all": 0.8999390793750001
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0059700000000000005,
+      "known_recall": 0.1877,
+      "zero_day_recall": null,
+      "auroc_all": 0.9774543512499999
+     },
+     "XGB + Energy": {
+      "fpr": 0.00698,
+      "known_recall": 0.412775,
+      "zero_day_recall": null,
+      "auroc_all": 0.97950992
+     },
+     "kNN distance": {
+      "fpr": 0.014159999999999999,
+      "known_recall": 0.00055,
+      "zero_day_recall": null,
+      "auroc_all": 0.8119403125
+     }
+    },
+    "recal@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.01334,
+      "known_recall": 0.106625,
+      "zero_day_recall": null,
+      "auroc_all": 0.944439635625
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.04136,
+      "known_recall": 0.109025,
+      "zero_day_recall": null,
+      "auroc_all": 0.896463463125
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.04101,
+      "known_recall": 0.109025,
+      "zero_day_recall": null,
+      "auroc_all": 0.903295520625
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00829,
+      "known_recall": 0.1088,
+      "zero_day_recall": null,
+      "auroc_all": 0.97743715125
+     },
+     "XGB + Energy": {
+      "fpr": 0.00798,
+      "known_recall": 0.417725,
+      "zero_day_recall": null,
+      "auroc_all": 0.980879525
+     },
+     "kNN distance": {
+      "fpr": 0.06661,
+      "known_recall": 0.00095,
+      "zero_day_recall": null,
+      "auroc_all": 0.810635481875
+     }
+    },
+    "recal+ref@500": {
+     "Aegis-OSR": {
+      "fpr": 0.04613,
+      "known_recall": 0.177875,
+      "zero_day_recall": null,
+      "auroc_all": 0.883506250625
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.05281,
+      "known_recall": 0.12645,
+      "zero_day_recall": null,
+      "auroc_all": 0.838895416875
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.04717,
+      "known_recall": 0.177875,
+      "zero_day_recall": null,
+      "auroc_all": 0.8540649375
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00119,
+      "known_recall": 0.070725,
+      "zero_day_recall": null,
+      "auroc_all": 0.977416023125
+     },
+     "XGB + Energy": {
+      "fpr": 0.00142,
+      "known_recall": 0.20875,
+      "zero_day_recall": null,
+      "auroc_all": 0.97872930625
+     },
+     "kNN distance": {
+      "fpr": 0.09448,
+      "known_recall": 0.061775000000000004,
+      "zero_day_recall": null,
+      "auroc_all": 0.825912363125
+     }
+    },
+    "recal+ref@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.08158,
+      "known_recall": 0.764925,
+      "zero_day_recall": null,
+      "auroc_all": 0.938560905625
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.09938,
+      "known_recall": 0.228425,
+      "zero_day_recall": null,
+      "auroc_all": 0.86147002625
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.09567,
+      "known_recall": 0.584125,
+      "zero_day_recall": null,
+      "auroc_all": 0.89607822375
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0049,
+      "known_recall": 0.1081,
+      "zero_day_recall": null,
+      "auroc_all": 0.977720053125
+     },
+     "XGB + Energy": {
+      "fpr": 0.00601,
+      "known_recall": 0.412775,
+      "zero_day_recall": null,
+      "auroc_all": 0.9800093275
+     },
+     "kNN distance": {
+      "fpr": 0.10232,
+      "known_recall": 0.303375,
+      "zero_day_recall": null,
+      "auroc_all": 0.8633889075
+     }
+    },
+    "recal+ref@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.0636,
+      "known_recall": 0.9329999999999999,
+      "zero_day_recall": null,
+      "auroc_all": 0.963398648125
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.08542,
+      "known_recall": 0.32925,
+      "zero_day_recall": null,
+      "auroc_all": 0.876146988125
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.08897,
+      "known_recall": 0.665875,
+      "zero_day_recall": null,
+      "auroc_all": 0.917421290625
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00863,
+      "known_recall": 0.11085,
+      "zero_day_recall": null,
+      "auroc_all": 0.977465268125
+     },
+     "XGB + Energy": {
+      "fpr": 0.00831,
+      "known_recall": 0.452,
+      "zero_day_recall": null,
+      "auroc_all": 0.980811264375
+     },
+     "kNN distance": {
+      "fpr": 0.115,
+      "known_recall": 0.505625,
+      "zero_day_recall": null,
+      "auroc_all": 0.8756766012499999
+     }
+    }
+   }
+  },
+  "2018-02-21": {
+   "attack_families": {
+    "DDoS": 8000
+   },
+   "variants": {
+    "none": {
+     "Aegis-OSR": {
+      "fpr": 1.0,
+      "known_recall": 0.4996,
+      "zero_day_recall": null,
+      "auroc_all": 0.21249077926657264
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 1.0,
+      "known_recall": 0.5321,
+      "zero_day_recall": null,
+      "auroc_all": 0.0511326819855822
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 1.0,
+      "known_recall": 0.5306,
+      "zero_day_recall": null,
+      "auroc_all": 0.06870133893590347
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0,
+      "known_recall": 0.0366,
+      "zero_day_recall": null,
+      "auroc_all": 0.49855661926030403
+     },
+     "XGB + Energy": {
+      "fpr": 0.0,
+      "known_recall": 0.0366,
+      "zero_day_recall": null,
+      "auroc_all": 0.49868765573577806
+     },
+     "kNN distance": {
+      "fpr": 1.0,
+      "known_recall": 0.5321,
+      "zero_day_recall": null,
+      "auroc_all": 0.0511326819855822
+     }
+    },
+    "recal@500": {
+     "Aegis-OSR": {
+      "fpr": 0.0,
+      "known_recall": 0.0149,
+      "zero_day_recall": null,
+      "auroc_all": 0.17140932651622
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.0,
+      "known_recall": 0.0148,
+      "zero_day_recall": null,
+      "auroc_all": 0.2293046583607585
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.0,
+      "known_recall": 0.01485,
+      "zero_day_recall": null,
+      "auroc_all": 0.22334350023507285
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.4971259598808964
+     },
+     "XGB + Energy": {
+      "fpr": 0.0,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.8732878535887791
+     },
+     "kNN distance": {
+      "fpr": 0.0,
+      "known_recall": 0.0219,
+      "zero_day_recall": null,
+      "auroc_all": 0.05282459939664629
+     }
+    },
+    "recal@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.0,
+      "known_recall": 0.0287,
+      "zero_day_recall": null,
+      "auroc_all": 0.21872982976806143
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.0,
+      "known_recall": 0.028675,
+      "zero_day_recall": null,
+      "auroc_all": 0.26681762165021156
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.0,
+      "known_recall": 0.028675,
+      "zero_day_recall": null,
+      "auroc_all": 0.2649885078749412
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0,
+      "known_recall": 0.021525000000000002,
+      "zero_day_recall": null,
+      "auroc_all": 0.49843323832471403
+     },
+     "XGB + Energy": {
+      "fpr": 0.0,
+      "known_recall": 0.02095,
+      "zero_day_recall": null,
+      "auroc_all": 0.8875619083999373
+     },
+     "kNN distance": {
+      "fpr": 0.0,
+      "known_recall": 0.02195,
+      "zero_day_recall": null,
+      "auroc_all": 0.052773230097163455
+     }
+    },
+    "recal@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.0,
+      "known_recall": 0.02885,
+      "zero_day_recall": null,
+      "auroc_all": 0.2551429223475944
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 3.1343049678733744e-05,
+      "known_recall": 0.028900000000000002,
+      "zero_day_recall": null,
+      "auroc_all": 0.30547442407146214
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 3.1343049678733744e-05,
+      "known_recall": 0.028900000000000002,
+      "zero_day_recall": null,
+      "auroc_all": 0.30510212643002665
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0,
+      "known_recall": 0.021725,
+      "zero_day_recall": null,
+      "auroc_all": 0.4985760313822285
+     },
+     "XGB + Energy": {
+      "fpr": 0.0,
+      "known_recall": 0.0217,
+      "zero_day_recall": null,
+      "auroc_all": 0.8879552715091679
+     },
+     "kNN distance": {
+      "fpr": 0.00012537219871493497,
+      "known_recall": 0.022125,
+      "zero_day_recall": null,
+      "auroc_all": 0.05237753291020216
+     }
+    },
+    "recal+ref@500": {
+     "Aegis-OSR": {
+      "fpr": 0.0,
+      "known_recall": 0.023025,
+      "zero_day_recall": null,
+      "auroc_all": 0.8313407939586271
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.0,
+      "known_recall": 0.12785000000000002,
+      "zero_day_recall": null,
+      "auroc_all": 0.9363482007130544
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.0,
+      "known_recall": 0.127825,
+      "zero_day_recall": null,
+      "auroc_all": 0.9275958313743927
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.49538334508697696
+     },
+     "XGB + Energy": {
+      "fpr": 0.0,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.8505126890377683
+     },
+     "kNN distance": {
+      "fpr": 0.0,
+      "known_recall": 0.13590000000000002,
+      "zero_day_recall": null,
+      "auroc_all": 0.9488411857467481
+     }
+    },
+    "recal+ref@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.0,
+      "known_recall": 0.0736,
+      "zero_day_recall": null,
+      "auroc_all": 0.8876938979000156
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.0,
+      "known_recall": 0.43275,
+      "zero_day_recall": null,
+      "auroc_all": 0.9666888457921955
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.0,
+      "known_recall": 0.43275,
+      "zero_day_recall": null,
+      "auroc_all": 0.9619918939037768
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0,
+      "known_recall": 0.02145,
+      "zero_day_recall": null,
+      "auroc_all": 0.49853798581727
+     },
+     "XGB + Energy": {
+      "fpr": 0.0,
+      "known_recall": 0.01225,
+      "zero_day_recall": null,
+      "auroc_all": 0.8857286093480646
+     },
+     "kNN distance": {
+      "fpr": 4.701457451810061e-05,
+      "known_recall": 0.5321,
+      "zero_day_recall": null,
+      "auroc_all": 0.9764493799952986
+     }
+    },
+    "recal+ref@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.0,
+      "known_recall": 0.1671,
+      "zero_day_recall": null,
+      "auroc_all": 0.9181176951104842
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00048581727002037296,
+      "known_recall": 0.532125,
+      "zero_day_recall": null,
+      "auroc_all": 0.9803845106566369
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00045447422034163926,
+      "known_recall": 0.532125,
+      "zero_day_recall": null,
+      "auroc_all": 0.9767772527816956
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0,
+      "known_recall": 0.0217,
+      "zero_day_recall": null,
+      "auroc_all": 0.49857732526249804
+     },
+     "XGB + Energy": {
+      "fpr": 0.0,
+      "known_recall": 0.0217,
+      "zero_day_recall": null,
+      "auroc_all": 0.8874158899467168
+     },
+     "kNN distance": {
+      "fpr": 0.003526093088857546,
+      "known_recall": 0.53765,
+      "zero_day_recall": null,
+      "auroc_all": 0.9835819924384893
+     }
+    }
+   }
+  },
+  "2018-02-22": {
+   "attack_families": {
+    "WebAttack": 324
+   },
+   "variants": {
+    "none": {
+     "Aegis-OSR": {
+      "fpr": 0.37409,
+      "known_recall": 0.6759259259259259,
+      "zero_day_recall": null,
+      "auroc_all": 0.7230238271604938
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.31314,
+      "known_recall": 0.5623456790123457,
+      "zero_day_recall": null,
+      "auroc_all": 0.6833150308641975
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.36374,
+      "known_recall": 0.6475308641975308,
+      "zero_day_recall": null,
+      "auroc_all": 0.6829089660493828
+     },
+     "Closed-set XGB": {
+      "fpr": 0.047,
+      "known_recall": 0.4388888888888889,
+      "zero_day_recall": null,
+      "auroc_all": 0.8652110802469136
+     },
+     "XGB + Energy": {
+      "fpr": 0.047349999999999996,
+      "known_recall": 0.48271604938271606,
+      "zero_day_recall": null,
+      "auroc_all": 0.8799253240740741
+     },
+     "kNN distance": {
+      "fpr": 0.56338,
+      "known_recall": 0.6253086419753087,
+      "zero_day_recall": null,
+      "auroc_all": 0.6021464660493827
+     }
+    },
+    "recal@500": {
+     "Aegis-OSR": {
+      "fpr": 0.00137,
+      "known_recall": 0.015432098765432098,
+      "zero_day_recall": null,
+      "auroc_all": 0.765037762345679
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00049,
+      "known_recall": 0.009259259259259259,
+      "zero_day_recall": null,
+      "auroc_all": 0.788991913580247
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00101,
+      "known_recall": 0.015432098765432098,
+      "zero_day_recall": null,
+      "auroc_all": 0.7891977932098765
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0007,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.8650845061728395
+     },
+     "XGB + Energy": {
+      "fpr": 0.00092,
+      "known_recall": 0.2839506172839506,
+      "zero_day_recall": null,
+      "auroc_all": 0.8788698919753086
+     },
+     "kNN distance": {
+      "fpr": 0.00047,
+      "known_recall": 0.015432098765432098,
+      "zero_day_recall": null,
+      "auroc_all": 0.6039470524691358
+     }
+    },
+    "recal@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.00403,
+      "known_recall": 0.015432098765432098,
+      "zero_day_recall": null,
+      "auroc_all": 0.7719001080246913
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00152,
+      "known_recall": 0.015432098765432098,
+      "zero_day_recall": null,
+      "auroc_all": 0.7950971296296296
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00238,
+      "known_recall": 0.015432098765432098,
+      "zero_day_recall": null,
+      "auroc_all": 0.7974156018518518
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00323,
+      "known_recall": 0.006172839506172839,
+      "zero_day_recall": null,
+      "auroc_all": 0.8655023302469136
+     },
+     "XGB + Energy": {
+      "fpr": 0.00363,
+      "known_recall": 0.32839506172839505,
+      "zero_day_recall": null,
+      "auroc_all": 0.8833196296296296
+     },
+     "kNN distance": {
+      "fpr": 0.00047,
+      "known_recall": 0.015432098765432098,
+      "zero_day_recall": null,
+      "auroc_all": 0.6022039197530864
+     }
+    },
+    "recal@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.00704,
+      "known_recall": 0.015432098765432098,
+      "zero_day_recall": null,
+      "auroc_all": 0.7862562191358025
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00283,
+      "known_recall": 0.01604938271604938,
+      "zero_day_recall": null,
+      "auroc_all": 0.807567299382716
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00356,
+      "known_recall": 0.015432098765432098,
+      "zero_day_recall": null,
+      "auroc_all": 0.8080734722222221
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00572,
+      "known_recall": 0.006790123456790123,
+      "zero_day_recall": null,
+      "auroc_all": 0.8652523919753087
+     },
+     "XGB + Energy": {
+      "fpr": 0.0060799999999999995,
+      "known_recall": 0.32962962962962966,
+      "zero_day_recall": null,
+      "auroc_all": 0.8891735030864197
+     },
+     "kNN distance": {
+      "fpr": 0.00078,
+      "known_recall": 0.07901234567901234,
+      "zero_day_recall": null,
+      "auroc_all": 0.6021495679012345
+     }
+    },
+    "recal+ref@500": {
+     "Aegis-OSR": {
+      "fpr": 0.00051,
+      "known_recall": 0.015432098765432098,
+      "zero_day_recall": null,
+      "auroc_all": 0.7961931635802469
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00042,
+      "known_recall": 0.009259259259259259,
+      "zero_day_recall": null,
+      "auroc_all": 0.7784025
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00051,
+      "known_recall": 0.015432098765432098,
+      "zero_day_recall": null,
+      "auroc_all": 0.7768239351851852
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00036,
+      "known_recall": 0.0,
+      "zero_day_recall": null,
+      "auroc_all": 0.8627825
+     },
+     "XGB + Energy": {
+      "fpr": 0.0008,
+      "known_recall": 0.23333333333333334,
+      "zero_day_recall": null,
+      "auroc_all": 0.8778280709876543
+     },
+     "kNN distance": {
+      "fpr": 0.0005,
+      "known_recall": 0.009259259259259259,
+      "zero_day_recall": null,
+      "auroc_all": 0.6956953086419753
+     }
+    },
+    "recal+ref@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.0044599999999999996,
+      "known_recall": 0.34012345679012346,
+      "zero_day_recall": null,
+      "auroc_all": 0.8844663580246913
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00289,
+      "known_recall": 0.20493827160493827,
+      "zero_day_recall": null,
+      "auroc_all": 0.8400847222222222
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00405,
+      "known_recall": 0.29444444444444445,
+      "zero_day_recall": null,
+      "auroc_all": 0.844104737654321
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00394,
+      "known_recall": 0.006172839506172839,
+      "zero_day_recall": null,
+      "auroc_all": 0.865611836419753
+     },
+     "XGB + Energy": {
+      "fpr": 0.0030600000000000002,
+      "known_recall": 0.30246913580246915,
+      "zero_day_recall": null,
+      "auroc_all": 0.8826712962962963
+     },
+     "kNN distance": {
+      "fpr": 0.0049099999999999994,
+      "known_recall": 0.3376543209876543,
+      "zero_day_recall": null,
+      "auroc_all": 0.8166505555555555
+     }
+    },
+    "recal+ref@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.0070999999999999995,
+      "known_recall": 0.3567901234567901,
+      "zero_day_recall": null,
+      "auroc_all": 0.9476501388888888
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00591,
+      "known_recall": 0.33827160493827163,
+      "zero_day_recall": null,
+      "auroc_all": 0.8997297839506173
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00621,
+      "known_recall": 0.3395061728395062,
+      "zero_day_recall": null,
+      "auroc_all": 0.9080925925925926
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00665,
+      "known_recall": 0.006790123456790123,
+      "zero_day_recall": null,
+      "auroc_all": 0.8652987191358025
+     },
+     "XGB + Energy": {
+      "fpr": 0.00672,
+      "known_recall": 0.32962962962962966,
+      "zero_day_recall": null,
+      "auroc_all": 0.88927375
+     },
+     "kNN distance": {
+      "fpr": 0.00717,
+      "known_recall": 0.3395061728395062,
+      "zero_day_recall": null,
+      "auroc_all": 0.9166537191358025
+     }
+    }
+   }
+  },
+  "2018-02-23": {
+   "attack_families": {
+    "WebAttack": 543
+   },
+   "variants": {
+    "none": {
+     "Aegis-OSR": {
+      "fpr": 0.34099,
+      "known_recall": 0.7447513812154696,
+      "zero_day_recall": null,
+      "auroc_all": 0.7949844290976059
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.27727,
+      "known_recall": 0.6751381215469613,
+      "zero_day_recall": null,
+      "auroc_all": 0.7715662799263352
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.32573,
+      "known_recall": 0.7204419889502762,
+      "zero_day_recall": null,
+      "auroc_all": 0.7665363075506445
+     },
+     "Closed-set XGB": {
+      "fpr": 0.042460000000000005,
+      "known_recall": 0.3734806629834254,
+      "zero_day_recall": null,
+      "auroc_all": 0.8726916482504603
+     },
+     "XGB + Energy": {
+      "fpr": 0.04331,
+      "known_recall": 0.40589318600368324,
+      "zero_day_recall": null,
+      "auroc_all": 0.8788044198895028
+     },
+     "kNN distance": {
+      "fpr": 0.54733,
+      "known_recall": 0.6990791896869245,
+      "zero_day_recall": null,
+      "auroc_all": 0.7060210313075506
+     }
+    },
+    "recal@500": {
+     "Aegis-OSR": {
+      "fpr": 0.00132,
+      "known_recall": 0.034990791896869246,
+      "zero_day_recall": null,
+      "auroc_all": 0.8378884714548803
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00059,
+      "known_recall": 0.034990791896869246,
+      "zero_day_recall": null,
+      "auroc_all": 0.8514057550644567
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.0012100000000000001,
+      "known_recall": 0.03462246777163904,
+      "zero_day_recall": null,
+      "auroc_all": 0.8520918232044199
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00052,
+      "known_recall": 0.00036832412523020257,
+      "zero_day_recall": null,
+      "auroc_all": 0.8723469060773481
+     },
+     "XGB + Energy": {
+      "fpr": 0.00145,
+      "known_recall": 0.19779005524861878,
+      "zero_day_recall": null,
+      "auroc_all": 0.8787875046040515
+     },
+     "kNN distance": {
+      "fpr": 0.0005,
+      "known_recall": 0.034990791896869246,
+      "zero_day_recall": null,
+      "auroc_all": 0.7046422928176796
+     }
+    },
+    "recal@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.00458,
+      "known_recall": 0.04751381215469613,
+      "zero_day_recall": null,
+      "auroc_all": 0.8617988581952118
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00167,
+      "known_recall": 0.04788213627992634,
+      "zero_day_recall": null,
+      "auroc_all": 0.8766336924493555
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00319,
+      "known_recall": 0.04714548802946593,
+      "zero_day_recall": null,
+      "auroc_all": 0.8771260957642726
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00264,
+      "known_recall": 0.008839779005524863,
+      "zero_day_recall": null,
+      "auroc_all": 0.8726409852670349
+     },
+     "XGB + Energy": {
+      "fpr": 0.00336,
+      "known_recall": 0.24493554327808473,
+      "zero_day_recall": null,
+      "auroc_all": 0.8942949539594843
+     },
+     "kNN distance": {
+      "fpr": 0.0005,
+      "known_recall": 0.07329650092081032,
+      "zero_day_recall": null,
+      "auroc_all": 0.7059528084714549
+     }
+    },
+    "recal@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.00801,
+      "known_recall": 0.06445672191528545,
+      "zero_day_recall": null,
+      "auroc_all": 0.8663473572744015
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00303,
+      "known_recall": 0.10386740331491713,
+      "zero_day_recall": null,
+      "auroc_all": 0.8805747329650092
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.0046700000000000005,
+      "known_recall": 0.08213627992633518,
+      "zero_day_recall": null,
+      "auroc_all": 0.8810866390423572
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00521,
+      "known_recall": 0.01731123388581952,
+      "zero_day_recall": null,
+      "auroc_all": 0.8726665377532229
+     },
+     "XGB + Energy": {
+      "fpr": 0.0050100000000000006,
+      "known_recall": 0.25082872928176797,
+      "zero_day_recall": null,
+      "auroc_all": 0.8929138121546961
+     },
+     "kNN distance": {
+      "fpr": 0.0008,
+      "known_recall": 0.19631675874769797,
+      "zero_day_recall": null,
+      "auroc_all": 0.7061713904235727
+     }
+    },
+    "recal+ref@500": {
+     "Aegis-OSR": {
+      "fpr": 0.00581,
+      "known_recall": 0.20589318600368325,
+      "zero_day_recall": null,
+      "auroc_all": 0.6386083977900553
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00588,
+      "known_recall": 0.20441988950276244,
+      "zero_day_recall": null,
+      "auroc_all": 0.6082206906077348
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00594,
+      "known_recall": 0.20478821362799265,
+      "zero_day_recall": null,
+      "auroc_all": 0.611452255985267
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00073,
+      "known_recall": 0.002209944751381215,
+      "zero_day_recall": null,
+      "auroc_all": 0.8722477808471455
+     },
+     "XGB + Energy": {
+      "fpr": 0.0016200000000000001,
+      "known_recall": 0.16832412523020257,
+      "zero_day_recall": null,
+      "auroc_all": 0.8814313627992634
+     },
+     "kNN distance": {
+      "fpr": 0.00576,
+      "known_recall": 0.20441988950276244,
+      "zero_day_recall": null,
+      "auroc_all": 0.5219647605893186
+     }
+    },
+    "recal+ref@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.00768,
+      "known_recall": 0.2139963167587477,
+      "zero_day_recall": null,
+      "auroc_all": 0.7994724309392265
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.01131,
+      "known_recall": 0.23499079189686925,
+      "zero_day_recall": null,
+      "auroc_all": 0.7934406445672192
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.011250000000000001,
+      "known_recall": 0.23462246777163903,
+      "zero_day_recall": null,
+      "auroc_all": 0.7966107182320442
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00142,
+      "known_recall": 0.005156537753222836,
+      "zero_day_recall": null,
+      "auroc_all": 0.8726717403314918
+     },
+     "XGB + Energy": {
+      "fpr": 0.002,
+      "known_recall": 0.18931860036832412,
+      "zero_day_recall": null,
+      "auroc_all": 0.8930249907918969
+     },
+     "kNN distance": {
+      "fpr": 0.02191,
+      "known_recall": 0.34033149171270716,
+      "zero_day_recall": null,
+      "auroc_all": 0.6325165745856354
+     }
+    },
+    "recal+ref@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.0116,
+      "known_recall": 0.27440147329650094,
+      "zero_day_recall": null,
+      "auroc_all": 0.8309753867403314
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.01111,
+      "known_recall": 0.26077348066298345,
+      "zero_day_recall": null,
+      "auroc_all": 0.8264034069981584
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.01242,
+      "known_recall": 0.2677716390423573,
+      "zero_day_recall": null,
+      "auroc_all": 0.8320743093922651
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0042699999999999995,
+      "known_recall": 0.014732965009208104,
+      "zero_day_recall": null,
+      "auroc_all": 0.8726468416206261
+     },
+     "XGB + Energy": {
+      "fpr": 0.0051,
+      "known_recall": 0.25082872928176797,
+      "zero_day_recall": null,
+      "auroc_all": 0.892977467771639
+     },
+     "kNN distance": {
+      "fpr": 0.017320000000000002,
+      "known_recall": 0.2906077348066298,
+      "zero_day_recall": null,
+      "auroc_all": 0.6607826887661141
+     }
+    }
+   }
+  },
+  "2018-02-28": {
+   "attack_families": {
+    "Infiltration": 8000
+   },
+   "variants": {
+    "none": {
+     "Aegis-OSR": {
+      "fpr": 0.3951023810764341,
+      "known_recall": null,
+      "zero_day_recall": 0.33044999999999997,
+      "auroc_all": 0.45763883902985464
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.39886416922836454,
+      "known_recall": null,
+      "zero_day_recall": 0.363625,
+      "auroc_all": 0.4817539317720002
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.4171520866982754,
+      "known_recall": null,
+      "zero_day_recall": 0.368925,
+      "auroc_all": 0.4744604178606784
+     },
+     "Closed-set XGB": {
+      "fpr": 0.13050591361433855,
+      "known_recall": null,
+      "zero_day_recall": 0.049175,
+      "auroc_all": 0.4458196328088366
+     },
+     "XGB + Energy": {
+      "fpr": 0.12169019955191997,
+      "known_recall": null,
+      "zero_day_recall": 0.045325,
+      "auroc_all": 0.44720650041681864
+     },
+     "kNN distance": {
+      "fpr": 0.6869066847288073,
+      "known_recall": null,
+      "zero_day_recall": 0.6649,
+      "auroc_all": 0.4969218973063096
+     }
+    },
+    "recal@500": {
+     "Aegis-OSR": {
+      "fpr": 0.08687542333142291,
+      "known_recall": null,
+      "zero_day_recall": 0.03505,
+      "auroc_all": 0.4526641672745272
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.08350961287969572,
+      "known_recall": null,
+      "zero_day_recall": 0.03055,
+      "auroc_all": 0.45450369210128694
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.08549992184650654,
+      "known_recall": null,
+      "zero_day_recall": 0.03305,
+      "auroc_all": 0.45478751172302406
+     },
+     "Closed-set XGB": {
+      "fpr": 0.09323190746626374,
+      "known_recall": null,
+      "zero_day_recall": 0.027,
+      "auroc_all": 0.4458946569061637
+     },
+     "XGB + Energy": {
+      "fpr": 0.08278018027405826,
+      "known_recall": null,
+      "zero_day_recall": 0.029750000000000002,
+      "auroc_all": 0.4470983802688481
+     },
+     "kNN distance": {
+      "fpr": 0.005908404105663523,
+      "known_recall": null,
+      "zero_day_recall": 0.008624999999999999,
+      "auroc_all": 0.4967491318449435
+     }
+    },
+    "recal@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.0883551294742875,
+      "known_recall": null,
+      "zero_day_recall": 0.033775,
+      "auroc_all": 0.45447116396602927
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.0881571406241859,
+      "known_recall": null,
+      "zero_day_recall": 0.027575000000000002,
+      "auroc_all": 0.45541217305788567
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.08827176574792893,
+      "known_recall": null,
+      "zero_day_recall": 0.029249999999999998,
+      "auroc_all": 0.455730776845725
+     },
+     "Closed-set XGB": {
+      "fpr": 0.08948053978012817,
+      "known_recall": null,
+      "zero_day_recall": 0.02555,
+      "auroc_all": 0.44581961457302144
+     },
+     "XGB + Energy": {
+      "fpr": 0.08935549419059031,
+      "known_recall": null,
+      "zero_day_recall": 0.0277,
+      "auroc_all": 0.4471442908873027
+     },
+     "kNN distance": {
+      "fpr": 0.013348616683165736,
+      "known_recall": null,
+      "zero_day_recall": 0.01635,
+      "auroc_all": 0.49690914526129315
+     }
+    },
+    "recal@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.021601625592663994,
+      "known_recall": null,
+      "zero_day_recall": 0.0173,
+      "auroc_all": 0.4557755405616631
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.024561037878393165,
+      "known_recall": null,
+      "zero_day_recall": 0.0157,
+      "auroc_all": 0.45569815362371696
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.023050070338144116,
+      "known_recall": null,
+      "zero_day_recall": 0.015325,
+      "auroc_all": 0.4559706742041369
+     },
+     "Closed-set XGB": {
+      "fpr": 0.07468347835148231,
+      "known_recall": null,
+      "zero_day_recall": 0.021750000000000002,
+      "auroc_all": 0.4458035084405773
+     },
+     "XGB + Energy": {
+      "fpr": 0.06884801750638253,
+      "known_recall": null,
+      "zero_day_recall": 0.021225,
+      "auroc_all": 0.4473698646642005
+     },
+     "kNN distance": {
+      "fpr": 0.010357943000052102,
+      "known_recall": null,
+      "zero_day_recall": 0.01385,
+      "auroc_all": 0.4969134274214557
+     }
+    },
+    "recal+ref@500": {
+     "Aegis-OSR": {
+      "fpr": 0.10707028604178606,
+      "known_recall": null,
+      "zero_day_recall": 0.04375,
+      "auroc_all": 0.45304553287656957
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.08470796644610014,
+      "known_recall": null,
+      "zero_day_recall": 0.030449999999999998,
+      "auroc_all": 0.45551338639087163
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.08851143646120982,
+      "known_recall": null,
+      "zero_day_recall": 0.036825,
+      "auroc_all": 0.455044925884437
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0806752461835044,
+      "known_recall": null,
+      "zero_day_recall": 0.024225,
+      "auroc_all": 0.44597792098681815
+     },
+     "XGB + Energy": {
+      "fpr": 0.08229041838170166,
+      "known_recall": null,
+      "zero_day_recall": 0.028399999999999998,
+      "auroc_all": 0.44706678411399986
+     },
+     "kNN distance": {
+      "fpr": 0.013504923670088053,
+      "known_recall": null,
+      "zero_day_recall": 0.015975,
+      "auroc_all": 0.4661437060386599
+     }
+    },
+    "recal+ref@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.09285677069765019,
+      "known_recall": null,
+      "zero_day_recall": 0.0317,
+      "auroc_all": 0.4559221916844683
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.07448548950138072,
+      "known_recall": null,
+      "zero_day_recall": 0.024675,
+      "auroc_all": 0.45528068827176577
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.06835825561402595,
+      "known_recall": null,
+      "zero_day_recall": 0.022575,
+      "auroc_all": 0.45520127129682697
+     },
+     "Closed-set XGB": {
+      "fpr": 0.07920596050643464,
+      "known_recall": null,
+      "zero_day_recall": 0.02355,
+      "auroc_all": 0.44581932801021207
+     },
+     "XGB + Energy": {
+      "fpr": 0.0730891470848747,
+      "known_recall": null,
+      "zero_day_recall": 0.023575000000000002,
+      "auroc_all": 0.44707499869744177
+     },
+     "kNN distance": {
+      "fpr": 0.02157036419527953,
+      "known_recall": null,
+      "zero_day_recall": 0.017725,
+      "auroc_all": 0.47563312145052883
+     }
+    },
+    "recal+ref@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.08343666961913197,
+      "known_recall": null,
+      "zero_day_recall": 0.027525,
+      "auroc_all": 0.45570732558745375
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.04050435054446934,
+      "known_recall": null,
+      "zero_day_recall": 0.01555,
+      "auroc_all": 0.45481767962277914
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.05214401083728443,
+      "known_recall": null,
+      "zero_day_recall": 0.0194,
+      "auroc_all": 0.45464175350388164
+     },
+     "Closed-set XGB": {
+      "fpr": 0.07110925858385869,
+      "known_recall": null,
+      "zero_day_recall": 0.020625,
+      "auroc_all": 0.4458024644401605
+     },
+     "XGB + Energy": {
+      "fpr": 0.0579794716823842,
+      "known_recall": null,
+      "zero_day_recall": 0.01865,
+      "auroc_all": 0.4473446894701193
+     },
+     "kNN distance": {
+      "fpr": 0.014609493044339082,
+      "known_recall": null,
+      "zero_day_recall": 0.013375,
+      "auroc_all": 0.47537329039233056
+     }
+    }
+   }
+  },
+  "2018-03-01": {
+   "attack_families": {
+    "Infiltration": 8000
+   },
+   "variants": {
+    "none": {
+     "Aegis-OSR": {
+      "fpr": 0.39237879033565753,
+      "known_recall": null,
+      "zero_day_recall": 0.51145,
+      "auroc_all": 0.5930963880330793
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.3717528782227988,
+      "known_recall": null,
+      "zero_day_recall": 0.475325,
+      "auroc_all": 0.560819320577266
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.39727582292849034,
+      "known_recall": null,
+      "zero_day_recall": 0.5164,
+      "auroc_all": 0.5723268100372952
+     },
+     "Closed-set XGB": {
+      "fpr": 0.05545646181287498,
+      "known_recall": null,
+      "zero_day_recall": 0.247675,
+      "auroc_all": 0.6001949023025782
+     },
+     "XGB + Energy": {
+      "fpr": 0.04267877412031782,
+      "known_recall": null,
+      "zero_day_recall": 0.231275,
+      "auroc_all": 0.6021483764391115
+     },
+     "kNN distance": {
+      "fpr": 0.6808496838008756,
+      "known_recall": null,
+      "zero_day_recall": 0.743625,
+      "auroc_all": 0.5161659031944219
+     }
+    },
+    "recal@500": {
+     "Aegis-OSR": {
+      "fpr": 0.006875304037619588,
+      "known_recall": null,
+      "zero_day_recall": 0.014875,
+      "auroc_all": 0.5897561375060807
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.007361764228960597,
+      "known_recall": null,
+      "zero_day_recall": 0.015924999999999998,
+      "auroc_all": 0.5957675044592184
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.0074590562672287985,
+      "known_recall": null,
+      "zero_day_recall": 0.015224999999999999,
+      "auroc_all": 0.5952429909194098
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00398897356899627,
+      "known_recall": null,
+      "zero_day_recall": 0.0086,
+      "auroc_all": 0.5996214164099238
+     },
+     "XGB + Energy": {
+      "fpr": 0.005772660937246635,
+      "known_recall": null,
+      "zero_day_recall": 0.01215,
+      "auroc_all": 0.6032608014431652
+     },
+     "kNN distance": {
+      "fpr": 0.005805091616669369,
+      "known_recall": null,
+      "zero_day_recall": 0.015475,
+      "auroc_all": 0.5160652707961731
+     }
+    },
+    "recal@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.0070050267553105235,
+      "known_recall": null,
+      "zero_day_recall": 0.020225,
+      "auroc_all": 0.5928651633695475
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.0094697583914383,
+      "known_recall": null,
+      "zero_day_recall": 0.024775,
+      "auroc_all": 0.5975130979406519
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00872385276471542,
+      "known_recall": null,
+      "zero_day_recall": 0.0243,
+      "auroc_all": 0.5964323374412194
+     },
+     "Closed-set XGB": {
+      "fpr": 0.005578076860710232,
+      "known_recall": null,
+      "zero_day_recall": 0.015725,
+      "auroc_all": 0.6001713839792444
+     },
+     "XGB + Energy": {
+      "fpr": 0.006453705205124048,
+      "known_recall": null,
+      "zero_day_recall": 0.014975,
+      "auroc_all": 0.6057273917626074
+     },
+     "kNN distance": {
+      "fpr": 0.0094697583914383,
+      "known_recall": null,
+      "zero_day_recall": 0.01995,
+      "auroc_all": 0.5162147275822928
+     }
+    },
+    "recal@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.005805091616669369,
+      "known_recall": null,
+      "zero_day_recall": 0.015425000000000001,
+      "auroc_all": 0.5774062631749636
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.005253770066482893,
+      "known_recall": null,
+      "zero_day_recall": 0.0149,
+      "auroc_all": 0.5800674882438787
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.0047997405545646184,
+      "known_recall": null,
+      "zero_day_recall": 0.014225000000000002,
+      "auroc_all": 0.5792020329982163
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0016863953299821632,
+      "known_recall": null,
+      "zero_day_recall": 0.001925,
+      "auroc_all": 0.6001982892816605
+     },
+     "XGB + Energy": {
+      "fpr": 0.001426949894600292,
+      "known_recall": null,
+      "zero_day_recall": 0.00335,
+      "auroc_all": 0.6040976345873196
+     },
+     "kNN distance": {
+      "fpr": 0.012031782065834279,
+      "known_recall": null,
+      "zero_day_recall": 0.023225,
+      "auroc_all": 0.5162126459380574
+     }
+    },
+    "recal+ref@500": {
+     "Aegis-OSR": {
+      "fpr": 0.004410572401491812,
+      "known_recall": null,
+      "zero_day_recall": 0.01265,
+      "auroc_all": 0.597173877087725
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.005156478028214691,
+      "known_recall": null,
+      "zero_day_recall": 0.01465,
+      "auroc_all": 0.5856633209015729
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.004864601913410086,
+      "known_recall": null,
+      "zero_day_recall": 0.0131,
+      "auroc_all": 0.5910986318307119
+     },
+     "Closed-set XGB": {
+      "fpr": 0.003761958813037133,
+      "known_recall": null,
+      "zero_day_recall": 0.005425,
+      "auroc_all": 0.5998108318469272
+     },
+     "XGB + Energy": {
+      "fpr": 0.005448354143019296,
+      "known_recall": null,
+      "zero_day_recall": 0.008825,
+      "auroc_all": 0.6030206218582779
+     },
+     "kNN distance": {
+      "fpr": 0.006615858602237717,
+      "known_recall": null,
+      "zero_day_recall": 0.0172,
+      "auroc_all": 0.5749337846602887
+     }
+    },
+    "recal+ref@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.01744770552943084,
+      "known_recall": null,
+      "zero_day_recall": 0.083775,
+      "auroc_all": 0.6020442557159073
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.007588778984919734,
+      "known_recall": null,
+      "zero_day_recall": 0.0242,
+      "auroc_all": 0.5978944563807361
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.008334684611642613,
+      "known_recall": null,
+      "zero_day_recall": 0.0266,
+      "auroc_all": 0.6010881850981028
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0047997405545646184,
+      "known_recall": null,
+      "zero_day_recall": 0.0134,
+      "auroc_all": 0.6001218886816929
+     },
+     "XGB + Energy": {
+      "fpr": 0.004767309875141884,
+      "known_recall": null,
+      "zero_day_recall": 0.011899999999999999,
+      "auroc_all": 0.6056377209340036
+     },
+     "kNN distance": {
+      "fpr": 0.00846440732933355,
+      "known_recall": null,
+      "zero_day_recall": 0.025625000000000002,
+      "auroc_all": 0.5948209644073293
+     }
+    },
+    "recal+ref@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.0058375222960921035,
+      "known_recall": null,
+      "zero_day_recall": 0.018725,
+      "auroc_all": 0.6111594880006487
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.008269823252797145,
+      "known_recall": null,
+      "zero_day_recall": 0.027700000000000002,
+      "auroc_all": 0.6065398005513215
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.008172531214528943,
+      "known_recall": null,
+      "zero_day_recall": 0.024625,
+      "auroc_all": 0.612270810361602
+     },
+     "Closed-set XGB": {
+      "fpr": 0.001394519215177558,
+      "known_recall": null,
+      "zero_day_recall": 0.001975,
+      "auroc_all": 0.6002087846602886
+     },
+     "XGB + Energy": {
+      "fpr": 0.0012647964974866223,
+      "known_recall": null,
+      "zero_day_recall": 0.003,
+      "auroc_all": 0.6040992236906113
+     },
+     "kNN distance": {
+      "fpr": 0.013523593319280039,
+      "known_recall": null,
+      "zero_day_recall": 0.0462,
+      "auroc_all": 0.591688928976812
+     }
+    }
+   }
+  },
+  "2018-03-02": {
+   "attack_families": {
+    "Bot": 8000
+   },
+   "variants": {
+    "none": {
+     "Aegis-OSR": {
+      "fpr": 0.36224,
+      "known_recall": 0.9793,
+      "zero_day_recall": null,
+      "auroc_all": 0.96420254
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.29032,
+      "known_recall": 0.979125,
+      "zero_day_recall": null,
+      "auroc_all": 0.960716055
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.34499,
+      "known_recall": 0.9793,
+      "zero_day_recall": null,
+      "auroc_all": 0.96632205625
+     },
+     "Closed-set XGB": {
+      "fpr": 0.04432,
+      "known_recall": 0.91455,
+      "zero_day_recall": null,
+      "auroc_all": 0.9593181175000001
+     },
+     "XGB + Energy": {
+      "fpr": 0.03817,
+      "known_recall": 0.77535,
+      "zero_day_recall": null,
+      "auroc_all": 0.94745739625
+     },
+     "kNN distance": {
+      "fpr": 0.55699,
+      "known_recall": 0.9793,
+      "zero_day_recall": null,
+      "auroc_all": 0.959119268125
+     }
+    },
+    "recal@500": {
+     "Aegis-OSR": {
+      "fpr": 0.01137,
+      "known_recall": 0.018949999999999998,
+      "zero_day_recall": null,
+      "auroc_all": 0.968784701875
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.01154,
+      "known_recall": 0.020624999999999998,
+      "zero_day_recall": null,
+      "auroc_all": 0.965142485
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.011600000000000001,
+      "known_recall": 0.018924999999999997,
+      "zero_day_recall": null,
+      "auroc_all": 0.96530242
+     },
+     "Closed-set XGB": {
+      "fpr": 0.01143,
+      "known_recall": 0.01935,
+      "zero_day_recall": null,
+      "auroc_all": 0.958288034375
+     },
+     "XGB + Energy": {
+      "fpr": 0.0127,
+      "known_recall": 0.01935,
+      "zero_day_recall": null,
+      "auroc_all": 0.938738655
+     },
+     "kNN distance": {
+      "fpr": 0.00066,
+      "known_recall": 0.0028,
+      "zero_day_recall": null,
+      "auroc_all": 0.9562116843749999
+     }
+    },
+    "recal@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.00663,
+      "known_recall": 0.0075250000000000004,
+      "zero_day_recall": null,
+      "auroc_all": 0.96790586625
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00317,
+      "known_recall": 0.004625,
+      "zero_day_recall": null,
+      "auroc_all": 0.966895534375
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00381,
+      "known_recall": 0.005075,
+      "zero_day_recall": null,
+      "auroc_all": 0.966794505
+     },
+     "Closed-set XGB": {
+      "fpr": 0.0076,
+      "known_recall": 0.0026249999999999997,
+      "zero_day_recall": null,
+      "auroc_all": 0.95902840625
+     },
+     "XGB + Energy": {
+      "fpr": 0.0066099999999999996,
+      "known_recall": 0.0025499999999999997,
+      "zero_day_recall": null,
+      "auroc_all": 0.9411546081250001
+     },
+     "kNN distance": {
+      "fpr": 0.00102,
+      "known_recall": 0.005075,
+      "zero_day_recall": null,
+      "auroc_all": 0.959087119375
+     }
+    },
+    "recal@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.01151,
+      "known_recall": 0.007325,
+      "zero_day_recall": null,
+      "auroc_all": 0.970454995
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00521,
+      "known_recall": 0.00525,
+      "zero_day_recall": null,
+      "auroc_all": 0.9677650950000001
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00667,
+      "known_recall": 0.007475,
+      "zero_day_recall": null,
+      "auroc_all": 0.96852273125
+     },
+     "Closed-set XGB": {
+      "fpr": 0.01129,
+      "known_recall": 0.0045249999999999995,
+      "zero_day_recall": null,
+      "auroc_all": 0.9593685843749999
+     },
+     "XGB + Energy": {
+      "fpr": 0.012199999999999999,
+      "known_recall": 0.004,
+      "zero_day_recall": null,
+      "auroc_all": 0.950256989375
+     },
+     "kNN distance": {
+      "fpr": 0.0006799999999999999,
+      "known_recall": 0.00525,
+      "zero_day_recall": null,
+      "auroc_all": 0.95909217
+     }
+    },
+    "recal+ref@500": {
+     "Aegis-OSR": {
+      "fpr": 0.01359,
+      "known_recall": 0.009825,
+      "zero_day_recall": null,
+      "auroc_all": 0.971461006875
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00992,
+      "known_recall": 0.00805,
+      "zero_day_recall": null,
+      "auroc_all": 0.956776770625
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.01344,
+      "known_recall": 0.008624999999999999,
+      "zero_day_recall": null,
+      "auroc_all": 0.96571474
+     },
+     "Closed-set XGB": {
+      "fpr": 0.01137,
+      "known_recall": 0.0059,
+      "zero_day_recall": null,
+      "auroc_all": 0.9547531306249999
+     },
+     "XGB + Energy": {
+      "fpr": 0.016130000000000002,
+      "known_recall": 0.005875,
+      "zero_day_recall": null,
+      "auroc_all": 0.9297741137500001
+     },
+     "kNN distance": {
+      "fpr": 0.00141,
+      "known_recall": 0.0031,
+      "zero_day_recall": null,
+      "auroc_all": 0.931574105
+     }
+    },
+    "recal+ref@2000": {
+     "Aegis-OSR": {
+      "fpr": 0.0062699999999999995,
+      "known_recall": 0.200775,
+      "zero_day_recall": null,
+      "auroc_all": 0.98068417625
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.00494,
+      "known_recall": 0.006974999999999999,
+      "zero_day_recall": null,
+      "auroc_all": 0.93880526
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00539,
+      "known_recall": 0.0181,
+      "zero_day_recall": null,
+      "auroc_all": 0.9716554131249999
+     },
+     "Closed-set XGB": {
+      "fpr": 0.00735,
+      "known_recall": 0.0026249999999999997,
+      "zero_day_recall": null,
+      "auroc_all": 0.9590836675
+     },
+     "XGB + Energy": {
+      "fpr": 0.00662,
+      "known_recall": 0.0026249999999999997,
+      "zero_day_recall": null,
+      "auroc_all": 0.94353525625
+     },
+     "kNN distance": {
+      "fpr": 0.00284,
+      "known_recall": 0.0059,
+      "zero_day_recall": null,
+      "auroc_all": 0.9342154687499999
+     }
+    },
+    "recal+ref@5000": {
+     "Aegis-OSR": {
+      "fpr": 0.00859,
+      "known_recall": 0.567125,
+      "zero_day_recall": null,
+      "auroc_all": 0.98604807
+     },
+     "Aegis-OSR w/ max fusion": {
+      "fpr": 0.008069999999999999,
+      "known_recall": 0.0084,
+      "zero_day_recall": null,
+      "auroc_all": 0.960353434375
+     },
+     "Aegis-OSR w/ omnibus fusion": {
+      "fpr": 0.00827,
+      "known_recall": 0.015,
+      "zero_day_recall": null,
+      "auroc_all": 0.973102933125
+     },
+     "Closed-set XGB": {
+      "fpr": 0.01092,
+      "known_recall": 0.004325,
+      "zero_day_recall": null,
+      "auroc_all": 0.959370315
+     },
+     "XGB + Energy": {
+      "fpr": 0.01115,
+      "known_recall": 0.0031249999999999997,
+      "zero_day_recall": null,
+      "auroc_all": 0.9510944725
+     },
+     "kNN distance": {
+      "fpr": 0.00692,
+      "known_recall": 0.012499999999999999,
+      "zero_day_recall": null,
+      "auroc_all": 0.973279328125
+     }
+    }
+   }
+  }
+ },
+ "seed_level_known_recall_vs_aegis_osr": {
+  "recal@2000": {
+   "Aegis-OSR w/ max fusion": {
+    "method_minus_aegis_osr": 0.21512416551565378,
+    "ci95": [
+     0.13433505831165093,
+     0.2959132727196566
+    ],
+    "seeds_better": 5,
+    "n_seeds": 5,
+    "paired_t_p": 0.0017850526533185012
+   },
+   "Aegis-OSR w/ omnibus fusion": {
+    "method_minus_aegis_osr": 0.17781958448434623,
+    "ci95": [
+     0.11211208955559876,
+     0.2435270794130937
+    ],
+    "seeds_better": 5,
+    "n_seeds": 5,
+    "paired_t_p": 0.0016792531203611658
+   },
+   "Closed-set XGB": {
+    "method_minus_aegis_osr": 0.23739896344894618,
+    "ci95": [
+     0.15328464160682426,
+     0.3215132852910681
+    ],
+    "seeds_better": 5,
+    "n_seeds": 5,
+    "paired_t_p": 0.001432252845784395
+   },
+   "XGB + Energy": {
+    "method_minus_aegis_osr": 0.3446574617607939,
+    "ci95": [
+     0.2428372434634732,
+     0.4464776800581146
+    ],
+    "seeds_better": 5,
+    "n_seeds": 5,
+    "paired_t_p": 0.0007143174894251614
+   },
+   "kNN distance": {
+    "method_minus_aegis_osr": -0.06925841390423573,
+    "ci95": [
+     -0.13236413128873786,
+     -0.006152696519733589
+    ],
+    "seeds_better": 0,
+    "n_seeds": 5,
+    "paired_t_p": 0.03813462392183184
+   }
+  },
+  "recal@5000": {
+   "Aegis-OSR w/ max fusion": {
+    "method_minus_aegis_osr": 0.2394503706687811,
+    "ci95": [
+     0.20138727265640566,
+     0.27751346868115656
+    ],
+    "seeds_better": 5,
+    "n_seeds": 5,
+    "paired_t_p": 6.308381042401645e-05
+   },
+   "Aegis-OSR w/ omnibus fusion": {
+    "method_minus_aegis_osr": 0.2353349447513812,
+    "ci95": [
+     0.19384077054834492,
+     0.2768291189544175
+    ],
+    "seeds_better": 5,
+    "n_seeds": 5,
+    "paired_t_p": 9.501899419802389e-05
+   },
+   "Closed-set XGB": {
+    "method_minus_aegis_osr": 0.2274640670827365,
+    "ci95": [
+     0.19089374621542668,
+     0.2640343879500463
+    ],
+    "seeds_better": 5,
+    "n_seeds": 5,
+    "paired_t_p": 6.597998920736519e-05
+   },
+   "XGB + Energy": {
+    "method_minus_aegis_osr": 0.336224317278835,
+    "ci95": [
+     0.28154180889439595,
+     0.39090682566327406
+    ],
+    "seeds_better": 5,
+    "n_seeds": 5,
+    "paired_t_p": 6.90561246359299e-05
+   },
+   "kNN distance": {
+    "method_minus_aegis_osr": -0.05683246453175091,
+    "ci95": [
+     -0.11707060040267288,
+     0.0034056713391710514
+    ],
+    "seeds_better": 1,
+    "n_seeds": 5,
+    "paired_t_p": 0.058831847047460605
+   }
+  },
+  "recal+ref@2000": {
+   "Aegis-OSR w/ max fusion": {
+    "method_minus_aegis_osr": -0.05243633875588296,
+    "ci95": [
+     -0.09885406486898354,
+     -0.006018612642782369
+    ],
+    "seeds_better": 0,
+    "n_seeds": 5,
+    "paired_t_p": 0.034967308065605066
+   },
+   "Aegis-OSR w/ omnibus fusion": {
+    "method_minus_aegis_osr": 0.006302767333401538,
+    "ci95": [
+     -0.03340567280654164,
+     0.046011207473344716
+    ],
+    "seeds_better": 2,
+    "n_seeds": 5,
+    "paired_t_p": 0.6822042576503092
+   },
+   "Closed-set XGB": {
+    "method_minus_aegis_osr": -0.14418317453618446,
+    "ci95": [
+     -0.2134101509702735,
+     -0.07495619810209542
+    ],
+    "seeds_better": 0,
+    "n_seeds": 5,
+    "paired_t_p": 0.004442835372029552
+   },
+   "XGB + Energy": {
+    "method_minus_aegis_osr": -0.024263379672259756,
+    "ci95": [
+     -0.09625111638213751,
+     0.047724357037617994
+    ],
+    "seeds_better": 1,
+    "n_seeds": 5,
+    "paired_t_p": 0.4023565959394434
+   },
+   "kNN distance": {
+    "method_minus_aegis_osr": -0.2230604951060637,
+    "ci95": [
+     -0.2897431717051807,
+     -0.1563778185069467
+    ],
+    "seeds_better": 0,
+    "n_seeds": 5,
+    "paired_t_p": 0.000747678010943634
+   }
+  },
+  "recal+ref@5000": {
+   "Aegis-OSR w/ max fusion": {
+    "method_minus_aegis_osr": -0.04437143889400452,
+    "ci95": [
+     -0.14940916930489678,
+     0.06066629151688774
+    ],
+    "seeds_better": 2,
+    "n_seeds": 5,
+    "paired_t_p": 0.3059292504997794
+   },
+   "Aegis-OSR w/ omnibus fusion": {
+    "method_minus_aegis_osr": -0.0031923481089284446,
+    "ci95": [
+     -0.07346440914970828,
+     0.06707971293185139
+    ],
+    "seeds_better": 2,
+    "n_seeds": 5,
+    "paired_t_p": 0.905715101522118
+   },
+   "Closed-set XGB": {
+    "method_minus_aegis_osr": -0.2061023135359116,
+    "ci95": [
+     -0.2733157359806414,
+     -0.1388888910911818
+    ],
+    "seeds_better": 0,
+    "n_seeds": 5,
+    "paired_t_p": 0.0010441483672358884
+   },
+   "XGB + Energy": {
+    "method_minus_aegis_osr": -0.09303852973023671,
+    "ci95": [
+     -0.16241511456842384,
+     -0.023661944892049577
+    ],
+    "seeds_better": 0,
+    "n_seeds": 5,
+    "paired_t_p": 0.0204140209224715
+   },
+   "kNN distance": {
+    "method_minus_aegis_osr": -0.2927940861383944,
+    "ci95": [
+     -0.3896408939727394,
+     -0.19594727830404945
+    ],
+    "seeds_better": 0,
+    "n_seeds": 5,
+    "paired_t_p": 0.0011022308850633477
+   }
+  }
+ },
+ "in_distribution_reference": {
+  "source": "research_artifacts/openset_loafo_summary.json",
+  "note": "in-distribution reference; read the zero-day recall of each fusion rule from the summary (Table I of the paper)",
+  "zero_day_recall_mean": {
+   "Aegis-OSR": 0.7060181775151322,
+   "Aegis-OSR w/ max fusion": 0.5314707199711147,
+   "Aegis-OSR w/ omnibus fusion": 0.6143752478582235,
+   "Closed-set XGB": 0.48972561843871665,
+   "XGB + Energy": 0.4566937882289224,
+   "kNN distance": 0.3791612043806905
+  }
+ }
+}
