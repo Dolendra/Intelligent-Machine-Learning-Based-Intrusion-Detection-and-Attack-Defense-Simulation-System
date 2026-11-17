@@ -68,6 +68,9 @@ def main() -> None:
     ap.add_argument("--evaluate-only", action="store_true",
                     help="re-evaluate the already exported gate without retraining (artifacts unchanged)")
     args = ap.parse_args()
+    # R-03: refuse before retraining/exporting the served gate if the report is protected.
+    from research.artifact_guard import assert_writable
+    assert_writable(ARTIFACT_DIR / "zero_day_gate_report.json")
 
     t0 = time.time()
     df = load_cic2017()
@@ -217,7 +220,11 @@ def main() -> None:
     }
     metadata["evaluation"] = evaluation
     metadata["evaluated_at"] = datetime.now(timezone.utc).isoformat()
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(GATE_DIR / "aegis_osr_metadata.json")
     (GATE_DIR / "aegis_osr_metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(ARTIFACT_DIR / "zero_day_gate_report.json")
     (ARTIFACT_DIR / "zero_day_gate_report.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     print(json.dumps({"gate": evaluation["gate"], "head_to_head_n": head_to_head["n"],
                       "frozen_v11": head_to_head["frozen_v11"], "per_family": head_to_head["per_family_recall"],

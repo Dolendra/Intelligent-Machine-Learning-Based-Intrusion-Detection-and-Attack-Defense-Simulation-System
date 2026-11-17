@@ -53,6 +53,9 @@ def build_model(name: str, random_state: int = 42) -> Any:
 
 def save_model(model: Any, path: Path | str) -> None:
     path = Path(path)
+    from research.artifact_guard import assert_writable  # R-03: frozen v1.1 files are read-only
+
+    assert_writable(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(model, path)
 

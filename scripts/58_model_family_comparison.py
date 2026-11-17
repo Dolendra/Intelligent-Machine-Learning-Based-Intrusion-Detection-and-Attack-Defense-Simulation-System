@@ -262,6 +262,8 @@ def main() -> None:
            "notes": ["Thresholds are set on validation benign flows for a 1% false-alarm budget (same operating point for all).",
                      "Histogram gradient boosting is scikit-learn's LightGBM-style implementation (LightGBM itself not installed).",
                      "CNN/LSTM read the 77 flow features as a 1-D sequence, as is common in the IDS literature; flows have no time axis."]}
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(OUT_JSON)
     OUT_JSON.write_text(json.dumps(out, indent=2), encoding="utf-8")
 
     md = ["# Model families on seen vs. unseen attacks (auto-generated)", "",
@@ -278,6 +280,8 @@ def main() -> None:
     for name, r in results.items():
         md.append(f"| {name} | " + " | ".join(f"{r['heldout'][f]['zero_day_recall']:.3f}" for f in LOAFO_FAMILIES) + " |")
     md += ["", *[f"* {n}" for n in out["notes"]], ""]
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(OUT_MD)
     OUT_MD.write_text("\n".join(md), encoding="utf-8")
     print("wrote", OUT_JSON, OUT_MD)
 

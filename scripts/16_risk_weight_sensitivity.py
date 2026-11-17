@@ -76,6 +76,8 @@ def main() -> None:
         "Weight choices are project conventions. Compare A/B/C sensitivity; justify final weights in the report."
     )
     path = resolve_path(load_config()["models"]["output_dir"]) / "risk_weight_sensitivity.json"
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(path)
     path.write_text(json.dumps(out, indent=2), encoding="utf-8")
     print(f"Wrote {path}")
     for name, rows in out["results"].items():

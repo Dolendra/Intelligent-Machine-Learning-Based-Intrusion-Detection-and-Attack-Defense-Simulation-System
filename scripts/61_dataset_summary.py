@@ -52,6 +52,8 @@ def main() -> None:
             out[f"cic2018_v{version}"] = {**_counts(d18), "benign_median_by_day": _benign_profile(d18)}
     out["cic2018_note"] = ("v1 = pre-R1b sample (global per-label cap; benign from 4 of 10 days only); "
                            "v2 = R1b sample (5% benign of every day; attacks capped per day and label at random)")
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(ARTIFACT_DIR / "dataset_summary.json")
     (ARTIFACT_DIR / "dataset_summary.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
     print({k: v["rows"] for k, v in out.items() if isinstance(v, dict) and "rows" in v})
 

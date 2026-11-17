@@ -149,6 +149,8 @@ def main() -> None:
             # *when/where the models were trained* (R1a: a re-run had replaced c99d2d3 with HEAD).
             print("Model artifacts unchanged since last metadata write; keeping training provenance as-is.")
             return
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(path)
     path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
     print(f"Wrote {path}")
     print(json.dumps({"binary_model": meta["binary_model"], "git": meta["training_git_commit"]}, indent=2))

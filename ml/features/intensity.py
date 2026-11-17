@@ -35,6 +35,9 @@ def build_intensity_reference(train_df: pd.DataFrame) -> dict[str, Any]:
 def save_intensity_reference(ref: dict[str, Any], path: Path | str | None = None) -> Path:
     cfg = load_config()
     out = Path(path) if path else resolve_path(cfg["models"]["output_dir"]) / "intensity_reference.json"
+    from research.artifact_guard import assert_writable  # R-03: frozen v1.1 files are read-only
+
+    assert_writable(out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(ref, indent=2), encoding="utf-8")
     return out

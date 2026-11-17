@@ -83,6 +83,8 @@ def main() -> None:
         report["status"] = "skipped"
         report["reason"] = f"Raw MachineLearningCVE unavailable: {exc}"
         path = out_dir / "temporal_holdout_report.json"
+        from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+        assert_writable(path)
         path.write_text(json.dumps(report, indent=2), encoding="utf-8")
         print(json.dumps({"wrote": str(path), "status": report["status"]}, indent=2))
         return
@@ -173,6 +175,8 @@ def main() -> None:
             )
 
     path = out_dir / "temporal_holdout_report.json"
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(path)
     path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps({"wrote": str(path), "status": report["status"]}, indent=2))
 

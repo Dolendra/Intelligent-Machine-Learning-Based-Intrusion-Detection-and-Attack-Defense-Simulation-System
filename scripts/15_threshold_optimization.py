@@ -107,7 +107,11 @@ def main() -> None:
         ),
     }
     path = out_dir / "threshold_sweep.json"
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(path)
     path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(out_dir / "threshold_operating_point.json")
     (out_dir / "threshold_operating_point.json").write_text(json.dumps(operating, indent=2), encoding="utf-8")
     print(f"Wrote {path}")
     print(f"Wrote {out_dir / 'threshold_operating_point.json'}")

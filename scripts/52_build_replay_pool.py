@@ -99,6 +99,8 @@ def main() -> None:
         pool[c] = pool[c].astype(str)
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / "replay_pool.parquet"
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(path)
     pool.drop(columns=["seq", "is_attack"]).to_parquet(path, index=False, compression="zstd")
 
     manifest = {
@@ -118,6 +120,8 @@ def main() -> None:
         "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         "supersedes": "legacy/replay_pool_v1_INVALID_for_frozen.parquet (~70% in frozen train split)",
     }
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(OUT / "replay_pool_manifest.json")
     (OUT / "replay_pool_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print(json.dumps({k: manifest[k] for k in ("eligible_rows", "available_per_family", "sampled_per_family",
                                                  "overlap_check", "rows")}, indent=1))

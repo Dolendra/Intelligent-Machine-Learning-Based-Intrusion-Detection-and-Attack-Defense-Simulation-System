@@ -46,6 +46,8 @@ def main() -> None:
         "samples_explained": len(explanations),
     }
     path = out_dir / "global_shap_summary.json"
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(path)
     path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps({"wrote": str(path), "samples": len(explanations)}, indent=2))
 

@@ -1120,11 +1120,9 @@ def global_shap_summary(top_k: int = 15, refresh: bool = False) -> dict[str, Any
         "samples_explained": len(explanations),
         "cached": False,
     }
-    try:
-        out = resolve_path(load_config()["models"]["output_dir"]) / "global_shap_summary.json"
-        out.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    except Exception:
-        pass
+    # R-03 (ARCH-18): global_shap_summary.json is a frozen v1.1 artifact. A refresh is computed
+    # and returned but never written back (previously any viewer's GET overwrote it).
+    report["persisted"] = False
     return report
 
 

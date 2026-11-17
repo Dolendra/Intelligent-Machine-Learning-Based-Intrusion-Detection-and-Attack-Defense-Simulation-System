@@ -68,6 +68,8 @@ def main() -> None:
         }
 
     path = out_dir / "drift_report.json"
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(path)
     path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"Wrote {path}")
     print(f"Flagged features: {len(flagged)}; recommendation={report['retrain_recommendation']['action']}")

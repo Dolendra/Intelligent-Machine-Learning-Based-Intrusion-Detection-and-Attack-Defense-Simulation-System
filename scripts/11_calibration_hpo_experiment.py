@@ -152,6 +152,8 @@ def main() -> None:
         ),
     }
     out_path = out_dir / "calibration_hpo_experiment.json"
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(out_path)
     out_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"Wrote {out_path}")
     print(

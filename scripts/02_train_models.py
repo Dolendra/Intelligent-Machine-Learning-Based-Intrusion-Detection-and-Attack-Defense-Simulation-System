@@ -153,12 +153,16 @@ def main() -> None:
             },
         },
     }
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(out_dir / "training_report.json")
     (out_dir / "training_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     import numpy as np
 
     bg_idx = np.random.RandomState(cfg["data"]["random_state"]).choice(
         len(X_train), size=min(200, len(X_train)), replace=False
     )
+    from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+    assert_writable(out_dir / "shap_background.npy")
     np.save(out_dir / "shap_background.npy", X_train[bg_idx])
 
     import importlib.util
@@ -169,6 +173,8 @@ def main() -> None:
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         meta = mod.build_metadata()
+        from research.artifact_guard import assert_writable  # R-03: never overwrite frozen/protected
+        assert_writable(out_dir / "model_metadata.json")
         (out_dir / "model_metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
     print(f"\nArtifacts written to {out_dir}")
