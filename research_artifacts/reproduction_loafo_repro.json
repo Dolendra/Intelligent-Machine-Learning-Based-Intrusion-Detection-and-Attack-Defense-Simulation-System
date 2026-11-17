@@ -1,0 +1,86 @@
+{
+ "protocol": "loafo",
+ "tag": "repro",
+ "pairs_compared": 30,
+ "pairs_missing_in_rerun": [],
+ "exactly_equal_values": "1320/1320",
+ "max_abs_diff": {
+  "Closed-set XGB": {
+   "zero_day_recall": 0.0,
+   "auroc_unknown": 0.0,
+   "known_recall": 0.0,
+   "fpr": 0.0
+  },
+  "Closed-set DT (v1.1-style)": {
+   "zero_day_recall": 0.0,
+   "auroc_unknown": 0.0,
+   "known_recall": 0.0,
+   "fpr": 0.0
+  },
+  "Isolation Forest": {
+   "zero_day_recall": 0.0,
+   "auroc_unknown": 0.0,
+   "known_recall": 0.0,
+   "fpr": 0.0
+  },
+  "Autoencoder": {
+   "zero_day_recall": 0.0,
+   "auroc_unknown": 0.0,
+   "known_recall": 0.0,
+   "fpr": 0.0
+  },
+  "kNN distance": {
+   "zero_day_recall": 0.0,
+   "auroc_unknown": 0.0,
+   "known_recall": 0.0,
+   "fpr": 0.0
+  },
+  "XGB + Energy": {
+   "zero_day_recall": 0.0,
+   "auroc_unknown": 0.0,
+   "known_recall": 0.0,
+   "fpr": 0.0
+  },
+  "Aegis-OSR": {
+   "zero_day_recall": 0.0,
+   "auroc_unknown": 0.0,
+   "known_recall": 0.0,
+   "fpr": 0.0
+  },
+  "Aegis-OSR w/ max fusion": {
+   "zero_day_recall": 0.0,
+   "auroc_unknown": 0.0,
+   "known_recall": 0.0,
+   "fpr": 0.0
+  },
+  "Aegis-OSR w/ omnibus fusion": {
+   "zero_day_recall": 0.0,
+   "auroc_unknown": 0.0,
+   "known_recall": 0.0,
+   "fpr": 0.0
+  },
+  "Aegis-OSR w/ AE novelty": {
+   "zero_day_recall": 0.0,
+   "auroc_unknown": 0.0,
+   "known_recall": 0.0,
+   "fpr": 0.0
+  },
+  "Aegis-OSR w/ IForest novelty": {
+   "zero_day_recall": 0.0,
+   "auroc_unknown": 0.0,
+   "known_recall": 0.0,
+   "fpr": 0.0
+  }
+ },
+ "headline_original": {
+  "proposed": 0.7060181775151322,
+  "closed_set_xgb": 0.48972561843871665
+ },
+ "headline_rerun": {
+  "proposed": 0.7060181775151322,
+  "closed_set_xgb": 0.48972561843871665
+ },
+ "tolerance": 0.005,
+ "reproduced": true,
+ "note": "Same code, data, seeds and configuration; any non-zero difference would point to non-deterministic training (e.g. multi-threaded PyTorch in the autoencoder baseline)."
+}

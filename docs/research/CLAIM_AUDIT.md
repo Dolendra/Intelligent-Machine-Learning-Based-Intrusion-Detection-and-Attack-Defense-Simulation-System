@@ -1,10 +1,10 @@
 # Aegis IDS — Research Claim Audit (R1)
 
 **Date:** 2026-11-17 · **Scope:** `docs/AEGIS_GUIDE_PLAIN_LANGUAGE.md`, `docs/research/paper.tex`,
-`docs/research/PAPER_AEGIS_OSR.md`, `docs/research/*.md` vs. raw artifacts
+`docs/research/legacy/PAPER_AEGIS_OSR_v1_STALE.md` (archived), `docs/research/*.md` vs. raw artifacts
 (`research_artifacts/*_records.json`, `results/cyber_range/`, `research_artifacts/*.json`, code).
 **Method:** every headline number was recomputed from *raw records*, not from summaries or docs.
-No code or result was changed by this audit.
+The audit itself changed nothing; fixes were made afterwards in R1a (see §7 for status).
 
 Legend: ✅ verified · ⚠️ true but needs a caveat or rewording · ❌ wrong / not supported
 
@@ -125,3 +125,46 @@ Legend: ✅ verified · ⚠️ true but needs a caveat or rewording · ❌ wrong
 | **R7 — system validation** | P8 harness extended to the gate + live stream; soak test (memory/CPU over hours) | operating envelope v3 |
 
 **Not recommended now:** more classifiers, an LLM chatbot, more dashboard features, federated learning.
+
+---
+
+## 7. R1a status (2026-11-17)
+
+Branch `v3-openset-research` (local, not pushed). `main` = `775e9a9` and tag `v1.1-research` untouched.
+
+| Commit | What |
+|---|---|
+| `e84ab79` | Checkpoint of all pre-fix work (as audited) |
+| `abf1d76` | R1a-B: shared incident policy, persisted gate alerts, no ground-truth leakage in the range |
+| `b0ecc55` | R1a-A: leakage-free replay pool; gate head-to-head, Cyber Range and XAI re-run |
+| `a09a48c` | R1a-C: seed-level statistics; paper numbers generated from artifacts; paper/guide corrections |
+| `c127347` | Restored the frozen model's training provenance (`model_metadata.json` had been rewritten) |
+| *(this commit)* | LOAFO reproduction (exact) + this status |
+
+| Acceptance criterion | Result | Evidence |
+|---|---|---|
+| Frozen-model leakage | **0** replay rows in either model's train/val (was 69.6 %) | `replay_pool_manifest.json`; `tests/test_replay_pool_integrity.py` |
+| Replay reproducibility | pool rebuilt deterministically (seed 42) with SHA-256 in the manifest; range runs are seeded | manifest; `tests/test_cyber_range.py` |
+| Gate integration | every gate alert on a persisted detection → `zero_day_alerts` row (p, α, evidence, model version, frozen verdict, incident link); trace step; metrics | `tests/test_r1a_gate_integration.py` |
+| Gate / range consistency | both call `security.detection_policy.decide()`; gate-only = `Zero-Day Candidate`, never a known family; no ground-truth ATT&CK/recommendation | same tests |
+| Zero-day result reproduced | **exact**: independent re-run of all 30 LOAFO runs matches the original records bit-for-bit (1,320/1,320 metric values; Aegis-OSR 0.706 vs closed-set XGB 0.490) | `reproduction_loafo_repro.json`; `scripts/60_compare_reproduction.py` |
+| Seed-level statistics | paired t over 5 independent seeds with CI of the difference; vs XGB +0.216 [0.180, 0.252], p = 7.6×10⁻⁵, 5/5 seeds | `significance_seed_level` in summaries |
+| Paper traceability | 165 numbers + both LOAFO tables generated from artifacts with source paths; test fails on any drift | `paper_numbers.json`; `tests/test_paper_claims.py` |
+| Frozen baseline unchanged | `binary_best`, `multiclass_best`, `feature_bundle`, `training_report`, `threshold_operating_point`, `model_metadata` identical to `v1.1-research` | `git diff v1.1-research` |
+
+**What changed in the numbers after the fixes**
+
+* Frozen v1.1 on flows it never trained on: benign FPR 0.064 % → **0.079 %**; known recall 0.993 → **0.993**;
+  WebAttack 42.0 % → **41.6 %** (n = 77); Bot 61.7 % → **58.5 %** (n = 82). The weakness on minority families is real.
+* Cyber Range headline numbers: **unchanged** (1,190 runs; zero-day 0 % vs 100 % at 4.3 s; 18 → 0 false incidents;
+  isolate 27.4 % collateral; DDoS availability 99.5 % → 62 % with a 30 s delay).
+* XAI stability: SHAP robustness below 0.90 for Bot (0.57), WebAttack (0.73) **and DoS (0.83)**; SHAP–LIME 0.27.
+* Statistics: "p = 1.9×10⁻⁹" withdrawn; seed-level paired t used throughout.
+
+**Also found and fixed during R1a:** tests wrote Cyber Range runs into the committed `results/` directory (now a
+temp dir); the range silently scored all flows benign when a model failed to load (now a 503); the range picked
+its recommended defense from the scenario's ground truth for unnamed detections (now a fixed conservative default).
+
+**Still open (R1b and later):** the docx paper's remaining hand-typed tables (temporal, cross-dataset, range,
+model families) should be generated like the LOAFO ones; the cross-dataset warm-up protocol (first-day window)
+should be per-day; the 2017→2018 extractor-vs-network confound (R2); host-level detection for Bot/PortScan (R3).
