@@ -1,11 +1,39 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import {
+  Activity,
+  BookOpen,
+  Clock3,
+  Cpu,
+  FastForward,
+  GitCompareArrows,
+  History,
+  Loader2,
+  Network,
+  Pause,
+  Play,
+  RotateCcw,
+  ShieldCheck,
+  SkipForward,
+  Timer,
+  Zap,
+} from "lucide-react";
+import { api, type SimHistoryItem, type SimSession } from "../services/api";
 import { NetworkTopology } from "../components/NetworkTopology";
 import { CompareTable } from "../components/DecisionTrace";
-import { api, SimSession } from "../services/api";
+import { Badge, SeverityBadge, StatusBadge } from "../components/ui/Badge";
+import { Callout, Card } from "../components/ui/Card";
+import { EmptyState } from "../components/ui/EmptyState";
+import { ErrorState } from "../components/ui/ErrorState";
+import { PageHeader } from "../components/ui/PageHeader";
+import { StatTile } from "../components/ui/StatTile";
+import { useToast } from "../components/ui/Toast";
+import { TimeSeriesArea, useChartTheme } from "../components/charts";
+import { formatDuration, formatPct, formatRelative, formatRisk, humanize } from "../lib/format";
 
 const ATTACKS = ["DDoS", "DoS", "PortScan", "BruteForce", "WebAttack", "Bot"];
 const INTENSITY_PRESETS: Record<string, number> = { Low: 0.35, Medium: 0.6, High: 0.9 };
+const SPEED_MS: Record<string, number> = { "0.5x": 1600, "1x": 900, "2x": 450 };
 
 const STEPS = [
   "Start normal traffic",
@@ -17,81 +45,33 @@ const STEPS = [
   "Recover",
 ];
 
-const SPEED_MS: Record<string, number> = { "0.5x": 1600, "1x": 900, "2x": 450 };
-
-function pct(v: unknown) {
-  const n = Number(v);
-  if (Number.isNaN(n)) return "—";
-  return `${Math.round(n * 100)}%`;
-}
-
-function SeriesBars({
-  title,
-  labels,
-  withVals,
-  withoutVals,
-  format = "pct",
-}: {
-  title: string;
-  labels: string[];
-  withVals: number[];
-  withoutVals: number[];
-  format?: "pct" | "risk";
-}) {
-  if (!labels.length) return null;
-  return (
-    <div className="panel panel-interactive" style={{ marginBottom: "1rem" }}>
-      <h4 style={{ marginTop: 0 }}>{title}</h4>
-      <p className="muted" style={{ marginTop: 0, fontSize: "0.85rem" }}>
-        With defense vs no-defense counterfactual (simulated).
-      </p>
-      {labels.map((label, i) => {
-        const w = withVals[i] ?? 0;
-        const o = withoutVals[i] ?? 0;
-        const wPct = format === "risk" ? Math.min(100, w) : Math.min(100, w * 100);
-        const oPct = format === "risk" ? Math.min(100, o) : Math.min(100, o * 100);
-        return (
-          <div key={`${label}-${i}`} style={{ marginBottom: "0.65rem" }}>
-            <div className="mono muted" style={{ fontSize: "0.8rem", marginBottom: "0.2rem" }}>
-              {label}
-            </div>
-            <div className="feature-bar">
-              <span>defense</span>
-              <div className="track">
-                <div className="fill" style={{ width: `${wPct}%`, background: "var(--cyan)" }} />
-              </div>
-              <span className="mono muted">{format === "risk" ? w : pct(w)}</span>
-            </div>
-            <div className="feature-bar">
-              <span>none</span>
-              <div className="track">
-                <div className="fill" style={{ width: `${oPct}%`, background: "var(--danger)" }} />
-              </div>
-              <span className="mono muted">{format === "risk" ? o : pct(o)}</span>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+function latency(primary: number | null | undefined, fallback: unknown): string {
+  if (primary != null) return formatDuration(primary);
+  if (fallback != null && fallback !== "") return formatDuration(fallback);
+  return "—";
 }
 
 export function SimulationPage() {
+  const toast = useToast();
+  const theme = useChartTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const [attackType, setAttackType] = useState("DDoS");
   const [intensityLabel, setIntensityLabel] = useState("High");
   const [confidence, setConfidence] = useState(0.96);
   const [session, setSession] = useState<SimSession | null>(null);
-  const [history, setHistory] = useState<Array<Record<string, unknown>>>([]);
+  const [history, setHistory] = useState<SimHistoryItem[]>([]);
   const [busy, setBusy] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState("1x");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const playRef = useRef(false);
   const sessionRef = useRef<SimSession | null>(null);
 
   function refreshHistory() {
-    api.listSims(15).then((r) => setHistory(r.items ?? [])).catch(() => setHistory([]));
+    api
+      .listSims(15)
+      .then((r) => setHistory(r.items ?? []))
+      .catch(() => setHistory([]));
   }
 
   useEffect(() => {
@@ -117,7 +97,7 @@ export function SimulationPage() {
         }
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+        if (!cancelled) setError(e);
       })
       .finally(() => {
         if (!cancelled) setBusy(false);
@@ -146,11 +126,12 @@ export function SimulationPage() {
           if (s.state === "recovered") {
             setPlaying(false);
             refreshHistory();
+            toast.success("Simulation complete", "The network recovered.");
             break;
           }
         } catch (e) {
           if (!cancelled) {
-            setError(e instanceof Error ? e.message : String(e));
+            setError(e);
             setPlaying(false);
           }
           break;
@@ -163,6 +144,7 @@ export function SimulationPage() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playing, speed, session?.id]);
 
   async function createSession() {
@@ -177,13 +159,13 @@ export function SimulationPage() {
       setSearchParams({ session: s.id });
       refreshHistory();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(e);
     } finally {
       setBusy(false);
     }
   }
 
-  async function replay(sessionId: string) {
+  function replay(sessionId: string) {
     setPlaying(false);
     setSearchParams({ session: sessionId });
   }
@@ -199,7 +181,7 @@ export function SimulationPage() {
       if (action === "reset") setSearchParams({ session: s.id });
       refreshHistory();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(e);
     } finally {
       setBusy(false);
     }
@@ -208,261 +190,335 @@ export function SimulationPage() {
   const m = session?.metrics ?? {};
   const lat = session?.latencies;
   const series = session?.series;
+  const chartRows =
+    series?.labels.map((label, i) => ({
+      phase: humanize(label),
+      trafficWith: (series.with_defense.traffic[i] ?? 0) * 100,
+      trafficWithout: (series.without_defense.traffic[i] ?? 0) * 100,
+      stressWith: (series.with_defense.stress[i] ?? 0) * 100,
+      stressWithout: (series.without_defense.stress[i] ?? 0) * 100,
+      riskWith: series.with_defense.risk[i] ?? 0,
+      riskWithout: series.without_defense.risk[i] ?? 0,
+    })) ?? [];
+  const phaseOrder = (session?.phase_guide ?? []).map((x) => x.state);
+  const phaseIdx = session ? phaseOrder.indexOf(session.state) : -1;
+  const pctFmt = (v: number) => `${Math.round(v)}%`;
 
   return (
-    <div className="rise">
-      <div className="page-header">
-        <div>
-          <h2>Attack–Defense Simulation</h2>
-          <p>Interactive cyber-range visualization — attack → detect → defend → recover (no real traffic).</p>
-        </div>
-        {session && (
-          <span className={`live-chip ${playing ? "" : "off"}`}>
-            <span className={`status-dot ${playing ? "on" : ""}`} />
-            {playing ? "Playing" : session.state === "recovered" ? "Recovered" : `State · ${session.state}`}
-          </span>
-        )}
-      </div>
+    <div className="page">
+      <PageHeader
+        eyebrow="Operations"
+        icon={Network}
+        title="Attack Storyboard"
+        subtitle="An illustrative walkthrough of attack → detect → defend → recover for teaching and demos. No traffic is generated and the defense effectiveness shown is an assumed value."
+        actions={
+          session ? (
+            <span className="live-pill">
+              <span className="status-dot" data-state={playing ? "live" : session.state === "recovered" ? undefined : "warn"} aria-hidden />
+              {playing ? "Playing" : session.state === "recovered" ? "Recovered" : humanize(session.state)}
+            </span>
+          ) : null
+        }
+      />
 
-      <div className="panel panel-interactive stack" style={{ marginBottom: "1rem" }}>
-        <div className="row" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
-          <label className="muted">
-            Attack{" "}
-            <select className="select" value={attackType} onChange={(e) => setAttackType(e.target.value)}>
-              {ATTACKS.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="muted">
-            Intensity{" "}
-            <select className="select" value={intensityLabel} onChange={(e) => setIntensityLabel(e.target.value)}>
-              {Object.keys(INTENSITY_PRESETS).map((k) => (
-                <option key={k} value={k}>
-                  {k}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="muted">
-            Confidence{" "}
-            <input
-              className="select"
-              type="number"
-              min={0.5}
-              max={1}
-              step={0.01}
-              value={confidence}
-              onChange={(e) => setConfidence(Number(e.target.value))}
-              style={{ width: "5rem" }}
-            />
-          </label>
-          <button className="btn btn-primary" onClick={createSession} disabled={busy}>
-            Run simulation
-          </button>
-          <button
-            className="btn btn-amber"
-            onClick={() => setPlaying((p) => !p)}
-            disabled={busy || !session || session.state === "recovered"}
-          >
-            {playing ? "Pause" : "Play"}
-          </button>
-          <select className="select" value={speed} onChange={(e) => setSpeed(e.target.value)} disabled={!session}>
-            {Object.keys(SPEED_MS).map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-          <button className="btn btn-secondary" onClick={() => advance()} disabled={busy || !session || playing}>
-            Step
-          </button>
-          <button className="btn btn-secondary" onClick={() => advance("defend")} disabled={busy || !session || playing}>
-            Apply defense
-          </button>
-          <button className="btn btn-danger" onClick={() => advance("reset")} disabled={busy || !session}>
-            Reset
-          </button>
-        </div>
-      </div>
+      <Callout tone="info" title="Looking for measured results?">
+        This page animates a scripted story. The <Link to="/range">Cyber Range</Link> replays real traffic through the real
+        detectors and measures detection time, service impact and the effect of each defense.
+      </Callout>
 
-      {error && <div className="panel" style={{ marginBottom: "1rem", borderColor: "rgba(227,93,106,.4)" }}>{error}</div>}
+      <Card title="Scenario" subtitle="Configure the attack, then run or step through it." icon={Zap}>
+        <div className="stack">
+          <div className="row" style={{ alignItems: "flex-end", gap: 14 }}>
+            <div className="field" style={{ width: 170 }}>
+              <label className="field-label" htmlFor="sim-attack">
+                Attack
+              </label>
+              <select id="sim-attack" className="select" value={attackType} onChange={(e) => setAttackType(e.target.value)}>
+                {ATTACKS.map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <span className="field-label" id="sim-intensity-label">
+                Intensity
+              </span>
+              <div className="segmented" role="radiogroup" aria-labelledby="sim-intensity-label">
+                {Object.keys(INTENSITY_PRESETS).map((k) => (
+                  <button key={k} type="button" role="radio" aria-checked={intensityLabel === k} onClick={() => setIntensityLabel(k)}>
+                    {k}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="field" style={{ width: 120 }}>
+              <label className="field-label" htmlFor="sim-confidence">
+                Confidence
+              </label>
+              <input
+                id="sim-confidence"
+                className="input mono"
+                type="number"
+                min={0.5}
+                max={1}
+                step={0.01}
+                value={confidence}
+                onChange={(e) => setConfidence(Number(e.target.value))}
+              />
+            </div>
+            <button type="button" className="btn btn-primary" onClick={() => void createSession()} disabled={busy}>
+              {busy && !session ? <Loader2 size={16} className="spin" aria-hidden /> : <Play size={16} aria-hidden />}
+              Run simulation
+            </button>
+          </div>
 
-      {!session && (
-        <div className="empty-state" style={{ marginBottom: "1rem" }}>
-          <strong>Ready to simulate</strong>
-          <p className="muted" style={{ margin: "0 0 0.85rem" }}>
-            Configure attack intensity and confidence, then run — or replay a saved session below.
-          </p>
-          <ol className="muted" style={{ textAlign: "left", display: "inline-block", margin: 0 }}>
-            {STEPS.map((s) => (
-              <li key={s}>{s}</li>
-            ))}
-          </ol>
-        </div>
-      )}
-
-      {history.length > 0 && (
-        <div className="panel panel-interactive" style={{ marginBottom: "1rem" }}>
-          <h3 style={{ marginTop: 0 }}>Simulation history</h3>
-          <div className="row" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
-            {history.map((h) => (
-              <button
-                key={String(h.session_id)}
-                className={`btn ${session?.id === String(h.session_id) ? "btn-primary" : "btn-secondary"}`}
-                type="button"
-                onClick={() => replay(String(h.session_id))}
-              >
-                {String(h.attack_type)} · {String(h.state)} · {String(h.session_id).slice(0, 8)}
-              </button>
-            ))}
+          <div className="row" role="toolbar" aria-label="Playback controls" style={{ gap: 8 }}>
+            <button
+              type="button"
+              className="btn btn-warn"
+              onClick={() => setPlaying((p) => !p)}
+              disabled={busy || !session || session.state === "recovered"}
+            >
+              {playing ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden />}
+              {playing ? "Pause" : "Play"}
+            </button>
+            <label className="row" style={{ gap: 6 }}>
+              <FastForward size={15} aria-hidden className="muted" />
+              <span className="sr-only">Playback speed</span>
+              <select className="select select-sm" style={{ width: 84 }} value={speed} onChange={(e) => setSpeed(e.target.value)} disabled={!session}>
+                {Object.keys(SPEED_MS).map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button type="button" className="btn btn-secondary" onClick={() => void advance()} disabled={busy || !session || playing}>
+              <SkipForward size={16} aria-hidden /> Step
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={() => void advance("defend")} disabled={busy || !session || playing}>
+              <ShieldCheck size={16} aria-hidden /> Apply defense
+            </button>
+            <button type="button" className="btn btn-danger" onClick={() => void advance("reset")} disabled={busy || !session}>
+              <RotateCcw size={16} aria-hidden /> Reset
+            </button>
           </div>
         </div>
+      </Card>
+
+      {error ? <ErrorState error={error} onRetry={() => setError(null)} /> : null}
+
+      {!session && (
+        <EmptyState
+          icon={Network}
+          title="Ready to simulate"
+          description={
+            <>
+              Configure intensity and confidence, then run — or replay a saved session below. Phases: {STEPS.join(" → ")}.
+            </>
+          }
+        />
       )}
 
       {session && (
         <>
-          <div className="panel phase-strip" style={{ marginBottom: "1rem" }}>
-            {(session.phase_guide ?? []).map((p, idx) => {
-              const order = (session.phase_guide ?? []).map((x) => x.state);
-              const cur = order.indexOf(session.state);
-              const done = cur > idx;
-              const active = session.state === p.state;
-              return (
-                <div key={p.state} className={`phase-chip${active ? " active" : ""}${done ? " done" : ""}`}>
-                  <span className="mono muted">{p.t}</span>
-                  <strong>{p.label}</strong>
-                </div>
-              );
-            })}
+          {session.phase_guide && session.phase_guide.length > 0 && (
+            <ol className="stepper list-plain" aria-label="Simulation phases">
+              {session.phase_guide.map((p, idx) => {
+                const state = idx < phaseIdx ? "done" : idx === phaseIdx ? "active" : undefined;
+                return (
+                  <li key={p.state} className="step" data-state={state} aria-current={state === "active" ? "step" : undefined}>
+                    <span className="step-bar" aria-hidden />
+                    <span className="step-label">{p.label}</span>
+                    <span className="step-meta">{p.t}</span>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+
+          <div className="grid grid-stats">
+            <StatTile label="Detection latency" icon={Timer} value={latency(lat?.detection_s, m.detection_delay_s)} compact />
+            <StatTile label="Defense latency" icon={ShieldCheck} value={latency(lat?.defense_s, m.defense_delay_s)} compact />
+            <StatTile label="Recovery time" icon={Clock3} value={latency(lat?.recovery_s, m.recovery_time_s)} compact />
+            <StatTile label="Attack → recover" icon={Activity} value={latency(lat?.attack_to_recover_s, null)} compact />
           </div>
 
-          <div className="grid-stats" style={{ marginBottom: "1rem" }}>
-            <div className="stat">
-              <div className="label">Detection latency</div>
-              <div className="value" style={{ fontSize: "1.1rem" }}>
-                {lat?.detection_s != null
-                  ? `${lat.detection_s}s`
-                  : m.detection_delay_s != null
-                    ? `${m.detection_delay_s}s`
-                    : "—"}
-              </div>
-            </div>
-            <div className="stat">
-              <div className="label">Defense latency</div>
-              <div className="value" style={{ fontSize: "1.1rem" }}>
-                {lat?.defense_s != null
-                  ? `${lat.defense_s}s`
-                  : m.defense_delay_s != null
-                    ? `${m.defense_delay_s}s`
-                    : "—"}
-              </div>
-            </div>
-            <div className="stat">
-              <div className="label">Recovery time</div>
-              <div className="value" style={{ fontSize: "1.1rem" }}>
-                {lat?.recovery_s != null
-                  ? `${lat.recovery_s}s`
-                  : m.recovery_time_s != null
-                    ? `${m.recovery_time_s}s`
-                    : "—"}
-              </div>
-            </div>
-            <div className="stat">
-              <div className="label">Attack→recover</div>
-              <div className="value" style={{ fontSize: "1.1rem" }}>
-                {lat?.attack_to_recover_s != null ? `${lat.attack_to_recover_s}s` : "—"}
-              </div>
-            </div>
-          </div>
-
-          {series && series.labels.length > 0 && (
-            <div className="split" style={{ marginBottom: "1rem" }}>
-              <SeriesBars
-                title="Traffic before / after"
-                labels={series.labels}
-                withVals={series.with_defense.traffic}
-                withoutVals={series.without_defense.traffic}
-              />
-              <SeriesBars
-                title="Risk before / after"
-                labels={series.labels}
-                withVals={series.with_defense.risk}
-                withoutVals={series.without_defense.risk}
-                format="risk"
-              />
+          {chartRows.length > 0 && (
+            <div className="grid grid-3">
+              <Card title="Traffic load" subtitle="Share of link capacity per phase" icon={Activity}>
+                <TimeSeriesArea
+                  ariaLabel="Traffic load with and without defense across phases"
+                  data={chartRows}
+                  xKey="phase"
+                  variant="line"
+                  height={220}
+                  yDomain={[0, 100]}
+                  yFormatter={pctFmt}
+                  series={[
+                    { key: "trafficWithout", label: "No defense", color: theme.negative, dashed: true },
+                    { key: "trafficWith", label: "With defense", color: theme.positive },
+                  ]}
+                />
+              </Card>
+              <Card title="Server stress" subtitle="Target utilisation per phase" icon={Cpu}>
+                <TimeSeriesArea
+                  ariaLabel="Server stress with and without defense across phases"
+                  data={chartRows}
+                  xKey="phase"
+                  variant="line"
+                  height={220}
+                  yDomain={[0, 100]}
+                  yFormatter={pctFmt}
+                  series={[
+                    { key: "stressWithout", label: "No defense", color: theme.negative, dashed: true },
+                    { key: "stressWith", label: "With defense", color: theme.positive },
+                  ]}
+                />
+              </Card>
+              <Card title="Risk" subtitle="Risk score 0–100 per phase" icon={Zap}>
+                <TimeSeriesArea
+                  ariaLabel="Risk score with and without defense across phases"
+                  data={chartRows}
+                  xKey="phase"
+                  variant="line"
+                  height={220}
+                  yDomain={[0, 100]}
+                  yFormatter={(v) => String(Math.round(v))}
+                  series={[
+                    { key: "riskWithout", label: "No defense", color: theme.negative, dashed: true },
+                    { key: "riskWith", label: "With defense", color: theme.positive },
+                  ]}
+                />
+              </Card>
             </div>
           )}
 
-          <div className="split">
-            <section className="stack">
-              <NetworkTopology nodes={session.nodes} edges={session.edges} />
-              <div className="panel row">
-                <span className={`badge ${session.severity.toLowerCase()}`}>{session.severity}</span>
-                <span className="mono">State: {session.state}</span>
-                <span className="mono muted">Risk {session.risk_score}</span>
-                <span className="mono muted">{session.attack_type}</span>
-                {session.campaign_id && <span className="mono muted">Campaign {session.campaign_id}</span>}
-                {session.incident_id && <span className="mono muted">{session.incident_id}</span>}
+          <div className="grid grid-split">
+            <Card
+              title="Network topology"
+              subtitle="Node health and traffic flows for the current phase"
+              icon={Network}
+              actions={
+                <div className="row" style={{ gap: 6 }}>
+                  <SeverityBadge severity={session.severity} size="sm" />
+                  <Badge tone="neutral" size="sm">
+                    Risk {formatRisk(session.risk_score)}
+                  </Badge>
+                  <Badge tone="neutral" size="sm">
+                    {session.attack_type}
+                  </Badge>
+                </div>
+              }
+            >
+              <div className="stack">
+                <NetworkTopology nodes={session.nodes} edges={session.edges} />
+                <div className="row small muted" style={{ gap: 12 }}>
+                  <span>
+                    State <StatusBadge status={session.state} size="sm" />
+                  </span>
+                  {session.campaign_id && (
+                    <Link to={`/campaigns/${encodeURIComponent(session.campaign_id)}`}>Campaign {session.campaign_id}</Link>
+                  )}
+                  {session.incident_id && <Link to={`/incidents/${encodeURIComponent(session.incident_id)}`}>{session.incident_id}</Link>}
+                </div>
               </div>
-              {session.comparison ? (
+            </Card>
+
+            <Card title="Timeline" subtitle="Events emitted by the simulation state machine" icon={Clock3}>
+              <div className="stack">
+                <ol className="timeline" style={{ maxHeight: 360, overflowY: "auto", paddingRight: 4 }}>
+                  {session.timeline.map((t, idx) => (
+                    <li key={`${t.event}-${idx}`}>
+                      <div className="timeline-title">{humanize(t.event)}</div>
+                      <div className="timeline-meta">
+                        {t.t_s != null ? `t = ${t.t_s}s` : ""}
+                        {t.state ? ` · ${humanize(t.state)}` : ""}
+                      </div>
+                      <div className="timeline-detail">{t.detail}</div>
+                    </li>
+                  ))}
+                </ol>
+                <dl className="kv">
+                  <dt>Peak traffic</dt>
+                  <dd>{formatPct(m.peak_traffic)}</dd>
+                  <dt>Server stress</dt>
+                  <dd>{formatPct(m.server_stress)}</dd>
+                  <dt>Traffic blocked</dt>
+                  <dd>{formatPct(m.traffic_blocked)}</dd>
+                  {m.remaining_malicious != null && (
+                    <>
+                      <dt>Remaining malicious</dt>
+                      <dd>{String(m.remaining_malicious)}</dd>
+                    </>
+                  )}
+                  {m.persistence != null && (
+                    <>
+                      <dt>Persistence</dt>
+                      <dd>{String(m.persistence)}</dd>
+                    </>
+                  )}
+                </dl>
+              </div>
+            </Card>
+          </div>
+
+          <div className="grid grid-2">
+            {session.comparison ? (
+              <Card title="Before vs after defense" subtitle="Simulated counterfactual comparison" icon={GitCompareArrows}>
                 <CompareTable
                   without={session.comparison.without_defense}
                   withDefense={session.comparison.with_defense}
                   recoveryS={lat?.recovery_s ?? (m.recovery_time_s as number | undefined)}
                 />
-              ) : null}
-            </section>
-            <section className="panel stack">
-              <h3 style={{ marginTop: 0 }}>Timeline</h3>
-              <ul className="timeline">
-                {session.timeline.map((t, idx) => (
-                  <li key={`${t.event}-${idx}`}>
-                    <strong>{t.event}</strong>
-                    <div className="mono muted" style={{ fontSize: "0.78rem" }}>
-                      {t.t_s != null ? `t=${t.t_s}s` : ""}
-                      {t.timestamp ? ` · ${t.timestamp}` : ""}
-                    </div>
-                    <div className="muted">{t.detail}</div>
-                  </li>
-                ))}
-              </ul>
-              {session.narrative && session.narrative.length > 0 && (
-                <div>
-                  <h4>Attack narrative</h4>
-                  <ol>
+              </Card>
+            ) : null}
+            <Card title="Narrative & recommendation" icon={BookOpen}>
+              <div className="stack">
+                {session.narrative && session.narrative.length > 0 && (
+                  <ol className="check-list">
                     {session.narrative.map((n, i) => (
                       <li key={i}>{n}</li>
                     ))}
                   </ol>
+                )}
+                <div>
+                  <div style={{ fontWeight: 600 }}>{session.recommendation.primary}</div>
+                  <p className="muted small">{session.recommendation.rationale}</p>
                 </div>
-              )}
-              <div className="mono muted">
-                Metrics (simulated): peak={String(m.peak_traffic ?? "—")} stress=
-                {String(m.server_stress ?? "—")} remaining=
-                {String(m.remaining_malicious ?? "—")} persistence={String(m.persistence ?? "—")}
+                <Callout tone="neutral">
+                  {session.disclaimer ??
+                    "Defense effectiveness values are simulation assumptions for comparative visualization, not measured real-world mitigation rates."}
+                </Callout>
               </div>
-              {session.disclaimer && (
-                <p className="muted" style={{ fontSize: "0.85rem" }}>
-                  {session.disclaimer}
-                </p>
-              )}
-              <p className="muted" style={{ fontSize: "0.85rem" }}>
-                Defense effectiveness values are <strong>simulation assumptions</strong> for comparative
-                visualization, not empirically measured real-world mitigation rates.
-              </p>
-              <div>
-                <h4>Recommendation</h4>
-                <p style={{ marginTop: 0 }}>{session.recommendation.primary}</p>
-                <p className="muted" style={{ fontSize: "0.85rem" }}>
-                  {session.recommendation.rationale}
-                </p>
-              </div>
-            </section>
+            </Card>
           </div>
         </>
+      )}
+
+      {history.length > 0 && (
+        <Card title="Simulation history" subtitle="Replay a previous session" icon={History}>
+          <div className="row" style={{ gap: 8 }}>
+            {history.map((h) => {
+              const activeSession = session?.id === h.session_id;
+              return (
+                <button
+                  key={h.session_id}
+                  type="button"
+                  className={`btn btn-sm ${activeSession ? "btn-primary" : "btn-secondary"}`}
+                  onClick={() => replay(h.session_id)}
+                  aria-pressed={activeSession}
+                  title={h.session_id}
+                >
+                  {h.attack_type} · {humanize(h.state)}
+                  <span style={{ opacity: 0.7, fontWeight: 400 }}>· {h.created_at ? formatRelative(h.created_at) : h.session_id.slice(0, 8)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Card>
       )}
     </div>
   );

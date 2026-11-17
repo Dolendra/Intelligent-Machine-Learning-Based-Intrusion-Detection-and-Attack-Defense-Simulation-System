@@ -1075,7 +1075,7 @@ def simulation_get(session_id: str):
 
 @router.get("/incidents")
 def incidents(limit: int = 50, db: Session = Depends(get_db)):
-    return {"items": svc.list_incidents(db, limit=limit)}
+    return {"items": svc.list_incidents(db, limit=max(1, min(int(limit), 1000)))}
 
 
 @router.get("/incidents/{incident_id}")

@@ -1,0 +1,359 @@
+/* ==========================================================================
+   v3 additions — drawer, Zero-Day Gate visuals, Live Monitor, Research Lab.
+   Uses only tokens from global.css.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- drawer */
+.modal-backdrop[data-placement="right"] {
+  align-items: stretch;
+  justify-content: flex-end;
+  padding: 0;
+}
+.modal-backdrop[data-placement="right"] .modal {
+  max-width: min(560px, 100vw);
+  max-height: none;
+  height: 100%;
+  border-radius: 0;
+  border-width: 0 0 0 1px;
+  animation: drawer-in 0.2s var(--ease);
+}
+.modal-backdrop[data-placement="right"] .modal-body {
+  flex: 1;
+}
+@keyframes drawer-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------------- p-value meter (log scale) */
+.pmeter {
+  position: relative;
+  height: 30px;
+  margin: 4px 0 2px;
+}
+.pmeter-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 11px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.pmeter-zone {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+.pmeter-alpha {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--danger);
+}
+.pmeter-dot {
+  position: absolute;
+  top: 8px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--border-strong);
+  transition: left 0.4s var(--ease);
+}
+.pmeter-scale {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- pipeline diagram */
+.pipeline {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 0.9fr) auto minmax(0, 1.3fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.pipeline-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.pipeline-node {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  min-width: 0;
+}
+.pipeline-node strong {
+  display: block;
+  font-size: 0.86rem;
+}
+.pipeline-node span {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+.pipeline-node[data-accent="true"] {
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  background: var(--accent-soft);
+}
+.pipeline-arrow {
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+}
+@media (max-width: 1100px) {
+  .pipeline {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pipeline-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+/* ---------------------------------------------------------------- scenario cards + phase bars */
+.scenario-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  min-width: 0;
+}
+.scenario-card:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+.scenario-card[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  background: var(--accent-soft);
+}
+.scenario-card p {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.phase-bar {
+  display: flex;
+  gap: 2px;
+  height: 20px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.phase-seg {
+  position: relative;
+  min-width: 4px;
+  background: color-mix(in srgb, var(--chart-2) var(--attack-pct, 0%), var(--surface-3));
+  overflow: hidden;
+}
+.phase-seg[data-unseen="true"] {
+  background: color-mix(in srgb, var(--chart-7) calc(var(--attack-pct, 0%) + 30%), var(--surface-3));
+}
+.phase-seg[data-active="true"] {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.phase-seg-progress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+  transition: width 0.5s linear;
+}
+
+/* ---------------------------------------------------------------- live feed */
+.feed-table td {
+  white-space: nowrap;
+}
+.feed-table tbody tr {
+  cursor: pointer;
+}
+.feed-table tbody tr:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+.feed-table tr[data-highlight="gate"] td {
+  background: color-mix(in srgb, var(--chart-7) 13%, transparent);
+}
+.feed-table tr[data-highlight="unseen"] td {
+  background: color-mix(in srgb, var(--warn) 10%, transparent);
+}
+.feed-table tr[data-highlight="missed"] td {
+  background: color-mix(in srgb, var(--danger) 9%, transparent);
+}
+
+.vs-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.vs-side {
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  min-width: 0;
+}
+.vs-side[data-win="true"] {
+  border-color: color-mix(in srgb, var(--chart-7) 55%, transparent);
+  background: color-mix(in srgb, var(--chart-7) 10%, var(--surface));
+}
+.vs-value {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.alert-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 560px;
+  overflow-y: auto;
+}
+.alert-item {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  animation: feed-in 0.35s var(--ease);
+}
+.alert-item:hover {
+  border-color: var(--border-strong);
+}
+
+.range-slider {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+/* ---------------------------------------------------------------- CI range chart */
+.range-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.range-row {
+  display: grid;
+  grid-template-columns: minmax(0, 38%) minmax(0, 1fr) 4.6em;
+  gap: 10px;
+  align-items: center;
+  min-height: 26px;
+  font-size: 0.84rem;
+}
+.range-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-2);
+}
+.range-row[data-emph="true"] .range-label {
+  color: var(--text);
+  font-weight: 600;
+}
+.range-track {
+  position: relative;
+  height: 18px;
+  border-radius: 4px;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(20% - 1px), var(--chart-grid) calc(20% - 1px) 20%);
+}
+.range-whisker {
+  position: absolute;
+  top: 8px;
+  height: 2px;
+  border-radius: 1px;
+}
+.range-whisker::before,
+.range-whisker::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 10px;
+  background: inherit;
+}
+.range-whisker::before {
+  left: 0;
+}
+.range-whisker::after {
+  right: 0;
+}
+.range-dot {
+  position: absolute;
+  top: 3px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+}
+.range-ref {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 0;
+  border-left: 1.5px dashed var(--chart-axis);
+}
+.range-group {
+  margin-top: 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.range-value {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  text-align: right;
+}
+
+/* Zero-day / novelty accent (violet = categorical slot 7, reserved for "gate-only" catches). */
+.badge[data-tone="novel"] {
+  --tone: var(--chart-7);
+}
+
+.launch-tile .badge {
+  font-size: 0.68rem;
+  color: var(--text);
+}
+
+@media (max-width: 480px) {
+  .vs-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

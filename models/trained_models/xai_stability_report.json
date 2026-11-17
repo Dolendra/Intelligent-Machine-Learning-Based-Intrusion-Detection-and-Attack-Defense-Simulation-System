@@ -1,0 +1,371 @@
+{
+  "experiment": "E9_xai_stability",
+  "generated_at": "2026-11-10T11:19:10.924989+00:00",
+  "seed": 7,
+  "per_family_flows": 20,
+  "perturbation": "independent multiplicative noise U(-1%, +1%) on every feature",
+  "overall": {
+    "robustness_jaccard_top5": {
+      "mean": 0.8372,
+      "sd": 0.2474,
+      "n": 140
+    },
+    "robustness_spearman_top10": {
+      "mean": 0.8109,
+      "sd": 0.3524,
+      "n": 140
+    },
+    "shap_lime_jaccard_top5": {
+      "mean": 0.2619,
+      "sd": 0.1819,
+      "n": 140
+    }
+  },
+  "per_family": {
+    "BENIGN": {
+      "n_flows": 20,
+      "predicted_as": {
+        "BENIGN": 20
+      },
+      "consistency_jaccard_top5": {
+        "mean": 0.5392,
+        "sd": 0.1877,
+        "n": 190
+      },
+      "robustness_jaccard_top5": {
+        "mean": 0.9833,
+        "sd": 0.0745,
+        "n": 20
+      },
+      "robustness_spearman_top10": {
+        "mean": 0.9786,
+        "sd": 0.0934,
+        "n": 20
+      },
+      "shap_lime_jaccard_top5": {
+        "mean": 0.1431,
+        "sd": 0.0893,
+        "n": 20
+      },
+      "most_frequent_top5": [
+        [
+          "Init_Win_bytes_backward",
+          20
+        ],
+        [
+          "Average Packet Size",
+          20
+        ],
+        [
+          "Bwd Packet Length Std",
+          18
+        ],
+        [
+          "Packet Length Variance",
+          9
+        ],
+        [
+          "Destination Port",
+          9
+        ]
+      ]
+    },
+    "Bot": {
+      "n_flows": 20,
+      "predicted_as": {
+        "BENIGN": 6,
+        "Bot": 14
+      },
+      "consistency_jaccard_top5": {
+        "mean": 0.4486,
+        "sd": 0.3316,
+        "n": 190
+      },
+      "robustness_jaccard_top5": {
+        "mean": 0.5065,
+        "sd": 0.2462,
+        "n": 20
+      },
+      "robustness_spearman_top10": {
+        "mean": 0.3351,
+        "sd": 0.4532,
+        "n": 20
+      },
+      "shap_lime_jaccard_top5": {
+        "mean": 0.4379,
+        "sd": 0.2354,
+        "n": 20
+      },
+      "most_frequent_top5": [
+        [
+          "Destination Port",
+          18
+        ],
+        [
+          "Init_Win_bytes_backward",
+          18
+        ],
+        [
+          "Fwd Packet Length Max",
+          13
+        ],
+        [
+          "min_seg_size_forward",
+          11
+        ],
+        [
+          "Fwd Packet Length Mean",
+          10
+        ]
+      ]
+    },
+    "BruteForce": {
+      "n_flows": 20,
+      "predicted_as": {
+        "BruteForce": 20
+      },
+      "consistency_jaccard_top5": {
+        "mean": 0.7393,
+        "sd": 0.2069,
+        "n": 190
+      },
+      "robustness_jaccard_top5": {
+        "mean": 0.9167,
+        "sd": 0.1481,
+        "n": 20
+      },
+      "robustness_spearman_top10": {
+        "mean": 0.9945,
+        "sd": 0.0073,
+        "n": 20
+      },
+      "shap_lime_jaccard_top5": {
+        "mean": 0.2036,
+        "sd": 0.1637,
+        "n": 20
+      },
+      "most_frequent_top5": [
+        [
+          "Destination Port",
+          20
+        ],
+        [
+          "min_seg_size_forward",
+          20
+        ],
+        [
+          "Fwd Packet Length Max",
+          20
+        ],
+        [
+          "Bwd Header Length",
+          17
+        ],
+        [
+          "Packet Length Mean",
+          11
+        ]
+      ]
+    },
+    "DDoS": {
+      "n_flows": 20,
+      "predicted_as": {
+        "DDoS": 20
+      },
+      "consistency_jaccard_top5": {
+        "mean": 0.8526,
+        "sd": 0.166,
+        "n": 190
+      },
+      "robustness_jaccard_top5": {
+        "mean": 0.8958,
+        "sd": 0.2039,
+        "n": 20
+      },
+      "robustness_spearman_top10": {
+        "mean": 0.9132,
+        "sd": 0.249,
+        "n": 20
+      },
+      "shap_lime_jaccard_top5": {
+        "mean": 0.375,
+        "sd": 0.084,
+        "n": 20
+      },
+      "most_frequent_top5": [
+        [
+          "Destination Port",
+          20
+        ],
+        [
+          "Init_Win_bytes_backward",
+          20
+        ],
+        [
+          "Fwd Packet Length Max",
+          20
+        ],
+        [
+          "Fwd Packet Length Mean",
+          20
+        ],
+        [
+          "min_seg_size_forward",
+          14
+        ]
+      ]
+    },
+    "DoS": {
+      "n_flows": 20,
+      "predicted_as": {
+        "BENIGN": 1,
+        "DoS": 19
+      },
+      "consistency_jaccard_top5": {
+        "mean": 0.5277,
+        "sd": 0.2467,
+        "n": 190
+      },
+      "robustness_jaccard_top5": {
+        "mean": 0.9,
+        "sd": 0.1567,
+        "n": 20
+      },
+      "robustness_spearman_top10": {
+        "mean": 0.9485,
+        "sd": 0.0445,
+        "n": 20
+      },
+      "shap_lime_jaccard_top5": {
+        "mean": 0.3754,
+        "sd": 0.1315,
+        "n": 20
+      },
+      "most_frequent_top5": [
+        [
+          "Destination Port",
+          20
+        ],
+        [
+          "Fwd Packet Length Max",
+          17
+        ],
+        [
+          "Init_Win_bytes_backward",
+          17
+        ],
+        [
+          "Idle Mean",
+          11
+        ],
+        [
+          "Packet Length Mean",
+          10
+        ]
+      ]
+    },
+    "PortScan": {
+      "n_flows": 20,
+      "predicted_as": {
+        "PortScan": 20
+      },
+      "consistency_jaccard_top5": {
+        "mean": 1.0,
+        "sd": 0.0,
+        "n": 190
+      },
+      "robustness_jaccard_top5": {
+        "mean": 1.0,
+        "sd": 0.0,
+        "n": 20
+      },
+      "robustness_spearman_top10": {
+        "mean": 0.9965,
+        "sd": 0.0058,
+        "n": 20
+      },
+      "shap_lime_jaccard_top5": {
+        "mean": 0.2361,
+        "sd": 0.0427,
+        "n": 20
+      },
+      "most_frequent_top5": [
+        [
+          "Fwd Packet Length Max",
+          20
+        ],
+        [
+          "Packet Length Mean",
+          20
+        ],
+        [
+          "Avg Fwd Segment Size",
+          20
+        ],
+        [
+          "Fwd Packet Length Mean",
+          20
+        ],
+        [
+          "Average Packet Size",
+          20
+        ]
+      ]
+    },
+    "WebAttack": {
+      "n_flows": 20,
+      "predicted_as": {
+        "BENIGN": 13,
+        "WebAttack": 7
+      },
+      "consistency_jaccard_top5": {
+        "mean": 0.5393,
+        "sd": 0.302,
+        "n": 190
+      },
+      "robustness_jaccard_top5": {
+        "mean": 0.6583,
+        "sd": 0.2829,
+        "n": 20
+      },
+      "robustness_spearman_top10": {
+        "mean": 0.5095,
+        "sd": 0.4054,
+        "n": 20
+      },
+      "shap_lime_jaccard_top5": {
+        "mean": 0.0625,
+        "sd": 0.0709,
+        "n": 20
+      },
+      "most_frequent_top5": [
+        [
+          "Average Packet Size",
+          18
+        ],
+        [
+          "Max Packet Length",
+          18
+        ],
+        [
+          "Destination Port",
+          16
+        ],
+        [
+          "Avg Fwd Segment Size",
+          15
+        ],
+        [
+          "Bwd Packet Length Mean",
+          8
+        ]
+      ]
+    }
+  },
+  "runtime_seconds": 42.5,
+  "notes": [
+    "Jaccard 1.0 = identical top-5 sets; 0.0 = disjoint.",
+    "Consistency measures whether one family has one 'explanation signature'; low values mean explanations are flow-specific.",
+    "Attributions explain the model, not the attack; they are decision support, not causal proof."
+  ]
+}

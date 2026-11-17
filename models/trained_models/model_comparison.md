@@ -13,7 +13,7 @@ Binary selection is **multi-objective** (recall / F1 / PR-AUC / FPR / latency).
 | xgboost | 0.9961 | 0.9899 | 0.9930 | 0.9999 | 0.991752 |
 
 **Best binary:** `decision_tree`
-**Test:** precision=0.98404, recall=0.99700, F1=0.99048, ROC-AUC=0.99916, PR-AUC=0.99744
+**Test:** precision=0.98404, recall=0.99700, F1=0.99048, ROC-AUC=0.9991563202362416
 
 ## Multiclass validation (attack-only)
 
@@ -23,4 +23,4 @@ Binary selection is **multi-objective** (recall / F1 / PR-AUC / FPR / latency).
 | xgboost | 0.9972 | 0.9998 | 0.9998 | 0.998016 |
 
 **Best multiclass:** `random_forest`
-**Test:** accuracy=0.99979, macro-F1=0.99813, weighted-F1=0.99979
+**Test:** macro-F1=0.99813, weighted-F1=0.99979

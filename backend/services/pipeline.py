@@ -250,6 +250,23 @@ def _find_duplicate_incident(
     )
 
 
+def zero_day_assessment(rows: list[dict[str, float]], *, explain_top: int = 5) -> list[dict[str, Any] | None]:
+    """Advisory Aegis-OSR Zero-Day Gate verdicts (v3). Never alters the frozen v1.1 decision.
+
+    Returns ``None`` per row when the gate artifacts are unavailable or the row lacks features,
+    so the frozen prediction path keeps working unchanged.
+    """
+    try:
+        from research.serving import get_gate
+
+        gate = get_gate()
+        if gate is None or not rows:
+            return [None] * len(rows)
+        return gate.assess(rows, explain_top=explain_top)
+    except Exception:  # noqa: BLE001 — advisory path must never break detection
+        return [None] * len(rows)
+
+
 def run_prediction(
     features: dict[str, float],
     db: Session | None = None,
@@ -314,11 +331,16 @@ def run_prediction(
             payload["deduplicated"] = True
         else:
             related = find_related_campaign(db, attack_type=pred.attack_type, source_ref=flow_ref)
-            campaign_id = (
-                related.campaign_id
-                if related is not None and getattr(related, "campaign_id", None)
-                else (related.incident_code.replace("INC-", "CMP-") if related is not None else new_campaign_id())
-            )
+            if not flow_ref:
+                # Without a source reference there is nothing to correlate on: do not invent a
+                # one-incident "campaign" for every detection.
+                campaign_id = None
+            else:
+                campaign_id = (
+                    related.campaign_id
+                    if related is not None and getattr(related, "campaign_id", None)
+                    else (related.incident_code.replace("INC-", "CMP-") if related is not None else new_campaign_id())
+                )
             if related is not None and not getattr(related, "campaign_id", None):
                 related.campaign_id = campaign_id
 
@@ -363,6 +385,7 @@ def run_prediction(
                 pass
 
     payload["incident_id"] = incident_id
+    payload["zero_day"] = zero_day_assessment([features])[0]
     from backend.services.decision_trace import build_trace_from_prediction
 
     payload["decision_trace"] = build_trace_from_prediction(payload)
@@ -435,11 +458,13 @@ def run_prediction_batch(
 
     df = pd.DataFrame(rows)
     preds = predictor.predict_many_vectorized(df, allow_missing=allow_missing_features)
+    zero_day = zero_day_assessment(rows, explain_top=3)
     results: list[dict[str, Any]] = []
     for i, (pred, features) in enumerate(zip(preds, rows)):
         item = _enrich_prediction(pred, features, asset_criticality=asset_criticality)
         item["flow_index"] = i
         item["incident_id"] = None
+        item["zero_day"] = zero_day[i]
         if persist and db is not None and pred.is_attack:
             single = run_prediction(
                 features,
@@ -486,9 +511,13 @@ def run_prediction_batch(
     except Exception:  # noqa: BLE001
         pass
 
+    novel = [r for r in results if (r.get("zero_day") or {}).get("novel")]
     return {
         "total_flows": len(results),
         "attack_flows": len(attacks),
+        "zero_day_alerts": sum(1 for r in results if (r.get("zero_day") or {}).get("alert")),
+        "zero_day_novel": len(novel),
+        "zero_day_missed_by_frozen": sum(1 for r in novel if not r["is_attack"]),
         "benign_flows": len(results) - len(attacks),
         "attack_percentage": round(100.0 * len(attacks) / len(results), 2),
         "by_attack_type": by_type,
@@ -608,6 +637,17 @@ def update_incident_status(
     current = row.status or "Detected"
     target = status.strip()
     allowed = INCIDENT_TRANSITIONS.get(current, set())
+    if target == current:
+        # Notes / defense-action update without a status change (allowed in every state,
+        # including closed incidents) — recorded in the audit trail as a note event.
+        if analyst_notes is not None:
+            row.analyst_notes = analyst_notes
+        if defense_action is not None:
+            row.defense_action = defense_action
+        _record_incident_event(db, incident_id, current, current, actor="analyst",
+                               notes=analyst_notes, action=defense_action)
+        db.commit()
+        return get_incident(db, incident_id) or _incident_dict(row)
     if target not in allowed:
         raise ValueError(f"Invalid transition {current} → {target}. Allowed: {sorted(allowed)}")
     row.status = target
@@ -743,9 +783,11 @@ def load_demo_flow(attack_hint: str | None = None) -> dict[str, Any]:
         subset = test[test["is_attack"] == 1]
     if subset.empty:
         subset = test
-    row = subset.sample(1, random_state=42).iloc[0]
+    # a fresh random flow each time (a fixed random_state returned the same flow on every click)
+    row = subset.sample(1).iloc[0]
     features = {c: float(row[c]) for c in predictor.bundle.feature_names} if (predictor := get_predictor()) else {}
-    return {"features": features, "label": str(row["Label"]), "source": "processed_test"}
+    substituted = bool(attack_hint and attack_hint != "BENIGN" and str(row["Label"]) != attack_hint)
+    return {"features": features, "label": str(row["Label"]), "source": "processed_test", "substituted": substituted}
 
 
 def load_demo_flows(attack_hint: str | None = None, n: int = 10) -> dict[str, Any]:

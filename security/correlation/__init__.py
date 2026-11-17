@@ -94,11 +94,15 @@ def campaign_summary(db: Session, campaign_id: str) -> dict[str, Any]:
         .order_by(Incident.created_at.asc())
         .all()
     )
+    from security.threat_intel import kill_chain
+
+    progression = [r.attack_type for r in rows if r.attack_type]
     return {
         "campaign_id": campaign_id,
         "incident_count": len(rows),
         "attack_types": sorted({r.attack_type for r in rows if r.attack_type}),
-        "progression": [r.attack_type for r in rows if r.attack_type],
+        "progression": progression,
+        "kill_chain": kill_chain(progression),
         "max_risk": max((float(r.risk_score or 0) for r in rows), default=0.0),
         "max_severity": max((r.severity or "LOW" for r in rows), key=severity_rank, default="LOW"),
         "incidents": [
@@ -113,6 +117,12 @@ def campaign_summary(db: Session, campaign_id: str) -> dict[str, Any]:
             for r in rows
         ],
     }
+
+
+def _kill_chain(progression: list[str]) -> dict[str, Any]:
+    from security.threat_intel import kill_chain
+
+    return kill_chain(progression)
 
 
 def list_campaigns(db: Session, limit: int = 30) -> list[dict[str, Any]]:
@@ -138,6 +148,7 @@ def list_campaigns(db: Session, limit: int = 30) -> list[dict[str, Any]]:
                 "incident_count": len(group_sorted),
                 "attack_types": sorted({g.attack_type for g in group_sorted if g.attack_type}),
                 "progression": [g.attack_type for g in group_sorted if g.attack_type],
+                "kill_chain": _kill_chain([g.attack_type for g in group_sorted if g.attack_type]),
                 "max_risk": max((float(g.risk_score or 0) for g in group_sorted), default=0.0),
                 "latest_at": group_sorted[-1].created_at.isoformat() if group_sorted[-1].created_at else None,
             }

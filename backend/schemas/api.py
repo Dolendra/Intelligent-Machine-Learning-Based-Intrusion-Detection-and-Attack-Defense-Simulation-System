@@ -53,6 +53,8 @@ class PredictResponse(BaseModel):
     escalated: bool | None = None
     decision_trace: dict[str, Any] | None = None
     intensity_method: str | None = None
+    # v3 advisory Aegis-OSR Zero-Day Gate (None when artifacts are unavailable)
+    zero_day: dict[str, Any] | None = None
 
 
 class BatchPredictRequest(BaseModel):
@@ -160,3 +162,9 @@ class HealthResponse(BaseModel):
     status: str
     models_loaded: bool
     version: str
+
+
+class ZeroDayAssessRequest(BaseModel):
+    flows: list[dict[str, float]] = Field(..., min_length=1, max_length=500)
+    alpha: float | None = Field(None, gt=0.0, le=0.2, description="Benign false-alarm budget (conformal)")
+    explain_top: int = Field(5, ge=0, le=20)

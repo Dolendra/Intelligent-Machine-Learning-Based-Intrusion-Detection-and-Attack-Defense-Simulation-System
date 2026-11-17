@@ -1,0 +1,217 @@
+{
+  "experiment": "cross_dataset_validation",
+  "status": "completed",
+  "train_dataset": "CICIDS2017 (frozen v1.1 artifacts, unchanged)",
+  "external_dataset": "CSE-CIC-IDS2018 (Processed Traffic Data for ML Algorithms, mapped to 2017 schema)",
+  "generated_at": "2026-11-10T11:51:24.590976+00:00",
+  "sampling": {
+    "benign": 200000,
+    "per_attack_label": 20000,
+    "seed": 42
+  },
+  "n": {
+    "benign": 143116,
+    "attack": 152611
+  },
+  "binary": {
+    "precision": 0.9922713336739908,
+    "recall": 0.10179475922443336,
+    "f1": 0.18464701932048472,
+    "benign_fpr": 0.0008454680119623243,
+    "iid_cicids2017_f1_reference": null
+  },
+  "per_label": [
+    {
+      "label": "Benign",
+      "family": "BENIGN",
+      "n": 143116,
+      "family_known_to_v11": true,
+      "alert_rate": 0.0008454680119623243,
+      "median_p_attack": 0.0
+    },
+    {
+      "label": "Bot",
+      "family": "Bot",
+      "n": 20000,
+      "family_known_to_v11": true,
+      "alert_rate": 0.0,
+      "median_p_attack": 0.0,
+      "family_match_rate": 0.0,
+      "predicted_types": {
+        "BENIGN": 20000
+      }
+    },
+    {
+      "label": "Brute Force -Web",
+      "family": "WebAttack",
+      "n": 555,
+      "family_known_to_v11": true,
+      "alert_rate": 0.03063063063063063,
+      "median_p_attack": 0.0,
+      "family_match_rate": 0.0,
+      "predicted_types": {
+        "BENIGN": 538,
+        "DoS": 16,
+        "BruteForce": 1
+      }
+    },
+    {
+      "label": "Brute Force -XSS",
+      "family": "WebAttack",
+      "n": 228,
+      "family_known_to_v11": true,
+      "alert_rate": 0.10964912280701754,
+      "median_p_attack": 0.0,
+      "family_match_rate": 0.008771929824561403,
+      "predicted_types": {
+        "BENIGN": 203,
+        "DoS": 23,
+        "WebAttack": 2
+      }
+    },
+    {
+      "label": "DDOS attack-HOIC",
+      "family": "DDoS",
+      "n": 20000,
+      "family_known_to_v11": true,
+      "alert_rate": 0.00055,
+      "median_p_attack": 0.0,
+      "family_match_rate": 0.0,
+      "predicted_types": {
+        "BENIGN": 19989,
+        "DoS": 11
+      }
+    },
+    {
+      "label": "DDOS attack-LOIC-UDP",
+      "family": "DDoS",
+      "n": 1730,
+      "family_known_to_v11": true,
+      "alert_rate": 0.0,
+      "median_p_attack": 0.0,
+      "family_match_rate": 0.0,
+      "predicted_types": {
+        "BENIGN": 1730
+      }
+    },
+    {
+      "label": "DDoS attacks-LOIC-HTTP",
+      "family": "DDoS",
+      "n": 20000,
+      "family_known_to_v11": true,
+      "alert_rate": 0.0,
+      "median_p_attack": 0.0,
+      "family_match_rate": 0.0,
+      "predicted_types": {
+        "BENIGN": 20000
+      }
+    },
+    {
+      "label": "DoS attacks-GoldenEye",
+      "family": "DoS",
+      "n": 20000,
+      "family_known_to_v11": true,
+      "alert_rate": 0.2743,
+      "median_p_attack": 0.0,
+      "family_match_rate": 0.2743,
+      "predicted_types": {
+        "BENIGN": 14514,
+        "DoS": 5486
+      }
+    },
+    {
+      "label": "DoS attacks-Hulk",
+      "family": "DoS",
+      "n": 20000,
+      "family_known_to_v11": true,
+      "alert_rate": 0.00805,
+      "median_p_attack": 0.0,
+      "family_match_rate": 0.00735,
+      "predicted_types": {
+        "BENIGN": 19839,
+        "DoS": 147,
+        "WebAttack": 14
+      }
+    },
+    {
+      "label": "DoS attacks-SlowHTTPTest",
+      "family": "DoS",
+      "n": 55,
+      "family_known_to_v11": true,
+      "alert_rate": 0.7090909090909091,
+      "median_p_attack": 1.0,
+      "family_match_rate": 0.0,
+      "predicted_types": {
+        "BruteForce": 39,
+        "BENIGN": 16
+      }
+    },
+    {
+      "label": "DoS attacks-Slowloris",
+      "family": "DoS",
+      "n": 9908,
+      "family_known_to_v11": true,
+      "alert_rate": 0.9557932983447719,
+      "median_p_attack": 1.0,
+      "family_match_rate": 0.9557932983447719,
+      "predicted_types": {
+        "DoS": 9470,
+        "BENIGN": 438
+      }
+    },
+    {
+      "label": "FTP-BruteForce",
+      "family": "BruteForce",
+      "n": 51,
+      "family_known_to_v11": true,
+      "alert_rate": 0.6862745098039216,
+      "median_p_attack": 1.0,
+      "family_match_rate": 0.6862745098039216,
+      "predicted_types": {
+        "BruteForce": 35,
+        "BENIGN": 16
+      }
+    },
+    {
+      "label": "Infilteration",
+      "family": "Infiltration",
+      "n": 20000,
+      "family_known_to_v11": false,
+      "alert_rate": 0.01445,
+      "median_p_attack": 0.0,
+      "family_match_rate": 0.0,
+      "predicted_types": {
+        "BENIGN": 19711,
+        "DoS": 200,
+        "BruteForce": 84,
+        "PortScan": 5
+      }
+    },
+    {
+      "label": "SQL Injection",
+      "family": "WebAttack",
+      "n": 84,
+      "family_known_to_v11": true,
+      "alert_rate": 0.023809523809523808,
+      "median_p_attack": 0.0,
+      "family_match_rate": 0.0,
+      "predicted_types": {
+        "BENIGN": 82,
+        "DoS": 2
+      }
+    },
+    {
+      "label": "SSH-Bruteforce",
+      "family": "BruteForce",
+      "n": 20000,
+      "family_known_to_v11": true,
+      "alert_rate": 0.0,
+      "median_p_attack": 0.0,
+      "family_match_rate": 0.0,
+      "predicted_types": {
+        "BENIGN": 20000
+      }
+    }
+  ],
+  "interpretation": "Frozen CICIDS2017 models transferred to a different network, year and CICFlowMeter version. Performance under this shift is the honest external-validity number; it is NOT comparable to the IID score and no retraining or threshold tuning was done on 2018 data."
+}

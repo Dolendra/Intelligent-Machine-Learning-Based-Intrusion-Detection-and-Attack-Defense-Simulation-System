@@ -1,6 +1,7 @@
 """Shared configuration loader for the IDS platform."""
 from __future__ import annotations
 
+import copy
 import os
 from pathlib import Path
 from typing import Any
@@ -17,10 +18,31 @@ except ImportError:  # pragma: no cover
     pass
 
 
+_YAML_CACHE: dict[tuple[str, int, int], dict[str, Any]] = {}
+
+
+def _read_yaml(cfg_path: Path) -> dict[str, Any]:
+    """Parse the YAML once per (path, mtime, size); return a private deep copy each call.
+
+    Hot paths (risk scoring, recommendations) call ``load_config`` per flow; re-parsing the
+    YAML every time cost ~10–60 ms per call. Editing config.yaml still takes effect
+    immediately because the mtime/size key changes.
+    """
+    st = cfg_path.stat()
+    key = (str(cfg_path.resolve()), st.st_mtime_ns, st.st_size)
+    cached = _YAML_CACHE.get(key)
+    if cached is None:
+        with open(cfg_path, encoding="utf-8") as f:
+            cached = yaml.safe_load(f)
+        if len(_YAML_CACHE) > 16:
+            _YAML_CACHE.clear()
+        _YAML_CACHE[key] = cached
+    return copy.deepcopy(cached)
+
+
 def load_config(path: Path | str | None = None) -> dict[str, Any]:
     cfg_path = Path(path) if path else ROOT / "config.yaml"
-    with open(cfg_path, encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
+    cfg = _read_yaml(cfg_path)
 
     # Optional .env overrides (keep yaml as source of truth for structure)
     if os.getenv("IDS_SAMPLE_FRAC"):

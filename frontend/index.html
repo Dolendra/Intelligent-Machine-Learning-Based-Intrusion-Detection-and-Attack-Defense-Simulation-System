@@ -3,6 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="description" content="Aegis IDS — ML intrusion detection SOC console: detect, explain, recommend, simulate." />
+    <script>
+      // Apply the saved/OS theme before first paint to avoid a flash (ThemeProvider takes over after mount).
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem("aegis_theme"); } catch (e) {}
+        if (t !== "light" && t !== "dark") {
+          try { t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"; } catch (e) { t = "dark"; }
+        }
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Aegis IDS — Intelligent Intrusion Detection</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-14T19:42:21.512487+00:00",
-  "git_commit": "dd54996",
+  "generated_at": "2026-11-09T17:48:55.829833+00:00",
+  "git_commit": "775e9a9",
   "model_version": "1.1.0",
   "experiments": [
     {
@@ -105,7 +105,7 @@
       "artifact": "temporal_holdout_report.json",
       "present": true,
       "path": "D:\\IDS-Project\\models\\trained_models\\temporal_holdout_report.json",
-      "intended_conclusion": "Day-aware Friday holdout vs IID"
+      "intended_conclusion": "Friday slice scored by frozen models (trained on all days - NOT a true temporal test; superseded by EXP-022)"
     },
     {
       "experiment_id": "EXP-014",
@@ -162,6 +162,46 @@
       "present": true,
       "path": "D:\\IDS-Project\\models\\trained_models\\final_security_validation_report.json",
       "intended_conclusion": "P12 final security validation gate"
+    },
+    {
+      "experiment_id": "EXP-021",
+      "name": "openset_loafo",
+      "artifact": "research_artifacts/openset_loafo_summary.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\research_artifacts\\openset_loafo_summary.json",
+      "intended_conclusion": "Aegis-OSR vs baselines, leave-one-attack-family-out, 5 seeds, CIs + Wilcoxon"
+    },
+    {
+      "experiment_id": "EXP-022",
+      "name": "openset_temporal_true",
+      "artifact": "research_artifacts/openset_temporal_summary.json",
+      "present": false,
+      "path": null,
+      "intended_conclusion": "True temporal split (retrained on earlier days) + label-light recalibration"
+    },
+    {
+      "experiment_id": "EXP-023",
+      "name": "openset_cross_dataset",
+      "artifact": "research_artifacts/openset_cross_summary.json",
+      "present": false,
+      "path": null,
+      "intended_conclusion": "CICIDS2017 -> CSE-CIC-IDS2018 open-set transfer + recalibration"
+    },
+    {
+      "experiment_id": "EXP-024",
+      "name": "zero_day_gate",
+      "artifact": "research_artifacts/zero_day_gate_report.json",
+      "present": true,
+      "path": "D:\\IDS-Project\\research_artifacts\\zero_day_gate_report.json",
+      "intended_conclusion": "Production Zero-Day Gate operating points vs frozen v1.1 (advisory)"
+    },
+    {
+      "experiment_id": "EXP-025",
+      "name": "pilot_fusion_selection",
+      "artifact": "research_artifacts/pilot_seed0_fusion_selection.csv",
+      "present": true,
+      "path": "D:\\IDS-Project\\research_artifacts\\pilot_seed0_fusion_selection.csv",
+      "intended_conclusion": "Seed-0 pilot that selected Fisher fusion + kNN novelty (excluded from reported results)"
     }
   ],
   "note": "Index of research artifacts \u2014 run the corresponding scripts to populate missing files."

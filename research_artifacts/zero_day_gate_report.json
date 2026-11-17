@@ -1,0 +1,185 @@
+{
+  "name": "Aegis-OSR Zero-Day Gate",
+  "trained_at": "2026-11-06T07:49:38.841543+00:00",
+  "git_commit": "775e9a9",
+  "method": {
+    "classifier": "XGBoost (K+1 classes: BENIGN + known families), sqrt-balanced weights",
+    "novelty": "mean distance to k=5 nearest benign training flows (signed-log standardized space)",
+    "fusion": "Fisher: sum of benign surprisals with exponential tail extrapolation",
+    "calibration": "split-conformal on held-out benign flows \u2192 P_benign(p<=alpha) <= alpha",
+    "attribution": "Mondrian (class-conditional) conformal family conformity"
+  },
+  "training": {
+    "dataset": "CICIDS2017 MachineLearningCVE (research cache, IID stratified split seed 42)",
+    "n_train": 662365,
+    "n_val": 122568,
+    "calibration_split": [
+      40000,
+      40000
+    ],
+    "known_classes": [
+      "BENIGN",
+      "Bot",
+      "BruteForce",
+      "DDoS",
+      "DoS",
+      "PortScan",
+      "WebAttack"
+    ],
+    "knn_reference": 20000
+  },
+  "advisory_only": true,
+  "evaluation": {
+    "operating_points": [
+      {
+        "alpha": 0.0005,
+        "benign_fpr": 0.00032,
+        "known_attack_recall": 0.8650215996858227,
+        "natural_unknown_alert_rate": 0.06382978723404255,
+        "per_family_recall": {
+          "Bot": 0.4087403598971722,
+          "BruteForce": 0.9704918032786886,
+          "DDoS": 0.9991797836191071,
+          "DoS": 0.9696666666666667,
+          "PortScan": 0.5207563812779095,
+          "WebAttack": 0.06060606060606061
+        }
+      },
+      {
+        "alpha": 0.001,
+        "benign_fpr": 0.00073,
+        "known_attack_recall": 0.8925382903521404,
+        "natural_unknown_alert_rate": 0.2978723404255319,
+        "per_family_recall": {
+          "Bot": 0.4087403598971722,
+          "BruteForce": 0.9836065573770492,
+          "DDoS": 0.9996875366168028,
+          "DoS": 0.9861,
+          "PortScan": 0.5874634764871272,
+          "WebAttack": 0.9044289044289044
+        }
+      },
+      {
+        "alpha": 0.005,
+        "benign_fpr": 0.004665,
+        "known_attack_recall": 0.9935331849718549,
+        "natural_unknown_alert_rate": 0.5319148936170213,
+        "per_family_recall": {
+          "Bot": 0.7095115681233933,
+          "BruteForce": 0.9994535519125683,
+          "DDoS": 0.999882826231301,
+          "DoS": 0.9957333333333334,
+          "PortScan": 0.9863829318043994,
+          "WebAttack": 0.9953379953379954
+        }
+      },
+      {
+        "alpha": 0.01,
+        "benign_fpr": 0.009205,
+        "known_attack_recall": 0.9987956538813981,
+        "natural_unknown_alert_rate": 0.6170212765957447,
+        "per_family_recall": {
+          "Bot": 0.8791773778920309,
+          "BruteForce": 1.0,
+          "DDoS": 0.9999609420771003,
+          "DoS": 0.9985333333333334,
+          "PortScan": 1.0,
+          "WebAttack": 1.0
+        }
+      },
+      {
+        "alpha": 0.05,
+        "benign_fpr": 0.04943,
+        "known_attack_recall": 0.9999869092813195,
+        "natural_unknown_alert_rate": 0.9787234042553191,
+        "per_family_recall": {
+          "Bot": 1.0,
+          "BruteForce": 1.0,
+          "DDoS": 0.9999609420771003,
+          "DoS": 1.0,
+          "PortScan": 1.0,
+          "WebAttack": 1.0
+        }
+      }
+    ],
+    "frozen_v11_operating_point": {
+      "threshold": 0.85,
+      "benign_fpr": 0.00064
+    },
+    "test_sizes": {
+      "benign": 200000,
+      "known_attacks": 76390,
+      "natural_unknown": 47
+    },
+    "gate": {
+      "benign_fpr": 0.009205,
+      "benign_fpr_nominal_alpha": 0.01,
+      "known_attack_recall": 0.9987956538813981,
+      "known_family_accuracy": 0.9891870663699437,
+      "natural_unknown_alert_rate": 0.6170212765957447,
+      "latency_ms_per_flow_batch": 0.0601,
+      "served_vs_research_parity": 0.999963825392404
+    },
+    "frozen_v11": {
+      "benign_fpr": 0.00064,
+      "known_attack_recall": 0.993075009818039,
+      "natural_unknown_attack_rate": 0.0
+    },
+    "natural_unknowns": [
+      {
+        "family": "Infiltration",
+        "n": 36,
+        "gate_alert_rate": 0.5,
+        "gate_flagged_novel_rate": 0.5,
+        "gate_labels": {
+          "BENIGN": 18,
+          "ZERO-DAY-ANOMALY": 18
+        },
+        "frozen_v11_attack_rate": 0.0,
+        "frozen_v11_labels": {
+          "BENIGN": 36
+        }
+      },
+      {
+        "family": "Heartbleed",
+        "n": 11,
+        "gate_alert_rate": 1.0,
+        "gate_flagged_novel_rate": 1.0,
+        "gate_labels": {
+          "ZERO-DAY-ANOMALY": 11
+        },
+        "frozen_v11_attack_rate": 0.0,
+        "frozen_v11_labels": {
+          "BENIGN": 11
+        }
+      }
+    ],
+    "per_family_recall": {
+      "Bot": {
+        "gate": 0.8791773778920309,
+        "frozen_v11": 0.6169665809768637
+      },
+      "BruteForce": {
+        "gate": 1.0,
+        "frozen_v11": 0.9978142076502732
+      },
+      "DDoS": {
+        "gate": 0.9999609420771003,
+        "frozen_v11": 0.9999218841542007
+      },
+      "DoS": {
+        "gate": 0.9985333333333334,
+        "frozen_v11": 0.9959333333333333
+      },
+      "PortScan": {
+        "gate": 1.0,
+        "frozen_v11": 0.9998346105077457
+      },
+      "WebAttack": {
+        "gate": 1.0,
+        "frozen_v11": 0.4195804195804196
+      }
+    },
+    "note": "Natural unknowns (Infiltration n=36, Heartbleed n=11) are tiny; treat rates as illustrative, the LOAFO / temporal / cross-dataset protocols are the statistical evidence."
+  }
+}

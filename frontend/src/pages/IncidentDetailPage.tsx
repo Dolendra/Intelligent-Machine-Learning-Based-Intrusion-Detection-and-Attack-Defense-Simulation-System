@@ -1,440 +1,427 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ClipboardList,
+  FileWarning,
+  FlaskConical,
+  History,
+  Loader2,
+  Network,
+  NotebookPen,
+  Percent,
+  ShieldAlert,
+  ShieldCheck,
+  Undo2,
+  XCircle,
+} from "lucide-react";
+import { api, type DecisionTrace, type IncidentDetail, type ResponseAction } from "../services/api";
+import { useAuth } from "../app/auth";
 import { DecisionTraceTimeline } from "../components/DecisionTrace";
-import { api } from "../services/api";
+import { Badge, SeverityBadge, StatusBadge } from "../components/ui/Badge";
+import { Callout, Card } from "../components/ui/Card";
+import { EmptyState } from "../components/ui/EmptyState";
+import { ErrorState } from "../components/ui/ErrorState";
+import { PageHeader } from "../components/ui/PageHeader";
+import { Skeleton, SkeletonText } from "../components/ui/Skeleton";
+import { StatTile } from "../components/ui/StatTile";
+import { useToast } from "../components/ui/Toast";
+import { Gauge } from "../components/charts";
+import { formatDateTime, formatPct, formatRelative, humanize } from "../lib/format";
+import { normalizeRisk } from "../lib/severity";
+
+const WORKFLOW = ["Proposed", "Dry run", "Decision", "Rollback"] as const;
+
+function workflowIndex(a: ResponseAction | null): number {
+  if (!a) return -1;
+  const s = String(a.status).toUpperCase();
+  if (/ROLLED|EXPIRED/.test(s)) return 3;
+  if (/APPROVED|REJECTED|EXECUTING|SUCCEEDED|VERIFIED|ACTIVE|FAILED/.test(s)) return 2;
+  // "Dry run" is reached only once a dry run actually ran (every proposal already carries a preview)
+  const dryRan = /DRY/.test(s) || (a.audit ?? []).some((e) => /dry[-_ ]?run/i.test(JSON.stringify(e)));
+  if (dryRan) return 1;
+  return 0;
+}
 
 export function IncidentDetailPage() {
   const { incidentId } = useParams();
   const navigate = useNavigate();
-  const [item, setItem] = useState<Record<string, unknown> | null>(null);
-  const [trace, setTrace] = useState<{
-    title: string;
-    steps: Array<{ stage: string; title: string; detail: string; timestamp?: string }>;
-  } | null>(null);
+  const toast = useToast();
+  const { can } = useAuth();
+  const [item, setItem] = useState<IncidentDetail | null>(null);
+  const [trace, setTrace] = useState<DecisionTrace | null>(null);
   const [notes, setNotes] = useState("");
   const [defense, setDefense] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [responseActions, setResponseActions] = useState<Array<Record<string, unknown>>>([]);
-  const [activeResponse, setActiveResponse] = useState<Record<string, unknown> | null>(null);
-  const [canPropose, setCanPropose] = useState(true);
-  const [canApprove, setCanApprove] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [responseActions, setResponseActions] = useState<ResponseAction[]>([]);
+  const [activeResponse, setActiveResponse] = useState<ResponseAction | null>(null);
 
-  async function loadResponses() {
+  const canPropose = can("write_response");
+  const canApprove = can("approve_response");
+
+  const loadResponses = useCallback(async () => {
     if (!incidentId) return;
     const list = await api.listIncidentResponses(incidentId);
     setResponseActions(list.items);
-    const pending = list.items.find((a) => a.pending_approval) || list.items[0] || null;
-    setActiveResponse(pending);
-  }
+    setActiveResponse(list.items.find((a) => a.pending_approval) || list.items[0] || null);
+  }, [incidentId]);
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!incidentId) return;
-    const [data, tr] = await Promise.all([
-      api.getIncident(incidentId),
-      api.incidentTrace(incidentId).catch(() => null),
-    ]);
-    setItem(data);
-    setTrace(tr);
-    setNotes(String(data.analyst_notes ?? ""));
-    setDefense(String(data.defense_action ?? ""));
-    await loadResponses().catch(() => {
-      setResponseActions([]);
-      setActiveResponse(null);
-    });
-  }
-
-  useEffect(() => {
-    load().catch((e) => setError(e instanceof Error ? e.message : String(e)));
-  }, [incidentId]);
-
-  useEffect(() => {
-    api
-      .authMe()
-      .then((me) => {
-        const perms = new Set(me.permissions || []);
-        setCanPropose(perms.has("write_response") || perms.has("admin") || me.auth_enabled === false);
-        setCanApprove(perms.has("approve_response") || perms.has("admin") || me.auth_enabled === false);
-      })
-      .catch(() => {
-        setCanPropose(false);
-        setCanApprove(false);
+    try {
+      const [data, tr] = await Promise.all([api.getIncident(incidentId), api.incidentTrace(incidentId).catch(() => null)]);
+      setItem(data);
+      setTrace(tr);
+      setNotes(data.analyst_notes ?? "");
+      setDefense(data.defense_action ?? "");
+      setError(null);
+      await loadResponses().catch(() => {
+        setResponseActions([]);
+        setActiveResponse(null);
       });
-  }, [incidentId]);
+    } catch (e) {
+      setError(e);
+    }
+  }, [incidentId, loadResponses]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function run<T>(key: string, fn: () => Promise<T>, success?: string): Promise<T | undefined> {
+    setBusy(key);
+    try {
+      const out = await fn();
+      if (success) toast.success(success);
+      return out;
+    } catch (e) {
+      toast.error(e, `${humanize(key)} failed`);
+      return undefined;
+    } finally {
+      setBusy(null);
+    }
+  }
 
   async function advance(status: string) {
     if (!incidentId) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const updated = await api.updateIncident(incidentId, status, {
-        analyst_notes: notes || undefined,
-        defense_action: defense || undefined,
-      });
+    const updated = await run(
+      "status",
+      () => api.updateIncident(incidentId, status, { analyst_notes: notes || undefined, defense_action: defense || undefined }),
+      `Status → ${humanize(status)}`
+    );
+    if (updated) {
       setItem(updated);
-      const tr = await api.incidentTrace(incidentId).catch(() => null);
-      setTrace(tr);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
+      setTrace(await api.incidentTrace(incidentId).catch(() => null));
     }
   }
 
   async function saveInvestigation() {
     if (!incidentId || !item) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const updated = await api.updateIncident(incidentId, String(item.status), {
-        analyst_notes: notes,
-        defense_action: defense,
-      });
-      setItem(updated);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
+    const updated = await run(
+      "save",
+      () => api.updateIncident(incidentId, item.status, { analyst_notes: notes, defense_action: defense }),
+      "Investigation saved"
+    );
+    if (updated) setItem(updated);
   }
 
   async function simulate() {
     if (!incidentId) return;
-    setBusy(true);
-    try {
-      const session = await api.simulateIncident(incidentId);
-      navigate(`/simulation?session=${encodeURIComponent(session.id)}`);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
+    const session = await run("simulate", () => api.simulateIncident(incidentId));
+    if (session) navigate(`/simulation?session=${encodeURIComponent(session.id)}`);
+  }
+
+  async function responseStep(key: string, fn: (id: string) => Promise<{ action: ResponseAction }>, msg: string) {
+    if (!activeResponse?.action_id) return;
+    const out = await run(key, () => fn(activeResponse.action_id), msg);
+    if (out) {
+      setActiveResponse(out.action);
+      await loadResponses().catch(() => undefined);
     }
   }
 
   async function proposeResponse() {
     if (!incidentId) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const action = await api.proposeIncidentResponse(incidentId);
+    const action = await run("propose", () => api.proposeIncidentResponse(incidentId), "Response proposed");
+    if (action) {
       setActiveResponse(action);
-      await loadResponses();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
+      await loadResponses().catch(() => undefined);
     }
   }
 
-  async function dryRunActive() {
-    if (!activeResponse?.action_id) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const out = await api.dryRunResponse(String(activeResponse.action_id));
-      setActiveResponse(out.action as Record<string, unknown>);
-      await loadResponses();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function approveActive() {
-    if (!activeResponse?.action_id) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const out = await api.approveResponse(String(activeResponse.action_id));
-      setActiveResponse(out.action as Record<string, unknown>);
-      await loadResponses();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function rejectActive() {
-    if (!activeResponse?.action_id) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const out = await api.rejectResponse(String(activeResponse.action_id), "Rejected from incident UI");
-      setActiveResponse(out.action as Record<string, unknown>);
-      await loadResponses();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function rollbackActive() {
-    if (!activeResponse?.action_id) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const out = await api.rollbackResponse(String(activeResponse.action_id));
-      setActiveResponse(out.action as Record<string, unknown>);
-      await loadResponses();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const next = (item?.allowed_next_statuses as string[] | undefined) ?? [];
-  const events = (item?.events as Array<Record<string, unknown>> | undefined) ?? [];
+  const next = item?.allowed_next_statuses ?? [];
+  const events = item?.events ?? [];
   const pending = Boolean(activeResponse?.pending_approval);
   const canRollback =
     Boolean(activeResponse) &&
     activeResponse?.reversible !== false &&
     ["ACTIVE", "VERIFIED", "SUCCEEDED"].includes(String(activeResponse?.status)) &&
     canApprove;
+  const wfIdx = workflowIndex(activeResponse);
+  const isBusy = busy !== null;
 
   return (
-    <div className="rise">
-      <div className="page-header">
-        <div>
-          <h2>Incident {incidentId}</h2>
-          <p>Analyst workspace — review evidence, dry-run response, approve or reject (no live mitigation).</p>
-        </div>
-        <div className="row">
-          <Link className="btn btn-secondary" to="/reports">
-            Back to reports
-          </Link>
-          {item && (
-            <button className="btn btn-amber" onClick={() => void simulate()} disabled={busy}>
-              Simulate this incident
-            </button>
-          )}
-        </div>
-      </div>
+    <div className="page">
+      <PageHeader
+        eyebrow="Incident"
+        icon={FileWarning}
+        title={incidentId ? `Incident ${incidentId}` : "Incident"}
+        subtitle="Analyst workspace — review evidence, dry-run a response, approve or reject. No live mitigation is executed."
+        actions={
+          <>
+            <Link className="btn btn-secondary" to="/reports">
+              <ArrowLeft size={16} aria-hidden /> Reports
+            </Link>
+            {item && (
+              <button type="button" className="btn btn-warn" onClick={() => void simulate()} disabled={isBusy}>
+                {busy === "simulate" ? <Loader2 size={16} className="spin" aria-hidden /> : <Network size={16} aria-hidden />} Simulate
+              </button>
+            )}
+          </>
+        }
+      />
 
-      {error && (
-        <div className="panel" style={{ marginBottom: "1rem", borderColor: "rgba(227,93,106,.4)" }}>
-          {error}
-        </div>
-      )}
+      {error ? <ErrorState error={error} title="Could not load incident" onRetry={() => void load()} /> : null}
 
       {!item && !error && (
-        <div className="panel">
-          <div className="skeleton lg" style={{ width: "40%", marginBottom: "0.75rem" }} />
-          <div className="skeleton" style={{ width: "70%" }} />
+        <div className="grid grid-split">
+          <Card>
+            <Skeleton width="40%" height={24} />
+            <div style={{ height: 14 }} />
+            <SkeletonText lines={4} />
+          </Card>
+          <Card>
+            <Skeleton height={180} radius={90} />
+          </Card>
         </div>
       )}
 
       {item && (
         <>
-          <div className="hero-action">
-            <div>
-              <div style={{ fontSize: "1.35rem", fontWeight: 650 }}>{String(item.attack_type)}</div>
-              <div className="muted">
-                <span className={`badge ${String(item.severity).toLowerCase()}`}>{String(item.severity)}</span>
-                {" · "}Risk {String(item.risk_score)}
-                {item.campaign_id ? (
-                  <>
-                    {" · "}
-                    <Link to={`/campaigns/${encodeURIComponent(String(item.campaign_id))}`}>
-                      {String(item.campaign_id)}
+          <Card tone={/CRITICAL|HIGH/i.test(item.severity) ? "danger" : "default"}>
+            <div className="hero">
+              <Gauge value={normalizeRisk(item.risk_score)} display={String(item.risk_score)} label="Risk" ariaLabel={`Risk ${item.risk_score}`} size={220} />
+              <div className="stack">
+                <div>
+                  <div className="muted small">Detected attack</div>
+                  <div className="verdict" data-attack="true">
+                    {item.attack_type}
+                  </div>
+                </div>
+                <div className="row" style={{ gap: 6 }}>
+                  <SeverityBadge severity={item.severity} />
+                  <StatusBadge status={item.status} />
+                  {item.campaign_id && (
+                    <Link to={`/campaigns/${encodeURIComponent(item.campaign_id)}`}>
+                      <Badge tone="accent">Campaign {item.campaign_id}</Badge>
                     </Link>
-                  </>
+                  )}
+                  {item.hit_count && item.hit_count > 1 ? <Badge tone="info">{item.hit_count} hits</Badge> : null}
+                </div>
+                <div className="grid grid-stats">
+                  <StatTile label="Confidence" icon={Percent} value={formatPct(item.confidence)} compact />
+                  <StatTile
+                    label="Detected"
+                    icon={History}
+                    value={formatRelative(item.created_at)}
+                    hint={/ago|now/.test(formatRelative(item.created_at)) ? formatDateTime(item.created_at) : undefined}
+                    compact
+                  />
+                  <StatTile label="Source" icon={ShieldAlert} value={item.source_ref ?? "—"} compact />
+                </div>
+                {item.recommendation ? (
+                  <Callout tone="info" title="Recommendation">
+                    {item.recommendation}
+                  </Callout>
                 ) : null}
-              </div>
-            </div>
-            <div className="row">
-              {next.slice(0, 3).map((s) => (
-                <button key={s} className="btn btn-secondary" disabled={busy} onClick={() => void advance(s)}>
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <section className="panel panel-interactive" style={{ marginBottom: "1rem" }}>
-            <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
-              <div>
-                <h3 style={{ marginTop: 0, marginBottom: "0.35rem" }}>Controlled response (P3)</h3>
-                <p className="muted" style={{ margin: 0 }}>
-                  Adapters: <strong>DRY_RUN</strong> / <strong>CONTROLLED</strong> test plane — no live firewall/EDR.
-                </p>
-              </div>
-              <button className="btn btn-primary" disabled={busy || !canPropose} onClick={() => void proposeResponse()}>
-                Propose response
-              </button>
-            </div>
-
-            {activeResponse ? (
-              <div style={{ marginTop: "1rem" }}>
-                <div style={{ fontSize: "1.1rem", fontWeight: 650 }}>
-                  {String(item.severity)} — {String(item.attack_type)}
-                </div>
-                <div className="muted">Risk: {String(item.risk_score)}</div>
-                <p style={{ marginBottom: "0.35rem" }}>
-                  <strong>Recommended action</strong>
-                  <br />
-                  <span className="mono">{String(activeResponse.action_type)}</span> →{" "}
-                  <span className="mono">{String(activeResponse.target)}</span>
-                </p>
-                <p className="muted" style={{ marginTop: 0 }}>
-                  {String(activeResponse.dry_run_preview || activeResponse.result || activeResponse.reason)}
-                </p>
-                <div className="row" style={{ marginBottom: "0.75rem" }}>
-                  <span className="live-chip off">{String(activeResponse.mode || "DRY_RUN")}</span>
-                  <span className="badge">{String(activeResponse.approval_status || activeResponse.status)}</span>
-                  <span className="muted mono" style={{ fontSize: "0.8rem" }}>
-                    {String(activeResponse.adapter || "dry_run")} · {String(activeResponse.action_id)}
-                  </span>
-                </div>
-                <div className="row">
-                  <button className="btn btn-secondary" disabled={busy || !canPropose} onClick={() => void dryRunActive()}>
-                    Dry run
-                  </button>
-                  <button className="btn btn-primary" disabled={busy || !pending || !canApprove} onClick={() => void approveActive()}>
-                    Approve
-                  </button>
-                  <button className="btn btn-secondary" disabled={busy || !pending || !canApprove} onClick={() => void rejectActive()}>
-                    Reject
-                  </button>
-                  <button className="btn btn-secondary" disabled={busy || !canRollback} onClick={() => void rollbackActive()}>
-                    Rollback
-                  </button>
-                </div>
-                {Array.isArray(activeResponse.audit) && (activeResponse.audit as unknown[]).length > 0 && (
-                  <ul className="timeline" style={{ marginTop: "1rem" }}>
-                    {(activeResponse.audit as Array<Record<string, unknown>>).slice(-6).map((ev, idx) => (
-                      <li key={idx}>
-                        <strong>{String(ev.event)}</strong>
-                        <div className="muted mono">
-                          {String(ev.timestamp ?? "")} · {String(ev.actor ?? "system")}
-                        </div>
-                      </li>
+                {next.length > 0 && (
+                  <div className="row" style={{ gap: 6 }}>
+                    <span className="muted small">Move to:</span>
+                    {next.map((s) => (
+                      <button key={s} type="button" className="btn btn-secondary btn-sm" disabled={isBusy} onClick={() => void advance(s)}>
+                        {humanize(s)}
+                      </button>
                     ))}
-                  </ul>
+                  </div>
                 )}
               </div>
-            ) : (
-              <p className="muted" style={{ marginBottom: 0, marginTop: "0.75rem" }}>
-                No response action yet. Propose one to open the dry-run / approval gate.
-              </p>
-            )}
+            </div>
+          </Card>
 
-            {responseActions.length > 1 && (
-              <div style={{ marginTop: "1rem" }}>
-                <div className="muted" style={{ marginBottom: "0.35rem" }}>
-                  Prior actions for this incident
-                </div>
-                <ul style={{ margin: 0, paddingLeft: "1.1rem" }}>
-                  {responseActions.map((a) => (
-                    <li key={String(a.action_id)}>
-                      <button
-                        type="button"
-                        className="mono"
-                        style={{
-                          background: "none",
-                          border: "none",
-                          padding: 0,
-                          cursor: "pointer",
-                          color: "inherit",
-                          textDecoration: "underline",
-                        }}
-                        onClick={() => setActiveResponse(a)}
-                      >
-                        {String(a.action_type)} · {String(a.status)} · {String(a.action_id)}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </section>
-
-          <div className="split">
-            <section className="panel panel-interactive stack">
-              <div className="grid-stats">
-                <div className="stat">
-                  <div className="label">Attack</div>
-                  <div className="value" style={{ fontSize: "1.2rem" }}>
-                    {String(item.attack_type)}
-                  </div>
-                </div>
-                <div className="stat">
-                  <div className="label">Risk</div>
-                  <div className="value">{String(item.risk_score)}</div>
-                </div>
-                <div className="stat">
-                  <div className="label">Confidence</div>
-                  <div className="value">{(Number(item.confidence) * 100).toFixed(0)}%</div>
-                </div>
-                <div className="stat">
-                  <div className="label">Status</div>
-                  <div className="value" style={{ fontSize: "1rem" }}>
-                    {String(item.status)}
-                  </div>
-                </div>
-              </div>
-              <p>
-                <strong>Recommendation:</strong> {String(item.recommendation)}
-              </p>
-
-              <label className="muted">
-                Analyst notes
-                <textarea
-                  className="select"
-                  style={{ width: "100%", minHeight: "4.5rem", display: "block", marginTop: "0.35rem" }}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                />
-              </label>
-              <label className="muted">
-                Defense action
-                <input
-                  className="select"
-                  style={{ width: "100%", display: "block", marginTop: "0.35rem" }}
-                  value={defense}
-                  onChange={(e) => setDefense(e.target.value)}
-                  placeholder="e.g. rate-limit applied (advisory)"
-                />
-              </label>
-              <div className="row">
-                <button className="btn btn-primary" disabled={busy} onClick={() => void saveInvestigation()}>
-                  Save investigation
-                </button>
-                {next.map((s) => (
-                  <button key={s} className="btn btn-secondary" disabled={busy} onClick={() => void advance(s)}>
-                    {s}
-                  </button>
-                ))}
-              </div>
-              {trace ? <DecisionTraceTimeline title={trace.title} steps={trace.steps} /> : null}
-            </section>
-            <section className="panel panel-interactive">
-              <h3 style={{ marginTop: 0 }}>Lifecycle events</h3>
-              {events.length === 0 && (
-                <div className="empty-state">
-                  <strong>No events yet</strong>
-                  <p className="muted" style={{ margin: 0 }}>
-                    Advance the status to build the audit trail.
-                  </p>
-                </div>
-              )}
-              <ul className="timeline">
-                {events.map((e, idx) => (
-                  <li key={idx}>
-                    <strong>
-                      {String(e.old_status ?? "—")} → {String(e.new_status)}
-                    </strong>
-                    <div className="muted mono">
-                      {String(e.timestamp ?? "")} · {String(e.actor ?? "system")}
-                    </div>
-                    {e.notes ? <div className="muted">{String(e.notes)}</div> : null}
+          <Card
+            title="Controlled response"
+            subtitle="Dry-run and controlled test adapters only — no live firewall or EDR changes."
+            icon={ShieldCheck}
+            actions={
+              <button type="button" className="btn btn-primary" disabled={isBusy || !canPropose} onClick={() => void proposeResponse()}>
+                {busy === "propose" ? <Loader2 size={16} className="spin" aria-hidden /> : <ClipboardList size={16} aria-hidden />} Propose response
+              </button>
+            }
+          >
+            <div className="stack">
+              <ol className="stepper list-plain" aria-label="Response workflow">
+                {WORKFLOW.map((w, i) => (
+                  <li key={w} className="step" data-state={i < wfIdx ? "done" : i === wfIdx ? "active" : undefined}>
+                    <span className="step-bar" aria-hidden />
+                    <span className="step-label">{w}</span>
+                    <span className="step-meta">Step {i + 1}</span>
                   </li>
                 ))}
-              </ul>
-            </section>
+              </ol>
+
+              {!canPropose && <Callout tone="warn">Your role cannot propose responses (write_response permission required).</Callout>}
+
+              {activeResponse ? (
+                <div className="grid grid-split">
+                  <div className="stack">
+                    <div>
+                      <div className="muted small">Recommended action</div>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>
+                        <span className="mono">{humanize(activeResponse.action_type)}</span>
+                        {activeResponse.target ? (
+                          <>
+                            {" "}
+                            → <span className="mono">{activeResponse.target}</span>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+                    <p className="text-2">{activeResponse.dry_run_preview || activeResponse.result || activeResponse.reason || "No preview yet — run a dry run."}</p>
+                    <div className="row" style={{ gap: 6 }}>
+                      <Badge tone="neutral">{activeResponse.mode || "DRY_RUN"}</Badge>
+                      <StatusBadge status={activeResponse.approval_status || activeResponse.status} />
+                      <span className="muted small mono">
+                        {activeResponse.adapter || "dry_run"} · {activeResponse.action_id}
+                      </span>
+                    </div>
+                    <div className="row" style={{ gap: 8 }}>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        disabled={isBusy || !canPropose}
+                        onClick={() => void responseStep("dry-run", api.dryRunResponse, "Dry run complete")}
+                      >
+                        <FlaskConical size={16} aria-hidden /> Dry run
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        disabled={isBusy || !pending || !canApprove}
+                        onClick={() => void responseStep("approve", api.approveResponse, "Action approved")}
+                      >
+                        <CheckCircle2 size={16} aria-hidden /> Approve &amp; execute
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        disabled={isBusy || !pending || !canApprove}
+                        onClick={() => void responseStep("reject", (id) => api.rejectResponse(id, "Rejected from incident UI"), "Action rejected")}
+                      >
+                        <XCircle size={16} aria-hidden /> Reject
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        disabled={isBusy || !canRollback}
+                        onClick={() => void responseStep("rollback", api.rollbackResponse, "Action rolled back")}
+                      >
+                        <Undo2 size={16} aria-hidden /> Rollback
+                      </button>
+                    </div>
+                    {responseActions.length > 1 && (
+                      <div className="field">
+                        <label className="field-label" htmlFor="prior-actions">
+                          Prior actions for this incident
+                        </label>
+                        <select
+                          id="prior-actions"
+                          className="select select-sm"
+                          value={activeResponse.action_id}
+                          onChange={(e) => setActiveResponse(responseActions.find((a) => a.action_id === e.target.value) ?? null)}
+                        >
+                          {responseActions.map((a) => (
+                            <option key={a.action_id} value={a.action_id}>
+                              {humanize(a.action_type)} · {humanize(a.status)} · {a.action_id}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h4 style={{ marginBottom: 8 }}>Audit trail</h4>
+                    {Array.isArray(activeResponse.audit) && activeResponse.audit.length > 0 ? (
+                      <ol className="timeline">
+                        {activeResponse.audit.slice(-6).map((ev, idx) => (
+                          <li key={idx}>
+                            <div className="timeline-title">{humanize(ev.event)}</div>
+                            <div className="timeline-meta">
+                              {formatDateTime(ev.timestamp)} · {ev.actor ?? "system"}
+                            </div>
+                          </li>
+                        ))}
+                      </ol>
+                    ) : (
+                      <p className="muted small">No audit events yet.</p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <EmptyState compact title="No response action yet" description="Propose one to open the dry-run / approval gate." />
+              )}
+            </div>
+          </Card>
+
+          <div className="grid grid-split">
+            <Card title="Investigation" subtitle="Notes and defense actions are saved with the incident" icon={NotebookPen}>
+              <div className="stack">
+                <div className="field">
+                  <label className="field-label" htmlFor="analyst-notes">
+                    Analyst notes
+                  </label>
+                  <textarea id="analyst-notes" className="textarea" value={notes} onChange={(e) => setNotes(e.target.value)} />
+                </div>
+                <div className="field">
+                  <label className="field-label" htmlFor="defense-action">
+                    Defense action
+                  </label>
+                  <input
+                    id="defense-action"
+                    className="input"
+                    value={defense}
+                    onChange={(e) => setDefense(e.target.value)}
+                    placeholder="e.g. rate-limit applied (advisory)"
+                  />
+                </div>
+                <div className="row">
+                  <button type="button" className="btn btn-primary" disabled={isBusy} onClick={() => void saveInvestigation()}>
+                    {busy === "save" ? <Loader2 size={16} className="spin" aria-hidden /> : null} Save investigation
+                  </button>
+                </div>
+                {trace ? <DecisionTraceTimeline title={trace.title} steps={trace.steps} /> : null}
+              </div>
+            </Card>
+            <Card title="Lifecycle events" subtitle="Status changes and who made them" icon={History}>
+              {events.length === 0 ? (
+                <EmptyState compact title="No events yet" description="Advance the status to build the audit trail." />
+              ) : (
+                <ol className="timeline">
+                  {events.map((e, idx) => (
+                    <li key={idx}>
+                      <div className="timeline-title">
+                        {e.old_status ? `${humanize(e.old_status)} → ${humanize(e.new_status)}` : `Opened as ${humanize(e.new_status)}`}
+                      </div>
+                      <div className="timeline-meta">
+                        {formatDateTime(e.timestamp)} · {e.actor ?? "system"}
+                      </div>
+                      {e.notes ? <div className="timeline-detail">{e.notes}</div> : null}
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </Card>
           </div>
         </>
       )}

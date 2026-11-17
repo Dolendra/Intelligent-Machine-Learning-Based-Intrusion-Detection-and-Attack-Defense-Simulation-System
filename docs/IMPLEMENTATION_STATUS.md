@@ -20,11 +20,25 @@ Last updated after submission polish (README dataset honesty, DEMO_MODE batch ga
 - Drift: no feature exceeded PSI ≥ 0.2 on train→IID test — not “no drift exists”
 - docker-compose uses `DEMO_MODE=true` for demos only
 
+## v3 additions (branch `v3-openset-research`)
+
+- **Aegis-OSR** open-set detector (`research/`): Fisher fusion of supervised + kNN benign-novelty
+  evidence, split-conformal benign-FPR control, Mondrian family attribution
+- Protocols: leave-one-family-out, **true** temporal split (replaces the leaky script-25 slice for
+  temporal claims), CICIDS2017 → CSE-CIC-IDS2018; 5 seeds, CIs, Wilcoxon tests
+- Label-light recalibration under shift (no retraining)
+- CSE-CIC-IDS2018 external validation of the **frozen** v1.1 models (EXP-009 completed, script 54)
+- Production **Zero-Day Gate** (advisory `zero_day` field on predictions; v1.1 verdict unchanged)
+- Live Traffic Monitor (`/api/ws/live`, replay of held-out flows), Zero-Day Lab, Research Lab UI
+- UI redesign: real charts, light/dark theme, command palette, login page, accessibility fixes
+- Performance: `load_config()` now caches parsed YAML (per-flow risk scoring re-parsed it every call)
+
 ## Optional leftovers
 
 - Playwright browser journeys
-- CSE-CIC-IDS2018 external validation (needs compatible CSVs)
 
 ## Not implemented (do not claim)
 
 - Live packet capture / auto-mitigation / OAuth SSO
+- The Live Traffic Monitor **replays recorded dataset flows**; it is not packet capture
+- No claim that the Zero-Day Gate detects every novel attack (Bot / WebAttack-like traffic remains hard)

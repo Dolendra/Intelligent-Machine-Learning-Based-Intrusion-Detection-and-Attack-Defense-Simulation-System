@@ -1,8 +1,19 @@
 {
   "experiment": "cross_dataset_validation",
   "train_dataset": "CICIDS2017",
-  "external_dataset_dir": "D:\\IDS-Project\\CSE-CIC-IDS2018",
-  "status": "skipped",
-  "reason": "External dataset directory not found",
-  "note": "Place a compatible CSE-CIC-IDS2018 (or similar) ML flow export in the configured directory, then extend this script to map labels/features and score binary_best.joblib under distribution shift."
+  "external_dataset_dir": "CSE-CIC-IDS2018",
+  "status": "completed",
+  "binary": {
+    "precision": 0.9922713336739908,
+    "recall": 0.10179475922443336,
+    "f1": 0.18464701932048472,
+    "benign_fpr": 0.0008454680119623243,
+    "iid_cicids2017_f1_reference": null
+  },
+  "n": {
+    "benign": 143116,
+    "attack": 152611
+  },
+  "details": "research_artifacts/frozen_v11_on_cic2018.json",
+  "note": "Frozen v1.1 models scored without retraining (scripts/54_frozen_v11_on_cic2018.py)."
 }

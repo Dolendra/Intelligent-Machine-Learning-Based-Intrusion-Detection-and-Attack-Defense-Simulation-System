@@ -17,7 +17,9 @@ describe("SimulationPage", () => {
         <SimulationPage />
       </MemoryRouter>
     );
-    expect(await screen.findByRole("heading", { name: /Attack–Defense Simulation/i })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: /Attack Storyboard/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Run simulation/i })).toBeTruthy();
+    // the storyboard must point users to the measured cyber range
+    expect(screen.getByRole("link", { name: /Cyber Range/i }).getAttribute("href")).toBe("/range");
   });
 });

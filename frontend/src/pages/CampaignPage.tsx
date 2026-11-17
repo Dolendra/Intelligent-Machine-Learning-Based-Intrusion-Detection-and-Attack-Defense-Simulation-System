@@ -1,20 +1,39 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api } from "../services/api";
+import { Activity, ArrowRight, GitBranch, Layers, Loader2, Network, Radar, Search, ShieldAlert } from "lucide-react";
+import { api, type Campaign, type CampaignDetail, type Incident } from "../services/api";
+import { formatRelative, formatRisk } from "../lib/format";
+import { normalizeRisk } from "../lib/severity";
+import { Badge, SeverityBadge, StatusBadge } from "../components/ui/Badge";
+import { Card } from "../components/ui/Card";
+import { DataTable, type Column } from "../components/ui/DataTable";
+import { EmptyState } from "../components/ui/EmptyState";
+import { ErrorState } from "../components/ui/ErrorState";
+import { PageHeader } from "../components/ui/PageHeader";
+import { Skeleton, SkeletonText } from "../components/ui/Skeleton";
+import { StatTile } from "../components/ui/StatTile";
+import { useToast } from "../components/ui/Toast";
+import { TimeSeriesArea, attackColor, useChartTheme } from "../components/charts";
 
 export function CampaignPage() {
   const { campaignId } = useParams();
   const navigate = useNavigate();
-  const [list, setList] = useState<Array<Record<string, unknown>>>([]);
-  const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
+  const theme = useChartTheme();
+  const [list, setList] = useState<Campaign[]>([]);
+  const [listLoading, setListLoading] = useState(true);
+  const [detail, setDetail] = useState<CampaignDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     api
       .campaigns()
       .then((r) => setList(r.items ?? []))
-      .catch((e) => setError(e instanceof Error ? e.message : String(e)));
+      .catch((e) => setError(e))
+      .finally(() => setListLoading(false));
   }, []);
 
   useEffect(() => {
@@ -22,135 +41,198 @@ export function CampaignPage() {
       setDetail(null);
       return;
     }
+    setDetailLoading(true);
     api
       .getCampaign(campaignId)
-      .then(setDetail)
-      .catch((e) => setError(e instanceof Error ? e.message : String(e)));
+      .then((d) => {
+        setDetail(d);
+        setError(null);
+      })
+      .catch((e) => setError(e))
+      .finally(() => setDetailLoading(false));
   }, [campaignId]);
 
   async function simulateCampaign() {
     if (!campaignId) return;
     setBusy(true);
-    setError(null);
     try {
       const session = await api.simulateCampaign(campaignId);
       navigate(`/simulation?session=${encodeURIComponent(session.id)}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      toast.error(e, "Could not simulate campaign");
     } finally {
       setBusy(false);
     }
   }
 
-  const progression = (detail?.progression as string[] | undefined) ?? [];
-  const incidents = (detail?.incidents as Array<Record<string, unknown>> | undefined) ?? [];
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter((c) => c.campaign_id.toLowerCase().includes(q) || (c.attack_types ?? []).some((a) => a.toLowerCase().includes(q)));
+  }, [list, query]);
+
+  const progression = detail?.progression ?? [];
+  const incidents = detail?.incidents ?? [];
+  const riskTrend = useMemo(
+    () =>
+      [...incidents]
+        .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)))
+        .map((inc, i) => ({ step: `#${i + 1}`, risk: normalizeRisk(inc.risk_score) })),
+    [incidents]
+  );
+
+  const columns: Column<Incident>[] = [
+    {
+      key: "incident_id",
+      header: "Incident",
+      sortable: true,
+      cell: (r) => (
+        <Link className="mono" to={`/incidents/${encodeURIComponent(r.incident_id)}`}>
+          {r.incident_id}
+        </Link>
+      ),
+    },
+    { key: "attack_type", header: "Attack", sortable: true },
+    { key: "risk_score", header: "Risk", sortable: true, align: "right", cell: (r) => <span className="mono">{formatRisk(r.risk_score)}</span> },
+    { key: "severity", header: "Severity", sortable: true, cell: (r) => <SeverityBadge severity={r.severity} size="sm" /> },
+    { key: "status", header: "Status", sortable: true, cell: (r) => <StatusBadge status={r.status} size="sm" /> },
+  ];
 
   return (
-    <div className="rise">
-      <div className="page-header">
-        <div>
-          <h2>Attack Campaigns</h2>
-          <p>Correlated investigations sharing a source fingerprint — select a campaign to drill in.</p>
-        </div>
-        <Link className="btn btn-secondary" to="/detection">
-          New detection
-        </Link>
-      </div>
+    <div className="page">
+      <PageHeader
+        eyebrow="Investigate"
+        icon={Activity}
+        title="Attack Campaigns"
+        subtitle="Correlated investigations that share a source fingerprint — select a campaign to drill in."
+        actions={
+          <Link className="btn btn-secondary" to="/detection">
+            <Radar size={16} aria-hidden /> New detection
+          </Link>
+        }
+      />
 
-      {error && (
-        <div className="panel" style={{ marginBottom: "1rem", borderColor: "rgba(227,93,106,.4)" }}>
-          {error}
-        </div>
-      )}
+      {error ? <ErrorState error={error} onRetry={() => window.location.reload()} /> : null}
 
-      <div className="split">
-        <section className="panel panel-interactive">
-          <h3 style={{ marginTop: 0 }}>Campaign list</h3>
-          {list.length === 0 && (
-            <div className="empty-state">
-              <strong>No campaigns yet</strong>
-              <p className="muted" style={{ margin: 0 }}>
-                Detections need an explicit <span className="mono">source_ref</span> to correlate.
-              </p>
-            </div>
-          )}
-          <ul className="timeline">
-            {list.map((c) => {
-              const id = String(c.campaign_id);
-              const active = campaignId === id;
-              return (
-                <li key={id} style={{ opacity: campaignId && !active ? 0.45 : 1 }}>
-                  <Link
-                    className="mono"
-                    to={`/campaigns/${encodeURIComponent(id)}`}
-                    style={{ color: active ? "var(--cyan-bright)" : undefined }}
-                  >
-                    {id}
-                  </Link>
-                  <div className="muted">
-                    {String((c.progression as string[] | undefined)?.join(" → ") || "—")} · n=
-                    {String(c.incident_count)} · max risk {String(c.max_risk)}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+      <div className="grid grid-split-rev">
+        <Card title="Campaigns" subtitle={`${list.length} correlated threads`} icon={Layers}>
+          <div className="stack-sm">
+            <label className="input-with-icon">
+              <Search size={15} aria-hidden />
+              <span className="sr-only">Search campaigns</span>
+              <input className="input input-sm" type="search" placeholder="Search by ID or attack…" value={query} onChange={(e) => setQuery(e.target.value)} />
+            </label>
+            {listLoading ? (
+              <SkeletonText lines={5} />
+            ) : shown.length === 0 ? (
+              <EmptyState
+                compact
+                title={list.length ? "No campaigns match" : "No campaigns yet"}
+                description={list.length ? undefined : <>Detections need an explicit <code>source_ref</code> to correlate.</>}
+              />
+            ) : (
+              <ul className="list-plain stack-sm" style={{ maxHeight: 560, overflowY: "auto", paddingRight: 4 }}>
+                {shown.map((c) => {
+                  const active = campaignId === c.campaign_id;
+                  return (
+                    <li key={c.campaign_id}>
+                      <Link
+                        to={`/campaigns/${encodeURIComponent(c.campaign_id)}`}
+                        className="launch-tile"
+                        aria-current={active ? "page" : undefined}
+                        style={active ? { borderColor: "var(--accent)", background: "var(--accent-soft)" } : undefined}
+                      >
+                        <span className="launch-tile-icon" aria-hidden style={{ color: attackColor(theme, c.attack_types?.[0] ?? "") }}>
+                          <GitBranch size={16} />
+                        </span>
+                        <span className="grow">
+                          <strong className="mono" style={{ fontSize: "0.85rem" }}>
+                            {c.campaign_id}
+                          </strong>
+                          <span>
+                            {(c.attack_types ?? []).join(", ") || "—"} · {c.incident_count} incident{c.incident_count === 1 ? "" : "s"} · max risk{" "}
+                            {formatRisk(c.max_risk)}
+                          </span>
+                          {c.latest_at ? <span style={{ display: "block" }}>Last seen {formatRelative(c.latest_at)}</span> : null}
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </Card>
 
-        <section className="panel panel-interactive stack">
+        <div className="stack">
           {!campaignId && (
-            <div className="empty-state">
-              <strong>Select a campaign</strong>
-              <p className="muted" style={{ margin: 0 }}>View progression, linked incidents, and run a campaign simulation.</p>
-            </div>
+            <EmptyState
+              icon={GitBranch}
+              title="Select a campaign"
+              description="View its attack progression, linked incidents and run a campaign-level simulation."
+            />
+          )}
+          {campaignId && detailLoading && !detail && (
+            <Card>
+              <Skeleton width="40%" height={22} />
+              <div style={{ height: 12 }} />
+              <SkeletonText lines={4} />
+            </Card>
           )}
           {detail && (
             <>
-              <h3 style={{ marginTop: 0 }}>{String(detail.campaign_id)}</h3>
-              <p className="mono muted">
-                Incidents: {String(detail.incident_count)} · Max risk: {String(detail.max_risk)} · Severity:{" "}
-                {String(detail.max_severity)}
-              </p>
-              <button className="btn btn-amber" disabled={busy} onClick={() => void simulateCampaign()}>
-                Simulate campaign progression
-              </button>
-              <h4>Attack progression</h4>
-              <div className="phase-strip">
-                {progression.map((p, i) => (
-                  <div key={`${p}-${i}`} className="phase-chip done" style={{ opacity: 1 }}>
-                    <span className="mono muted">#{i + 1}</span>
-                    <strong>{p}</strong>
+              <Card
+                title={<span className="mono">{detail.campaign_id}</span>}
+                subtitle="Correlated campaign"
+                icon={GitBranch}
+                actions={
+                  <button type="button" className="btn btn-warn" disabled={busy} onClick={() => void simulateCampaign()}>
+                    {busy ? <Loader2 size={16} className="spin" aria-hidden /> : <Network size={16} aria-hidden />} Simulate progression
+                  </button>
+                }
+              >
+                <div className="stack">
+                  <div className="grid grid-stats">
+                    <StatTile label="Incidents" icon={Layers} value={detail.incident_count} />
+                    <StatTile label="Max risk" icon={ShieldAlert} value={formatRisk(detail.max_risk)} />
+                    <StatTile label="Max severity" compact value={<SeverityBadge severity={detail.max_severity} />} />
                   </div>
-                ))}
-              </div>
-              <h4>Incidents</h4>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Attack</th>
-                    <th>Risk</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {incidents.map((inc) => (
-                    <tr key={String(inc.incident_id)}>
-                      <td>
-                        <Link className="mono" to={`/incidents/${encodeURIComponent(String(inc.incident_id))}`}>
-                          {String(inc.incident_id)}
-                        </Link>
-                      </td>
-                      <td>{String(inc.attack_type)}</td>
-                      <td className="mono">{String(inc.risk_score)}</td>
-                      <td>{String(inc.status)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                  <div>
+                    <h4 style={{ marginBottom: 8 }}>Attack progression</h4>
+                    <ol className="row list-plain" style={{ gap: 6 }} aria-label="Attack progression">
+                      {progression.map((p, i) => (
+                        <li key={`${p}-${i}`} className="row" style={{ gap: 6 }}>
+                          <Badge tone="accent">
+                            <span className="mono">#{i + 1}</span> {p}
+                          </Badge>
+                          {i < progression.length - 1 && <ArrowRight size={14} className="muted" aria-hidden />}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </div>
+              </Card>
+
+              {riskTrend.length > 1 && (
+                <Card title="Risk across the campaign" subtitle="Normalised 0–100 risk per incident in order of detection" icon={Activity}>
+                  <TimeSeriesArea
+                    ariaLabel="Risk per incident across the campaign"
+                    data={riskTrend}
+                    xKey="step"
+                    height={200}
+                    yDomain={[0, 100]}
+                    series={[{ key: "risk", label: "Risk", color: theme.severity.HIGH }]}
+                    yFormatter={(v) => String(Math.round(v))}
+                  />
+                </Card>
+              )}
+
+              <Card title="Linked incidents" icon={Layers}>
+                <DataTable data={incidents} columns={columns} rowKey={(r) => r.incident_id} pageSize={10} pageSizeOptions={[10]} emptyTitle="No incidents" caption="Campaign incidents" />
+              </Card>
             </>
           )}
-        </section>
+        </div>
       </div>
     </div>
   );

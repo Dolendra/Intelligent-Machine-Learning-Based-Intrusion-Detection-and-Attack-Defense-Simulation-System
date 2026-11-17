@@ -1,0 +1,518 @@
+{
+  "generated_at": "2026-11-10T12:28:22.605245+00:00",
+  "seed": 1,
+  "alpha": 0.01,
+  "quick": false,
+  "caps": {
+    "train": {
+      "BENIGN": 150000,
+      "_attack": 25000
+    },
+    "val": {
+      "BENIGN": 20000,
+      "_attack": 4000
+    },
+    "test": {
+      "BENIGN": 100000,
+      "_attack": 15000
+    }
+  },
+  "torch_epochs": 8,
+  "results": {
+    "Logistic regression": {
+      "iid": {
+        "precision": 0.9770413832955506,
+        "recall": 0.8976762231479213,
+        "f1": 0.9356788625673116,
+        "mcc": 0.9078602343437927,
+        "fpr": 0.01033,
+        "roc_auc": 0.994036893326799,
+        "fit_seconds": 5.4,
+        "inference_us_per_flow": 0.09
+      },
+      "heldout": {
+        "Bot": {
+          "zero_day_recall": 0.0,
+          "fpr": 0.00986,
+          "auroc": 0.5123988834702259
+        },
+        "BruteForce": {
+          "zero_day_recall": 0.003715846994535519,
+          "fpr": 0.00944,
+          "auroc": 0.5530606366120219
+        },
+        "DDoS": {
+          "zero_day_recall": 0.6223333333333333,
+          "fpr": 0.01023,
+          "auroc": 0.9514173803333332
+        },
+        "DoS": {
+          "zero_day_recall": 0.09966666666666667,
+          "fpr": 0.01089,
+          "auroc": 0.7405286486666667
+        },
+        "PortScan": {
+          "zero_day_recall": 0.03306666666666667,
+          "fpr": 0.00969,
+          "auroc": 0.80346235
+        },
+        "WebAttack": {
+          "zero_day_recall": 0.003733084461035931,
+          "fpr": 0.01043,
+          "auroc": 0.9081355832944471
+        }
+      },
+      "heldout_mean": {
+        "zero_day_recall": 0.12708593302037302,
+        "fpr": 0.01009,
+        "auroc": 0.7448339137294492
+      }
+    },
+    "Decision tree": {
+      "iid": {
+        "precision": 0.9952956989247311,
+        "recall": 0.9979784366576819,
+        "f1": 0.9966352624495289,
+        "mcc": 0.9949861797778518,
+        "fpr": 0.00231,
+        "roc_auc": 0.9977747540431265,
+        "fit_seconds": 3.8,
+        "inference_us_per_flow": 0.07
+      },
+      "heldout": {
+        "Bot": {
+          "zero_day_recall": 0.001540041067761807,
+          "fpr": 0.00184,
+          "auroc": 0.4998508598562628
+        },
+        "BruteForce": {
+          "zero_day_recall": 0.0001092896174863388,
+          "fpr": 0.00151,
+          "auroc": 0.49439020000000006
+        },
+        "DDoS": {
+          "zero_day_recall": 0.6239333333333333,
+          "fpr": 0.00285,
+          "auroc": 0.8109409196666667
+        },
+        "DoS": {
+          "zero_day_recall": 0.30833333333333335,
+          "fpr": 0.00117,
+          "auroc": 0.6536942083333334
+        },
+        "PortScan": {
+          "zero_day_recall": 0.013933333333333334,
+          "fpr": 0.00111,
+          "auroc": 0.5064122936666667
+        },
+        "WebAttack": {
+          "zero_day_recall": 0.8744750349976668,
+          "fpr": 0.00222,
+          "auroc": 0.9366687540830612
+        }
+      },
+      "heldout_mean": {
+        "zero_day_recall": 0.3037207276138192,
+        "fpr": 0.0017833333333333336,
+        "auroc": 0.6503262059343319
+      }
+    },
+    "Random forest": {
+      "iid": {
+        "precision": 0.979476716274604,
+        "recall": 0.9998774810095565,
+        "f1": 0.9895719655632351,
+        "mcc": 0.9845035762917156,
+        "fpr": 0.01026,
+        "roc_auc": 0.9999556000367558,
+        "fit_seconds": 7.8,
+        "inference_us_per_flow": 1.38
+      },
+      "heldout": {
+        "Bot": {
+          "zero_day_recall": 0.0,
+          "fpr": 0.01062,
+          "auroc": 0.5226159034907597
+        },
+        "BruteForce": {
+          "zero_day_recall": 0.23868852459016393,
+          "fpr": 0.01027,
+          "auroc": 0.8990772087431694
+        },
+        "DDoS": {
+          "zero_day_recall": 0.6428666666666667,
+          "fpr": 0.01026,
+          "auroc": 0.9791605056666667
+        },
+        "DoS": {
+          "zero_day_recall": 0.9026,
+          "fpr": 0.01015,
+          "auroc": 0.9844910516666665
+        },
+        "PortScan": {
+          "zero_day_recall": 0.02666666666666667,
+          "fpr": 0.01087,
+          "auroc": 0.6621883626666667
+        },
+        "WebAttack": {
+          "zero_day_recall": 0.9178721418572096,
+          "fpr": 0.01059,
+          "auroc": 0.987101329911339
+        }
+      },
+      "heldout_mean": {
+        "zero_day_recall": 0.45478233329678447,
+        "fpr": 0.010459999999999999,
+        "auroc": 0.8391057270242114
+      }
+    },
+    "XGBoost": {
+      "iid": {
+        "precision": 0.9788135593220338,
+        "recall": 1.0,
+        "f1": 0.9892933618843683,
+        "mcc": 0.9840925442219448,
+        "fpr": 0.0106,
+        "roc_auc": 0.9999623617577391,
+        "fit_seconds": 6.9,
+        "inference_us_per_flow": 1.0
+      },
+      "heldout": {
+        "Bot": {
+          "zero_day_recall": 0.0,
+          "fpr": 0.00984,
+          "auroc": 0.7764869609856262
+        },
+        "BruteForce": {
+          "zero_day_recall": 0.1526775956284153,
+          "fpr": 0.00996,
+          "auroc": 0.9459693950819672
+        },
+        "DDoS": {
+          "zero_day_recall": 0.6442666666666667,
+          "fpr": 0.00998,
+          "auroc": 0.9906272613333333
+        },
+        "DoS": {
+          "zero_day_recall": 0.9406,
+          "fpr": 0.00962,
+          "auroc": 0.9965905820000001
+        },
+        "PortScan": {
+          "zero_day_recall": 0.048,
+          "fpr": 0.01098,
+          "auroc": 0.8920046276666667
+        },
+        "WebAttack": {
+          "zero_day_recall": 0.9580027998133458,
+          "fpr": 0.01039,
+          "auroc": 0.9980835254316379
+        }
+      },
+      "heldout_mean": {
+        "zero_day_recall": 0.45725784368473793,
+        "fpr": 0.010128333333333331,
+        "auroc": 0.9332937254165387
+      }
+    },
+    "Hist. gradient boosting (LightGBM-style)": {
+      "iid": {
+        "precision": 0.9788318541616695,
+        "recall": 0.9999387405047783,
+        "f1": 0.9892727272727273,
+        "mcc": 0.9840610066697131,
+        "fpr": 0.01059,
+        "roc_auc": 0.9999584787225354,
+        "fit_seconds": 8.3,
+        "inference_us_per_flow": 3.67
+      },
+      "heldout": {
+        "Bot": {
+          "zero_day_recall": 0.0,
+          "fpr": 0.01045,
+          "auroc": 0.7537540503080082
+        },
+        "BruteForce": {
+          "zero_day_recall": 0.2994535519125683,
+          "fpr": 0.01079,
+          "auroc": 0.9842413628415301
+        },
+        "DDoS": {
+          "zero_day_recall": 0.6645333333333333,
+          "fpr": 0.00929,
+          "auroc": 0.9872171396666667
+        },
+        "DoS": {
+          "zero_day_recall": 0.8088,
+          "fpr": 0.01094,
+          "auroc": 0.9854041593333334
+        },
+        "PortScan": {
+          "zero_day_recall": 0.1668,
+          "fpr": 0.01045,
+          "auroc": 0.9150828070000001
+        },
+        "WebAttack": {
+          "zero_day_recall": 0.9580027998133458,
+          "fpr": 0.01023,
+          "auroc": 0.9978982804479701
+        }
+      },
+      "heldout_mean": {
+        "zero_day_recall": 0.48293161417654124,
+        "fpr": 0.010358333333333332,
+        "auroc": 0.9372662999329181
+      }
+    },
+    "Linear SVM": {
+      "iid": {
+        "precision": 0.978676931727255,
+        "recall": 0.9240994854202401,
+        "f1": 0.9506054845451777,
+        "mcc": 0.9282597683078151,
+        "fpr": 0.00986,
+        "roc_auc": 0.9944473397043208,
+        "fit_seconds": 15.5,
+        "inference_us_per_flow": 0.24
+      },
+      "heldout": {
+        "Bot": {
+          "zero_day_recall": 0.0,
+          "fpr": 0.00907,
+          "auroc": 0.5312596868583161
+        },
+        "BruteForce": {
+          "zero_day_recall": 0.0045901639344262295,
+          "fpr": 0.00918,
+          "auroc": 0.7410739366120218
+        },
+        "DDoS": {
+          "zero_day_recall": 0.5546,
+          "fpr": 0.01016,
+          "auroc": 0.9431754273333334
+        },
+        "DoS": {
+          "zero_day_recall": 0.047266666666666665,
+          "fpr": 0.00996,
+          "auroc": 0.6733457473333333
+        },
+        "PortScan": {
+          "zero_day_recall": 0.04413333333333333,
+          "fpr": 0.00914,
+          "auroc": 0.8338927690000001
+        },
+        "WebAttack": {
+          "zero_day_recall": 0.010732617825478302,
+          "fpr": 0.01002,
+          "auroc": 0.796227312179188
+        }
+      },
+      "heldout_mean": {
+        "zero_day_recall": 0.11022046362665076,
+        "fpr": 0.009588333333333334,
+        "auroc": 0.7531624798860322
+      }
+    },
+    "Kernel SVM (RBF, Nystr\u00f6m)": {
+      "iid": {
+        "precision": 0.9803818673555887,
+        "recall": 0.9918729069672466,
+        "f1": 0.986093911772468,
+        "mcc": 0.9792616429623328,
+        "fpr": 0.00972,
+        "roc_auc": 0.9995746032426692,
+        "fit_seconds": 15.1,
+        "inference_us_per_flow": 5.73
+      },
+      "heldout": {
+        "Bot": {
+          "zero_day_recall": 0.0,
+          "fpr": 0.009,
+          "auroc": 0.2681167402464066
+        },
+        "BruteForce": {
+          "zero_day_recall": 0.23081967213114754,
+          "fpr": 0.01001,
+          "auroc": 0.46188212349726776
+        },
+        "DDoS": {
+          "zero_day_recall": 0.6362,
+          "fpr": 0.00977,
+          "auroc": 0.8703715313333333
+        },
+        "DoS": {
+          "zero_day_recall": 0.25866666666666666,
+          "fpr": 0.01051,
+          "auroc": 0.8943647806666665
+        },
+        "PortScan": {
+          "zero_day_recall": 0.015,
+          "fpr": 0.01006,
+          "auroc": 0.6513187543333333
+        },
+        "WebAttack": {
+          "zero_day_recall": 0.06719552029864675,
+          "fpr": 0.01037,
+          "auroc": 0.8908246290247317
+        }
+      },
+      "heldout_mean": {
+        "zero_day_recall": 0.20131364318274347,
+        "fpr": 0.009953333333333333,
+        "auroc": 0.6728130931836231
+      }
+    },
+    "MLP / ANN (PyTorch)": {
+      "iid": {
+        "precision": 0.9810141841121871,
+        "recall": 0.9970799640610961,
+        "f1": 0.9889818321754805,
+        "mcc": 0.9835930430018824,
+        "fpr": 0.00945,
+        "roc_auc": 0.9998291433880585,
+        "fit_seconds": 20.6,
+        "inference_us_per_flow": 0.38
+      },
+      "heldout": {
+        "Bot": {
+          "zero_day_recall": 0.0,
+          "fpr": 0.01036,
+          "auroc": 0.41204513347022587
+        },
+        "BruteForce": {
+          "zero_day_recall": 0.23978142076502731,
+          "fpr": 0.00929,
+          "auroc": 0.7312068765027323
+        },
+        "DDoS": {
+          "zero_day_recall": 0.6376,
+          "fpr": 0.01019,
+          "auroc": 0.9675439823333333
+        },
+        "DoS": {
+          "zero_day_recall": 0.5383333333333333,
+          "fpr": 0.00963,
+          "auroc": 0.7554606236666668
+        },
+        "PortScan": {
+          "zero_day_recall": 0.009866666666666666,
+          "fpr": 0.01034,
+          "auroc": 0.724171352
+        },
+        "WebAttack": {
+          "zero_day_recall": 0.06719552029864675,
+          "fpr": 0.00987,
+          "auroc": 0.8797173915072329
+        }
+      },
+      "heldout_mean": {
+        "zero_day_recall": 0.24879615684394565,
+        "fpr": 0.009946666666666666,
+        "auroc": 0.7450242265800319
+      }
+    },
+    "1-D CNN (PyTorch)": {
+      "iid": {
+        "precision": 0.9797009188637319,
+        "recall": 0.9993261455525606,
+        "f1": 0.9894162244124337,
+        "mcc": 0.9842646545919745,
+        "fpr": 0.01014,
+        "roc_auc": 0.9998649368006208,
+        "fit_seconds": 47.8,
+        "inference_us_per_flow": 10.09
+      },
+      "heldout": {
+        "Bot": {
+          "zero_day_recall": 0.0,
+          "fpr": 0.0106,
+          "auroc": 0.597631296201232
+        },
+        "BruteForce": {
+          "zero_day_recall": 0.23158469945355192,
+          "fpr": 0.01026,
+          "auroc": 0.4057379081967213
+        },
+        "DDoS": {
+          "zero_day_recall": 0.7315333333333334,
+          "fpr": 0.01008,
+          "auroc": 0.9897053713333334
+        },
+        "DoS": {
+          "zero_day_recall": 0.1796,
+          "fpr": 0.00999,
+          "auroc": 0.8144271316666667
+        },
+        "PortScan": {
+          "zero_day_recall": 0.052066666666666664,
+          "fpr": 0.00994,
+          "auroc": 0.939966942
+        },
+        "WebAttack": {
+          "zero_day_recall": 0.9052729818012133,
+          "fpr": 0.01004,
+          "auroc": 0.95318398740084
+        }
+      },
+      "heldout_mean": {
+        "zero_day_recall": 0.35000961354246085,
+        "fpr": 0.010151666666666666,
+        "auroc": 0.7834421061331321
+      }
+    },
+    "LSTM (PyTorch)": {
+      "iid": {
+        "precision": 0.9766633565044687,
+        "recall": 0.8836477987421384,
+        "f1": 0.9278301886792453,
+        "mcc": 0.8974319378716724,
+        "fpr": 0.01034,
+        "roc_auc": 0.9902208693743363,
+        "fit_seconds": 48.1,
+        "inference_us_per_flow": 10.02
+      },
+      "heldout": {
+        "Bot": {
+          "zero_day_recall": 0.0,
+          "fpr": 0.01081,
+          "auroc": 0.569339499486653
+        },
+        "BruteForce": {
+          "zero_day_recall": 0.0001092896174863388,
+          "fpr": 0.00932,
+          "auroc": 0.48928501967213117
+        },
+        "DDoS": {
+          "zero_day_recall": 0.0886,
+          "fpr": 0.00959,
+          "auroc": 0.6532177343333334
+        },
+        "DoS": {
+          "zero_day_recall": 0.1952,
+          "fpr": 0.01022,
+          "auroc": 0.7594234183333333
+        },
+        "PortScan": {
+          "zero_day_recall": 0.0015333333333333334,
+          "fpr": 0.00995,
+          "auroc": 0.4133224243333334
+        },
+        "WebAttack": {
+          "zero_day_recall": 0.004666355576294913,
+          "fpr": 0.00955,
+          "auroc": 0.8836085767615492
+        }
+      },
+      "heldout_mean": {
+        "zero_day_recall": 0.04835149642118577,
+        "fpr": 0.009906666666666668,
+        "auroc": 0.6280327788200556
+      }
+    }
+  },
+  "notes": [
+    "Thresholds are set on validation benign flows for a 1% false-alarm budget (same operating point for all).",
+    "Histogram gradient boosting is scikit-learn's LightGBM-style implementation (LightGBM itself not installed).",
+    "CNN/LSTM read the 77 flow features as a 1-D sequence, as is common in the IDS literature; flows have no time axis."
+  ]
+}

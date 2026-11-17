@@ -14,6 +14,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from backend.routes.api import router
+from backend.routes.v3 import router as v3_router
+from backend.routes.range import router as range_router
 from backend.services.seed import seed_demo_incidents
 from backend.middleware.rate_limit import attach_rate_limit
 from backend.middleware.api_auth import attach_api_auth
@@ -123,6 +125,8 @@ app.add_middleware(
 )
 
 app.include_router(router, prefix="/api")
+app.include_router(v3_router, prefix="/api")
+app.include_router(range_router, prefix="/api")
 attach_error_handlers(app)
 attach_request_limits(app)
 attach_rate_limit(app)

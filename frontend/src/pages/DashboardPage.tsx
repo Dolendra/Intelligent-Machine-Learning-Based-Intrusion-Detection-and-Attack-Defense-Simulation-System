@@ -1,362 +1,449 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { api } from "../services/api";
+import {
+  Activity,
+  BellRing,
+  Crosshair,
+  FileBarChart2,
+  Gauge as GaugeIcon,
+  Layers,
+  Network,
+  Pause,
+  Play,
+  Radar,
+  Radio,
+  RefreshCw,
+  ShieldHalf,
+  Sparkles,
+} from "lucide-react";
+import { api, type Analytics, type Incident, type SeverityLevel, type ZeroDayStatus } from "../services/api";
+import { Badge } from "../components/ui/Badge";
+import { useLive } from "../app/live";
+import { formatDateTime, formatPct, formatRelative, formatRisk } from "../lib/format";
+import { mergeSeverityCounts, normalizeRisk, normalizeSeverity, severityVar } from "../lib/severity";
+import { bucketByTime } from "../lib/timeseries";
+import { Card } from "../components/ui/Card";
+import { PageHeader } from "../components/ui/PageHeader";
+import { StatTile } from "../components/ui/StatTile";
+import { SEVERITY_META, SeverityBadge, StatusBadge } from "../components/ui/Badge";
+import { EmptyState } from "../components/ui/EmptyState";
+import { ErrorState } from "../components/ui/ErrorState";
+import { DataTable, type Column } from "../components/ui/DataTable";
+import { Skeleton } from "../components/ui/Skeleton";
+import { BarList, DonutChart, Gauge, TimeSeriesArea, attackColor, useChartTheme } from "../components/charts";
 
-function severityClass(sev: string) {
-  return (sev || "low").toLowerCase();
-}
-
-function wsUrl(): string {
-  const base = import.meta.env.VITE_API_BASE ?? "";
-  if (base.startsWith("http")) {
-    return base.replace(/^http/, "ws") + "/api/ws/events";
-  }
-  const proto = window.location.protocol === "https:" ? "wss" : "ws";
-  const host = window.location.host;
-  if (host.includes("5173")) {
-    return `${proto}://127.0.0.1:8000/api/ws/events`;
-  }
-  return `${proto}://${host}/api/ws/events`;
-}
-
-type SevFilter = "ALL" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+const SEVERITIES: SeverityLevel[] = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
+const POLL_MS = 5000;
 
 export function DashboardPage() {
-  const [analytics, setAnalytics] = useState<{
-    total_incidents: number;
-    by_severity: Record<string, number>;
-    by_attack_type: Record<string, number>;
-  } | null>(null);
-  const [incidents, setIncidents] = useState<Array<Record<string, unknown>>>([]);
+  const live = useLive();
+  const theme = useChartTheme();
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [liveMode, setLiveMode] = useState<"websocket" | "polling" | "off">("off");
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const [lastUpdate, setLastUpdate] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const [lastUpdate, setLastUpdate] = useState<number | null>(null);
   const [modelVersion, setModelVersion] = useState<string | null>(null);
-  const [sevFilter, setSevFilter] = useState<SevFilter>("ALL");
-  const pollRef = useRef<number | null>(null);
-
-  const applySnapshot = useCallback(
-    (
-      a: { total_incidents: number; by_severity: Record<string, number>; by_attack_type: Record<string, number> },
-      items: Array<Record<string, unknown>>
-    ) => {
-      setAnalytics(a);
-      setIncidents(items);
-      setLastUpdate(new Date().toLocaleTimeString());
-      setError(null);
-      setLoading(false);
-    },
-    []
-  );
+  const [gate, setGate] = useState<ZeroDayStatus | null>(null);
+  const [sevFilter, setSevFilter] = useState<SeverityLevel | null>(null);
+  const [attackFilter, setAttackFilter] = useState<string | null>(null);
+  const knownTotal = useRef<number | null>(null);
 
   const refreshOnce = useCallback(async () => {
-    const [a, i] = await Promise.all([api.analytics(), api.incidents()]);
-    applySnapshot(a, i.items);
-  }, [applySnapshot]);
+    setRefreshing(true);
+    try {
+      const [a, i] = await Promise.all([api.analytics(), api.incidents()]);
+      setAnalytics(a);
+      setIncidents(i.items ?? []);
+      knownTotal.current = a.total_incidents;
+      setLastUpdate(Date.now());
+      setError(null);
+    } catch (e) {
+      setError(e);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
-    void refreshOnce().catch((e) => {
-      setError(e instanceof Error ? e.message : String(e));
-      setLoading(false);
-    });
+    void refreshOnce();
     api
       .models()
-      .then((m) => setModelVersion(String(m.model_version ?? m.application_version ?? "")))
+      .then((m) => setModelVersion(String(m.model_version ?? m.application_version ?? "") || null))
       .catch(() => undefined);
+    api
+      .zeroDayStatus()
+      .then(setGate)
+      .catch(() => setGate({ available: false, reason: "Status endpoint unreachable" }));
   }, [refreshOnce]);
 
+  // WebSocket pushes: analytics snapshot every few seconds; refetch the full list when the total moves.
   useEffect(() => {
-    if (!autoRefresh) {
-      setLiveMode("off");
-      if (pollRef.current) window.clearInterval(pollRef.current);
-      return;
-    }
+    const snap = live.snapshot;
+    if (!snap) return;
+    setAnalytics(snap.analytics);
+    setLastUpdate(snap.receivedAt);
+    if (knownTotal.current !== null && snap.analytics.total_incidents !== knownTotal.current) void refreshOnce();
+  }, [live.snapshot, refreshOnce]);
 
-    let ws: WebSocket | null = null;
-    let closed = false;
+  useEffect(() => {
+    if (live.incidentSignal > 0) void refreshOnce();
+  }, [live.incidentSignal, refreshOnce]);
 
-    try {
-      ws = new WebSocket(wsUrl());
-      ws.onopen = () => {
-        if (!closed) setLiveMode("websocket");
-      };
-      ws.onmessage = (ev) => {
-        try {
-          const msg = JSON.parse(ev.data);
-          if (msg.type === "analytics" && msg.analytics) {
-            applySnapshot(msg.analytics, msg.incidents ?? []);
-          } else if (msg.type === "incident_created") {
-            void refreshOnce();
-          }
-        } catch {
-          /* ignore malformed */
-        }
-      };
-      ws.onerror = () => {
-        /* fall through to polling via onclose */
-      };
-      ws.onclose = () => {
-        if (closed) return;
-        setLiveMode("polling");
-        if (pollRef.current) window.clearInterval(pollRef.current);
-        pollRef.current = window.setInterval(() => {
-          void refreshOnce().catch(() => undefined);
-        }, 5000);
-      };
-    } catch {
-      setLiveMode("polling");
-      pollRef.current = window.setInterval(() => {
-        void refreshOnce().catch(() => undefined);
-      }, 5000);
-    }
+  // Polling fallback whenever the socket is not live (and the user has not paused).
+  const shouldPoll = !live.paused && live.status !== "live" && live.apiOnline !== false;
+  useEffect(() => {
+    if (!shouldPoll) return;
+    const id = window.setInterval(() => void refreshOnce(), POLL_MS);
+    return () => window.clearInterval(id);
+  }, [shouldPoll, refreshOnce]);
 
-    return () => {
-      closed = true;
-      ws?.close();
-      if (pollRef.current) window.clearInterval(pollRef.current);
+  const sevCounts = useMemo(() => mergeSeverityCounts(analytics?.by_severity), [analytics]);
+  const total = analytics?.total_incidents ?? 0;
+
+  const { unit, buckets } = useMemo(
+    () => bucketByTime(incidents, (r) => r.created_at, (r) => normalizeSeverity(r.severity), [...SEVERITIES, "INFO"] as const, 36),
+    [incidents]
+  );
+  const timeData = useMemo(
+    () => buckets.map((b) => ({ label: b.label, CRITICAL: b.counts.CRITICAL, HIGH: b.counts.HIGH, MEDIUM: b.counts.MEDIUM, LOW: b.counts.LOW + b.counts.INFO })),
+    [buckets]
+  );
+  const sparkTotal = buckets.slice(-12).map((b) => b.total);
+  const sparkBySev = (s: SeverityLevel) => buckets.slice(-12).map((b) => b.counts[s]);
+
+  const recentRisk = useMemo(() => {
+    const recent = incidents.slice(0, 10);
+    if (!recent.length) return null;
+    const vals = recent.map((r) => normalizeRisk(r.risk_score));
+    return {
+      avg: vals.reduce((s, v) => s + v, 0) / vals.length,
+      peak: Math.max(...vals),
+      avgConf: recent.reduce((s, r) => s + (Number(r.confidence) || 0), 0) / recent.length,
+      n: recent.length,
     };
-  }, [autoRefresh, applySnapshot, refreshOnce]);
+  }, [incidents]);
 
-  const critical = analytics?.by_severity?.CRITICAL ?? 0;
-  const high = analytics?.by_severity?.HIGH ?? 0;
-  const medium = analytics?.by_severity?.MEDIUM ?? 0;
-  const low = analytics?.by_severity?.LOW ?? 0;
+  const filtered = useMemo(
+    () =>
+      incidents.filter(
+        (r) => (!sevFilter || normalizeSeverity(r.severity) === sevFilter) && (!attackFilter || r.attack_type === attackFilter)
+      ),
+    [incidents, sevFilter, attackFilter]
+  );
 
-  const filteredIncidents = useMemo(() => {
-    if (sevFilter === "ALL") return incidents;
-    return incidents.filter((row) => String(row.severity).toUpperCase() === sevFilter);
-  }, [incidents, sevFilter]);
+  const feed = (live.snapshot?.incidents?.length ? live.snapshot.incidents : incidents).slice(0, 6);
+  const attackEntries = Object.entries(analytics?.by_attack_type ?? {});
 
-  function toggleSev(sev: SevFilter) {
-    setSevFilter((cur) => (cur === sev ? "ALL" : sev));
-  }
+  const columns: Column<Incident>[] = [
+    {
+      key: "incident_id",
+      header: "Incident",
+      sortable: true,
+      cell: (r) => (
+        <Link className="mono" to={`/incidents/${encodeURIComponent(r.incident_id)}`}>
+          {r.incident_id}
+        </Link>
+      ),
+    },
+    { key: "attack_type", header: "Attack", sortable: true },
+    {
+      key: "severity",
+      header: "Severity",
+      sortable: true,
+      accessor: (r) => SEVERITIES.indexOf(normalizeSeverity(r.severity)),
+      cell: (r) => <SeverityBadge severity={r.severity} size="sm" />,
+    },
+    { key: "risk_score", header: "Risk", sortable: true, align: "right", cell: (r) => <span className="mono">{formatRisk(r.risk_score)}</span> },
+    { key: "confidence", header: "Conf.", sortable: true, align: "right", cell: (r) => <span className="mono">{formatPct(r.confidence)}</span> },
+    { key: "status", header: "Status", sortable: true, cell: (r) => <StatusBadge status={r.status} size="sm" /> },
+    {
+      key: "created_at",
+      header: "Seen",
+      sortable: true,
+      accessor: (r) => r.created_at ?? "",
+      cell: (r) => (
+        <span className="muted small" title={formatDateTime(r.created_at)}>
+          {formatRelative(r.created_at)}
+        </span>
+      ),
+    },
+  ];
+
+  const anyFilter = sevFilter || attackFilter;
 
   return (
-    <div className="rise">
-      <div className="page-header">
-        <div>
-          <h2>Security Overview</h2>
-          <p>
-            Live decision-support console for the Aegis IDS prototype — detect, triage, and simulate defenses.
-            {modelVersion && <span className="mono muted"> · model v{modelVersion}</span>}
-            {lastUpdate && <span className="mono muted"> · updated {lastUpdate}</span>}
-          </p>
-        </div>
-        <div className="row">
-          <span className={`live-chip ${liveMode === "off" ? "off" : ""}`}>
-            <span className={`status-dot ${liveMode !== "off" ? "on" : ""}`} />
-            {liveMode === "websocket" ? "Live · websocket" : liveMode === "polling" ? "Live · polling" : "Paused"}
+    <div className="page">
+      <PageHeader
+        eyebrow="Security operations"
+        icon={ShieldHalf}
+        title="Security Overview"
+        subtitle={
+          <>
+            Live decision-support console — detect, triage and simulate defenses.
+            {modelVersion ? <span className="mono"> · model v{modelVersion}</span> : null}
+            {lastUpdate ? <span className="mono"> · updated {formatRelative(lastUpdate)}</span> : null}
+          </>
+        }
+        actions={
+          <>
+            <button type="button" className="btn btn-secondary" onClick={() => live.setPaused(!live.paused)} aria-pressed={live.paused}>
+              {live.paused ? <Play size={16} aria-hidden /> : <Pause size={16} aria-hidden />}
+              {live.paused ? "Resume live" : "Pause live"}
+            </button>
+            <button type="button" className="btn btn-secondary btn-icon" onClick={() => void refreshOnce()} aria-label="Refresh now" disabled={refreshing}>
+              <RefreshCw size={16} className={refreshing ? "spin" : undefined} />
+            </button>
+            <Link className="btn btn-primary" to="/detection">
+              <Radar size={16} aria-hidden /> Run detection
+            </Link>
+          </>
+        }
+      />
+
+      {error && !analytics ? <ErrorState error={error} title="Could not load the overview" onRetry={() => void refreshOnce()} retrying={refreshing} /> : null}
+
+      <div className="grid grid-stats rise">
+        <StatTile
+          label="Incidents"
+          icon={Layers}
+          value={total.toLocaleString()}
+          loading={loading}
+          sparkline={sparkTotal}
+          hint={live.status === "live" ? "Streaming" : live.paused ? "Paused" : "Polling every 5 s"}
+          onClick={() => setSevFilter(null)}
+          active={!sevFilter}
+        />
+        {SEVERITIES.map((s) => (
+          <StatTile
+            key={s}
+            label={SEVERITY_META[s].label}
+            icon={SEVERITY_META[s].icon}
+            tone={severityVar(s)}
+            value={sevCounts[s].toLocaleString()}
+            loading={loading}
+            sparkline={sparkBySev(s)}
+            hint={total ? `${Math.round((sevCounts[s] / total) * 100)}% of total` : "—"}
+            onClick={() => setSevFilter((cur) => (cur === s ? null : s))}
+            active={sevFilter === s}
+          />
+        ))}
+      </div>
+
+      <div className="launch-grid">
+        <Link className="launch-tile" to="/live" style={gate?.available ? { borderColor: "color-mix(in srgb, var(--chart-7) 45%, transparent)" } : undefined}>
+          <span className="launch-tile-icon" aria-hidden style={{ color: "var(--chart-7)", background: "color-mix(in srgb, var(--chart-7) 14%, transparent)" }}>
+            <Sparkles size={18} />
           </span>
-          <button
-            className={`btn ${autoRefresh ? "btn-amber" : "btn-secondary"}`}
-            onClick={() => setAutoRefresh((v) => !v)}
-          >
-            {autoRefresh ? "Auto-refresh on" : "Auto-refresh off"}
-          </button>
-          <button className="btn btn-secondary" onClick={() => void refreshOnce()}>
-            Refresh
-          </button>
-          <Link className="btn btn-primary" to="/detection">
-            Run detection
-          </Link>
-        </div>
-      </div>
-
-      <div className="quick-launch rise rise-delay-1">
-        <Link className="launch-tile" to="/detection">
-          <span className="kicker">Action</span>
-          <strong>Detection Lab</strong>
-          <span>Load a demo flow, classify, and open SHAP evidence.</span>
+          <span className="grow">
+            <span className="row" style={{ gap: 8 }}>
+              <strong>Zero-Day Gate</strong>
+              {gate === null ? (
+                <Badge size="sm" tone="neutral">
+                  checking…
+                </Badge>
+              ) : gate.available ? (
+                <Badge size="sm" tone="ok" dot>
+                  online · α {gate.alpha}
+                </Badge>
+              ) : (
+                <Badge size="sm" tone="warn" dot>
+                  unavailable
+                </Badge>
+              )}
+            </span>
+            <span>
+              {gate?.available
+                ? `Advisory open-set detector · flags ${formatPct(gate.evaluation?.gate?.natural_unknown_alert_rate, 0)} of never-seen attacks (Infiltration, Heartbleed) — the frozen model flags none of them. Open the live monitor →`
+                : gate?.reason ?? "Open-set detector status"}
+            </span>
+          </span>
         </Link>
-        <Link className="launch-tile" to="/simulation">
-          <span className="kicker">Replay</span>
-          <strong>Attack simulation</strong>
-          <span>Walk attack → defense → recovery on the topology.</span>
-        </Link>
-        <Link className="launch-tile" to="/reports">
-          <span className="kicker">Registry</span>
-          <strong>Incident reports</strong>
-          <span>Filter, export, and advance lifecycle statuses.</span>
-        </Link>
-        <Link className="launch-tile" to="/campaigns">
-          <span className="kicker">Correlate</span>
-          <strong>Campaigns</strong>
-          <span>Group related detections into investigation threads.</span>
+        <Link className="launch-tile" to="/zero-day">
+          <span className="launch-tile-icon" aria-hidden>
+            <Radio size={18} />
+          </span>
+          <span>
+            <strong>Zero-Day Lab</strong>
+            <span>See how the gate decides and tune its false-alarm budget α.</span>
+          </span>
         </Link>
       </div>
 
-      {loading && (
-        <div className="grid-stats rise-delay-2">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="stat">
-              <div className="skeleton" style={{ width: "40%" }} />
-              <div className="skeleton lg" style={{ width: "55%", marginTop: "0.7rem" }} />
-            </div>
-          ))}
-        </div>
-      )}
-      {error && (
-        <div className="panel" style={{ marginBottom: "1rem", borderColor: "rgba(227,93,106,.4)" }}>
-          Could not reach API: {error}
-        </div>
-      )}
+      <div className="grid grid-split">
+        <Card
+          title="Incident activity"
+          subtitle={`${unit === "hour" ? "Hourly" : unit === "day" ? "Daily" : "Weekly"} detections by severity, from incident timestamps`}
+          icon={Activity}
+        >
+          {loading ? (
+            <Skeleton height={260} radius={10} />
+          ) : timeData.length ? (
+            <TimeSeriesArea
+              data={timeData}
+              xKey="label"
+              stacked
+              ariaLabel="Stacked area chart of incidents over time by severity"
+              series={SEVERITIES.map((s) => ({ key: s, label: SEVERITY_META[s].label, color: theme.severity[s] }))}
+              yFormatter={(v) => String(Math.round(v))}
+            />
+          ) : (
+            <EmptyState icon={Activity} title="No activity yet" description="Run a demo detection to populate the timeline." />
+          )}
+        </Card>
 
-      {!loading && (
-        <div className="grid-stats rise rise-delay-2">
-          <button
-            type="button"
-            className={`stat is-clickable ${sevFilter === "ALL" ? "is-active" : ""}`}
-            onClick={() => setSevFilter("ALL")}
-          >
-            <div className="label">Incidents</div>
-            <div className="value">{analytics?.total_incidents ?? 0}</div>
-          </button>
-          <button
-            type="button"
-            className={`stat is-clickable ${sevFilter === "CRITICAL" ? "is-active" : ""}`}
-            onClick={() => toggleSev("CRITICAL")}
-          >
-            <div className="label">Critical</div>
-            <div className="value" style={{ color: "var(--danger)" }}>
-              {critical}
+        <Card title="Threat level" subtitle={recentRisk ? `Mean risk of the latest ${recentRisk.n} incidents` : "Waiting for incidents"} icon={GaugeIcon}>
+          {loading ? (
+            <Skeleton height={220} radius={10} />
+          ) : (
+            <div className="stack" style={{ alignItems: "center" }}>
+              <Gauge value={recentRisk?.avg ?? 0} label="Risk index" ariaLabel="Current mean risk index" />
+              <dl className="kv" style={{ width: "100%" }}>
+                <dt>Peak risk (recent)</dt>
+                <dd>{recentRisk ? Math.round(recentRisk.peak) : "—"}</dd>
+                <dt>Mean confidence</dt>
+                <dd>{recentRisk ? formatPct(recentRisk.avgConf) : "—"}</dd>
+                <dt>Critical + high share</dt>
+                <dd>{total ? formatPct((sevCounts.CRITICAL + sevCounts.HIGH) / total) : "—"}</dd>
+              </dl>
             </div>
-          </button>
-          <button
-            type="button"
-            className={`stat is-clickable ${sevFilter === "HIGH" ? "is-active" : ""}`}
-            onClick={() => toggleSev("HIGH")}
-          >
-            <div className="label">High</div>
-            <div className="value" style={{ color: "#ff9d5c" }}>
-              {high}
-            </div>
-          </button>
-          <button
-            type="button"
-            className={`stat is-clickable ${sevFilter === "MEDIUM" ? "is-active" : ""}`}
-            onClick={() => toggleSev("MEDIUM")}
-          >
-            <div className="label">Medium</div>
-            <div className="value" style={{ color: "var(--amber)" }}>
-              {medium}
-            </div>
-          </button>
-        </div>
-      )}
+          )}
+        </Card>
+      </div>
 
-      <div className="split rise rise-delay-3">
-        <section className="panel panel-interactive">
-          <div className="row" style={{ justifyContent: "space-between", marginBottom: "0.35rem" }}>
-            <h3 style={{ margin: 0 }}>Recent incidents</h3>
-            {sevFilter !== "ALL" && (
-              <button className="btn btn-secondary" type="button" onClick={() => setSevFilter("ALL")}>
-                Clear {sevFilter} filter
+      <div className="grid grid-3">
+        <Card title="Severity mix" subtitle="Click a slice to filter" icon={ShieldHalf}>
+          {loading ? (
+            <Skeleton height={180} radius={10} />
+          ) : (
+            <DonutChart
+              ariaLabel="Incidents by severity"
+              centerLabel="Incidents"
+              data={SEVERITIES.map((s) => ({ name: SEVERITY_META[s].label, value: sevCounts[s], color: theme.severity[s] }))}
+              activeName={sevFilter ? SEVERITY_META[sevFilter].label : null}
+              onSelect={(name) => {
+                const s = SEVERITIES.find((x) => SEVERITY_META[x].label === name) ?? null;
+                setSevFilter((cur) => (cur === s ? null : s));
+              }}
+            />
+          )}
+        </Card>
+
+        <Card title="Attack mix" subtitle="Classified attack families" icon={Crosshair}>
+          {loading ? (
+            <Skeleton height={180} radius={10} />
+          ) : attackEntries.length ? (
+            <BarList
+              ariaLabel="Incidents by attack family"
+              items={attackEntries.map(([k, v]) => ({ label: k, value: v, color: attackColor(theme, k) }))}
+              activeLabel={attackFilter}
+              onSelect={(l) => setAttackFilter((cur) => (cur === l ? null : l))}
+            />
+          ) : (
+            <EmptyState compact title="Waiting for classified attacks" />
+          )}
+        </Card>
+
+        <Card
+          title="Live feed"
+          subtitle={live.status === "live" ? "Pushed over WebSocket" : "Latest detections"}
+          icon={BellRing}
+          actions={<span className="status-dot" data-state={live.status === "live" ? "live" : "warn"} aria-hidden />}
+        >
+          {loading ? (
+            <Skeleton height={180} radius={10} />
+          ) : feed.length ? (
+            <ul className="feed" aria-live="polite">
+              {feed.map((r) => {
+                const sev = normalizeSeverity(r.severity);
+                const Icon = SEVERITY_META[sev].icon;
+                return (
+                  <li key={r.incident_id}>
+                    <span className="feed-icon" style={{ ["--tone" as string]: severityVar(sev) }} aria-hidden>
+                      <Icon size={16} />
+                    </span>
+                    <div className="grow">
+                      <Link to={`/incidents/${encodeURIComponent(r.incident_id)}`} style={{ fontWeight: 600, color: "var(--text)" }}>
+                        {r.attack_type}
+                      </Link>
+                      <div className="muted small mono" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {r.incident_id}
+                      </div>
+                    </div>
+                    <div className="feed-meta">
+                      <SeverityBadge severity={sev} size="sm" />
+                      <div className="muted small">{formatRelative(r.created_at)}</div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <EmptyState compact title="No detections yet" />
+          )}
+        </Card>
+      </div>
+
+      <Card
+        title="Recent incidents"
+        subtitle={anyFilter ? `Filtered — ${filtered.length} of ${incidents.length}` : `${incidents.length} most recent of ${total.toLocaleString()}`}
+        icon={FileBarChart2}
+        actions={
+          <>
+            {sevFilter && (
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSevFilter(null)}>
+                Severity: {SEVERITY_META[sevFilter].label} ✕
               </button>
             )}
-          </div>
-          {filteredIncidents.length === 0 ? (
-            <div className="empty-state">
-              <strong>{incidents.length === 0 ? "No incidents yet" : `No ${sevFilter} incidents`}</strong>
-              <p className="muted" style={{ margin: "0 0 0.85rem" }}>
-                {incidents.length === 0
-                  ? "Run a demo detection to populate the console."
-                  : "Try another severity tile or clear the filter."}
-              </p>
-              <Link className="btn btn-primary" to="/detection">
-                Open Detection Lab
-              </Link>
-            </div>
-          ) : (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Attack</th>
-                  <th>Severity</th>
-                  <th>Confidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredIncidents.slice(0, 8).map((row) => (
-                  <tr key={String(row.incident_id)}>
-                    <td className="mono">
-                      <Link to={`/incidents/${encodeURIComponent(String(row.incident_id))}`}>
-                        {String(row.incident_id)}
-                      </Link>
-                    </td>
-                    <td>{String(row.attack_type)}</td>
-                    <td>
-                      <span className={`badge ${severityClass(String(row.severity))}`}>
-                        {String(row.severity)}
-                      </span>
-                    </td>
-                    <td className="mono">{(Number(row.confidence) * 100).toFixed(0)}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          <Link className="btn btn-secondary" to="/reports" style={{ marginTop: "0.85rem" }}>
-            View all incidents →
-          </Link>
-        </section>
-
-        <section className="panel panel-interactive stack">
-          <h3 style={{ marginTop: 0 }}>Risk distribution</h3>
-          {(["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const).map((sev) => {
-            const v =
-              sev === "CRITICAL" ? critical : sev === "HIGH" ? high : sev === "MEDIUM" ? medium : low;
-            const pct = Math.min(100, (v / Math.max(1, analytics?.total_incidents || 1)) * 100);
-            return (
-              <button
-                key={sev}
-                type="button"
-                className="feature-bar"
-                style={{
-                  width: "100%",
-                  background: "transparent",
-                  border: "none",
-                  color: "inherit",
-                  cursor: "pointer",
-                  padding: 0,
-                  textAlign: "left",
-                  opacity: sevFilter === "ALL" || sevFilter === sev ? 1 : 0.35,
-                }}
-                onClick={() => toggleSev(sev)}
-                title={`Filter ${sev}`}
-              >
-                <span>{sev}</span>
-                <div className="track">
-                  <div className="fill" style={{ width: `${pct}%` }} />
-                </div>
-                <span className="mono muted">{v}</span>
+            {attackFilter && (
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setAttackFilter(null)}>
+                Attack: {attackFilter} ✕
               </button>
-            );
-          })}
-          <h3>Attack mix</h3>
-          {Object.entries(analytics?.by_attack_type ?? {}).length === 0 && (
-            <p className="muted">Waiting for classified attacks.</p>
-          )}
-          {Object.entries(analytics?.by_attack_type ?? {}).map(([k, v]) => (
-            <div key={k} className="feature-bar">
-              <span>{k}</span>
-              <div className="track">
-                <div
-                  className="fill"
-                  style={{
-                    width: `${Math.min(100, (v / Math.max(1, analytics?.total_incidents || 1)) * 100)}%`,
-                  }}
-                />
-              </div>
-              <span className="mono muted">{v}</span>
-            </div>
-          ))}
-          <Link className="btn btn-secondary" to="/simulation">
-            Open attack–defense simulation
+            )}
+            <Link className="btn btn-ghost btn-sm" to="/reports">
+              View all →
+            </Link>
+          </>
+        }
+      >
+        <DataTable
+          data={filtered}
+          columns={columns}
+          rowKey={(r) => r.incident_id}
+          pageSize={8}
+          pageSizeOptions={[8]}
+          loading={loading}
+          emptyTitle={incidents.length ? "No incidents match the filter" : "No incidents yet"}
+          emptyDescription={
+            incidents.length ? (
+              "Pick another tile or clear the filters."
+            ) : (
+              <Link to="/detection">Run a demo detection to populate the console.</Link>
+            )
+          }
+          caption="Recent incidents"
+        />
+      </Card>
+
+      <div className="launch-grid">
+        {[
+          { to: "/detection", icon: Radar, title: "Detection Lab", text: "Classify a flow and open SHAP / LIME evidence." },
+          { to: "/simulation", icon: Network, title: "Attack simulation", text: "Walk attack → defense → recovery on the topology." },
+          { to: "/reports", icon: FileBarChart2, title: "Incident reports", text: "Filter, export and advance lifecycle status." },
+          { to: "/campaigns", icon: Activity, title: "Campaigns", text: "Group related detections into investigations." },
+        ].map((t) => (
+          <Link key={t.to} className="launch-tile" to={t.to}>
+            <span className="launch-tile-icon" aria-hidden>
+              <t.icon size={18} />
+            </span>
+            <span>
+              <strong>{t.title}</strong>
+              <span>{t.text}</span>
+            </span>
           </Link>
-        </section>
+        ))}
       </div>
     </div>
   );

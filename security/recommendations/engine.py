@@ -186,6 +186,9 @@ def recommend(
     payload["severity"] = sev
     payload["rule_hits"] = [h.to_dict() for h in hits]
     payload["rule_actions"] = rule_codes
+    from security.threat_intel import attack_context
+
+    payload["mitre_attack"] = attack_context(attack_type) if attack_flag else None
     payload["advisory_only"] = True
     payload["disclaimer"] = (
         "These are recommended defensive actions for decision support. "

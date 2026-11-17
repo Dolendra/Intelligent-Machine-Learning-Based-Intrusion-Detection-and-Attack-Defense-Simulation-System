@@ -1,36 +1,38 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { AppProviders } from "./app/AppProviders";
+import { APP_ROUTES, lazyPage } from "./app/routes";
 import { AppLayout } from "./components/AppLayout";
-import { DashboardPage } from "./pages/DashboardPage";
-import { DetectionPage } from "./pages/DetectionPage";
-import { SimulationPage } from "./pages/SimulationPage";
-import { ReportsPage } from "./pages/ReportsPage";
-import { IncidentDetailPage } from "./pages/IncidentDetailPage";
-import { ModelsPage } from "./pages/ModelsPage";
-import { CampaignPage } from "./pages/CampaignPage";
-import { ResearchPage } from "./pages/ResearchPage";
-import { SystemPage } from "./pages/SystemPage";
+import { PageSkeleton } from "./components/ui/Skeleton";
 import "./styles/global.css";
+import "./styles/v3.css";
+
+const LoginPage = lazyPage(() => import("./pages/LoginPage"), "LoginPage");
+const NotFoundPage = lazyPage(() => import("./pages/NotFoundPage"), "NotFoundPage");
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <Routes>
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/detection" element={<DetectionPage />} />
-          <Route path="/simulation" element={<SimulationPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/campaigns" element={<CampaignPage />} />
-          <Route path="/campaigns/:campaignId" element={<CampaignPage />} />
-          <Route path="/incidents/:incidentId" element={<IncidentDetailPage />} />
-          <Route path="/models" element={<ModelsPage />} />
-          <Route path="/research" element={<ResearchPage />} />
-          <Route path="/system" element={<SystemPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
+      <AppProviders>
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              <Suspense fallback={<PageSkeleton />}>
+                <LoginPage />
+              </Suspense>
+            }
+          />
+          <Route element={<AppLayout />}>
+            {APP_ROUTES.map((r) => {
+              const Page = r.component;
+              return <Route key={r.path} path={r.path} element={<Page />} />;
+            })}
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </AppProviders>
     </BrowserRouter>
   </React.StrictMode>
 );

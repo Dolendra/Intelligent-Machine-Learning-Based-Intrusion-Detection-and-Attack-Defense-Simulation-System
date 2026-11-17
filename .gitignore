@@ -57,3 +57,9 @@ reports/*
 
 # P9 backup drill artifacts
 backups/
+
+# v3 research: external dataset + local caches (recreate with scripts)
+CSE-CIC-IDS2018/
+.ci-venv/
+models/trained_models/retrain_log.txt
+research_artifacts/cache/

@@ -38,6 +38,10 @@ def permission_for_request(method: str, path: str) -> str | None:
     if method == "GET":
         if path.startswith("/api/models") or path.startswith("/api/experiments") or path.startswith("/api/drift"):
             return "read_models"
+        if path.startswith("/api/research") or path.startswith("/api/zero-day") or path.startswith("/api/live"):
+            return "read_models"
+        if path.startswith("/api/range"):
+            return "read_models"
         if path.startswith("/api/incidents") or path.startswith("/api/analytics") or path.startswith("/api/campaigns") or path.startswith("/api/export"):
             return "read_incidents"
         if path.startswith("/api/response/adapters") or path.startswith("/api/response/capabilities"):
@@ -61,11 +65,13 @@ def permission_for_request(method: str, path: str) -> str | None:
         return "write_response"
     if path.startswith("/api/response/adapters"):
         return "admin"
+    if path.startswith("/api/zero-day"):
+        return "write_detect"
     if path.startswith("/api/predict") or path.startswith("/api/explain") or path.startswith("/api/risk") or path.startswith("/api/recommendation") or path.startswith("/api/response"):
         return "write_detect"
     if path.startswith("/api/incidents") or path.startswith("/api/campaigns"):
         return "write_incidents"
-    if path.startswith("/api/simulation"):
+    if path.startswith("/api/simulation") or path.startswith("/api/range"):
         return "write_simulation"
     if path.startswith("/api/ingest"):
         return "write_ingest"
