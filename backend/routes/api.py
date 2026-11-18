@@ -35,11 +35,18 @@ router = APIRouter()
 
 
 def _demo_allow_missing(requested: bool) -> bool:
-    """Missing features are demo-only; never honor the flag outside DEMO_MODE."""
+    """Zero-filling missing features is a local-demo convenience only.
+
+    R-11 (ML-14): honoured only with DEMO_MODE *and* AEGIS_ENV=development/test. docker-compose
+    sets DEMO_MODE=true in a production container, where a request with missing features must
+    be rejected (422) instead of being scored on zeros (which can turn an attack into BENIGN).
+    """
     import os
 
+    from security.auth.posture import is_dev_environment
+
     demo = os.getenv("DEMO_MODE", "false").lower() in {"1", "true", "yes"}
-    return bool(requested) and demo
+    return bool(requested) and demo and is_dev_environment()
 
 
 @router.get("/security/status")

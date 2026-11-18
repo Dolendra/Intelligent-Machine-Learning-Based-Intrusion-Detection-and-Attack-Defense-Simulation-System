@@ -228,6 +228,9 @@ def _enrich_prediction(
         "uncertainty_lower": pred.uncertainty_lower,
         "uncertainty_upper": pred.uncertainty_upper,
         "intensity_method": intensity_meta["method"],
+        # R-11 (ML-14): never hide that features were zero-filled.
+        "missing_features": list(pred.missing_features or []),
+        "prediction_quality": "degraded_missing_features" if pred.missing_features else "complete",
         "threshold_note": (
             "Attack decision uses operating threshold; "
             "confidence_band is a separate review band and may mark ATTACK rows as Ambiguous/review "
@@ -457,7 +460,11 @@ def run_prediction(
                                     "recommendation": inc_risk["recommendation"]}
 
     incident_id = None
-    if persist and db is not None and decision.raises_incident:
+    if pred.missing_features and decision.raises_incident:
+        # R-11 (ML-14): a verdict computed on zero-filled features is shown, but never raises
+        # an incident (it could be an artefact of the imputation).
+        payload["incident_suppressed"] = "missing_features"
+    if persist and db is not None and decision.raises_incident and not pred.missing_features:
         existing = _find_duplicate_incident(db, incident_type, flow_ref)
         if existing is not None:
             incident_id = existing.incident_code

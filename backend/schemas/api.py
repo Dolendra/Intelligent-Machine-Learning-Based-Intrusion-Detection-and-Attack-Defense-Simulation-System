@@ -60,6 +60,10 @@ class PredictResponse(BaseModel):
     intensity_method: str | None = None
     # v3 advisory Aegis-OSR Zero-Day Gate (None when artifacts are unavailable)
     zero_day: dict[str, Any] | None = None
+    zero_day_status: str | None = None
+    # R-11 (ML-14): which required features were absent (zero-filled, development demo only)
+    missing_features: list[str] = Field(default_factory=list)
+    prediction_quality: str | None = None
     # R1a: shared incident policy outcome (security.detection_policy.decide)
     detection_decision: dict[str, Any] | None = None
     # risk/playbook of a gate-only incident (frozen-verdict fields above stay untouched)
