@@ -58,7 +58,14 @@ def get_predictor() -> IDSPredictor | None:
     ]
     if not all(p.exists() for p in required):
         return None
-    _predictor = IDSPredictor.from_artifacts(model_dir)
+    try:
+        _predictor = IDSPredictor.from_artifacts(model_dir)
+    except Exception as exc:  # noqa: BLE001 — corrupt/incompatible artifacts
+        # P1-A7: a corrupt or version-incompatible model must not turn every request into a
+        # 500. Callers see "not ready" (routes map it to 503 MODEL_NOT_READY; readiness reports
+        # it); the failure is logged; loading is retried on the next call.
+        logging.getLogger("aegis.models").error("frozen model load failed: %s", type(exc).__name__)
+        return None
     return _predictor
 
 
