@@ -1,13 +1,18 @@
 """Pydantic schemas for the IDS API."""
 from __future__ import annotations
 
-from typing import Any
+from typing import Annotated, Any
 
 from pydantic import BaseModel, Field
 
+# R-11 (ML-8): flow features must be finite. JSON NaN/Infinity used to reach the model and
+# surface as a 500; they are now a 422 validation error, consistent with training (which
+# dropped non-finite rows) and with the per-row policy for CSV/PCAP ingestion.
+FiniteFloat = Annotated[float, Field(allow_inf_nan=False)]
+
 
 class PredictRequest(BaseModel):
-    features: dict[str, float] = Field(..., description="Flow feature map")
+    features: dict[str, FiniteFloat] = Field(..., description="Flow feature map")
     persist: bool = True
     allow_missing_features: bool = Field(
         False,
@@ -62,14 +67,14 @@ class PredictResponse(BaseModel):
 
 
 class BatchPredictRequest(BaseModel):
-    flows: list[dict[str, float]] = Field(..., min_length=1, max_length=500)
+    flows: list[dict[str, FiniteFloat]] = Field(..., min_length=1, max_length=500)
     persist: bool = False
     allow_missing_features: bool = False
     asset_criticality: float | None = Field(None, ge=0.0, le=5.0)
 
 
 class ExplainRequest(BaseModel):
-    features: dict[str, float]
+    features: dict[str, FiniteFloat]
     top_k: int = Field(10, ge=1, le=50)
     method: str = Field("shap", description="Explainability method: shap (primary) or lime")
     allow_missing_features: bool = False
@@ -169,6 +174,6 @@ class HealthResponse(BaseModel):
 
 
 class ZeroDayAssessRequest(BaseModel):
-    flows: list[dict[str, float]] = Field(..., min_length=1, max_length=500)
+    flows: list[dict[str, FiniteFloat]] = Field(..., min_length=1, max_length=500)
     alpha: float | None = Field(None, gt=0.0, le=0.2, description="Benign false-alarm budget (conformal)")
     explain_top: int = Field(5, ge=0, le=20)

@@ -398,13 +398,17 @@ async def predict_batch_csv(
     raw = await file.read()
     allow_missing = _demo_allow_missing(allow_missing_features)
     try:
-        flows = svc.parse_flows_csv(raw)
-        return svc.run_prediction_batch(
+        flows, info = svc.parse_flows_csv_detailed(raw)
+        out = svc.run_prediction_batch(
             flows,
             db=db,
             persist=persist,
             allow_missing_features=allow_missing,
         )
+        if isinstance(out, dict):
+            # R-11: rows with NaN/Inf/non-numeric values are rejected individually and reported.
+            out["ingest_validation"] = {k: info.get(k) for k in ("rows_in", "rows_valid", "rejected_rows")}
+        return out
     except FeatureValidationError as exc:
         raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
     except ValueError as exc:
