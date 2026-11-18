@@ -737,13 +737,13 @@ async def ingest_queue_submit_pcap(
 
 
 @router.get("/ingest/queue/{job_id}")
-def ingest_queue_job(job_id: str):
+def ingest_queue_job(job_id: str, include_results: bool = False):
     from ingestion.queue import ingest_queue
 
     job = ingest_queue.get(job_id)
     if job is None:
         raise HTTPException(status_code=404, detail={"code": "JOB_NOT_FOUND", "message": job_id})
-    return job.as_dict()
+    return job.as_dict(include_results=include_results)
 
 
 @router.post("/explain")

@@ -23,6 +23,10 @@ class QueueJob:
     finished_at: float | None = None
     result: dict[str, Any] | None = None
     error: str | None = None
+    flow_count: int = 0
+
+    def __post_init__(self) -> None:
+        self.flow_count = len(self.flows)
 
     @property
     def latency_ms(self) -> float | None:
@@ -36,12 +40,12 @@ class QueueJob:
             return None
         return round((self.started_at - self.created_at) * 1000.0, 3)
 
-    def as_dict(self, *, include_flows: bool = False) -> dict[str, Any]:
+    def as_dict(self, *, include_flows: bool = False, include_results: bool = False) -> dict[str, Any]:
         payload = {
             "job_id": self.job_id,
             "source": self.source,
             "status": self.status,
-            "flow_count": len(self.flows),
+            "flow_count": self.flow_count,
             "created_at": self.created_at,
             "started_at": self.started_at,
             "finished_at": self.finished_at,
@@ -60,6 +64,9 @@ class QueueJob:
         if include_flows:
             payload["flows"] = self.flows
             payload["result"] = self.result
+        elif include_results:
+            # R-22 (ARCH-9): per-flow verdicts are retrievable (they used to be discarded).
+            payload["result"] = self.result
         return payload
 
 
@@ -72,7 +79,9 @@ class IngestDetectQueue:
         self._cv = threading.Condition()
         self._pending: deque[str] = deque()
         self._jobs: dict[str, QueueJob] = {}
-        self._done: deque[str] = deque(maxlen=history)
+        # R-22 (ARCH-9): finished jobs are retained up to `history`; older ones are evicted from
+        # _jobs as well (previously _jobs grew forever, holding every job's flows and results).
+        self._done: deque[str] = deque()
         self._predict_fn: PredictFn | None = None
         self._worker: threading.Thread | None = None
         self._stop = False
@@ -153,6 +162,13 @@ class IngestDetectQueue:
                 ],
             }
 
+    def _finish(self, job: QueueJob) -> None:
+        """Record a finished job (caller holds the lock) and evict the oldest beyond `history`."""
+        job.flows = []                      # inputs are no longer needed once scored
+        self._done.append(job.job_id)
+        while len(self._done) > self._history:
+            self._jobs.pop(self._done.popleft(), None)
+
     def _loop(self) -> None:
         while True:
             with self._cv:
@@ -180,14 +196,14 @@ class IngestDetectQueue:
                     self._metrics["flows_processed"] += len(job.flows)
                     if job.latency_ms is not None:
                         self._metrics["total_detect_ms"] += job.latency_ms
-                    self._done.append(job.job_id)
+                    self._finish(job)
             except Exception as exc:  # noqa: BLE001
                 with self._cv:
                     job.status = "error"
                     job.error = str(exc)
                     job.finished_at = time.time()
                     self._metrics["failed"] += 1
-                    self._done.append(job.job_id)
+                    self._finish(job)
                 try:
                     from backend.observability.events import log_event
                     from backend.observability.registry import domain_metrics
@@ -213,7 +229,7 @@ class IngestDetectQueue:
                     duration_ms=job.latency_ms,
                     job_id=job.job_id,
                     status="done",
-                    flow_count=len(job.flows),
+                    flow_count=job.flow_count,
                 )
             except Exception:  # noqa: BLE001
                 pass
