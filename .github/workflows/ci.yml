@@ -2,15 +2,22 @@ name: CI
 
 on:
   push:
-    branches: [main, stage2/productionization]
+    # R-19 (ARCH-15): research, audit and remediation branches are covered too.
+    branches: [main, stage2/productionization, v3-openset-research, "audit/**", "remediation/**"]
   pull_request:
-    branches: [main, stage2/productionization]
+    branches: [main, stage2/productionization, v3-openset-research]
+
+env:
+  # R-05: the API fails closed outside development/test; CI runs as "test".
+  AEGIS_ENV: test
 
 jobs:
   test-python:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # tags are needed for the frozen-v1.1 diff below
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,6 +36,23 @@ jobs:
           DISABLE_RATE_LIMIT: "true"
         run: |
           python -m pytest tests -q --tb=short
+
+      - name: Frozen v1.1 and protected research artifacts unchanged (read-only)
+        run: |
+          python -c "from research import artifact_guard as g; bad=g.verify_manifest(); fz=g.frozen_v11_diff(); print('manifest', bad, 'frozen', fz); assert not bad and not fz"
+
+      - name: Database migrations apply and match the ORM
+        env:
+          IDS_DB_URL: sqlite:////tmp/aegis_ci_migrations.db
+        run: |
+          python -m alembic upgrade head
+          python -m alembic check
+
+      - name: Static check (syntax errors / undefined names; advisory)
+        continue-on-error: true
+        run: |
+          pip install ruff
+          ruff check --select E9,F63,F7,F82 .
 
       - name: Smoke modules import
         run: |
@@ -82,7 +106,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"   # matches Dockerfile.frontend (node:22-alpine)
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -99,4 +123,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build compose images
+        env:
+          AEGIS_AUTH_SECRET: ci-only-not-a-secret-0123456789abcdef0123
         run: docker compose build
+
+      - name: Start the API container and check readiness (R-09 smoke)
+        env:
+          AEGIS_AUTH_SECRET: ci-only-not-a-secret-0123456789abcdef0123
+          AEGIS_SEED_PASSWORD_ADMIN: ci-only-admin-pw-1
+        run: |
+          mkdir -p database && chmod 777 database   # bind mount must be writable by the container user (uid 10001)
+          docker compose up -d api
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8000/api/ready; then break; fi
+            sleep 3
+          done
+          curl -fsS http://127.0.0.1:8000/api/ready
+          docker compose logs api | tail -50
+          docker compose down
