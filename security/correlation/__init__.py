@@ -84,7 +84,7 @@ def escalate_severity(current: str | None, target: str | None, *, hit_count: int
 def new_campaign_id() -> str:
     import uuid
 
-    return f"CMP-{uuid.uuid4().hex[:6].upper()}"
+    return f"CMP-{uuid.uuid4().hex[:12].upper()}"  # R-16: 48 random bits (was 24)
 
 
 def campaign_summary(db: Session, campaign_id: str) -> dict[str, Any]:

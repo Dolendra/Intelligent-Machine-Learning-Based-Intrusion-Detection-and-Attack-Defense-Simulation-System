@@ -246,6 +246,19 @@ def _enrich_prediction(
     }
 
 
+INCIDENT_CODE_HEX = 12  # R-16 (ARCH-12): 48 random bits (was 24: ~50% collision odds by ~4,800 incidents)
+
+
+def _new_incident_code(db: Session, *, attempts: int = 5) -> str:
+    """Unique incident code. Retries on the (now astronomically unlikely) collision instead of
+    letting the unique constraint turn a detection into a 500."""
+    for _ in range(attempts):
+        code = f"INC-{uuid.uuid4().hex[:INCIDENT_CODE_HEX].upper()}"
+        if db.query(Incident.id).filter(Incident.incident_code == code).first() is None:
+            return code
+    raise RuntimeError("could not allocate a unique incident code")
+
+
 def _flow_source_ref(features: dict[str, float], explicit: str | None = None) -> str | None:
     """Return explicit source fingerprint only — never invent from Destination Port."""
     if explicit:
@@ -523,7 +536,7 @@ def run_prediction(
             if related is not None and not getattr(related, "campaign_id", None):
                 related.campaign_id = campaign_id
 
-            incident_id = f"INC-{uuid.uuid4().hex[:6].upper()}"
+            incident_id = _new_incident_code(db)
             row = Incident(
                 incident_code=incident_id,
                 attack_type=incident_type,
