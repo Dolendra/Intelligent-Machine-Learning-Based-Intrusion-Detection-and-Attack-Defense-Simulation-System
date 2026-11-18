@@ -97,6 +97,9 @@ _ALIAS_TO_CANONICAL: dict[str, str] = {
     "urg flag count": "URG Flag Count",
     "cwe flag cnt": "CWE Flag Count",
     "cwe flag count": "CWE Flag Count",
+    # Python cicflowmeter names the CWR flag correctly; the 2017 schema calls it "CWE".
+    "cwr flag count": "CWE Flag Count",
+    "cwr flag cnt": "CWE Flag Count",
     "ece flag cnt": "ECE Flag Count",
     "ece flag count": "ECE Flag Count",
     "down/up ratio": "Down/Up Ratio",
@@ -147,14 +150,21 @@ _ALIAS_TO_CANONICAL: dict[str, str] = {
 
 
 def _norm_key(name: str) -> str:
+    """Comparison key: lower case; ``_`` and ``/`` count as spaces; whitespace collapsed.
+
+    R-12 (ML-9): the Python ``cicflowmeter`` package writes snake_case headers
+    (``dst_port``, ``flow_byts_s``, ``fwd_byts_b_avg``). They are the CSE-CIC-IDS2018
+    abbreviations with ``_`` for spaces and ``/``, so they resolve through the same aliases.
+    """
     s = str(name).replace("\ufeff", "").strip().lower()
-    s = re.sub(r"\s+", " ", s)
+    s = re.sub(r"[_/]+", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
     return s
 
 
 def build_alias_map(extra: dict[str, str] | None = None) -> dict[str, str]:
     """Map normalized alias → canonical schema name (identity for expected names)."""
-    mapping = dict(_ALIAS_TO_CANONICAL)
+    mapping = {_norm_key(k): v for k, v in _ALIAS_TO_CANONICAL.items()}
     for name in expected_feature_names():
         mapping[_norm_key(name)] = name
     if extra:

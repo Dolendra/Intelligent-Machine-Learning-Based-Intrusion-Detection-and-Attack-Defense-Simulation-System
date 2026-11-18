@@ -57,6 +57,11 @@ def pcap_extractor_status() -> dict[str, Any]:
             )
         ),
         "recommended": "CICFlowMeter export aligned to schema cicids2017_v1_1",
+        # R-12 (ML-9): header names are mapped, but unit/semantic parity of the Python
+        # cicflowmeter output with the 2017 Java extractor has not been validated.
+        "experimental": True,
+        "parity_note": "PCAP extraction is experimental: feature units/definitions of the Python "
+                       "cicflowmeter are not yet validated against the CICIDS2017 extractor.",
         "cli": "python -m ingestion pcap -i capture.pcap --align",
     }
 
