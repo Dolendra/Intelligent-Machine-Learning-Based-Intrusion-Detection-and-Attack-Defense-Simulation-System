@@ -379,6 +379,7 @@ def _execute_with_adapter(action: ResponseAction, *, actor: str | None) -> dict[
         else:
             action.status = ActionStatus.FAILED.value
             action.rollback_status = "NOT_REVERSIBLE"
+            response_store.save(action)  # R-14 (ARCH-5): persist the terminal status
         raise ResponseError("VERIFY_FAILED", exc.message, http_status=500) from exc
 
     action.verified_at = utc_now_iso()
@@ -395,6 +396,9 @@ def _execute_with_adapter(action: ResponseAction, *, actor: str | None) -> dict[
         )
     else:
         action.status = ActionStatus.VERIFIED.value
+        # R-14 (ARCH-5): the final status used to live only in memory; the DB kept SUCCEEDED,
+        # so the API said VERIFIED while every later read (UI, /ops/status) said SUCCEEDED.
+        response_store.save(action)
 
     return {
         "adapter": adapter.name,

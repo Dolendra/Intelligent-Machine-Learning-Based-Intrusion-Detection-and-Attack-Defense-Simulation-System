@@ -92,10 +92,10 @@ def test_response_action_and_audit_survive_restart():
     store2 = ResponseActionStore()
     action = store2.get(aid)
     assert action is not None
+    # R-14 (ARCH-5): the persisted status is the final one; SUCCEEDED is no longer accepted.
     assert action.status in {
         ActionStatus.ACTIVE.value,
         ActionStatus.VERIFIED.value,
-        ActionStatus.SUCCEEDED.value,
     }
     assert action.approved_by == "responder"
     events = [e["event"] for e in action.audit]

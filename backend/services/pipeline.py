@@ -890,11 +890,14 @@ def start_simulation_from_incident(db: Session, incident_id: str) -> dict[str, A
     row = db.query(Incident).filter(Incident.incident_code == incident_id).first()
     if row and row.status != "Simulating":
         try:
-            update_incident_status(db, incident_id, "Simulating")
+            update_incident_status(db, incident_id, "Simulating", actor="system")
         except ValueError:
+            # R-15 (ARCH-6): terminal incidents (Resolved / FalsePositive) are never reopened by a
+            # simulation. Previously the status was forced to "Simulating", bypassing the state
+            # machine and leaving resolved_at set. The simulation runs; the status is unchanged.
             current = row.status
-            row.status = "Simulating"
-            _record_incident_event(db, incident_id, current, "Simulating", actor="system", notes="Simulation started")
+            _record_incident_event(db, incident_id, current, current, actor="system",
+                                   notes=f"Simulation started; status unchanged ({current} is terminal)")
             db.commit()
     return session
 
