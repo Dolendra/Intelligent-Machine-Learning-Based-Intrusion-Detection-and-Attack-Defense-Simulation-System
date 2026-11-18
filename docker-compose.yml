@@ -4,12 +4,22 @@ services:
       context: .
       dockerfile: Dockerfile.api
     ports:
-      - "8000:8000"
+      # R-06/R-09: loopback only. The API is reached through the frontend (nginx) or locally.
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./database:/app/database
     environment:
       DEMO_MODE: "true"
       MPLBACKEND: Agg
+      # R-05/R-06: the container runs as production with authentication on. Compose reads these
+      # from the project .env (git-ignored); startup fails fast if the secret is missing.
+      AEGIS_ENV: production
+      AEGIS_AUTH_ENABLED: "true"
+      AEGIS_AUTH_SECRET: ${AEGIS_AUTH_SECRET:?set AEGIS_AUTH_SECRET (>= 32 chars) in .env}
+      AEGIS_SEED_PASSWORD_ADMIN: ${AEGIS_SEED_PASSWORD_ADMIN:-}
+      AEGIS_SEED_PASSWORD_RESPONDER: ${AEGIS_SEED_PASSWORD_RESPONDER:-}
+      AEGIS_SEED_PASSWORD_ANALYST: ${AEGIS_SEED_PASSWORD_ANALYST:-}
+      AEGIS_SEED_PASSWORD_VIEWER: ${AEGIS_SEED_PASSWORD_VIEWER:-}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
       interval: 15s
@@ -23,7 +33,7 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "5173:80"
+      - "127.0.0.1:5173:80"
     depends_on:
       api:
         condition: service_healthy

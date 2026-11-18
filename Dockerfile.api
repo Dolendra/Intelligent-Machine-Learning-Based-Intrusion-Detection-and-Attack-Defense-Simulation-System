@@ -17,6 +17,12 @@ COPY security ./security
 COPY simulation ./simulation
 COPY ingestion ./ingestion
 COPY backend ./backend
+# R-09 (ARCH-1): backend/routes/range.py imports cyberrange at module load, the Zero-Day Gate
+# needs research/ (serving + its openset/conformal/novelty/features imports), and the Live
+# Monitor / Cyber Range need the leakage-free replay pool. Without these the API cannot start.
+COPY cyberrange ./cyberrange
+COPY research ./research
+COPY research_artifacts/replay ./research_artifacts/replay
 COPY database ./database
 COPY alembic ./alembic
 COPY alembic.ini ./

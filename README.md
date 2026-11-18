@@ -61,7 +61,11 @@ cd frontend && npm install && npm run dev
 docker compose up --build
 ```
 
-UI on port **5173**, API on **8000**. Requires `models/trained_models/` and `data/processed/` present on the host build context.
+UI on port **5173**, API on **8000**, both bound to 127.0.0.1. Requires `models/trained_models/` and `data/processed/` present on the host build context.
+
+The container runs with `AEGIS_ENV=production` and authentication **on** (remediation R-05/R-06): set
+`AEGIS_AUTH_SECRET` (at least 32 random characters) and the `AEGIS_SEED_PASSWORD_<USER>` values in the git-ignored
+project `.env` first; `docker compose` refuses to start without the secret.
 
 ## Architecture
 

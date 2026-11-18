@@ -10,3 +10,14 @@ __pycache__/
 database/*.db
 .pytest_cache/
 notebooks/.ipynb_checkpoints/
+# R-09: keep the build context small and free of secrets / raw data
+.env
+.env.*
+!.env.example
+.venvs/
+.ci-venv/
+CSE-CIC-IDS2018/
+backups/
+research_artifacts/r3/
+research_artifacts/replay/legacy/
+data/raw/
