@@ -1009,62 +1009,44 @@ def load_demo_flows(attack_hint: str | None = None, n: int = 10) -> dict[str, An
     return {"items": items, "count": len(items), "source": "processed_test"}
 
 
-def parse_flows_csv(content: str | bytes, *, max_rows: int = 500) -> list[dict[str, float]]:
-    """Parse CSV with strict numeric validation and schema checks against trained features when available."""
-    import io
-    import math
+def parse_flows_csv_detailed(
+    content: str | bytes, *, max_rows: int = 500,
+) -> tuple[list[dict[str, float]], dict[str, Any]]:
+    """Parse a flow CSV through the single ingestion parser (R-10, ARCH-4 / ML-13).
 
-    import pandas as pd
+    Uses ``ingestion.adapters.adapt_flows_csv``: header whitespace, CICFlowMeter / CSE-CIC-IDS2018
+    aliases and the duplicate ``Fwd Header Length.1`` are normalised exactly as on
+    ``/api/ingest/flows/csv``. Returns (feature rows, validation info). Raises ValueError with a
+    readable message when the file cannot be used.
+    """
+    from ingestion.adapters import adapt_flows_csv
+    from ingestion.validate import rows_as_feature_dicts
 
-    text = content.decode("utf-8-sig") if isinstance(content, (bytes, bytearray)) else content
-    df = pd.read_csv(io.StringIO(text))
-    if df.empty:
-        raise ValueError("CSV contains no rows")
-    if len(df) > max_rows:
-        raise ValueError(f"CSV limited to {max_rows} rows (got {len(df)})")
-    if df.columns.duplicated().any():
-        dups = df.columns[df.columns.duplicated()].tolist()
-        raise ValueError(f"Duplicate columns in CSV: {dups}")
-
-    drop = [c for c in ("Label", "is_attack", "Flow ID", "Timestamp") if c in df.columns]
-    df = df.drop(columns=drop, errors="ignore")
-    if df.shape[1] == 0:
-        raise ValueError("CSV has no feature columns after dropping metadata")
-
-    predictor = get_predictor()
-    expected = list(predictor.bundle.feature_names) if predictor else None
-    if expected:
-        missing_cols = [c for c in expected if c not in df.columns]
-        if missing_cols:
+    try:
+        aligned, info = adapt_flows_csv(content)
+    except Exception as exc:  # noqa: BLE001 — pandas parse errors become a client error
+        raise ValueError(f"CSV could not be parsed: {type(exc).__name__}") from exc
+    if not info.get("ok"):
+        missing = info.get("missing") or []
+        if missing:
             raise ValueError(
-                f"CSV missing {len(missing_cols)} required feature columns "
-                f"(e.g. {', '.join(missing_cols[:8])}{'...' if len(missing_cols) > 8 else ''})"
+                f"CSV missing {len(missing)} required feature columns "
+                f"(e.g. {', '.join(missing[:8])}{'...' if len(missing) > 8 else ''})"
             )
-        # Keep expected order; allow extra columns but warn via details in message if many
-        extras = [c for c in df.columns if c not in expected]
-        df = df[expected]
-    else:
-        extras = []
+        bad_cols = info.get("non_numeric") or []
+        if bad_cols:
+            raise ValueError(f"CSV has invalid numeric values in columns {bad_cols[:8]}")
+        raise ValueError(f"CSV failed schema validation: {info.get('message') or 'invalid'}")
+    if aligned.empty:
+        raise ValueError("CSV contains no rows")
+    if len(aligned) > max_rows:
+        raise ValueError(f"CSV limited to {max_rows} rows (got {len(aligned)})")
+    return rows_as_feature_dicts(aligned), info
 
-    rows: list[dict[str, float]] = []
-    for i, row in df.iterrows():
-        features: dict[str, float] = {}
-        for k, v in row.items():
-            col = str(k).strip()
-            if pd.isna(v):
-                raise ValueError(f"Row {int(i) + 2}: column '{col}' is NaN/empty")
-            try:
-                num = float(v)
-            except (TypeError, ValueError) as exc:
-                raise ValueError(f"Row {int(i) + 2}: column '{col}' invalid numeric value: {v!r}") from exc
-            if math.isinf(num):
-                raise ValueError(f"Row {int(i) + 2}: column '{col}' is Inf")
-            features[col] = num
-        rows.append(features)
-    if extras and len(extras) > 20:
-        # Not fatal — extras already dropped when expected schema known
-        pass
-    return rows
+
+def parse_flows_csv(content: str | bytes, *, max_rows: int = 500) -> list[dict[str, float]]:
+    """Feature rows only (see :func:`parse_flows_csv_detailed`)."""
+    return parse_flows_csv_detailed(content, max_rows=max_rows)[0]
 
 
 def export_incidents_csv(db: Session, limit: int = 1000) -> str:
