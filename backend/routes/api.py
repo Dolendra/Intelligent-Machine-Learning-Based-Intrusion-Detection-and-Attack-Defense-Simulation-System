@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
+from starlette.concurrency import run_in_threadpool  # R-13: keep blocking work off the event loop
 from sqlalchemy.orm import Session
 
 from backend.schemas.api import (
@@ -405,8 +406,9 @@ async def predict_batch_csv(
     raw = await file.read()
     allow_missing = _demo_allow_missing(allow_missing_features)
     try:
-        flows, info = svc.parse_flows_csv_detailed(raw)
-        out = svc.run_prediction_batch(
+        flows, info = await run_in_threadpool(svc.parse_flows_csv_detailed, raw)
+        out = await run_in_threadpool(
+            svc.run_prediction_batch,
             flows,
             db=db,
             persist=persist,
@@ -443,7 +445,7 @@ async def ingest_flows_csv(
     from ingestion.pipeline import ingest_flows_csv as _ingest
 
     raw = await file.read()
-    result = _ingest(raw, fill_missing=False, max_rows=500)
+    result = await run_in_threadpool(_ingest, raw, fill_missing=False, max_rows=500)
     payload = result.as_dict()
     if not result.ok:
         raise HTTPException(
@@ -457,7 +459,8 @@ async def ingest_flows_csv(
         )
     if predict:
         try:
-            batch = svc.run_prediction_batch(result.flows, db=db, persist=persist, allow_missing_features=False)
+            batch = await run_in_threadpool(svc.run_prediction_batch, result.flows, db=db, persist=persist,
+                                            allow_missing_features=False)
             payload["prediction"] = batch
         except FeatureValidationError as exc:
             raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
@@ -530,7 +533,7 @@ async def ingest_pcap(
         tmp.write(raw)
         tmp_path = Path(tmp.name)
     try:
-        result = _ingest_pcap(tmp_path)
+        result = await run_in_threadpool(_ingest_pcap, tmp_path)
     finally:
         tmp_path.unlink(missing_ok=True)
 
@@ -576,7 +579,8 @@ async def ingest_pcap(
     )
     if predict:
         try:
-            batch = svc.run_prediction_batch(result.flows, db=db, persist=persist, allow_missing_features=False)
+            batch = await run_in_threadpool(svc.run_prediction_batch, result.flows, db=db, persist=persist,
+                                            allow_missing_features=False)
             payload["prediction"] = batch
         except FeatureValidationError as exc:
             raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
@@ -627,7 +631,7 @@ async def ingest_queue_submit(
     _ensure_ingest_queue_worker()
 
     raw = await file.read()
-    result = _ingest(raw, fill_missing=False, max_rows=500)
+    result = await run_in_threadpool(_ingest, raw, fill_missing=False, max_rows=500)
     if not result.ok:
         raise HTTPException(
             status_code=422,
@@ -687,7 +691,7 @@ async def ingest_queue_submit_pcap(
         tmp.write(raw)
         tmp_path = Path(tmp.name)
     try:
-        result = _ingest_pcap(tmp_path)
+        result = await run_in_threadpool(_ingest_pcap, tmp_path)
     finally:
         tmp_path.unlink(missing_ok=True)
 
@@ -1241,13 +1245,16 @@ async def ws_events(websocket: WebSocket):
                 "role": role if auth_enabled else "anonymous",
             }
         )
-        while True:
+        def _snapshot():
             db = SessionLocal()
             try:
-                snap = svc.analytics_summary(db)
-                recent = svc.list_incidents(db, limit=8)
+                return svc.analytics_summary(db), svc.list_incidents(db, limit=8)
             finally:
                 db.close()
+
+        while True:
+            # R-13 (ARCH-7): the DB snapshot runs in a worker thread, not on the event loop.
+            snap, recent = await asyncio.to_thread(_snapshot)
             await websocket.send_json(
                 {
                     "type": "analytics",
