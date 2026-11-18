@@ -27,6 +27,57 @@ DEFAULT_PATHS = [
 ]
 
 
+def _trusted_proxies():
+    """AEGIS_TRUSTED_PROXIES: comma-separated IPs/CIDRs of reverse proxies (default: none)."""
+    import ipaddress
+
+    nets = []
+    for part in (os.getenv("AEGIS_TRUSTED_PROXIES") or "").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            nets.append(ipaddress.ip_network(part, strict=False))
+        except ValueError:
+            continue
+    return nets
+
+
+def client_ip(request: Request) -> str:
+    """Client address for rate limiting and audit (R-17, SEC-10).
+
+    X-Forwarded-For is honoured only when the direct peer is a configured trusted proxy;
+    the right-most address in the header that is not itself a trusted proxy is the client.
+    Without trusted proxies (the default) the socket peer is used and the header is ignored,
+    so clients cannot spoof their address.
+    """
+    import ipaddress
+
+    peer = request.client.host if request.client else "unknown"
+    trusted = _trusted_proxies()
+    if not trusted:
+        return peer
+
+    def is_trusted(addr: str) -> bool:
+        try:
+            ip = ipaddress.ip_address(addr)
+        except ValueError:
+            return False
+        return any(ip in n for n in trusted)
+
+    if not is_trusted(peer):
+        return peer
+    xff = request.headers.get("x-forwarded-for") or ""
+    for hop in reversed([h.strip() for h in xff.split(",") if h.strip()]):
+        if not is_trusted(hop):
+            try:
+                ipaddress.ip_address(hop)
+            except ValueError:
+                return peer
+            return hop
+    return peer
+
+
 class SimpleRateLimitMiddleware(BaseHTTPMiddleware):
     """Fixed-window limiter keyed by client + matched path prefix."""
 
@@ -74,7 +125,7 @@ class SimpleRateLimitMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         limit, window = self._limit_for(prefix)
-        client = request.client.host if request.client else "unknown"
+        client = client_ip(request)
         # Key by prefix (not full path) so /api/predict vs /api/predict/batch share a bucket
         key = f"{client}:{prefix}"
         now = time.monotonic()

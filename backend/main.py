@@ -147,8 +147,10 @@ app.include_router(v3_router, prefix="/api")
 app.include_router(range_router, prefix="/api")
 attach_error_handlers(app)
 attach_request_limits(app)
-attach_rate_limit(app)
 attach_api_auth(app)
+# R-17 (SEC-11): the rate limiter is added after auth, so it wraps it and also counts requests
+# that fail authentication (online key/token guessing used to be unlimited).
+attach_rate_limit(app)
 attach_security_headers(app)
 attach_metrics(app)
 attach_request_logging(app)

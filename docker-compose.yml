@@ -15,6 +15,9 @@ services:
       # from the project .env (git-ignored); startup fails fast if the secret is missing.
       AEGIS_ENV: production
       AEGIS_AUTH_ENABLED: "true"
+      # R-17: X-Forwarded-For is trusted only from the compose network (nginx); the API port
+      # itself is bound to 127.0.0.1 above.
+      AEGIS_TRUSTED_PROXIES: "172.16.0.0/12"
       AEGIS_AUTH_SECRET: ${AEGIS_AUTH_SECRET:?set AEGIS_AUTH_SECRET (>= 32 chars) in .env}
       AEGIS_SEED_PASSWORD_ADMIN: ${AEGIS_SEED_PASSWORD_ADMIN:-}
       AEGIS_SEED_PASSWORD_RESPONDER: ${AEGIS_SEED_PASSWORD_RESPONDER:-}
