@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-11-18T07:13:57.216985+00:00",
+  "code_commit": "3148969611904b017849424aead68a269e434e88",
+  "version": 1,
+  "script": "scripts/71_v11_reeval.py",
+  "inputs": {
+    "models/trained_models/binary_best.joblib": "9b0158aacd2cde3cfa9a9ac62f67c74257393973870582c032a20bbeeb0c0eed",
+    "models/trained_models/multiclass_best.joblib": "d6da28dae45ca4c002f883ccb96df5800359d39eee5ed8ff5ee002d5b7daa344",
+    "models/trained_models/feature_bundle.joblib": "008dfe62ef5e663dacb456472fec0c279c5f2db619c191585cb65b3ea64e8958",
+    "models/trained_models/threshold_operating_point.json": "4b8d827f9425adb4f2f3f0ab15b28d03c4df6b5332073fb5c01d8b747f81e655",
+    "models/trained_models/model_metadata.json": "6e28a7e270a0e505842e5e808f3942ff2c4fee0e87d486a309a3136b436ce4dd",
+    "data/processed/test.parquet": "0b9320c367171219d1238d3c2230cbf0515854244e24d8b8b3417e74427d9a3e",
+    "data/processed/train.parquet": "0da591e1bf851241e8dae27b95552461f3c26180d04bc74ade1f1064105e5cc5",
+    "data/processed/val.parquet": "82aab7dea0cad4e18af619c4aa90ffae211d03ba00f4d31c64ce47e9d3bcb591"
+  },
+  "outputs": {
+    "research_artifacts/v11_reeval/v11_test_metrics_by_threshold.json": "0ccbdae8896e8727f0948a97ff1aea8aa72881750e96deef29bf0d59b28670f8",
+    "research_artifacts/v11_reeval/v11_family_end_to_end.json": "b7270391675c4d9b8d21078f10c2a1f7642e2a3a1dd152ed5c66a7ea2aca1836",
+    "research_artifacts/v11_reeval/v11_policy_alert_rates.json": "bcc7dafbf1a0f68cd8d172f2843c1f6f2c72e1fa0dbef728146f216cc761cb2f"
+  }
+}

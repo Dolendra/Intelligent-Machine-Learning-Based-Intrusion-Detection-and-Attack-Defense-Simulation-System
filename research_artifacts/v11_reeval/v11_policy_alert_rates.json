@@ -1,0 +1,374 @@
+{
+  "generated_at": "2026-11-18T07:13:57.216985+00:00",
+  "code_commit": "3148969611904b017849424aead68a269e434e88",
+  "version": 1,
+  "experiment": "E-03 alert / incident rates per incident policy on rows held out from BOTH models",
+  "rows": "scripts/52 eligibility rule re-derived in full (not the 8,000-benign replay sample) + all Infiltration/Heartbleed (never trained on by either model)",
+  "eligible_rows": 99049,
+  "natural_unknown_rows": 47,
+  "overlap_check": {
+    "frozen_train_or_val": 0,
+    "gate_train_or_val": 0
+  },
+  "frozen_threshold": 0.85,
+  "gate_alpha": 0.01,
+  "policies": {
+    "frozen": "incident iff frozen P(attack) >= 0.85 (current default since P0)",
+    "gate": "incident iff gate conformal p <= alpha",
+    "union": "incident iff either detector alerts"
+  },
+  "per_family": {
+    "BENIGN": {
+      "n": 82111,
+      "frozen": {
+        "k": 63,
+        "n": 82111,
+        "rate": 0.0007672540828877982,
+        "wilson95": [
+          0.0006,
+          0.000981
+        ]
+      },
+      "gate": {
+        "k": 736,
+        "n": 82111,
+        "rate": 0.008963476269927294,
+        "wilson95": [
+          0.008341,
+          0.009632
+        ]
+      },
+      "union": {
+        "k": 767,
+        "n": 82111,
+        "rate": 0.009341013993253036,
+        "wilson95": [
+          0.008706,
+          0.010022
+        ]
+      },
+      "gate_only": {
+        "k": 704,
+        "n": 82111,
+        "rate": 0.008573759910365237,
+        "wilson95": [
+          0.007966,
+          0.009228
+        ]
+      }
+    },
+    "Bot": {
+      "n": 82,
+      "frozen": {
+        "k": 48,
+        "n": 82,
+        "rate": 0.5853658536585366,
+        "wilson95": [
+          0.477257,
+          0.685834
+        ]
+      },
+      "gate": {
+        "k": 76,
+        "n": 82,
+        "rate": 0.926829268292683,
+        "wilson95": [
+          0.849422,
+          0.966035
+        ]
+      },
+      "union": {
+        "k": 77,
+        "n": 82,
+        "rate": 0.9390243902439024,
+        "wilson95": [
+          0.86508,
+          0.973676
+        ]
+      },
+      "gate_only": {
+        "k": 29,
+        "n": 82,
+        "rate": 0.35365853658536583,
+        "wilson95": [
+          0.258856,
+          0.461559
+        ]
+      }
+    },
+    "BruteForce": {
+      "n": 370,
+      "frozen": {
+        "k": 368,
+        "n": 370,
+        "rate": 0.9945945945945946,
+        "wilson95": [
+          0.980508,
+          0.998516
+        ]
+      },
+      "gate": {
+        "k": 370,
+        "n": 370,
+        "rate": 1.0,
+        "wilson95": [
+          0.989724,
+          1.0
+        ]
+      },
+      "union": {
+        "k": 370,
+        "n": 370,
+        "rate": 1.0,
+        "wilson95": [
+          0.989724,
+          1.0
+        ]
+      },
+      "gate_only": {
+        "k": 2,
+        "n": 370,
+        "rate": 0.005405405405405406,
+        "wilson95": [
+          0.001484,
+          0.019492
+        ]
+      }
+    },
+    "DDoS": {
+      "n": 5089,
+      "frozen": {
+        "k": 5087,
+        "n": 5089,
+        "rate": 0.9996069954804481,
+        "wilson95": [
+          0.998568,
+          0.999892
+        ]
+      },
+      "gate": {
+        "k": 5089,
+        "n": 5089,
+        "rate": 1.0,
+        "wilson95": [
+          0.999246,
+          1.0
+        ]
+      },
+      "union": {
+        "k": 5089,
+        "n": 5089,
+        "rate": 1.0,
+        "wilson95": [
+          0.999246,
+          1.0
+        ]
+      },
+      "gate_only": {
+        "k": 2,
+        "n": 5089,
+        "rate": 0.00039300451955197487,
+        "wilson95": [
+          0.000108,
+          0.001432
+        ]
+      }
+    },
+    "DoS": {
+      "n": 7721,
+      "frozen": {
+        "k": 7683,
+        "n": 7721,
+        "rate": 0.9950783577256832,
+        "wilson95": [
+          0.993252,
+          0.996412
+        ]
+      },
+      "gate": {
+        "k": 7714,
+        "n": 7721,
+        "rate": 0.99909338168631,
+        "wilson95": [
+          0.99813,
+          0.999561
+        ]
+      },
+      "union": {
+        "k": 7714,
+        "n": 7721,
+        "rate": 0.99909338168631,
+        "wilson95": [
+          0.99813,
+          0.999561
+        ]
+      },
+      "gate_only": {
+        "k": 31,
+        "n": 7721,
+        "rate": 0.004015023960626861,
+        "wilson95": [
+          0.00283,
+          0.005693
+        ]
+      }
+    },
+    "Heartbleed": {
+      "n": 11,
+      "frozen": {
+        "k": 0,
+        "n": 11,
+        "rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.258833
+        ]
+      },
+      "gate": {
+        "k": 11,
+        "n": 11,
+        "rate": 1.0,
+        "wilson95": [
+          0.741167,
+          1.0
+        ]
+      },
+      "union": {
+        "k": 11,
+        "n": 11,
+        "rate": 1.0,
+        "wilson95": [
+          0.741167,
+          1.0
+        ]
+      },
+      "gate_only": {
+        "k": 11,
+        "n": 11,
+        "rate": 1.0,
+        "wilson95": [
+          0.741167,
+          1.0
+        ]
+      }
+    },
+    "Infiltration": {
+      "n": 36,
+      "frozen": {
+        "k": 0,
+        "n": 36,
+        "rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.096419
+        ]
+      },
+      "gate": {
+        "k": 18,
+        "n": 36,
+        "rate": 0.5,
+        "wilson95": [
+          0.344743,
+          0.655257
+        ]
+      },
+      "union": {
+        "k": 18,
+        "n": 36,
+        "rate": 0.5,
+        "wilson95": [
+          0.344743,
+          0.655257
+        ]
+      },
+      "gate_only": {
+        "k": 18,
+        "n": 36,
+        "rate": 0.5,
+        "wilson95": [
+          0.344743,
+          0.655257
+        ]
+      }
+    },
+    "PortScan": {
+      "n": 3599,
+      "frozen": {
+        "k": 3599,
+        "n": 3599,
+        "rate": 1.0,
+        "wilson95": [
+          0.998934,
+          1.0
+        ]
+      },
+      "gate": {
+        "k": 3599,
+        "n": 3599,
+        "rate": 1.0,
+        "wilson95": [
+          0.998934,
+          1.0
+        ]
+      },
+      "union": {
+        "k": 3599,
+        "n": 3599,
+        "rate": 1.0,
+        "wilson95": [
+          0.998934,
+          1.0
+        ]
+      },
+      "gate_only": {
+        "k": 0,
+        "n": 3599,
+        "rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.001066
+        ]
+      }
+    },
+    "WebAttack": {
+      "n": 77,
+      "frozen": {
+        "k": 32,
+        "n": 77,
+        "rate": 0.4155844155844156,
+        "wilson95": [
+          0.312092,
+          0.5271
+        ]
+      },
+      "gate": {
+        "k": 77,
+        "n": 77,
+        "rate": 1.0,
+        "wilson95": [
+          0.952482,
+          1.0
+        ]
+      },
+      "union": {
+        "k": 77,
+        "n": 77,
+        "rate": 1.0,
+        "wilson95": [
+          0.952482,
+          1.0
+        ]
+      },
+      "gate_only": {
+        "k": 45,
+        "n": 77,
+        "rate": 0.5844155844155844,
+        "wilson95": [
+          0.4729,
+          0.687908
+        ]
+      }
+    }
+  },
+  "note": "BENIGN rows give the system-level benign incident rate per policy; attack rows give detection per policy. Under the default 'frozen' policy, gate-only alerts are recorded as Zero-Day Candidates and raise no incident."
+}

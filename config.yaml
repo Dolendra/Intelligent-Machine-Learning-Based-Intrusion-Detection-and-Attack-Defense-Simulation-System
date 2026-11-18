@@ -199,6 +199,7 @@ zero_day_gate:
   #   frozen | gate | union. Gate-only incidents are labelled "Zero-Day Candidate", never a known family.
   # Operational default is "frozen" (user decision 2026-11-18): the frozen v1.1 detector is the
   # decision authority; gate alerts are still recorded and listed at GET /api/zero-day/alerts for
-  # analyst review. "union" and "gate" remain selectable EXPERIMENTAL settings (union raised the
-  # benign incident rate from 0.09% to 0.81% in the Phase 0 audit, ML-4).
+  # analyst review. "union" and "gate" remain selectable EXPERIMENTAL settings. Benign incident rate on
+  # 82,111 flows held out from both models (Phase 2, research_artifacts/v11_reeval/v11_policy_alert_rates.json):
+  # frozen 0.077%, gate 0.896%, union 0.934%.
   incident_policy: frozen

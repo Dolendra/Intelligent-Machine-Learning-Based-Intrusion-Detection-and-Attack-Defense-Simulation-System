@@ -389,3 +389,47 @@ The likely direction is a slight *under*-estimate of FPR, because a twin of a tr
 | Recalibration diagnosis (fusion loses supervised separation under 2018 shift) | **New exploratory finding** — not yet confirmed on independent data |
 | Evidence-stream reliability gating (Contribution 1) | **Hypothesis** — criteria pre-specified (`RESEARCH_GAP_ANALYSIS.md` §3), untested |
 | CLOSR | **Executed in pilot only** (official modules on CICIDS2017, 2 epochs); published numbers **not** reproduced (LycoS not approved) |
+
+
+---
+
+## 11. Phase 2 claim classification (2026-11-18)
+
+Basis:
+* new, versioned evaluations: `research_artifacts/v11_reeval/` (scripts/71) and `research_artifacts/reanalysis/` (scripts/72);
+* the R2 literature check (`R2_LITERATURE_VERIFICATION.md`).
+
+No historical artifact was changed. Details and numbers are in `RESEARCH_INTEGRITY_REPORT.md`.
+
+**Labels:**
+* **VERIFIED:** supported by the artifacts, reproduced where possible.
+* **CORRECTED:** the wording or number was wrong and has been fixed.
+* **UNSUPPORTED:** removed or turned into a hypothesis.
+* **REQUIRES NEW EXPERIMENT:** cannot be settled with existing data.
+
+| # | Claim (where) | Status | Evidence / action |
+|---|---|---|---|
+| C-01 | "Binary test results (DT @ 0.85)": F1 0.99048, recall 0.99700, FP 1,377 (PROJECT_REPORT, VIVA_QA, TABLES, UI) | CORRECTED | Computed at argmax 0.5 (anchor reproduces it within 1e-9). @ 0.85: F1 0.99382, recall 0.99217, FPR 0.091 % (E-01). |
+| C-02 | Multiclass macro-F1 0.998 as system performance | CORRECTED | Conditional on a perfect stage 1. End-to-end @ 0.85: Bot 57.1 %, WebAttack 37.3 % detected; 7-class macro-F1 0.881 (E-02). |
+| C-03 | P10 "temporal generalization", Friday F1 0.99770 | UNSUPPORTED | Scored training rows (ML-3); marked superseded. The research day-ordered protocol replaces it. |
+| C-04 | Benign false-alarm rate ≈ 0.09 % as the system's incident rate | CORRECTED | Per policy on 82,111 doubly held-out benign flows: frozen 0.077 %, gate 0.896 %, union 0.934 % (E-03). Default is `frozen`. |
+| C-05 | P11 "measured mitigation effectiveness" 1.00 / 0.80 | CORRECTED | Harness validation, deterministic by construction; the deltas are not meaningful. |
+| C-06 | "Ports dropped" | CORRECTED | Destination Port is a model feature (ML-10, RES-12). |
+| C-07 | "Guaranteed benign false-alarm rate" (README) | CORRECTED | Conditional on exchangeability (marginal split-conformal). |
+| C-08 | "Recalibration restores false-alarm control" (README, AEGIS_OSR) | CORRECTED | Re-targets the threshold. Realised FPR after recal@2000 is 0.00–8.84 % across 2018 days; Friday recal@5000 is 2.57 %. |
+| C-09 | LOAFO: Aegis-OSR 0.706 vs XGB 0.490 zero-day recall at α = 1 %, 5/5 seeds | VERIFIED | Exact reproduction (Stage 0). At matched 1 % FPR: +0.218, 6/6 families; hierarchical CI [+0.079, +0.396]. Caveats: RES-6 (design flows reused), RES-12 (port). |
+| C-10 | LOAFO vs DT ("0.241 for a decision tree") | VERIFIED (direction); CORRECTED (context) | DT realises 0.31 % FPR (ties). At matched FPR Aegis-OSR is still +0.461. The paper now states the matched comparison. |
+| C-11 | "The shift moves scores rather than removing the signal" (2018) | CORRECTED | Holds on 02-14 and 02-16. On 4 of the 8 days with known-family attacks, recalibrated XGB detects < 5 %; AUROC is 0.498 on 02-21. |
+| C-12 | "A classifier retrained on CICIDS2017" | CORRECTED | It is the same 2017 classifier, not retrained. |
+| C-13 | "Evidence points to an extractor confound" | UNSUPPORTED → REQUIRES NEW EXPERIMENT | Now a hypothesis. Testing it needs single-extractor data (LycoS on HOLD, NF-v3, or re-extraction). |
+| C-14 | Fusion inversion after 2018 per-day recalibration (Fisher − XGB known recall −0.237) | VERIFIED as exploratory; confirmatory REQUIRES NEW EXPERIMENT | Survives matched FPR (−0.202). Hierarchical CI [−0.504, −0.012]. Comes from 4 of 8 days (day-level Wilcoxon p = 0.31). Post hoc on inspected days. |
+| C-15 | "The inversion is specific to the cross-network setting" (PRIOR_WORK_COMPARISON) | UNSUPPORTED | Withdrawn. Temporal shift is neutral at matched FPR (oracle@2000: Fri −0.008, Thu +0.012). |
+| C-16 | "Dilution" mechanism of the Fisher loss | VERIFIED (observed); not novel | Observed in the per-flow dumps (kNN AUROC 0.407 / 0.046 on 02-14 / 02-16; Fisher TPR@1 % 0.191 vs XGB 0.985 on 02-14). Classical: Birnbaum 1954; Heard & Rubin-Delanchy 2018. |
+| C-17 | Temporal FPR 7.09 % (Friday), cross FPR 36.7 % | VERIFIED (records) | From committed records. Temporal and whole-sample cross were not re-scored at flow level, because no dumps exist for them. |
+| C-18 | Gate flags 29 of 47 natural unknowns | VERIFIED | E-03 independently gives Heartbleed 11/11 and Infiltration 18/36. |
+| C-19 | "Anomaly detectors offer no control over their false-alarm rate" (paper.tex abstract) | CORRECTED | Contradicted by Bates et al. 2023 (cited) and by the closest work. |
+| C-20 | "Recalibration restores FPR but not detection" as an open gap / contribution | UNSUPPORTED as novelty | Şahin & Mert, *Electronics* 15(18):4084, 2026 report the analogous 2017→2018 result. Now cited as consistent prior work. |
+| C-21 | Contribution 1: stream-gated / reliability-aware fusion | REQUIRES NEW EXPERIMENT | Fails pre-registered H1b on the discovery data (ρ = −0.41). The bar must become the best fixed alternative (max fusion −0.043 vs XGB at matched FPR). Mchina et al. 2026 already use adaptive per-signal weighting. |
+| C-22 | Per-window FPR guarantee at small W | CORRECTED (limitation stated) | The paper's limitations state the marginal-bound caveat (RES-5). Calibration-conditional bounds are not computed. |
+| C-23 | Every paper number traces to an artifact | VERIFIED | `scripts/59` and `scripts/62` regenerated; publication tests pass. The new facts cite `research_artifacts/{v11_reeval,reanalysis}`. |
+| C-24 | R1b: "paper.tex compiled and validated" (§8) | **No longer current** | The sources changed in Phase 2. Recompile with Tectonic, then rerun `scripts/63`. |

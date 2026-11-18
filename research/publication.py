@@ -35,6 +35,11 @@ FROZEN18_V1 = f"{RA}/frozen_v11_on_cic2018.json"
 FAMILIES = f"{RA}/model_family_comparison.json"
 DATASET = f"{RA}/dataset_summary.json"
 RECAL_DIAG = f"{RA}/recalibration_diagnosis.json"  # exploratory, post-hoc (scripts/64)
+# Phase 2 (2026-11-18): corrected, versioned re-evaluations; historical artifacts are untouched.
+V11_TEST = f"{RA}/v11_reeval/v11_test_metrics_by_threshold.json"  # scripts/71 (E-01)
+V11_FAM = f"{RA}/v11_reeval/v11_family_end_to_end.json"  # scripts/71 (E-02)
+V11_POLICY = f"{RA}/v11_reeval/v11_policy_alert_rates.json"  # scripts/71 (E-03)
+REANALYSIS = f"{RA}/reanalysis/matched_fpr_summary.json"  # scripts/72 (E-04/E-05)
 TRAINING = "models/trained_models/training_report.json"
 P11 = "models/trained_models/empirical_mitigation_report.json"
 ENVELOPE = "results/performance/operating_envelope_latest.json"
@@ -185,25 +190,44 @@ def t_cand() -> Table:
 
 
 def t_v11() -> Table:
+    """ML-1/ML-2 (Phase 2): both operating points from the versioned re-evaluation; stage 2 labelled as conditional."""
     t = load(TRAINING)
-    b, mc = t["binary"]["test"], t["multiclass"]["test"]
+    mc = t["multiclass"]["test"]
     cm = mc["confusion_matrix"]
     total = sum(sum(r) for r in cm)
     wrong = total - sum(cm[i][i] for i in range(len(cm)))
+    e1 = load(V11_TEST)["metrics"]
+    lo, hi = e1["0.5"], e1["0.85"]
+    fam = load(V11_FAM)
+    pf, e2e = fam["per_family"], fam["end_to_end_system"]
+
+    def cnt(m: dict) -> str:
+        c = m["confusion"]
+        return f"{c['tp']:,} / {c['fn']:,} / {c['fp']:,}"
+
     rows = [
-        ["Binary (DT, τ = 0.85)", "Precision", f5(b["precision"]), "F1", bold(f5(b["f1"]))],
-        ["", "Recall", f5(b["recall"]), "ROC-AUC", f5(b["roc_auc"])],
-        ["", "FPR", f5(b["fpr"]), "PR-AUC", f5(b["pr_auc"])],
-        ["", "TP / FN", f"{b['true_positives']:,} / {b['false_negatives']:,}", "TN / FP",
-         f"{b['true_negatives']:,} / {b['false_positives']:,}"],
-        ["", "Brier", f5(b["brier_score"]), "ECE", f5(b["ece"])],
-        ["Multiclass (RF, attack-only)", "Accuracy", f5(mc["accuracy"]), "Macro-F1", bold(f5(mc["f1_macro"]))],
-        ["", "Macro precision", f5(mc["precision_macro"]), "Macro recall", f5(mc["recall_macro"])],
-        ["", "Weighted F1", f5(mc["f1_weighted"]), "Misattributed", f"{wrong:,} / {total:,}"],
+        ["Binary (DT)", "Precision", f5(lo["precision"]), bold(f5(hi["precision"]))],
+        ["", "Recall", f5(lo["recall"]), bold(f5(hi["recall"]))],
+        ["", "F1", f5(lo["f1"]), bold(f5(hi["f1"]))],
+        ["", "FPR", f5(lo["fpr"]), bold(f5(hi["fpr"]))],
+        ["", "TP / FN / FP", cnt(lo), cnt(hi)],
+        ["", "ROC-AUC / PR-AUC (threshold-free)", f"{f5(hi['roc_auc'])} / {f5(hi['pr_auc'])}", f"{f5(hi['roc_auc'])} / {f5(hi['pr_auc'])}"],
+        ["End-to-end (DT → RF)", "Bot detected and named", pct(pf["Bot"]["end_to_end_correct@0.5"]["rate"]),
+         bold(pct(pf["Bot"]["end_to_end_correct@0.85"]["rate"]))],
+        ["", "WebAttack detected and named", pct(pf["WebAttack"]["end_to_end_correct@0.5"]["rate"]),
+         bold(pct(pf["WebAttack"]["end_to_end_correct@0.85"]["rate"]))],
+        ["", "7-class macro-F1", f3(e2e["0.5"]["macro_f1_7class"]), bold(f3(e2e["0.85"]["macro_f1_7class"]))],
+        ["Stage 2 alone (RF; perfect stage 1 assumed)", "Macro-F1 / accuracy", f"{f5(mc['f1_macro'])} / {f5(mc['accuracy'])}", "same"],
+        ["", "Misattributed", f"{wrong:,} / {total:,}", "same"],
     ]
-    return Table("v11", "Frozen Closed-Set Detector (v1.1) on the Stratified Test Split",
-                 ["Stage", "Metric", "Value", "Metric", "Value"], rows,
-                 sources=[f"{TRAINING}:binary.test", f"{TRAINING}:multiclass.test"], docx={"widths": [1.9, 1.2, 1.1, 1.2, 1.1]})
+    return Table("v11", "Frozen Closed-Set Detector (v1.1) on the Random Test Split at Both Operating Points",
+                 ["Stage", "Metric", "τ = 0.5 (argmax)", "τ = 0.85 (deployed)"], rows,
+                 notes="The historical test figures (τ = 0.5 column) were computed at the argmax threshold although they "
+                       "were labelled 0.85; both columns score the same frozen model on the same split, and 0.85 was chosen "
+                       f"on the validation split. Bot n = {pf['Bot']['n']:,}; WebAttack n = {pf['WebAttack']['n']:,}. "
+                       "Stage-2 figures apply the family model to every true attack, i.e. assume stage 1 is perfect.",
+                 sources=[f"{V11_TEST}:metrics", f"{V11_FAM}:per_family", f"{V11_FAM}:end_to_end_system",
+                          f"{TRAINING}:multiclass.test"], docx={"widths": [1.9, 1.9, 1.3, 1.3]})
 
 
 LOAFO_ORDER = [(OSR, "proposed", "**Aegis-OSR**"), ("Aegis-OSR w/ omnibus fusion", "ablation", "  w/ omnibus fusion"),
@@ -419,6 +443,35 @@ def t_cross_perday() -> Table:
                  docx={"widths": [0.9, 0.7, 0.7, 0.75, 0.75, 1.05, 1.05, 1.05], "size": 8})
 
 
+def t_inversion() -> Table:
+    """RES-3 (Phase 2): per-day comparison over ALL 2018 days with known-family attacks, from the per-flow dumps."""
+    s = load(REANALYSIS)["cross_perday"]["recal@2000"]
+    tab = s["per_day_mean_over_seeds"]
+    fams = {r["fold"]: ", ".join(f for f in r["test_families"] if f != "BENIGN") for r in load(PERDAY_REC)["records"]}
+    rows = []
+    for day in sorted(tab):
+        x = tab[day]
+        if x[XGB]["conformal_known_recall"] is None:
+            continue
+        cells = [day, fams.get(day, "")]
+        for meth in (XGB, "Aegis-OSR w/ max fusion", OSR):
+            cells.append(f"{f3(x[meth]['conformal_known_recall'])} / {pct(x[meth]['conformal_fpr'], 1)}")
+        for meth in (XGB, "Aegis-OSR w/ max fusion", OSR):
+            cells.append(f3(x[meth]["tpr_known@1%fpr"]))
+        cells.append(f3(x[XGB]["auroc_known"]))
+        rows.append(cells)
+    return Table("inversion", "CSE-CIC-IDS2018 per Day after Same-Day Re-Calibration (W = 2,000): Classifier Alone, Max Fusion and Fisher Fusion",
+                 ["Day", "Attack", "XGB recall / FPR", "Max recall / FPR", "Fisher recall / FPR", "XGB TPR@1%", "Max TPR@1%",
+                  "Fisher TPR@1%", "XGB AUROC"], rows,
+                 notes="Known-family recall and realised benign FPR at α = 1 % (conformal operating point), and TPR at an exactly "
+                       "matched 1 % FPR (threshold set on the evaluated benign flows: an oracle ranking comparison, not an "
+                       "operating point); mean of 5 seeds. Fisher = Aegis-OSR. Every day with known-family attacks is shown; "
+                       "the two Infiltration days have no known-family attacks. Exploratory, post-hoc re-analysis of the "
+                       "existing per-flow scores.",
+                 sources=[f"{REANALYSIS}:cross_perday.recal@2000.per_day_mean_over_seeds", f"{PERDAY_REC}:records[*].test_families"],
+                 docx={"widths": [0.85, 0.75, 0.9, 0.9, 0.9, 0.6, 0.6, 0.6, 0.6], "size": 7})
+
+
 def t_families() -> Table:
     d = load(FAMILIES)
     r = d["results"]
@@ -524,10 +577,12 @@ def t_p11() -> Table:
                      bold(f"{r['controlled_measured_effectiveness_mean']:.2f}"), f"{r['simulation_assumption']:.2f}",
                      f"{r['delta_measured_minus_simulation']:+.2f}"])
     reps = load(P11)["repetitions"]
-    return Table("p11", f"Mitigation Measured on the Controlled Test Plane ({reps} Repetitions, Frozen-ML Detection)",
+    return Table("p11", f"Harness Validation on the Controlled Test Plane ({reps} Repetitions, Frozen-ML Detection)",
                  ["Scenario", "No defence", "Recommendation only", "Approved response", "Storyboard prior", "Δ"], rows,
-                 notes="Measured effectiveness on the CONTROLLED test adapter (no live firewall). Δ = measured − assumed "
-                       "storyboard prior.", sources=[f"{P11}:comparisons", f"{P11}:repetitions"],
+                 notes="Harness validation, deterministic by construction: the test adapter blocks every flow of a blocked "
+                       "source and admits a fixed 20 % under rate limiting, so these values are not mitigation-effectiveness "
+                       "measurements and Δ (harness − assumed storyboard prior) is not meaningful. No live firewall.",
+                 sources=[f"{P11}:comparisons", f"{P11}:repetitions"],
                  docx={"widths": [1.6, 0.9, 1.1, 1.1, 1.0, 0.6]})
 
 
@@ -603,7 +658,7 @@ def t_xai() -> Table:
 BUILDERS: dict[str, Callable[[], Table]] = {  # in paper order
     "data": t_data, "cand": t_cand, "v11": t_v11, "loafo": t_loafo, "significance": t_significance, "family": t_family,
     "temporal": t_temporal, "adapt": t_adapt, "gate": t_gate, "v11_2018": t_v11_2018, "cross": t_cross,
-    "cross_perday": t_cross_perday, "families": t_families, "range_def": t_range_def, "range_det": t_range_det,
+    "cross_perday": t_cross_perday, "inversion": t_inversion, "families": t_families, "range_def": t_range_def, "range_det": t_range_det,
     "xai": t_xai, "p11": t_p11, "perf": t_perf,
 }
 
@@ -645,7 +700,24 @@ def facts() -> dict[str, Fact]:
     put("v11_val_rows", n_val, n0(n_val), f"{TRAINING}:binary.validation.<best>.confusion_matrix")
     put("v11_train_rows", kept - n_test - n_val, n0(kept - n_test - n_val), "v11_rows − test − validation")
     put("feature_overlap", len(tr["feature_overlap"]), str(len(tr["feature_overlap"])), f"{TRAINING}:feature_overlap")
-    put("v11_f1", bt["f1"], f3(bt["f1"]), f"{TRAINING}:binary.test.f1")
+    # ML-1: training_report's binary.test was computed at argmax 0.5. The 2018 transfer is scored at 0.85, so the
+    # like-for-like IID figure is the 0.85 re-evaluation; the historical 0.5 figure is kept as v11_f1_argmax.
+    e1 = load(V11_TEST)["metrics"]
+    put("v11_f1", e1["0.85"]["f1"], f3(e1["0.85"]["f1"]), f"{V11_TEST}:metrics.0.85.f1")
+    put("v11_f1_argmax", bt["f1"], f3(bt["f1"]), f"{TRAINING}:binary.test.f1 (= {V11_TEST}:metrics.0.5.f1)")
+    put("v11_recall_085", e1["0.85"]["recall"], f3(e1["0.85"]["recall"]), f"{V11_TEST}:metrics.0.85.recall")
+    put("v11_fpr_085", e1["0.85"]["fpr"], pct(e1["0.85"]["fpr"], 3), f"{V11_TEST}:metrics.0.85.fpr")
+    pfam = load(V11_FAM)["per_family"]
+    for fam_, tag in (("Bot", "bot"), ("WebAttack", "web")):
+        r = pfam[fam_]["detected@0.85"]
+        put(f"v11_{tag}_det_085", r["rate"], pct(r["rate"]), f"{V11_FAM}:per_family.{fam_}.detected@0.85.rate")
+        put(f"v11_{tag}_n", r["n"], n0(r["n"]), f"{V11_FAM}:per_family.{fam_}.n")
+    e2e = load(V11_FAM)["end_to_end_system"]["0.85"]["macro_f1_7class"]
+    put("v11_e2e_macro_f1", e2e, f3(e2e), f"{V11_FAM}:end_to_end_system.0.85.macro_f1_7class")
+    pol = load(V11_POLICY)["per_family"]["BENIGN"]
+    for p_ in ("frozen", "gate", "union"):
+        put(f"policy_{p_}_benign", pol[p_]["rate"], pct(pol[p_]["rate"], 3), f"{V11_POLICY}:per_family.BENIGN.{p_}.rate")
+    put("policy_benign_n", pol["n"], n0(pol["n"]), f"{V11_POLICY}:per_family.BENIGN.n")
     dt, xg = bv["decision_tree"], bv["xgboost"]
     put("dt_xgb_fpr_ratio", dt["fpr"] / xg["fpr"], f"{dt['fpr'] / xg['fpr']:.0f}", f"{TRAINING}:binary.validation.*.fpr")
     put("dt_xgb_recall_gap_pp", 100 * (dt["recall"] - xg["recall"]), f"{100 * (dt['recall'] - xg['recall']):.1f}",
@@ -990,6 +1062,36 @@ def facts() -> dict[str, Fact]:
             put(f"rd_xgb_{tag}_known", v["known_recall"], f3(v["known_recall"]), f"{src}.known_recall")
             put(f"rd_xgb_{tag}_fpr", v["fpr"], pct(v["fpr"]), f"{src}.fpr")
             put(f"rd_xgb_{tag}_auroc", v["auroc_all"], f3(v["auroc_all"]), f"{src}.auroc_all")
+    if exists(REANALYSIS):
+        # Phase 2 matched-FPR re-analysis of the existing per-flow dumps (scripts/72; exploratory, post-hoc).
+        ra = load(REANALYSIS)
+
+        def comp(tag: str, block: dict, src: str) -> None:
+            lo, hi = block["hierarchical_bootstrap_95ci"]
+            put(f"ra_{tag}", block["mean"], f"{block['mean']:+.3f}", f"{src}.mean")
+            put(f"ra_{tag}_ci", (lo, hi), f"[{lo:+.3f}, {hi:+.3f}]", f"{src}.hierarchical_bootstrap_95ci")
+            put(f"ra_{tag}_seeds", block["seeds_a_better"], f"{block['seeds_a_better']}/{block['seeds']}", f"{src}.seeds_a_better")
+            put(f"ra_{tag}_groups", block["groups_a_better"], f"{block['groups_a_better']} of {block['groups']}", f"{src}.groups_a_better")
+
+        lo_ = f"{REANALYSIS}:loafo"
+        comp("loafo_xgb_matched", ra["loafo"]["aegis_vs_xgb_unknown_matched"], f"{lo_}.aegis_vs_xgb_unknown_matched")
+        comp("loafo_xgb_conf", ra["loafo"]["aegis_vs_xgb_unknown_conformal"], f"{lo_}.aegis_vs_xgb_unknown_conformal")
+        comp("loafo_dt_matched", ra["loafo"]["aegis_vs_dt_unknown_matched"], f"{lo_}.aegis_vs_dt_unknown_matched")
+        pd_ = f"{REANALYSIS}:cross_perday.recal@2000"
+        blk = ra["cross_perday"]["recal@2000"]
+        comp("pd_fisher_xgb_conf", blk["aegis_vs_xgb_known_conformal"], f"{pd_}.aegis_vs_xgb_known_conformal")
+        comp("pd_fisher_xgb_matched", blk["aegis_vs_xgb_known_matched"], f"{pd_}.aegis_vs_xgb_known_matched")
+        comp("pd_max_xgb_matched", blk["max_vs_xgb_known_matched"], f"{pd_}.max_vs_xgb_known_matched")
+        dtf = ra["loafo"]["per_family_mean_over_seeds"]
+        dt_fpr = _mean([dtf[f][DT]["conformal_fpr"] for f in dtf])
+        put("ra_loafo_dt_fpr", dt_fpr, pct(dt_fpr, 2), f"{lo_}.per_family_mean_over_seeds.*.{DT}.conformal_fpr (mean over families)")
+        xs = ra["cross_perday"]["recal@2000"]["per_day_mean_over_seeds"]
+        low = [d for d, v in xs.items() if v[XGB]["conformal_known_recall"] is not None and v[XGB]["conformal_known_recall"] < 0.05]
+        put("ra_xgb_low_days", len(low), str(len(low)), f"{pd_}.per_day_mean_over_seeds.*.{XGB}.conformal_known_recall < 0.05")
+        n_known = sum(1 for v in xs.values() if v[XGB]["conformal_known_recall"] is not None)
+        put("ra_known_days", n_known, str(n_known), f"{pd_}.per_day_mean_over_seeds (days with known-family attacks)")
+        put("ra_xgb_auroc_0221", xs["2018-02-21"][XGB]["auroc_known"], f3(xs["2018-02-21"][XGB]["auroc_known"]),
+            f"{pd_}.per_day_mean_over_seeds.2018-02-21.{XGB}.auroc_known")
     return F
 
 

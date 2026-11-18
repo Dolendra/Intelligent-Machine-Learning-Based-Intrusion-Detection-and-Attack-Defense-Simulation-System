@@ -8,13 +8,21 @@ Use **short answers first**; expand only if asked. Never collapse the three meas
 
 ---
 
+> **Phase 2 corrections (2026-11-18) — read before memorising numbers.**
+> * Binary F1 0.99048 / recall 0.99700 are **@ 0.5 (argmax)**, not @ 0.85. At the deployed 0.85: F1 **0.99382**, recall **0.99217**,
+>   FPR **0.091 %** (`research_artifacts/v11_reeval/v11_test_metrics_by_threshold.json`).
+> * Macro-F1 0.99813 assumes a perfect first stage. At 0.85 the system detects **57.1 % of Bot** and **37.3 % of WebAttack** flows.
+> * Friday F1 0.99770 is **superseded (contaminated)**: about 70 % of those rows were training rows. Do not quote it.
+> * P11 1.00 / 0.80 are **harness validation, deterministic by construction**, not measured mitigation.
+> * Destination Port **is** a model feature.
+
 ## Measurement classes (say this if numbers are challenged)
 
 | Class | Meaning | Memorize examples |
 |-------|---------|-------------------|
-| **Research (IID / temporal)** | Frozen DT/RF on CICIDS2017 splits | Binary F1 **0.99048** · macro-F1 **0.99813** · Friday F1 **0.99770** |
+| **Research (IID)** | Frozen DT/RF on the CICIDS2017 random test split | Binary F1 **0.99382** @ 0.85 (0.99048 @ 0.5) · stage-2 macro-F1 **0.99813** (perfect stage 1 assumed) · Bot / WebAttack detected 57.1 % / 37.3 % @ 0.85 |
 | **Simulation assumptions** | Visualization priors in `config.yaml` | DDoS **0.82** · DoS **0.78** |
-| **Controlled-lab (P11)** | Measured on `TestNetworkAdapter` | DDoS `BLOCK_SOURCE` **1.00** · DoS `RATE_LIMIT` **0.80** |
+| **Controlled-lab (P11)** | Harness validation on `TestNetworkAdapter`, deterministic by construction | DDoS `BLOCK_SOURCE` 1.00 · DoS `RATE_LIMIT` 0.80 (by construction; not mitigation measurements) |
 
 **P12** is a security-validation outcome (**Overall PASS**), not a detection F1.
 
@@ -24,7 +32,7 @@ Use **short answers first**; expand only if asked. Never collapse the three meas
 
 ### 30 seconds
 
-> Aegis IDS is a productionized IDS **prototype**: frozen Decision Tree + Random Forest on CICIDS flow features, SHAP explanations, risk and advisory defenses, then a **human-approved CONTROLLED** response path and attack–defense **simulation**. Research F1 is **0.99048**; simulation priors (**0.82 / 0.78**) are assumptions; P11 lab mitigation is **1.00 / 0.80**; P12 security validation **PASS**. We do **not** auto-block live networks.
+> Aegis IDS is a productionized IDS **prototype**: frozen Decision Tree + Random Forest on CICIDS flow features, SHAP explanations, risk and advisory defenses, then a **human-approved CONTROLLED** response path and attack–defense **simulation**. Research F1 is **0.99382** at the deployed 0.85 threshold (0.99048 at 0.5), but Bot and WebAttack detection at 0.85 is only 57 % / 37 %; simulation priors (**0.82 / 0.78**) are assumptions; P11 1.00 / 0.80 validates the lab harness (by construction); P12 security validation **PASS**. We do **not** auto-block live networks.
 
 ### 1 minute
 
@@ -35,7 +43,7 @@ Use **short answers first**; expand only if asked. Never collapse the three meas
 > **Problem.** SOC workflows need family, explanation, risk, and a safe response path—not only a black-box alert.  
 > **Approach.** Two-stage ML on CICIDS2017 (binary then attack-only multiclass), 40 `f_classif` features fit on train only, SHAP primary / LIME secondary, configurable risk blend, advisory recommendations.  
 > **Safety.** Response modes are DRY_RUN and CONTROLLED only; LIVE is forbidden; approval is mandatory; reclaim never auto-replays.  
-> **Evidence.** IID binary F1 **0.99048**, multiclass macro-F1 **0.99813**; temporal Friday F1 **0.99770** with documented limits; simulation priors **0.82/0.78**; P11 measured **1.00/0.80**; P12 **PASS**.  
+> **Evidence.** IID binary F1 **0.99382** @ 0.85 (0.99048 @ 0.5); stage-2 macro-F1 **0.99813** given a perfect stage 1; Bot / WebAttack detected 57.1 % / 37.3 % @ 0.85; the P10 Friday result is superseded (contaminated); simulation priors **0.82/0.78**; P11 harness validation **1.00/0.80** (by construction); P12 **PASS**.  
 > **Limits.** Benchmark ≠ live traffic; no zero-day claim; no external dataset yet; P11 is not a real firewall.  
 > **Claim.** Productionized, security-validated **prototype** with a hard boundary against live enforcement.
 
@@ -79,7 +87,7 @@ Train **1,764,525** · Val **252,075** · Test **504,151**.
 Attacks are minority (~16.9% on IID test). Prefer **F1 / PR-AUC / recall**, not accuracy alone.
 
 ### Leakage control?
-Drop Flow ID / IPs / Timestamp / ports (as configured). **StandardScaler + SelectKBest** fit **on train only**. Dual selectors (binary vs multiclass).
+Drop Flow ID / IPs / Timestamp where present. **Destination Port is kept as a feature** (possible shortcut, ML-10). **StandardScaler + SelectKBest** fit **on train only**. Dual selectors (binary vs multiclass).
 
 ### Raw data in Git?
 **No** (size/licensing). Demo uses bundled `models/trained_models/demo_flows.json` — **no raw CICIDS required** for viva demo.
@@ -122,18 +130,21 @@ Disabled. Sample isotonic helped ECE slightly but hurt Brier/recall → `use_cal
 
 # 4. Evaluation (research metrics)
 
-### Binary test (DT @ 0.85) — research
+### Binary test (DT) — research, both operating points
 
-| Metric | Value |
-|--------|------:|
-| Precision | 0.98404 |
-| Recall | 0.99700 |
-| **F1** | **0.99048** |
-| PR-AUC | 0.99744 |
-| ROC-AUC | 0.99916 |
-| FP / FN | 1,377 / 255 |
-| TN / TP | 417,635 / 84,884 |
-| FPR / FNR | ~0.00329 / ~0.00300 |
+The historical table was headed "DT @ 0.85" but was computed at argmax 0.5 (ML-1).
+
+| Metric | @ 0.5 (historical) | @ 0.85 (deployed) |
+|--------|------:|------:|
+| Precision | 0.98404 | 0.99549 |
+| Recall | 0.99700 | 0.99217 |
+| **F1** | **0.99048** | **0.99382** |
+| PR-AUC / ROC-AUC | 0.99744 / 0.99916 | same (threshold-free) |
+| FP / FN | 1,377 / 255 | 383 / 667 |
+| FPR | 0.00329 | 0.00091 |
+
+Per family at 0.85 (end-to-end): Bot 57.1 % (n = 389), WebAttack 37.3 % detected (n = 429); all other families ≥ 99.4 %.
+Source: `research_artifacts/v11_reeval/`.
 
 ### Multiclass test (RF) — research
 
@@ -143,6 +154,8 @@ Disabled. Sample isotonic helped ECE slightly but hurt Brier/recall → `use_cal
 | Macro F1 | **0.99813** |
 | Weighted F1 | 0.99979 |
 | Macro Precision / Recall | 0.99762 / 0.99864 |
+
+These multiclass figures assume a **perfect first stage**. End-to-end 7-class macro-F1 at 0.85 is **0.881**.
 
 ### What does F1 mean here?
 Harmonic mean of precision and recall — appropriate under class imbalance when both false alarms and misses matter.
@@ -281,14 +294,17 @@ Under CONTROLLED synthetic traffic, with approve → `TestNetworkAdapter` → tr
 No-defense / recommendation-only blocked rates were **0.00** in the tested gate.
 
 ### Exact citation wording?
-> Under the tested controlled environment and scenario, measured outcomes were **1.00** (DDoS block) and **0.80** (DoS rate-limit). Simulation priors **0.82 / 0.78** remain assumptions and were not overwritten.
+> **Corrected (ML-12):** the values **1.00** (DDoS block) and **0.80** (DoS rate-limit) hold by construction of the test adapter; they validate the harness, not mitigation. Simulation priors **0.82 / 0.78** remain assumptions and were not overwritten.
 
 ### What these numbers are **not**?
 Not production firewall/EDR effectiveness. Not NIC packet capture. Hard `BLOCK_SOURCE` can yield 1.0 **by construction** of the test gate — validates the measurement framework more than claiming live block rates.
 
 ---
 
-# 11. Generalization (P10)
+# 11. Generalization (P10) — SUPERSEDED
+
+> **The Friday result below is contaminated** (about 70 % of the scored rows were training rows; ML-3). If asked about temporal
+> generalization, cite the research track's day-ordered Mon–Thu→Fri protocol in `docs/research/RESULTS.md` instead.
 
 ### IID vs temporal (binary F1, frozen models)
 
@@ -417,9 +433,10 @@ Simulation mirrors detect→recommend→defend→recover for teaching; not a ful
 |------|------:|-------|
 | Binary model | DT @ **0.85** | Research config |
 | Multiclass | RF (6 families) | Research config |
-| Binary F1 / ROC-AUC | **0.99048** / 0.99916 | Research |
-| Multiclass macro-F1 | **0.99813** | Research |
-| Friday binary F1 | **0.99770** | Research (temporal) |
+| Binary F1 / ROC-AUC | **0.99382** @ 0.85 (0.99048 @ 0.5) / 0.99916 | Research |
+| Bot / WebAttack detected @ 0.85 | **57.1 % / 37.3 %** | Research (end-to-end) |
+| Multiclass macro-F1 | **0.99813** (perfect stage 1 assumed) | Research |
+| Friday binary F1 | ~~0.99770~~ superseded (contaminated) | — |
 | Features | `f_classif` k=40 (dual) | Research config |
 | Risk weights | 50 / 25 / 15 / 10 | Product config |
 | Sim DDoS / DoS | **0.82 / 0.78** | Simulation assumptions |

@@ -12,15 +12,24 @@
 
 ---
 
+> **Phase 2 research-integrity corrections (2026-11-18).** Older figures are kept and relabelled, not deleted.
+> * The binary "test results (Decision Tree @ 0.85)" were computed at the argmax threshold **0.5** (ML-1). Deployed-threshold
+>   figures come from `research_artifacts/v11_reeval/v11_test_metrics_by_threshold.json`.
+> * The family macro-F1 0.99813 assumes a perfect first stage (ML-2). End-to-end, at 0.85 the system detects 57.1 % of Bot and
+>   37.3 % of WebAttack test flows (`research_artifacts/v11_reeval/v11_family_end_to_end.json`).
+> * The P10 Friday "temporal" result is **superseded (contaminated)**: about 70 % of the scored Friday rows were training rows (ML-3).
+> * P11 "measured" mitigation values hold by construction; they validate the harness, not mitigation (ML-12).
+> * Full record: `docs/research/RESEARCH_INTEGRITY_REPORT.md`.
+
 ## Measurement classes (read first)
 
 This report carefully separates three kinds of numbers:
 
 | Class | Meaning | Example |
 |-------|---------|---------|
-| **Research (IID / temporal)** | Frozen DT/RF scored on CICIDS2017 splits | Binary F1 **0.99048** (IID test) |
+| **Research (IID)** | Frozen DT/RF scored on the CICIDS2017 random test split | Binary F1 **0.99048** @ 0.5 (argmax); **0.99382** @ 0.85 (deployed) |
 | **Simulation assumptions** | Visualization priors in `config.yaml` | DDoS defense efficacy **0.82** |
-| **Controlled-lab (P11)** | Measured outcomes on `TestNetworkAdapter` | DDoS `BLOCK_SOURCE` effectiveness **1.00** |
+| **Controlled-lab (P11)** | Harness validation on `TestNetworkAdapter` (deterministic by construction) | DDoS `BLOCK_SOURCE` 1.00 *by construction* — not a mitigation measurement |
 
 Do **not** treat simulation assumptions as measurements, or IID F1 as a live-network guarantee.
 
@@ -163,7 +172,7 @@ Architecture figure: `docs/architecture.png`.
 
 ### Feature engineering
 
-- Drop leakage/identifier-like columns (Flow ID, IPs, Timestamp, ports where configured).  
+- Drop identifier-like columns where present (Flow ID, IPs, Timestamp). **Destination Port is kept and is a model feature** (possible shortcut; ML-10).  
 - Coerce numeric; remove Inf/NaN/duplicates.  
 - **StandardScaler** + **SelectKBest (`f_classif`, k=40)** fit **on train only**.  
 - **Dual selectors:** separate SelectKBest for binary vs multiclass (40 features each).  
@@ -187,17 +196,23 @@ Candidates shared the same preprocessing. Selection used multi-objective weights
 
 **Why Decision Tree?** Higher attack **recall** under the IDS-oriented score; XGBoost wins raw F1 but not the selected objective.
 
-### Binary test results (Decision Tree @ 0.85)
+### Binary test results (Decision Tree) — both operating points
 
-| Metric | Value |
-|--------|------:|
-| Precision | 0.98404 |
-| Recall | 0.99700 |
-| **F1** | **0.99048** |
-| PR-AUC | 0.99744 |
-| ROC-AUC | 0.99916 |
-| FP / FN | 1,377 / 255 |
-| TN / TP | 417,635 / 84,884 |
+The historical table was headed "@ 0.85" but was computed at the argmax threshold 0.5 (ML-1). Both columns below are the same
+frozen model on the same test split; 0.85 was chosen on the validation split, so the test split selected nothing.
+
+| Metric | @ 0.5 (argmax; historical figure) | @ 0.85 (deployed) |
+|--------|------:|------:|
+| Precision | 0.98404 | 0.99549 |
+| Recall | 0.99700 | 0.99217 |
+| **F1** | **0.99048** | **0.99382** |
+| FPR | 0.00329 | 0.00091 |
+| PR-AUC | 0.99744 | 0.99744 (threshold-free) |
+| ROC-AUC | 0.99916 | 0.99916 (threshold-free) |
+| FP / FN | 1,377 / 255 | 383 / 667 |
+| TN / TP | 417,635 / 84,884 | 418,629 / 84,472 |
+
+Source: `research_artifacts/v11_reeval/v11_test_metrics_by_threshold.json` (the 0.5 column reproduces `model_metadata.json` exactly).
 
 ### Multiclass (attack-only Random Forest) — test
 
@@ -210,6 +225,11 @@ Candidates shared the same preprocessing. Selection used multi-objective weights
 | Weighted F1 | 0.99979 |
 
 Classes: Bot, BruteForce, DDoS, DoS, PortScan, WebAttack.
+
+**This table assumes a perfect first stage** (the family model is applied to every true attack row). End-to-end at the deployed
+0.85 threshold, the two-stage system detects and correctly names **57.1 % of Bot** (n = 389) and **36.8 % of WebAttack** (n = 429)
+test flows; other families are ≥ 99.4 %. The end-to-end 7-class macro-F1 is **0.881** at 0.85 (0.890 at 0.5).
+Source: `research_artifacts/v11_reeval/v11_family_end_to_end.json`.
 
 ### Important caveat
 
@@ -347,14 +367,14 @@ Controlled synthetic traffic
 
 ### Results (10 repetitions)
 
-| Scenario | No defense / recommendation-only blocked rate | Controlled response | **Measured effectiveness** | Simulation prior | Δ (meas − sim) |
+| Scenario | No defense / recommendation-only blocked rate | Controlled response | **Harness value (by construction)** | Simulation prior | Δ (not meaningful) |
 |----------|-----------------------------------------------:|--------------------:|---------------------------:|-----------------:|---------------:|
 | DDoS `BLOCK_SOURCE` | 0.00 | **1.00** | **1.00 ± 0** | 0.82 | **+0.18** |
 | DoS `RATE_LIMIT` | 0.00 | **0.80** | **0.80 ± 0** | 0.78 | **+0.02** |
 
 ### How to cite
 
-> Under the tested controlled environment and scenario, the measured outcome was **1.00** (DDoS block) and **0.80** (DoS rate-limit), with the limitations below. Simulation priors **0.82** / **0.78** remain labelled assumptions and were **not** overwritten.
+> **Corrected (ML-12):** these values are **harness validation, deterministic by construction** (a hard block passes 0 % by design and the rate limiter allows 20 %). They are not mitigation-effectiveness measurements, and the measured−simulation deltas are not meaningful. Historical wording: "the measured outcome was **1.00** (DDoS block) and **0.80** (DoS rate-limit)". Simulation priors **0.82** / **0.78** remain labelled assumptions and were **not** overwritten.
 
 ### Limitations (P11)
 
@@ -396,9 +416,13 @@ Frozen joblib SHA-256[:16] hashes match `model_metadata.json` (`binary_best`, `m
 
 ### A. Research detection (IID)
 
-Strong discrimination on CICIDS2017 stratified test: binary F1 **0.99048**, multiclass macro-F1 **0.99813**. Residual multiclass confusion (rare) concentrates among PortScan / DoS / WebAttack (`ERROR_ANALYSIS.md`).
+Strong discrimination on the CICIDS2017 random test split: binary F1 **0.99382** at the deployed 0.85 (0.99048 at argmax 0.5); stage-2 macro-F1 **0.99813** given a perfect stage 1. At 0.85 the system misses 42.9 % of Bot and 62.7 % of WebAttack flows. Residual multiclass confusion (rare) concentrates among PortScan / DoS / WebAttack (`ERROR_ANALYSIS.md`).
 
-### B. Temporal generalization (P10)
+### B. Temporal generalization (P10) — SUPERSEDED (contaminated)
+
+> **Do not cite.** Script 25 re-scored raw day CSVs without excluding training rows; the training split was a random split
+> across all days, so about 70 % of the Friday rows were training rows (ML-3). The values below are kept as a historical record
+> only. The valid temporal evaluation is the research track's day-ordered protocol (`docs/research/RESULTS.md`, Mon–Thu→Fri).
 
 | Slice | Binary F1 | Notes |
 |-------|----------:|-------|
@@ -453,7 +477,7 @@ Aegis IDS delivers a coherent story from **detection → explanation → risk �
 
 The academically strongest position is:
 
-- Research: strong CICIDS2017 IID and documented temporal evaluation of **frozen** models.  
+- Research: strong CICIDS2017 IID evaluation of **frozen** models (the P10 temporal evaluation is superseded; see Chapter 13 B).  
 - Engineering: P0–P12 productionized prototype with P12 security validation **PASS**.  
 - Empirics: CONTROLLED-lab mitigation measurements reported **beside** (not replacing) simulation assumptions.  
 - Honesty: no live-enforcement claim, no enterprise SLA claim, no zero-day guarantee.

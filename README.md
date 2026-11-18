@@ -84,13 +84,22 @@ Network flow → preprocess → binary ML → multiclass → risk → SHAP/LIME
 <img src="models/trained_models/figures/feature_importance.png" alt="Feature importance" width="280"/>
 </p>
 
+> **Operating point (corrected in Phase 2).** The confusion matrix above and the historical test figures
+> (F1 0.99048, recall 0.99700, FPR 0.329 %) were computed at the argmax threshold **0.5**, not at the deployed
+> **0.85**. At 0.85 on the same test split the frozen Decision Tree gives F1 0.99382, recall 0.99217 and
+> FPR 0.091 %, but detects only **57.1 % of Bot** (n = 389) and **37.3 % of WebAttack** (n = 429) flows
+> (`research_artifacts/v11_reeval/`). The family macro-F1 0.998 assumes a perfect first stage; end-to-end
+> 7-class macro-F1 at 0.85 is reported in `docs/research/RESEARCH_INTEGRITY_REPORT.md`.
+
 Pipeline: **Network flow → preprocess → binary ML → (if attack) multiclass → risk → SHAP → recommendation → simulation → dashboard**
 
 ## v3 — Zero-day research track (Aegis-OSR)
 
 The frozen v1.1 detector is **closed-set**: it can only answer "benign" or one of the six
 families it was trained on. v3 adds **Aegis-OSR**, an open-set detector that also flags
-attacks it has never seen, with a **guaranteed benign false-alarm rate**:
+attacks it has never seen. Its benign false-alarm rate is controlled at α **only when the calibration
+traffic and the scored traffic are exchangeable** (a marginal split-conformal guarantee). It does not
+hold under distribution shift: on CSE-CIC-IDS2018 the realised rate reached 36.7 % before recalibration.
 
 ```text
 flow ─┬─ XGBoost (benign + known families) ── supervised evidence ─┐
@@ -102,9 +111,15 @@ flow ─┬─ XGBoost (benign + known families) ── supervised evidence ─�
   script-25 "temporal holdout" re-scored models that had trained on Friday rows), and
   CICIDS2017 → **CSE-CIC-IDS2018** transfer, with 5 seeds, 95% CIs and Wilcoxon tests.
 * **Label-light adaptation:** re-calibrating on a few thousand benign flows from a new day or
-  network restores false-alarm control **without retraining**.
+  network **re-targets the alert threshold** without retraining. It does not guarantee the target
+  rate: after recal@2000 the realised FPR still ranged 0.00 %–8.84 % across 2018 days (seed means),
+  and fused Aegis-OSR detected fewer known attacks than recalibrated closed-set XGB
+  (see `docs/research/RESEARCH_INTEGRITY_REPORT.md`).
 * **Production Zero-Day Gate** (advisory): every `/api/predict` response now carries a
-  `zero_day` verdict; the frozen v1.1 decision is never changed.
+  `zero_day` verdict; the frozen v1.1 decision is never changed. Under the default `frozen`
+  incident policy, gate-only alerts are recorded as *Zero-Day Candidates* and raise no incident.
+  On 82,111 benign flows held out from both models, the benign incident rate is 0.077 % (`frozen`),
+  0.896 % (`gate`) and 0.934 % (`union`) (`research_artifacts/v11_reeval/v11_policy_alert_rates.json`).
 * **New UI:** Live Traffic Monitor (real-time replay of held-out flows through both detectors),
   Zero-Day Lab (interactive gate + α trade-off) and Research Lab (all results with CIs).
 

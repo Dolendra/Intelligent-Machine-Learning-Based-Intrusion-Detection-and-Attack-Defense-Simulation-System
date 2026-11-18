@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-11-18T07:41:22.193860+00:00",
+  "version": 1,
+  "code_commit": "3148969611904b017849424aead68a269e434e88",
+  "script": "scripts/72_matched_fpr_reanalysis.py",
+  "inputs": {
+    "research_artifacts/r3/regression/loafo_records.json": "040d3c5461c3cffac6014a324fb1be8b26f3b8233cc5e213acc540db435bb7aa",
+    "research_artifacts/r3/regression/cross_perday_records.json": "b7460b397a033d58af2891f9f5a6b831e7232084e3cb35981128dd307347a2ff",
+    "research_artifacts/r3/regression/scores/loafo/manifest.json": "f901a53d9addf131811dc3fc943fa21e8e56b28493e450941d406ee91e947a93",
+    "research_artifacts/r3/regression/scores/cross_perday/manifest.json": "94dab5f729a7824bc015e3d0b4620a878068852c3b77e32b5bb9ebb902d16750",
+    "research_artifacts/openset_temporal_records.json": "67e91fd48fd0dc5dfbe78a7f3a47273a923d95174df86b65f34019a890aa3c64"
+  },
+  "outputs": {
+    "research_artifacts/reanalysis/matched_fpr_rows.json": "9e323be71adc18727096d968a69ed0f0ebf47ca8b286c435c3e59d2ac29d0b24",
+    "research_artifacts/reanalysis/matched_fpr_summary.json": "47561923581dfcd72455fab64c0c43cdb2711987df36640a656bc05388cfe327"
+  }
+}

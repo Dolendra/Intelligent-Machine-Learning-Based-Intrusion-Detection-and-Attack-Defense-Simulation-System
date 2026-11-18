@@ -361,7 +361,7 @@ export function ModelsPage() {
             <div className="grid grid-3">
               <Card
                 title="Confusion matrix (test)"
-                subtitle="Binary detector at the operating threshold"
+                subtitle="Binary detector at argmax 0.5 (historical test figure; deployed threshold is 0.85)"
                 icon={Grid3x3}
                 actions={
                   <div className="segmented" role="radiogroup" aria-label="Confusion matrix scale">

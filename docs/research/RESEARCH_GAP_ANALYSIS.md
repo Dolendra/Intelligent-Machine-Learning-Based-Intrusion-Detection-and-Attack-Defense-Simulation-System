@@ -243,7 +243,7 @@ Verdicts:
 
 ### Contribution 1 — What recalibration restores: evidence-level diagnosis and stream-gated calibrated fusion
 
-**Problem.** Under cross-network shift, a calibrated open-set NIDS loses its false-alarm guarantee. Recalibrating on a small window of confirmed-benign target traffic restores the false-alarm rate (1.62 % mean on 2018 at W = 2,000), but known-family recall falls to 0.088. An operator cannot tell whether detection is gone or merely hidden, nor which part of the detector to trust.
+**Problem.** Under cross-network shift, a calibrated open-set NIDS loses its false-alarm guarantee. Recalibrating on a small window of confirmed-benign target traffic re-targets the threshold (mean realised FPR 1.62 % on 2018 at W = 2,000, but 0.00 %–8.84 % across days), and known-family recall falls to 0.088. An operator cannot tell whether detection is gone or merely hidden, nor which part of the detector to trust.
 
 **Unresolved limitation in prior work.**
 * F2 shows conformal coverage collapse and failed label-free adaptation for *supervised* models. It reports no false-alarm operating point, no recalibration on target benign, and no novelty evidence.
@@ -258,6 +258,20 @@ None of these decomposes the post-recalibration loss by evidence stream, or give
 * **The novelty stream goes stale.** The kNN stream's target AUROC is 0.51 overall and 0.05 on 2018-02-16.
 * **Refreshing the reference recovers recall but breaks the budget.** With the kNN reference refreshed (recal+ref), recall rises to 0.435–0.532, but FPR is 2.4–2.6 %.
 * **The fusion ordering reverses.** Fusion is ordered Fisher > omnibus > max in LOAFO, and max > omnibus > Fisher on 2018.
+
+> **Phase 2 re-analysis (2026-11-18; `research_artifacts/reanalysis/matched_fpr_summary.json`).**
+> * The loss survives a matched 1 % FPR (−0.202) but **not** day-level generalisation cleanly: the hierarchical bootstrap over
+>   days and seeds gives [−0.504, −0.012] (conformal) and [−0.435, −0.010] (matched), and the effect comes from 4 of the 8 days
+>   with known-family attacks. Seed-level intervals above understate the uncertainty.
+> * **Max fusion nearly matches the classifier** at matched FPR (−0.043, CI [−0.152, +0.033]). The relevant bar for any gated
+>   method is therefore the **best fixed alternative** (max fusion or supervised-only), not Fisher. H1c should be amended accordingly
+>   (RESEARCH_ALIGNMENT_REVIEW §5, F2).
+> * The Fisher-vs-max behaviour is the classical power trade-off of sum-type versus min-p-type combination (RES-16); it is
+>   cited, not claimed.
+> * The temporal records do not support "specific to cross-network shift" (RES-4): at matched FPR the temporal effect is neutral.
+> * On the discovery data the proposed benign-only screen already **fails H1b** (Spearman ρ = −0.41, p = 0.24; the pre-registered
+>   threshold is ρ ≤ −0.5) and flags kNN on 10 of 10 days (Phase 0 audit). Contribution 1 is a hypothesis with weak preliminary
+>   support, not a finding.
 
 **Mechanism (proposed).** The method needs only a benign target window W. W is split by time into three disjoint parts, in order:
 * **W_s** (screen);

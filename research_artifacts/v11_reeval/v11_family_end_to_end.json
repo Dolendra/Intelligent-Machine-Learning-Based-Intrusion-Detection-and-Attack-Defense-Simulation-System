@@ -1,0 +1,334 @@
+{
+  "generated_at": "2026-11-18T07:13:57.216985+00:00",
+  "code_commit": "3148969611904b017849424aead68a269e434e88",
+  "version": 1,
+  "experiment": "E-02 end-to-end per-family detection of the frozen two-stage detector",
+  "split": "data/processed/test.parquet (frozen v1.1 random IID split; held out from training and threshold selection)",
+  "per_family": {
+    "Bot": {
+      "n": 389,
+      "stage2_family_accuracy_on_oracle_attack_rows": {
+        "k": 389,
+        "n": 389,
+        "rate": 1.0,
+        "wilson95": [
+          0.990221,
+          1.0
+        ]
+      },
+      "detected@0.5": {
+        "k": 313,
+        "n": 389,
+        "rate": 0.8046272493573264,
+        "wilson95": [
+          0.762328,
+          0.840969
+        ]
+      },
+      "end_to_end_correct@0.5": {
+        "k": 313,
+        "n": 389,
+        "rate": 0.8046272493573264,
+        "wilson95": [
+          0.762328,
+          0.840969
+        ]
+      },
+      "detected@0.85": {
+        "k": 222,
+        "n": 389,
+        "rate": 0.570694087403599,
+        "wilson95": [
+          0.521051,
+          0.618955
+        ]
+      },
+      "end_to_end_correct@0.85": {
+        "k": 222,
+        "n": 389,
+        "rate": 0.570694087403599,
+        "wilson95": [
+          0.521051,
+          0.618955
+        ]
+      }
+    },
+    "BruteForce": {
+      "n": 1830,
+      "stage2_family_accuracy_on_oracle_attack_rows": {
+        "k": 1829,
+        "n": 1830,
+        "rate": 0.9994535519125683,
+        "wilson95": [
+          0.996911,
+          0.999904
+        ]
+      },
+      "detected@0.5": {
+        "k": 1825,
+        "n": 1830,
+        "rate": 0.9972677595628415,
+        "wilson95": [
+          0.99362,
+          0.998832
+        ]
+      },
+      "end_to_end_correct@0.5": {
+        "k": 1825,
+        "n": 1830,
+        "rate": 0.9972677595628415,
+        "wilson95": [
+          0.99362,
+          0.998832
+        ]
+      },
+      "detected@0.85": {
+        "k": 1825,
+        "n": 1830,
+        "rate": 0.9972677595628415,
+        "wilson95": [
+          0.99362,
+          0.998832
+        ]
+      },
+      "end_to_end_correct@0.85": {
+        "k": 1825,
+        "n": 1830,
+        "rate": 0.9972677595628415,
+        "wilson95": [
+          0.99362,
+          0.998832
+        ]
+      }
+    },
+    "DDoS": {
+      "n": 25603,
+      "stage2_family_accuracy_on_oracle_attack_rows": {
+        "k": 25603,
+        "n": 25603,
+        "rate": 1.0,
+        "wilson95": [
+          0.99985,
+          1.0
+        ]
+      },
+      "detected@0.5": {
+        "k": 25600,
+        "n": 25603,
+        "rate": 0.999882826231301,
+        "wilson95": [
+          0.999656,
+          0.99996
+        ]
+      },
+      "end_to_end_correct@0.5": {
+        "k": 25600,
+        "n": 25603,
+        "rate": 0.999882826231301,
+        "wilson95": [
+          0.999656,
+          0.99996
+        ]
+      },
+      "detected@0.85": {
+        "k": 25600,
+        "n": 25603,
+        "rate": 0.999882826231301,
+        "wilson95": [
+          0.999656,
+          0.99996
+        ]
+      },
+      "end_to_end_correct@0.85": {
+        "k": 25600,
+        "n": 25603,
+        "rate": 0.999882826231301,
+        "wilson95": [
+          0.999656,
+          0.99996
+        ]
+      }
+    },
+    "DoS": {
+      "n": 38749,
+      "stage2_family_accuracy_on_oracle_attack_rows": {
+        "k": 38744,
+        "n": 38749,
+        "rate": 0.9998709644119849,
+        "wilson95": [
+          0.999698,
+          0.999945
+        ]
+      },
+      "detected@0.5": {
+        "k": 38591,
+        "n": 38749,
+        "rate": 0.9959224754187205,
+        "wilson95": [
+          0.995237,
+          0.99651
+        ]
+      },
+      "end_to_end_correct@0.5": {
+        "k": 38588,
+        "n": 38749,
+        "rate": 0.9958450540659114,
+        "wilson95": [
+          0.995154,
+          0.996438
+        ]
+      },
+      "detected@0.85": {
+        "k": 38532,
+        "n": 38749,
+        "rate": 0.9943998554801414,
+        "wilson95": [
+          0.993606,
+          0.995095
+        ]
+      },
+      "end_to_end_correct@0.85": {
+        "k": 38529,
+        "n": 38749,
+        "rate": 0.9943224341273323,
+        "wilson95": [
+          0.993524,
+          0.995023
+        ]
+      }
+    },
+    "PortScan": {
+      "n": 18139,
+      "stage2_family_accuracy_on_oracle_attack_rows": {
+        "k": 18130,
+        "n": 18139,
+        "rate": 0.9995038315232372,
+        "wilson95": [
+          0.999057,
+          0.999739
+        ]
+      },
+      "detected@0.5": {
+        "k": 18136,
+        "n": 18139,
+        "rate": 0.9998346105077457,
+        "wilson95": [
+          0.999514,
+          0.999944
+        ]
+      },
+      "end_to_end_correct@0.5": {
+        "k": 18128,
+        "n": 18139,
+        "rate": 0.9993935718617344,
+        "wilson95": [
+          0.998914,
+          0.999661
+        ]
+      },
+      "detected@0.85": {
+        "k": 18133,
+        "n": 18139,
+        "rate": 0.9996692210154915,
+        "wilson95": [
+          0.999278,
+          0.999848
+        ]
+      },
+      "end_to_end_correct@0.85": {
+        "k": 18126,
+        "n": 18139,
+        "rate": 0.9992833122002316,
+        "wilson95": [
+          0.998774,
+          0.999581
+        ]
+      }
+    },
+    "WebAttack": {
+      "n": 429,
+      "stage2_family_accuracy_on_oracle_attack_rows": {
+        "k": 426,
+        "n": 429,
+        "rate": 0.993006993006993,
+        "wilson95": [
+          0.979644,
+          0.997619
+        ]
+      },
+      "detected@0.5": {
+        "k": 419,
+        "n": 429,
+        "rate": 0.9766899766899767,
+        "wilson95": [
+          0.957629,
+          0.98729
+        ]
+      },
+      "end_to_end_correct@0.5": {
+        "k": 417,
+        "n": 429,
+        "rate": 0.972027972027972,
+        "wilson95": [
+          0.95175,
+          0.983928
+        ]
+      },
+      "detected@0.85": {
+        "k": 160,
+        "n": 429,
+        "rate": 0.372960372960373,
+        "wilson95": [
+          0.328516,
+          0.41966
+        ]
+      },
+      "end_to_end_correct@0.85": {
+        "k": 158,
+        "n": 429,
+        "rate": 0.3682983682983683,
+        "wilson95": [
+          0.324012,
+          0.414922
+        ]
+      }
+    },
+    "BENIGN": {
+      "n": 419012,
+      "false_alarm@0.5": {
+        "k": 1377,
+        "n": 419012,
+        "rate": 0.003286302062948078,
+        "wilson95": [
+          0.003118,
+          0.003464
+        ]
+      },
+      "false_alarm@0.85": {
+        "k": 383,
+        "n": 419012,
+        "rate": 0.0009140549673995017,
+        "wilson95": [
+          0.000827,
+          0.00101
+        ]
+      }
+    }
+  },
+  "macro_f1_stage2_conditional_on_oracle_stage1": 0.9981270442352507,
+  "end_to_end_system": {
+    "0.5": {
+      "macro_f1_7class": 0.8895822422694486,
+      "macro_recall_attack_families": 0.9615074055178477
+    },
+    "0.85": {
+      "macro_f1_7class": 0.8812692037845797,
+      "macro_recall_attack_families": 0.8216247979706123
+    }
+  },
+  "definitions": {
+    "detected@t": "stage-1 P(attack) >= t",
+    "end_to_end_correct@t": "detected@t AND stage-2 family == true family",
+    "stage2_family_accuracy_on_oracle_attack_rows": "historical quantity: family model applied to every true attack row"
+  }
+}

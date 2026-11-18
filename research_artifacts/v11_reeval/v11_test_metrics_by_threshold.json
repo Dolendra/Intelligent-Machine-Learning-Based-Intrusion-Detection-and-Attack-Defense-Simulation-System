@@ -1,0 +1,126 @@
+{
+  "generated_at": "2026-11-18T07:13:57.216985+00:00",
+  "code_commit": "3148969611904b017849424aead68a269e434e88",
+  "version": 1,
+  "experiment": "E-01 frozen v1.1 binary detector on the frozen test split at fixed thresholds",
+  "split": "data/processed/test.parquet (frozen v1.1 random IID split; held out from training and threshold selection)",
+  "rows": 504151,
+  "attack_rows": 85139,
+  "benign_rows": 419012,
+  "model": "models/trained_models/binary_best.joblib (Decision Tree, frozen)",
+  "thresholds": {
+    "0.5": "argmax; the threshold the historical test figures were computed at",
+    "0.85": "deployed operating point, chosen on validation (threshold_operating_point.json)"
+  },
+  "test_data_used_for_selection": false,
+  "metrics": {
+    "0.5": {
+      "accuracy": 0.9967628746149467,
+      "precision": 0.984036818492714,
+      "recall": 0.9970048978728903,
+      "f1": 0.9904784130688448,
+      "specificity": 0.9967136979370519,
+      "fpr": 0.003286302062948078,
+      "fnr": 0.0029951021271097853,
+      "mcc": 0.9885592091703885,
+      "confusion_matrix": [
+        [
+          417635,
+          1377
+        ],
+        [
+          255,
+          84884
+        ]
+      ],
+      "true_negatives": 417635,
+      "false_positives": 1377,
+      "false_negatives": 255,
+      "true_positives": 84884,
+      "roc_auc": 0.9991563202362416,
+      "pr_auc": 0.9974366596551231,
+      "brier_score": 0.0022855331175206566,
+      "ece": 0.00241754208811584,
+      "confusion": {
+        "tn": 417635,
+        "fp": 1377,
+        "fn": 255,
+        "tp": 84884
+      },
+      "fpr_wilson95": [
+        0.003118,
+        0.003464
+      ],
+      "recall_wilson95": [
+        0.996615,
+        0.99735
+      ]
+    },
+    "0.85": {
+      "accuracy": 0.9979172906529988,
+      "precision": 0.9954864180071887,
+      "recall": 0.9921657524753639,
+      "f1": 0.993823311410991,
+      "specificity": 0.9990859450326005,
+      "fpr": 0.0009140549673995017,
+      "fnr": 0.007834247524636182,
+      "mcc": 0.992572796575791,
+      "confusion_matrix": [
+        [
+          418629,
+          383
+        ],
+        [
+          667,
+          84472
+        ]
+      ],
+      "true_negatives": 418629,
+      "false_positives": 383,
+      "false_negatives": 667,
+      "true_positives": 84472,
+      "roc_auc": 0.9991563202362416,
+      "pr_auc": 0.9974366596551231,
+      "brier_score": 0.0022855331175206566,
+      "ece": 0.00241754208811584,
+      "confusion": {
+        "tn": 418629,
+        "fp": 383,
+        "fn": 667,
+        "tp": 84472
+      },
+      "fpr_wilson95": [
+        0.000827,
+        0.00101
+      ],
+      "recall_wilson95": [
+        0.991551,
+        0.992736
+      ]
+    }
+  },
+  "reproduction_anchor": {
+    "historical_source": "models/trained_models/model_metadata.json:test_metrics_binary (labelled next to binary_threshold 0.85)",
+    "historical": {
+      "f1": 0.9904784130688448,
+      "recall": 0.9970048978728903,
+      "precision": 0.984036818492714,
+      "fpr": 0.003286302062948078
+    },
+    "abs_diff_vs_recomputed_at_0.5": {
+      "f1": 0.0,
+      "recall": 0.0,
+      "precision": 0.0,
+      "fpr": 0.0
+    },
+    "abs_diff_vs_recomputed_at_0.85": {
+      "f1": 0.003344898342146241,
+      "recall": 0.00483914539752639,
+      "precision": 0.011449599514474773,
+      "fpr": 0.002372247095548576
+    },
+    "reproduced_at_0.5": true,
+    "dt_predict_equals_proba_ge_0.5": true
+  },
+  "caveat": "IID random split of session-correlated flows (ML-20): optimistic for unseen traffic; not a temporal estimate."
+}

@@ -228,7 +228,22 @@ Neither paper measures **detection at a fixed, calibrated false-alarm rate after
 * LOAFO zero-day recall: Fisher 0.706 > omnibus 0.614 > max 0.531 > XGB 0.490 > XGB+Energy 0.457.
 * 2018 known recall after recal@2000: XGB+Energy 0.433 > XGB 0.325 > max 0.303 > omnibus 0.266 > Fisher 0.088.
 
-The metrics differ (zero-day vs known recall), so this is an ordering result, not a like-for-like effect size. Under within-network temporal shift (Mon–Thu → Fri), Fisher still leads (recal@2000: 0.429 vs XGB 0.367; Table IV), so the inversion is specific to the cross-network setting.
+The metrics differ (zero-day vs known recall), so this is an ordering result, not a like-for-like effect size.
+
+> **Corrected in Phase 2 (RES-4).** The earlier sentence here read: "Under within-network temporal shift (Mon–Thu → Fri),
+> Fisher still leads (recal@2000: 0.429 vs XGB 0.367; Table IV), so the inversion is specific to the cross-network setting."
+> The temporal records do not support "specific to cross-network". Seed-level Aegis-OSR − XGB zero-day recall
+> (`research_artifacts/reanalysis/matched_fpr_summary.json:temporal_records`):
+>
+> | Fold | recal@2000 | oracle@2000 (random benign sample, closest to matched FPR) |
+> |---|---|---|
+> | Mon–Thu → Fri | +0.062 (5/5 seeds; realised FPR 0.82 % vs 0.68 %) | −0.008 (2/5 seeds) |
+> | Mon–Wed → Thu | −0.029 (0/5 seeds) | +0.012 (4/5 seeds) |
+>
+> What the evidence supports: Fisher fusion helps in-distribution (LOAFO, +0.218 at a matched 1 % FPR, 6 of 6 families,
+> hierarchical 95 % CI [+0.079, +0.396]); under temporal shift it is neutral to mixed; under cross-network shift after
+> recalibration it hurts known-family recall (−0.237, hierarchical CI over days and seeds [−0.504, −0.012]; −0.202 at a
+> matched 1 % FPR). The cross-network loss comes from 4 of the 8 days with known-family attacks.
 
 **Where nothing separates.** Some days are a hard floor rather than a recalibration problem:
 * 2018-02-21 is the benign-label anomaly.
@@ -236,8 +251,13 @@ The metrics differ (zero-day vs known recall), so this is an ordering result, no
 
 **Mechanism status.**
 * Points 1, 2 and the inversion are read directly from records.
-* The *dilution* account of the Fisher loss (point 3) is an inference from aggregate metrics. Per-flow component scores were not stored, so it has not been observed directly.
-* Confirming it requires the score dump in R3 (R3_PROTOCOL.md §8).
+* ~~The *dilution* account of the Fisher loss (point 3) is an inference from aggregate metrics. Per-flow component scores were not stored, so it has not been observed directly.~~
+* **Updated (Phase 2).** The R3 Stage-0 regression gate stored per-flow component scores that reproduce the committed records
+  exactly, and `scripts/72_matched_fpr_reanalysis.py` re-analysed them. The pattern is now observed directly: on 2018-02-14 the
+  recalibrated classifier reaches TPR 0.985 at a matched 1 % FPR, max fusion 0.981 and Fisher fusion 0.191, while the kNN
+  stream's AUROC is 0.407; on 2018-02-16 the kNN AUROC is 0.046. This is the classical behaviour of sum-type (Fisher)
+  versus min-p/max-type combination when one stream is null or inverted. It should be cited as such, not presented as a
+  new mechanism (RES-16). It remains a post-hoc observation on days that were inspected before the analysis.
 
 ---
 

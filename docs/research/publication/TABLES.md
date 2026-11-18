@@ -32,20 +32,25 @@ _Score S is the project's weighted selection score (recall, F1, PR-AUC, FPR, lat
 
 Sources: `models/trained_models/training_report.json:binary.validation`; `models/trained_models/training_report.json:binary.best`
 
-### Frozen Closed-Set Detector (v1.1) on the Stratified Test Split
+### Frozen Closed-Set Detector (v1.1) on the Random Test Split at Both Operating Points
 
-| Stage | Metric | Value | Metric | Value |
-|---|---|---|---|---|
-| Binary (DT, τ = 0.85) | Precision | 0.98404 | F1 | **0.99048** |
-|   | Recall | 0.99700 | ROC-AUC | 0.99916 |
-|   | FPR | 0.00329 | PR-AUC | 0.99744 |
-|   | TP / FN | 84,884 / 255 | TN / FP | 417,635 / 1,377 |
-|   | Brier | 0.00229 | ECE | 0.00242 |
-| Multiclass (RF, attack-only) | Accuracy | 0.99979 | Macro-F1 | **0.99813** |
-|   | Macro precision | 0.99762 | Macro recall | 0.99864 |
-|   | Weighted F1 | 0.99979 | Misattributed | 18 / 85,139 |
+| Stage | Metric | τ = 0.5 (argmax) | τ = 0.85 (deployed) |
+|---|---|---|---|
+| Binary (DT) | Precision | 0.98404 | **0.99549** |
+|   | Recall | 0.99700 | **0.99217** |
+|   | F1 | 0.99048 | **0.99382** |
+|   | FPR | 0.00329 | **0.00091** |
+|   | TP / FN / FP | 84,884 / 255 / 1,377 | 84,472 / 667 / 383 |
+|   | ROC-AUC / PR-AUC (threshold-free) | 0.99916 / 0.99744 | 0.99916 / 0.99744 |
+| End-to-end (DT → RF) | Bot detected and named | 80.5% | **57.1%** |
+|   | WebAttack detected and named | 97.2% | **36.8%** |
+|   | 7-class macro-F1 | 0.890 | **0.881** |
+| Stage 2 alone (RF; perfect stage 1 assumed) | Macro-F1 / accuracy | 0.99813 / 0.99979 | same |
+|   | Misattributed | 18 / 85,139 | same |
 
-Sources: `models/trained_models/training_report.json:binary.test`; `models/trained_models/training_report.json:multiclass.test`
+_The historical test figures (τ = 0.5 column) were computed at the argmax threshold although they were labelled 0.85; both columns score the same frozen model on the same split, and 0.85 was chosen on the validation split. Bot n = 389; WebAttack n = 429. Stage-2 figures apply the family model to every true attack, i.e. assume stage 1 is perfect._
+
+Sources: `research_artifacts/v11_reeval/v11_test_metrics_by_threshold.json:metrics`; `research_artifacts/v11_reeval/v11_family_end_to_end.json:per_family`; `research_artifacts/v11_reeval/v11_family_end_to_end.json:end_to_end_system`; `models/trained_models/training_report.json:multiclass.test`
 
 ### Leave-One-Attack-Family-Out on CICIDS2017 at α = 1% (Mean and 95% CI over 5 Seeds)
 
@@ -219,6 +224,23 @@ _Trained once on CICIDS2017 per seed. For each 2018 day independently the warm-u
 
 Sources: `research_artifacts/openset_cross_perday_summary.json:per_fold.cross_perday`; `research_artifacts/openset_cross_perday_summary.json:adaptation.cross_perday`; `research_artifacts/openset_cross_perday_records.json:records[*].n_test`
 
+### CSE-CIC-IDS2018 per Day after Same-Day Re-Calibration (W = 2,000): Classifier Alone, Max Fusion and Fisher Fusion
+
+| Day | Attack | XGB recall / FPR | Max recall / FPR | Fisher recall / FPR | XGB TPR@1% | Max TPR@1% | Fisher TPR@1% | XGB AUROC |
+|---|---|---|---|---|---|---|---|---|
+| 2018-02-14 | BruteForce | 0.984 / 0.7% | 0.980 / 0.8% | 0.191 / 1.0% | 0.985 | 0.981 | 0.191 | 0.999 |
+| 2018-02-15 | DoS | 0.471 / 0.6% | 0.470 / 2.5% | 0.266 / 1.8% | 0.471 | 0.107 | 0.147 | 0.969 |
+| 2018-02-16 | DoS | 0.920 / 0.9% | 0.769 / 0.1% | 0.041 / 0.9% | 0.994 | 0.993 | 0.448 | 1.000 |
+| 2018-02-20 | DDoS | 0.188 / 0.6% | 0.109 / 1.7% | 0.106 / 1.4% | 0.113 | 0.008 | 0.100 | 0.977 |
+| 2018-02-21 | DDoS | 0.022 / 0.0% | 0.029 / 0.0% | 0.029 / 0.0% | 0.081 | 0.074 | 0.037 | 0.498 |
+| 2018-02-22 | WebAttack | 0.006 / 0.3% | 0.015 / 0.2% | 0.015 / 0.4% | 0.007 | 0.016 | 0.065 | 0.866 |
+| 2018-02-23 | WebAttack | 0.009 / 0.3% | 0.048 / 0.2% | 0.048 / 0.5% | 0.036 | 0.155 | 0.076 | 0.873 |
+| 2018-03-02 | Bot | 0.003 / 0.8% | 0.005 / 0.3% | 0.008 / 0.7% | 0.003 | 0.008 | 0.008 | 0.959 |
+
+_Known-family recall and realised benign FPR at α = 1 % (conformal operating point), and TPR at an exactly matched 1 % FPR (threshold set on the evaluated benign flows: an oracle ranking comparison, not an operating point); mean of 5 seeds. Fisher = Aegis-OSR. Every day with known-family attacks is shown; the two Infiltration days have no known-family attacks. Exploratory, post-hoc re-analysis of the existing per-flow scores._
+
+Sources: `research_artifacts/reanalysis/matched_fpr_summary.json:cross_perday.recal@2000.per_day_mean_over_seeds`; `research_artifacts/openset_cross_perday_records.json:records[*].test_families`
+
 ### 10 Classifier Families at a 1% Benign False-Alarm Budget: Seen vs. Withheld Families (Seed 1)
 
 | Model | IID F1 | IID FPR (%) | Withheld: mean recall | Bot | Brute | DDoS | DoS | Scan | Web |
@@ -283,14 +305,14 @@ _Consistency, robustness and agreement are mean Jaccard overlaps of top-five SHA
 
 Sources: `models/trained_models/xai_stability_report.json:per_family`
 
-### Mitigation Measured on the Controlled Test Plane (10 Repetitions, Frozen-ML Detection)
+### Harness Validation on the Controlled Test Plane (10 Repetitions, Frozen-ML Detection)
 
 | Scenario | No defence | Recommendation only | Approved response | Storyboard prior | Δ |
 |---|---|---|---|---|---|
 | DDoS, BLOCK_SOURCE | 0.00 | 0.00 | **1.00** | 0.82 | +0.18 |
 | DoS, RATE_LIMIT | 0.00 | 0.00 | **0.80** | 0.78 | +0.02 |
 
-_Measured effectiveness on the CONTROLLED test adapter (no live firewall). Δ = measured − assumed storyboard prior._
+_Harness validation, deterministic by construction: the test adapter blocks every flow of a blocked source and admits a fixed 20 % under rate limiting, so these values are not mitigation-effectiveness measurements and Δ (harness − assumed storyboard prior) is not meaningful. No live firewall._
 
 Sources: `models/trained_models/empirical_mitigation_report.json:comparisons`; `models/trained_models/empirical_mitigation_report.json:repetitions`
 

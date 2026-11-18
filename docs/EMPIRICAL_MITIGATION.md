@@ -35,6 +35,11 @@ Controlled test traffic → Aegis detection → Controlled response (approve) �
 ```
 
 ```text
+> **Phase 2 correction (ML-12):** the P11 values below are **harness validation, deterministic by construction**
+> (hard block denies 100 %; the rate limiter admits a fixed 20 %). They validate the detection → approval →
+> enforcement → verification chain, not mitigation effectiveness, and the measured − simulation deltas are not
+> meaningful. The historical wording is kept below.
+
 Defense effectiveness (P11) = measured observation on the CONTROLLED test plane
 ```
 

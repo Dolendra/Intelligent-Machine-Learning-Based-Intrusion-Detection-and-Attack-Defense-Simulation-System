@@ -1,5 +1,15 @@
 # P10 — Generalization
 
+> ## SUPERSEDED — contaminated evaluation (Phase 2, 2026-11-18; finding ML-3)
+> `scripts/25_temporal_holdout_eval.py` reads the raw day CSVs and never excludes training or validation rows. The
+> frozen models were trained on a random split across **all** days, so about 70 % of the scored Friday and Mon–Thu rows
+> were training rows. The "temporal" F1 values below (0.99770, 0.97997) are therefore **not** evidence of temporal
+> generalization and must not be cited. The IID column was computed at argmax 0.5 although headed "@ 0.85" (ML-1);
+> deployed-threshold IID figures are in `research_artifacts/v11_reeval/` (F1 0.99382 at 0.85). The valid temporal
+> evaluation is the research track's day-ordered protocol (Mon–Wed→Thu, Mon–Thu→Fri) in `docs/research/RESULTS.md`.
+> This document is kept unchanged below as a historical record.
+
+
 **Experiment:** EXP-017 (`generalization_report.json`)  
 **Scripts:** `scripts/25_temporal_holdout_eval.py`, `scripts/41_generalization_report.py`  
 **Related:** `docs/experiments/TEMPORAL_HOLDOUT.md`, `docs/experiments/DATA_DRIFT.md`  
@@ -72,7 +82,7 @@ These remain the official stratified-test scores. Temporal numbers below do **no
 
 ## 5. Temporal results
 
-### Binary (Decision Tree @ 0.85)
+### Binary (Decision Tree; IID column @ 0.5, day columns @ 0.85) — SUPERSEDED
 
 | Metric | IID | Friday temporal | Mon–Thu early |
 |--------|----:|----------------:|--------------:|
@@ -204,7 +214,7 @@ Rule: if a compatible external set appears later, score **frozen** preprocessing
 
 ## 12. Conclusions
 
-1. **Temporal (Friday) binary detection remains strong** relative to the IID test under the documented sample; Δ F1 is slightly in Friday’s favor, with a much higher attack rate.
+1. ~~**Temporal (Friday) binary detection remains strong**~~ *(superseded: contaminated rows, see banner)* relative to the IID test under the documented sample; Δ F1 is slightly in Friday’s favor, with a much higher attack rate.
 2. **Mon–Thu early-day binary F1/recall degrade vs IID**, showing sensitivity to day composition / prevalence — report this degradation rather than averaging it away.
 3. **Class-wise temporal generalization is evidenced only for Bot, DDoS, and PortScan**; BruteForce, DoS, and WebAttack remain temporally unevaluated in this protocol.
 4. **IID “no PSI ≥ 0.2” must stay narrowly worded**; temporal train→Friday shows measurable feature shift (2 features ≥ 0.2).

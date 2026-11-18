@@ -15,9 +15,9 @@
 
 | Class | What to say | Do **not** say |
 |-------|-------------|----------------|
-| Research (IID) | Binary F1 **0.99048** · Multiclass macro-F1 **0.99813** | “Live network accuracy” |
+| Research (IID) | Binary F1 **0.99382** at the deployed 0.85 (0.99048 at 0.5) · stage-2 macro-F1 **0.99813** given a perfect stage 1 · Bot / WebAttack detected 57 % / 37 % | “Live network accuracy”, “F1 0.99048 at 0.85” |
 | Simulation assumptions | DDoS prior **0.82** · DoS prior **0.78** (`config.yaml`) | “We measured 82% real mitigation” |
-| Controlled-lab (P11) | DDoS `BLOCK_SOURCE` **1.00** · DoS `RATE_LIMIT` **0.80** | “Same as simulation priors” |
+| Controlled-lab (P11) | Harness validation, by construction: DDoS 1.00 · DoS 0.80 | “Measured mitigation”, “Same as simulation priors” |
 | Security (P12) | Overall **PASS** | “Enterprise SOC certified” |
 
 **One honesty line (use once):**  
@@ -188,7 +188,7 @@ Use attack type **DDoS** unless noted.
 |--|--|
 | **Click / type** | **Detect & classify** |
 | **Examiner should see** | Verdict **Attack** (or malicious); confidence; pipeline progressing. |
-| **Say** | “Stage-1 frozen Decision Tree, threshold **0.85**, separates attack vs benign. Research IID binary F1 is **0.99048**.” |
+| **Say** | “Stage-1 frozen Decision Tree, threshold **0.85**, separates attack vs benign. At that threshold the IID test F1 is **0.99382**, but it misses most WebAttack and about 43 % of Bot flows.” |
 | **Expected** | Malicious / attack verdict for DDoS sample. |
 | **If it fails** | Note error banner. Try Batch sample (12). Do not retrain. Fall back to Models page metrics or §7. |
 
@@ -200,7 +200,7 @@ Use attack type **DDoS** unless noted.
 |--|--|
 | **Click / type** | Same result panel — point at family label |
 | **Examiner should see** | Family **DDoS** (attack-only multiclass). |
-| **Say** | “Stage-2 Random Forest on attack-only six families. Multiclass macro-F1 **0.99813** on the frozen IID test.” |
+| **Say** | “Stage-2 Random Forest on attack-only six families. Macro-F1 **0.99813** on the frozen IID test, assuming stage 1 caught the attack.” |
 | **Expected** | Family matches ground truth for demo vector. |
 | **If it fails** | Say residual confusions exist (PortScan/DoS/WebAttack); show Research page or confusion figure under `models/trained_models/figures/`. |
 
@@ -416,13 +416,13 @@ Use attack type **DDoS** unless noted.
 
 When the examiner says: *“Okay, explain what your system actually does.”*
 
-> **Aegis IDS** takes CICIDS-style network **flows**, runs a frozen **Decision Tree** (attack vs benign @ 0.85) and **Random Forest** (attack family), explains the decision with **SHAP**, scores **risk**, and emits an **advisory** defense. Analysts can open a **controlled** response path—propose, dry-run, approve, verify, rollback—on a **lab adapter**, never a live firewall. We also **simulate** the attack–defense lifecycle with labelled assumption priors, and we separately measured mitigation in P11 (**DDoS 1.00**, **DoS 0.80**) and validated security boundaries in P12 (**PASS**). It is a **productionized prototype** for decision support—not an enterprise auto-blocking SOC.
+> **Aegis IDS** takes CICIDS-style network **flows**, runs a frozen **Decision Tree** (attack vs benign @ 0.85) and **Random Forest** (attack family), explains the decision with **SHAP**, scores **risk**, and emits an **advisory** defense. Analysts can open a **controlled** response path—propose, dry-run, approve, verify, rollback—on a **lab adapter**, never a live firewall. We also **simulate** the attack–defense lifecycle with labelled assumption priors, and we validated the response harness in P11 (DDoS 1.00, DoS 0.80, deterministic by construction) and validated security boundaries in P12 (**PASS**). It is a **productionized prototype** for decision support—not an enterprise auto-blocking SOC.
 
 ---
 
 ## 9. Closing lines (pick one)
 
 - “Contribution is **end-to-end integration + honest measurement classes**, not a novel classifier.”  
-- “Research F1 **0.99048** / macro-F1 **0.99813**, simulation priors **0.82 / 0.78**, P11 **1.00 / 0.80**, P12 **PASS** — keep them separate.”  
+- “Research F1 **0.99382** at 0.85 / macro-F1 **0.99813** given stage 1, simulation priors **0.82 / 0.78**, P11 harness **1.00 / 0.80** by construction, P12 **PASS** — keep them separate.”  
 
 Full Q&A: [`VIVA_QA.md`](VIVA_QA.md) · Slides: [`PRESENTATION.md`](PRESENTATION.md) · Team: [`TEAM.md`](TEAM.md)

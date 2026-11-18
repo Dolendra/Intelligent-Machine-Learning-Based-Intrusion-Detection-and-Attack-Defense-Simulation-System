@@ -1,0 +1,3660 @@
+{
+ "generated_at": "2026-11-18T07:41:22.193860+00:00",
+ "version": 1,
+ "code_commit": "3148969611904b017849424aead68a269e434e88",
+ "status": "re-analysis of existing per-flow scores; descriptive. Matched-FPR numbers are oracle ranking comparisons (threshold set on the evaluated benign flows), not operational results.",
+ "alpha": 0.01,
+ "target_fpr": 0.01,
+ "bootstrap": {
+  "replicates": 10000,
+  "seed": 20261118
+ },
+ "reproduction_anchor": {
+  "values_checked": 3160,
+  "max_abs_diff": 4.990791896419822e-07,
+  "reproduced": true,
+  "note": "records round to 6 decimals; dumps recomputed with p <= alpha"
+ },
+ "loafo": {
+  "per_family_mean_over_seeds": {
+   "Bot": {
+    "Closed-set XGB": {
+     "conformal_fpr": 0.009830666666666665,
+     "conformal_known_recall": 0.9999923457672093,
+     "conformal_unknown_recall": 0.0040100250626566416,
+     "tpr_known@1%fpr": 0.9999923457672093,
+     "tpr_unknown@1%fpr": 0.00405012531328321,
+     "auroc_known": 0.9999676308108384,
+     "auroc_unknown": 0.8192696347535506
+    },
+    "Closed-set DT (v1.1-style)": {
+     "conformal_fpr": 0.0039826666666666665,
+     "conformal_known_recall": 0.9984206766341787,
+     "conformal_unknown_recall": 0.0002005012531328321,
+     "tpr_known@1%fpr": 0.9984811109395846,
+     "tpr_unknown@1%fpr": 0.007505093378486163,
+     "auroc_known": 0.9991613577163172,
+     "auroc_unknown": 0.4474897139515456
+    },
+    "XGB + Energy": {
+     "conformal_fpr": 0.009882666666666666,
+     "conformal_known_recall": 0.9999923457672093,
+     "conformal_unknown_recall": 0.00380952380952381,
+     "tpr_known@1%fpr": 0.9999923457672093,
+     "tpr_unknown@1%fpr": 0.003909774436090226,
+     "auroc_known": 0.9998945765763467,
+     "auroc_unknown": 0.8370315187969923
+    },
+    "kNN distance": {
+     "conformal_fpr": 0.010164000000000001,
+     "conformal_known_recall": 0.550614890034189,
+     "conformal_unknown_recall": 0.04340852130325815,
+     "tpr_known@1%fpr": 0.5502661263345298,
+     "tpr_unknown@1%fpr": 0.04340852130325815,
+     "auroc_known": 0.9357108805259309,
+     "auroc_unknown": 0.5723497463659148
+    },
+    "Aegis-OSR": {
+     "conformal_fpr": 0.009998666666666666,
+     "conformal_known_recall": 0.9999795887125581,
+     "conformal_unknown_recall": 0.023458646616541352,
+     "tpr_known@1%fpr": 0.9999540746032556,
+     "tpr_unknown@1%fpr": 0.024260651629072684,
+     "auroc_known": 0.9996215260584103,
+     "auroc_unknown": 0.8223379007518797
+    },
+    "Aegis-OSR w/ max fusion": {
+     "conformal_fpr": 0.009846666666666667,
+     "conformal_known_recall": 0.999989794356279,
+     "conformal_unknown_recall": 0.03929824561403509,
+     "tpr_known@1%fpr": 0.999989794356279,
+     "tpr_unknown@1%fpr": 0.038745512429722954,
+     "auroc_known": 0.9998599455103673,
+     "auroc_unknown": 0.8598067946533
+    }
+   },
+   "BruteForce": {
+    "Closed-set XGB": {
+     "conformal_fpr": 0.009997333333333334,
+     "conformal_known_recall": 0.9999790100620516,
+     "conformal_unknown_recall": 0.3100793737088181,
+     "tpr_known@1%fpr": 0.9999790100620516,
+     "tpr_unknown@1%fpr": 0.3066137249724289,
+     "auroc_known": 0.9999553774384402,
+     "auroc_unknown": 0.9768150718712624
+    },
+    "Closed-set DT (v1.1-style)": {
+     "conformal_fpr": 0.004046666666666667,
+     "conformal_known_recall": 0.9992023823579572,
+     "conformal_unknown_recall": 0.0008046101989779274,
+     "tpr_known@1%fpr": 0.9992068781994504,
+     "tpr_unknown@1%fpr": 0.0025443373978028183,
+     "auroc_known": 0.9992096203095142,
+     "auroc_unknown": 0.4957473426842086
+    },
+    "XGB + Energy": {
+     "conformal_fpr": 0.010077333333333332,
+     "conformal_known_recall": 0.9999737625775644,
+     "conformal_unknown_recall": 0.22979232358377732,
+     "tpr_known@1%fpr": 0.9999737625775644,
+     "tpr_unknown@1%fpr": 0.22134075811470613,
+     "auroc_known": 0.9998750379524315,
+     "auroc_unknown": 0.9692305133558043
+    },
+    "kNN distance": {
+     "conformal_fpr": 0.010149333333333333,
+     "conformal_known_recall": 0.5487766801789392,
+     "conformal_unknown_recall": 0.48715885614874416,
+     "tpr_known@1%fpr": 0.5486364411560208,
+     "tpr_unknown@1%fpr": 0.48536986698561124,
+     "auroc_known": 0.9313875666277479,
+     "auroc_unknown": 0.9782451177557899
+    },
+    "Aegis-OSR": {
+     "conformal_fpr": 0.009950666666666667,
+     "conformal_known_recall": 0.9994385191598777,
+     "conformal_unknown_recall": 0.923105360443623,
+     "tpr_known@1%fpr": 0.9994306479331471,
+     "tpr_unknown@1%fpr": 0.923257583994781,
+     "auroc_known": 0.9996161124973216,
+     "auroc_unknown": 0.9953608762277554
+    },
+    "Aegis-OSR w/ max fusion": {
+     "conformal_fpr": 0.009957333333333334,
+     "conformal_known_recall": 0.999976386319808,
+     "conformal_unknown_recall": 0.36868544090464284,
+     "tpr_known@1%fpr": 0.999976386319808,
+     "tpr_unknown@1%fpr": 0.38288536761382047,
+     "auroc_known": 0.9998383643153564,
+     "auroc_unknown": 0.9806749279112754
+    }
+   },
+   "DDoS": {
+    "Closed-set XGB": {
+     "conformal_fpr": 0.010021333333333332,
+     "conformal_known_recall": 0.9999777662491663,
+     "conformal_unknown_recall": 0.7416377210843613,
+     "tpr_known@1%fpr": 0.9999799896242496,
+     "tpr_unknown@1%fpr": 0.7362414660438377,
+     "auroc_known": 0.9999417933125818,
+     "auroc_unknown": 0.9907440020760969
+    },
+    "Closed-set DT (v1.1-style)": {
+     "conformal_fpr": 0.0054013333333333335,
+     "conformal_known_recall": 0.9992181130956791,
+     "conformal_unknown_recall": 0.4994769832714496,
+     "tpr_known@1%fpr": 0.9992217431566329,
+     "tpr_unknown@1%fpr": 0.5017902271293144,
+     "auroc_known": 0.997499059252946,
+     "auroc_unknown": 0.7472486407686881
+    },
+    "XGB + Energy": {
+     "conformal_fpr": 0.010045333333333333,
+     "conformal_known_recall": 0.9999703549988883,
+     "conformal_unknown_recall": 0.6842575957200463,
+     "tpr_known@1%fpr": 0.9999703549988883,
+     "tpr_unknown@1%fpr": 0.6833909843479221,
+     "auroc_known": 0.9998600213073445,
+     "auroc_unknown": 0.9887740511305413
+    },
+    "kNN distance": {
+     "conformal_fpr": 0.010133333333333333,
+     "conformal_known_recall": 0.4051841695694064,
+     "conformal_unknown_recall": 0.8480456741326308,
+     "tpr_known@1%fpr": 0.4045213567528843,
+     "tpr_unknown@1%fpr": 0.8490065343820286,
+     "auroc_known": 0.9037370133896587,
+     "auroc_unknown": 0.9925678317562981
+    },
+    "Aegis-OSR": {
+     "conformal_fpr": 0.009913333333333335,
+     "conformal_known_recall": 0.9991884680945675,
+     "conformal_unknown_recall": 0.9645386673054658,
+     "tpr_known@1%fpr": 0.999340398725265,
+     "tpr_unknown@1%fpr": 0.964610532199465,
+     "auroc_known": 0.9994763964030732,
+     "auroc_unknown": 0.9983020739409909
+    },
+    "Aegis-OSR w/ max fusion": {
+     "conformal_fpr": 0.009829333333333334,
+     "conformal_known_recall": 0.9999703549988883,
+     "conformal_unknown_recall": 0.808527967421248,
+     "tpr_known@1%fpr": 0.9999703549988883,
+     "tpr_unknown@1%fpr": 0.8094309681924964,
+     "auroc_known": 0.999806710936535,
+     "auroc_unknown": 0.9924139742351047
+    }
+   },
+   "DoS": {
+    "Closed-set XGB": {
+     "conformal_fpr": 0.009976,
+     "conformal_known_recall": 0.9999777662491663,
+     "conformal_unknown_recall": 0.8243382441010899,
+     "tpr_known@1%fpr": 0.9999777662491663,
+     "tpr_unknown@1%fpr": 0.8259182433993789,
+     "auroc_known": 0.9999469280244077,
+     "auroc_unknown": 0.9931545962923038
+    },
+    "Closed-set DT (v1.1-style)": {
+     "conformal_fpr": 0.0012133333333333332,
+     "conformal_known_recall": 0.9991662343437338,
+     "conformal_unknown_recall": 0.2458498023715415,
+     "tpr_known@1%fpr": 0.9991735780405913,
+     "tpr_unknown@1%fpr": 0.2524805870861412,
+     "auroc_known": 0.9991547857160503,
+     "auroc_unknown": 0.6224242884177746
+    },
+    "XGB + Energy": {
+     "conformal_fpr": 0.009892000000000001,
+     "conformal_known_recall": 0.9999777662491663,
+     "conformal_unknown_recall": 0.7993132910128958,
+     "tpr_known@1%fpr": 0.9999777662491663,
+     "tpr_unknown@1%fpr": 0.8009456791367976,
+     "auroc_known": 0.999852394908471,
+     "auroc_unknown": 0.992593155693962
+    },
+    "kNN distance": {
+     "conformal_fpr": 0.01008,
+     "conformal_known_recall": 0.4289742829615356,
+     "conformal_unknown_recall": 0.8010061085159899,
+     "tpr_known@1%fpr": 0.43276933036947485,
+     "tpr_unknown@1%fpr": 0.8002040320042475,
+     "auroc_known": 0.9069991461127991,
+     "auroc_unknown": 0.9850895852064785
+    },
+    "Aegis-OSR": {
+     "conformal_fpr": 0.01,
+     "conformal_known_recall": 0.9998443637441637,
+     "conformal_unknown_recall": 0.9768754741086758,
+     "tpr_known@1%fpr": 0.9998369524938857,
+     "tpr_unknown@1%fpr": 0.9768754741086756,
+     "auroc_known": 0.9994955035697523,
+     "auroc_unknown": 0.9987077016276068
+    },
+    "Aegis-OSR w/ max fusion": {
+     "conformal_fpr": 0.010028,
+     "conformal_known_recall": 0.9999703549988883,
+     "conformal_unknown_recall": 0.9472351978280832,
+     "tpr_known@1%fpr": 0.9999703549988883,
+     "tpr_unknown@1%fpr": 0.946942229248181,
+     "auroc_known": 0.9998316038563205,
+     "auroc_unknown": 0.9964307324895862
+    }
+   },
+   "PortScan": {
+    "Closed-set XGB": {
+     "conformal_fpr": 0.010036,
+     "conformal_known_recall": 0.9999703549988883,
+     "conformal_unknown_recall": 0.1122609494150996,
+     "tpr_known@1%fpr": 0.9999703549988883,
+     "tpr_unknown@1%fpr": 0.11296118591166256,
+     "auroc_known": 0.9999883138170409,
+     "auroc_unknown": 0.85607772433159
+    },
+    "Closed-set DT (v1.1-style)": {
+     "conformal_fpr": 0.0008613333333333334,
+     "conformal_known_recall": 0.9989438968353962,
+     "conformal_unknown_recall": 0.010987343793667904,
+     "tpr_known@1%fpr": 0.9989535518000924,
+     "tpr_unknown@1%fpr": 0.020033326188834372,
+     "auroc_known": 0.9992081029175621,
+     "auroc_unknown": 0.5050647737453586
+    },
+    "XGB + Energy": {
+     "conformal_fpr": 0.010005333333333335,
+     "conformal_known_recall": 0.9999703549988883,
+     "conformal_unknown_recall": 0.08335529205094423,
+     "tpr_known@1%fpr": 0.9999703549988883,
+     "tpr_unknown@1%fpr": 0.08043840542742606,
+     "auroc_known": 0.9999526021393809,
+     "auroc_unknown": 0.9024899837904741
+    },
+    "kNN distance": {
+     "conformal_fpr": 0.010042666666666667,
+     "conformal_known_recall": 0.7941080560290522,
+     "conformal_unknown_recall": 0.035804687188086395,
+     "tpr_known@1%fpr": 0.793506458081145,
+     "tpr_unknown@1%fpr": 0.03279068684207024,
+     "auroc_known": 0.9823189203290597,
+     "auroc_unknown": 0.8314014164836774
+    },
+    "Aegis-OSR": {
+     "conformal_fpr": 0.009889333333333333,
+     "conformal_known_recall": 0.9999036537463869,
+     "conformal_unknown_recall": 0.3570806883059848,
+     "tpr_known@1%fpr": 0.9998814199955532,
+     "tpr_unknown@1%fpr": 0.35938036491396175,
+     "auroc_known": 0.9999426209886607,
+     "auroc_unknown": 0.8665933545734019
+    },
+    "Aegis-OSR w/ max fusion": {
+     "conformal_fpr": 0.010008,
+     "conformal_known_recall": 0.9999592381234714,
+     "conformal_unknown_recall": 0.0498263265061684,
+     "tpr_known@1%fpr": 0.9999592381234714,
+     "tpr_unknown@1%fpr": 0.04951394408814459,
+     "auroc_known": 0.9999285023839523,
+     "auroc_unknown": 0.835690072796476
+    }
+   },
+   "WebAttack": {
+    "Closed-set XGB": {
+     "conformal_fpr": 0.009857333333333333,
+     "conformal_known_recall": 0.9999795733380996,
+     "conformal_unknown_recall": 0.9460273972602741,
+     "tpr_known@1%fpr": 0.9999821266708372,
+     "tpr_unknown@1%fpr": 0.947866927592955,
+     "auroc_known": 0.9999576570448576,
+     "auroc_unknown": 0.994723382039574
+    },
+    "Closed-set DT (v1.1-style)": {
+     "conformal_fpr": 0.003146666666666667,
+     "conformal_known_recall": 0.9992263401805207,
+     "conformal_unknown_recall": 0.6882191780821918,
+     "tpr_known@1%fpr": 0.9992596801406753,
+     "tpr_unknown@1%fpr": 0.6882238650111097,
+     "auroc_known": 0.9992542981781971,
+     "auroc_unknown": 0.81687359695586
+    },
+    "XGB + Energy": {
+     "conformal_fpr": 0.009846666666666667,
+     "conformal_known_recall": 0.9999744666726244,
+     "conformal_unknown_recall": 0.939634703196347,
+     "tpr_known@1%fpr": 0.9999770200053621,
+     "tpr_unknown@1%fpr": 0.940662100456621,
+     "auroc_known": 0.9998598778400508,
+     "auroc_unknown": 0.9947004520547946
+    },
+    "kNN distance": {
+     "conformal_fpr": 0.010173333333333335,
+     "conformal_known_recall": 0.5508483448020529,
+     "conformal_unknown_recall": 0.05954337899543379,
+     "tpr_known@1%fpr": 0.5504796541936363,
+     "tpr_unknown@1%fpr": 0.05954337899543379,
+     "auroc_known": 0.93376682860754,
+     "auroc_unknown": 0.8351387150684932
+    },
+    "Aegis-OSR": {
+     "conformal_fpr": 0.009972,
+     "conformal_known_recall": 0.9996578534131675,
+     "conformal_unknown_recall": 0.9910502283105023,
+     "tpr_known@1%fpr": 0.9996221067548416,
+     "tpr_unknown@1%fpr": 0.990958904109589,
+     "auroc_known": 0.9996199036116892,
+     "auroc_unknown": 0.9962665671232879
+    },
+    "Aegis-OSR w/ max fusion": {
+     "conformal_fpr": 0.009841333333333334,
+     "conformal_known_recall": 0.9999770200053621,
+     "conformal_unknown_recall": 0.9752511415525114,
+     "tpr_known@1%fpr": 0.9999770200053621,
+     "tpr_unknown@1%fpr": 0.9762656704026567,
+     "auroc_known": 0.9998406422142502,
+     "auroc_unknown": 0.9970138395738205
+    }
+   }
+  },
+  "aegis_vs_xgb_unknown_conformal": {
+   "a": "Aegis-OSR",
+   "b": "Closed-set XGB",
+   "metric": "conformal_unknown_recall",
+   "variant": "none",
+   "mean": 0.21629255907641548,
+   "per_group_mean_over_seeds": {
+    "Bot": 0.019448621553884708,
+    "BruteForce": 0.6130259867348048,
+    "DDoS": 0.22290094622110432,
+    "DoS": 0.15253723000758576,
+    "PortScan": 0.24481973889088512,
+    "WebAttack": 0.045022831050228286
+   },
+   "groups_a_better": 6,
+   "groups_b_better": 0,
+   "groups": 6,
+   "per_seed_mean_over_groups": {
+    "1": 0.20112805243279985,
+    "2": 0.21988514126742711,
+    "3": 0.2315726410024921,
+    "4": 0.2524207078107274,
+    "5": 0.176456252868631
+   },
+   "seeds_a_better": 5,
+   "seeds": 5,
+   "seed_level_paired_t_p": 7.59367329035425e-05,
+   "group_level_wilcoxon_p": 0.03125,
+   "hierarchical_bootstrap_95ci": [
+    0.08210269650553441,
+    0.39500508367598974
+   ],
+   "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+  },
+  "aegis_vs_xgb_unknown_matched": {
+   "a": "Aegis-OSR",
+   "b": "Closed-set XGB",
+   "metric": "tpr_unknown@1%fpr",
+   "variant": "none",
+   "mean": 0.21761530628699982,
+   "per_group_mean_over_seeds": {
+    "Bot": 0.020210526315789474,
+    "BruteForce": 0.616643859022352,
+    "DDoS": 0.22836906615562746,
+    "DoS": 0.15095723070929684,
+    "PortScan": 0.24641917900229915,
+    "WebAttack": 0.04309197651663406
+   },
+   "groups_a_better": 6,
+   "groups_b_better": 0,
+   "groups": 6,
+   "per_seed_mean_over_groups": {
+    "1": 0.19549243990325574,
+    "2": 0.21317308828583595,
+    "3": 0.24894128548385638,
+    "4": 0.2559429354460761,
+    "5": 0.174526782315975
+   },
+   "seeds_a_better": 5,
+   "seeds": 5,
+   "seed_level_paired_t_p": 0.0001500180739578604,
+   "group_level_wilcoxon_p": 0.03125,
+   "hierarchical_bootstrap_95ci": [
+    0.07906518597847204,
+    0.39646885212202465
+   ],
+   "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+  },
+  "aegis_vs_max_unknown_matched": {
+   "a": "Aegis-OSR",
+   "b": "Aegis-OSR w/ max fusion",
+   "metric": "tpr_unknown@1%fpr",
+   "variant": "none",
+   "mean": 0.1725933031634205,
+   "per_group_mean_over_seeds": {
+    "Bot": -0.014484860800650274,
+    "BruteForce": 0.5403722163809606,
+    "DDoS": 0.1551795640069685,
+    "DoS": 0.02993324486049469,
+    "PortScan": 0.30986642082581717,
+    "WebAttack": 0.01469323370693234
+   },
+   "groups_a_better": 5,
+   "groups_b_better": 1,
+   "groups": 6,
+   "per_seed_mean_over_groups": {
+    "1": 0.18530180385694975,
+    "2": 0.17756485415219214,
+    "3": 0.18657676590586225,
+    "4": 0.14020496215147998,
+    "5": 0.1733181297506183
+   },
+   "seeds_a_better": 5,
+   "seeds": 5,
+   "seed_level_paired_t_p": 3.4082119520054366e-05,
+   "group_level_wilcoxon_p": 0.0625,
+   "hierarchical_bootstrap_95ci": [
+    0.03008354333840655,
+    0.34770278348690137
+   ],
+   "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+  },
+  "aegis_vs_dt_unknown_conformal": {
+   "a": "Aegis-OSR",
+   "b": "Closed-set DT (v1.1-style)",
+   "metric": "conformal_unknown_recall",
+   "variant": "none",
+   "mean": 0.46509510768663853,
+   "per_group_mean_over_seeds": {
+    "Bot": 0.02325814536340852,
+    "BruteForce": 0.922300750244645,
+    "DDoS": 0.46506168403401604,
+    "DoS": 0.7310256717371342,
+    "PortScan": 0.3460933445123168,
+    "WebAttack": 0.30283105022831047
+   },
+   "groups_a_better": 6,
+   "groups_b_better": 0,
+   "groups": 6,
+   "per_seed_mean_over_groups": {
+    "1": 0.536038402098041,
+    "2": 0.4739357462666855,
+    "3": 0.40498030299394605,
+    "4": 0.4804063573090393,
+    "5": 0.43011472976548076
+   },
+   "seeds_a_better": 5,
+   "seeds": 5,
+   "seed_level_paired_t_p": 3.272562145444574e-05,
+   "group_level_wilcoxon_p": 0.03125,
+   "hierarchical_bootstrap_95ci": [
+    0.2299430013991384,
+    0.7032601622302003
+   ],
+   "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+  },
+  "aegis_vs_dt_unknown_matched": {
+   "a": "Aegis-OSR",
+   "b": "Closed-set DT (v1.1-style)",
+   "metric": "tpr_unknown@1%fpr",
+   "variant": "none",
+   "mean": 0.4611276791273095,
+   "per_group_mean_over_seeds": {
+    "Bot": 0.01675555825058652,
+    "BruteForce": 0.9207132465969782,
+    "DDoS": 0.4628203050701507,
+    "DoS": 0.7243948870225345,
+    "PortScan": 0.3393470387251274,
+    "WebAttack": 0.3027350390984793
+   },
+   "groups_a_better": 6,
+   "groups_b_better": 0,
+   "groups": 6,
+   "per_seed_mean_over_groups": {
+    "1": 0.5216219274321986,
+    "2": 0.46472580292827104,
+    "3": 0.41785646517613095,
+    "4": 0.4775043696907801,
+    "5": 0.4239298304091666
+   },
+   "seeds_a_better": 5,
+   "seeds": 5,
+   "seed_level_paired_t_p": 1.6990201310833734e-05,
+   "group_level_wilcoxon_p": 0.03125,
+   "hierarchical_bootstrap_95ci": [
+    0.22160617394797683,
+    0.7037852698809846
+   ],
+   "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+  }
+ },
+ "cross_perday": {
+  "none": {
+   "per_day_mean_over_seeds": {
+    "2018-02-14": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.04718,
+      "conformal_known_recall": 0.9999,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9841978283473006,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9986399256250001,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.13559000000000002,
+      "conformal_known_recall": 0.974775,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.11299367809760445,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9166772725,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.044050000000000006,
+      "conformal_known_recall": 0.9997250000000001,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.17000543293379275,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.98713221625,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.43975,
+      "conformal_known_recall": 0.0008749999999999999,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.40702295124999993,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.26849,
+      "conformal_known_recall": 1.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.977008206875,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.16172,
+      "conformal_known_recall": 0.9997250000000001,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9770060675,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-15": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.04662,
+      "conformal_known_recall": 0.8343,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.47171038835445617,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.96925276875,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.07868,
+      "conformal_known_recall": 0.19665000000000002,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.05033105097925862,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.563623730625,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.04772,
+      "conformal_known_recall": 0.7827999999999999,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.31580661655094044,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.96009814875,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.49354,
+      "conformal_known_recall": 0.35619999999999996,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.5089922712500001,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.24119000000000002,
+      "conformal_known_recall": 0.88215,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.14034999999999997,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.88211384625,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.17482,
+      "conformal_known_recall": 0.597675,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.07801103820074501,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.782437219375,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-16": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.0002886836027713626,
+      "conformal_known_recall": 0.9592750000000001,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.996978,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9997348174076214,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.015762124711316394,
+      "conformal_known_recall": 0.542125,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.5379323054934131,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7270097192551963,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.0002886836027713626,
+      "conformal_known_recall": 0.95505,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9969637500000001,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9996133812066974,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.9908891454965358,
+      "conformal_known_recall": 0.04625,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.008542309579081074,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.044960440964203235,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.4689838337182449,
+      "conformal_known_recall": 0.413225,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.049475,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.5271102756928407,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.9880831408775983,
+      "conformal_known_recall": 0.949575,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.4189373178937994,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.932797188221709,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-20": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.04469,
+      "conformal_known_recall": 0.9416499999999999,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.1110204870207192,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.977400446875,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.13673,
+      "conformal_known_recall": 0.07807499999999999,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.005114352666675542,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.45094187437500005,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.039490000000000004,
+      "conformal_known_recall": 0.936475,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.4038799530915246,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9798305143749999,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.58378,
+      "conformal_known_recall": 0.941475,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0004140130531352133,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.811014121875,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.34778,
+      "conformal_known_recall": 0.94245,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0007250000000000001,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9425495175,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.30463,
+      "conformal_known_recall": 0.94235,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0004140130531352133,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.82874529375,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-21": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0366,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.08789095,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.49855661926030403,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.6380974768845009,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.27463609348064566,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0366,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0878552,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.498687655735778,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 1.0,
+      "conformal_known_recall": 0.5321,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.03660637272647813,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.0511326819855822,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 1.0,
+      "conformal_known_recall": 0.49959999999999993,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.06845,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.21249077926657262,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 1.0,
+      "conformal_known_recall": 0.5321,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.03660637272647813,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.0511326819855822,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-22": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.047,
+      "conformal_known_recall": 0.43888888888888894,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0069229469934279225,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8652110802469137,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.1518,
+      "conformal_known_recall": 0.31790123456790126,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.07603151650084505,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.5638793518518519,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.047349999999999996,
+      "conformal_known_recall": 0.48271604938271606,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.3299230523627076,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8799253240740741,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.56338,
+      "conformal_known_recall": 0.6253086419753087,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.13613022902881222,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.6021464660493827,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.37409,
+      "conformal_known_recall": 0.6759259259259258,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.02037037037037037,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.723023827160494,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.31314000000000003,
+      "conformal_known_recall": 0.5623456790123456,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.13613022902881222,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.6833150308641975,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-23": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.042460000000000005,
+      "conformal_known_recall": 0.3734806629834254,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.036622704204071085,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8726916482504603,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.138,
+      "conformal_known_recall": 0.3642725598526703,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.07063589933971079,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.5809485543278086,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.04331,
+      "conformal_known_recall": 0.40589318600368324,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.2727766161314782,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8788044198895026,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.54733,
+      "conformal_known_recall": 0.6990791896869245,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.37783705221836056,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7060210313075505,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.34099,
+      "conformal_known_recall": 0.7447513812154696,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.04242542112942646,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.794984429097606,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.27727,
+      "conformal_known_recall": 0.6751381215469614,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.37783705221836056,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7715662799263352,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-28": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.13050591361433855,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.049175,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.003404188080199989,
+      "auroc_known": null,
+      "auroc_unknown": 0.44581963280883663
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.08232167977908612,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.064625,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.007860831002042554,
+      "auroc_known": null,
+      "auroc_unknown": 0.49960221630281876
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.12169019955191998,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.04532499999999999,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.005536530039448318,
+      "auroc_known": null,
+      "auroc_unknown": 0.44720650041681864
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.6869066847288074,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.6649,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.012836543349706884,
+      "auroc_known": null,
+      "auroc_unknown": 0.49692189730630953
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.39510238107643414,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.33045,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.007369354971755497,
+      "auroc_known": null,
+      "auroc_unknown": 0.4576388390298546
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.39886416922836454,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.363625,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.01280314126658405,
+      "auroc_known": null,
+      "auroc_unknown": 0.4817539317720002
+     }
+    },
+    "2018-03-01": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.05545646181287498,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.247675,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.0230089449840309,
+      "auroc_known": null,
+      "auroc_unknown": 0.6001949023025782
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.15151613426301283,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.0972,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.006640736936856115,
+      "auroc_known": null,
+      "auroc_unknown": 0.44835307686071024
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.04267877412031782,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.23127499999999998,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.01159905479277905,
+      "auroc_known": null,
+      "auroc_unknown": 0.6021483764391113
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.6808496838008756,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.743625,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.019366784844581975,
+      "auroc_known": null,
+      "auroc_unknown": 0.516165903194422
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.39237879033565753,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.5114500000000001,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.009649615853658536,
+      "auroc_known": null,
+      "auroc_unknown": 0.5930963880330793
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.37175287822279873,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.47532500000000005,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.019398370173419378,
+      "auroc_known": null,
+      "auroc_unknown": 0.560819320577266
+     }
+    },
+    "2018-03-02": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.044320000000000005,
+      "conformal_known_recall": 0.91455,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.002785901924858626,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9593181175000002,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.19207000000000002,
+      "conformal_known_recall": 0.0025,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 3.23821462273191e-05,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.45951658249999994,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.03817,
+      "conformal_known_recall": 0.7753500000000001,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.00014385026737967916,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9474573962500001,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.5569900000000001,
+      "conformal_known_recall": 0.9793,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.006677074374805971,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.959119268125,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.36224,
+      "conformal_known_recall": 0.9793,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0034500000000000004,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9642025399999999,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.29032,
+      "conformal_known_recall": 0.979125,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.006677074374805971,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9607160550000001,
+      "auroc_unknown": null
+     }
+    }
+   },
+   "aegis_vs_xgb_known_conformal": {
+    "a": "Aegis-OSR",
+    "b": "Closed-set XGB",
+    "metric": "conformal_known_recall",
+    "variant": "none",
+    "mean": 0.07984471940863515,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": 9.999999999998899e-05,
+     "2018-02-15": 0.04785000000000002,
+     "2018-02-16": -0.5460499999999999,
+     "2018-02-20": 0.0008000000000000007,
+     "2018-02-21": 0.4630000000000001,
+     "2018-02-22": 0.23703703703703707,
+     "2018-02-23": 0.37127071823204416,
+     "2018-03-02": 0.06474999999999997
+    },
+    "groups_a_better": 7,
+    "groups_b_better": 1,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": 0.12494653651694972,
+     "2": 0.04770015261578338,
+     "3": 0.07543244087204147,
+     "4": 0.06914461091501262,
+     "5": 0.08199985612338856
+    },
+    "seeds_a_better": 5,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.0032325089442891476,
+    "group_level_wilcoxon_p": 0.1953125,
+    "hierarchical_bootstrap_95ci": [
+     -0.13065124999999997,
+     0.26436694796142823
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   },
+   "aegis_vs_xgb_known_matched": {
+    "a": "Aegis-OSR",
+    "b": "Closed-set XGB",
+    "metric": "tpr_known@1%fpr",
+    "variant": "none",
+    "mean": -0.2966104269181296,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": -0.9841978283473006,
+     "2018-02-15": -0.33136038835445614,
+     "2018-02-16": -0.947503,
+     "2018-02-20": -0.1102954870207192,
+     "2018-02-21": -0.019440950000000002,
+     "2018-02-22": 0.013447423376942446,
+     "2018-02-23": 0.005802716925355373,
+     "2018-03-02": 0.0006640980751413746
+    },
+    "groups_a_better": 3,
+    "groups_b_better": 5,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": -0.2820102783257274,
+     "2": -0.29644337805884996,
+     "3": -0.28659713215580085,
+     "4": -0.3367056284576772,
+     "5": -0.28129571759259253
+    },
+    "seeds_a_better": 0,
+    "seeds": 5,
+    "seed_level_paired_t_p": 8.932084822303702e-06,
+    "group_level_wilcoxon_p": 0.109375,
+    "hierarchical_bootstrap_95ci": [
+     -0.6029155530976869,
+     -0.04308195573427375
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   },
+   "max_vs_xgb_known_matched": {
+    "a": "Aegis-OSR w/ max fusion",
+    "b": "Closed-set XGB",
+    "metric": "tpr_known@1%fpr",
+    "variant": "none",
+    "mean": -0.20543951366858715,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": -0.9841978283473006,
+     "2018-02-15": -0.39369935015371116,
+     "2018-02-16": -0.5780406821062006,
+     "2018-02-20": -0.11060647396758401,
+     "2018-02-21": -0.05128457727352187,
+     "2018-02-22": 0.12920728203538429,
+     "2018-02-23": 0.3412143480142895,
+     "2018-03-02": 0.003891172449947344
+    },
+    "groups_a_better": 3,
+    "groups_b_better": 5,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": -0.1952420495295667,
+     "2": -0.258453593662406,
+     "3": -0.1469461502794142,
+     "4": -0.22817921606208733,
+     "5": -0.19837655880946148
+    },
+    "seeds_a_better": 0,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.0003802848502084928,
+    "group_level_wilcoxon_p": 0.3125,
+    "hierarchical_bootstrap_95ci": [
+     -0.50045342175162,
+     0.05734037695087142
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   },
+   "aegis_vs_max_known_matched": {
+    "a": "Aegis-OSR",
+    "b": "Aegis-OSR w/ max fusion",
+    "metric": "tpr_known@1%fpr",
+    "variant": "none",
+    "mean": -0.09117091324954246,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": 0.0,
+     "2018-02-15": 0.062338961799255,
+     "2018-02-16": -0.36946231789379935,
+     "2018-02-20": 0.00031098694686478663,
+     "2018-02-21": 0.03184362727352187,
+     "2018-02-22": -0.11575985865844182,
+     "2018-02-23": -0.3354116310889342,
+     "2018-03-02": -0.0032270743748059696
+    },
+    "groups_a_better": 3,
+    "groups_b_better": 4,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": -0.08676822879616068,
+     "2": -0.03798978439644392,
+     "3": -0.1396509818763867,
+     "4": -0.10852641239558992,
+     "5": -0.08291915878313111
+    },
+    "seeds_a_better": 0,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.005453977350786038,
+    "group_level_wilcoxon_p": 0.375,
+    "hierarchical_bootstrap_95ci": [
+     -0.21516066110895157,
+     0.010975906153521786
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   }
+  },
+  "recal@2000": {
+   "per_day_mean_over_seeds": {
+    "2018-02-14": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.00726,
+      "conformal_known_recall": 0.984075,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9845552284182452,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9985163881249999,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.11220802347525607,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9165654693749999,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.006309999999999999,
+      "conformal_known_recall": 0.9843,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9843324388067313,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9978734481249999,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.01136,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.40706612187499996,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.009990000000000002,
+      "conformal_known_recall": 0.1906,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.19055,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.983012955625,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.008389999999999998,
+      "conformal_known_recall": 0.9797,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9805071428571429,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9971239456250001,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-15": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.00575,
+      "conformal_known_recall": 0.471275,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.47143423295454545,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9692123856249999,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0016099999999999999,
+      "conformal_known_recall": 0.032325,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.05017871984440283,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.5635636937499999,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.0061,
+      "conformal_known_recall": 0.476,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.47640769699812385,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.962826235,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.02636,
+      "conformal_known_recall": 0.025424999999999996,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.5087120206249999,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.01803,
+      "conformal_known_recall": 0.26635,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.1472,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.89332957,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.025259999999999998,
+      "conformal_known_recall": 0.47035,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.10715365143369175,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.920636538125,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-16": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.008672055427251734,
+      "conformal_known_recall": 0.920475,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9938932953839927,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9995904885969977,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.015762124711316394,
+      "conformal_known_recall": 0.542125,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.2954940772872651,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7206520186200924,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.007505773672055428,
+      "conformal_known_recall": 0.99085,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9992275086206897,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.999693861143187,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.0013394919168591224,
+      "conformal_known_recall": 0.0077,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.008725,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.04570880845842956,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.009457274826789838,
+      "conformal_known_recall": 0.041475,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.4477749999999999,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9880400447459584,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.0010392609699769052,
+      "conformal_known_recall": 0.7692,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9933006990241111,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9991975779445725,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-20": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.00597,
+      "conformal_known_recall": 0.1877,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.11265470711713017,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9774543512499999,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.005096456385528828,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.450921230625,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.00698,
+      "conformal_known_recall": 0.412775,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.4192293290043291,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9795099200000001,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.01416,
+      "conformal_known_recall": 0.00055,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.00035,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8119403125,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.013640000000000003,
+      "conformal_known_recall": 0.1059,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.10047500000000001,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.943992291875,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.016679999999999997,
+      "conformal_known_recall": 0.108625,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0078,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8893987912500002,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-21": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.021525000000000002,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.08064740378160251,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.4984332383247141,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 7.835762419683435e-05,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.27463609348064566,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.020950000000000003,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.4509420605068441,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8875619083999373,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.021950000000000004,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.036625000000000005,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.05277323009716346,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.028700000000000003,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.037275,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.21872982976806146,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.028675,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.07362733109659478,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.26681762165021156,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-22": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.0032299999999999994,
+      "conformal_known_recall": 0.006172839506172839,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.007132482622678701,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8655023302469136,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0018499999999999999,
+      "conformal_known_recall": 0.06172839506172839,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0760004929626437,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.5638527469135803,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.00363,
+      "conformal_known_recall": 0.328395061728395,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.33039445950015056,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8833196296296297,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.00047000000000000004,
+      "conformal_known_recall": 0.015432098765432098,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.12469135802469136,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.6022039197530864,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.004030000000000001,
+      "conformal_known_recall": 0.015432098765432098,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.06481481481481481,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7719001080246913,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.0015199999999999999,
+      "conformal_known_recall": 0.015432098765432098,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.016365805581491855,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7950971296296296,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-23": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.00264,
+      "conformal_known_recall": 0.00883977900552486,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.035625889464180445,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.872640985267035,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.00176,
+      "conformal_known_recall": 0.051197053406998164,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.07057517060423371,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.5808742449355433,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.0033599999999999997,
+      "conformal_known_recall": 0.24493554327808473,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.2753631133381872,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8942949539594844,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.0004999999999999999,
+      "conformal_known_recall": 0.07329650092081032,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.3744459040039151,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7059528084714548,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.00458,
+      "conformal_known_recall": 0.04751381215469613,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.07636759812396954,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8617988581952118,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.00167,
+      "conformal_known_recall": 0.04788213627992634,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.15524390103074434,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8766336924493554,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-28": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.08948053978012818,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.02555,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.0035994166666666666,
+      "auroc_known": null,
+      "auroc_unknown": 0.44581961457302144
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.005043505444693378,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.0040750000000000005,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.007867390274396327,
+      "auroc_known": null,
+      "auroc_unknown": 0.4996051678997551
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.08935549419059033,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.027699999999999995,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.0035994166666666666,
+      "auroc_known": null,
+      "auroc_unknown": 0.4471442908873026
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.013348616683165736,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.016349999999999996,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.013431431668682062,
+      "auroc_known": null,
+      "auroc_unknown": 0.49690914526129315
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.0883551294742875,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.033775,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.003882796631000578,
+      "auroc_known": null,
+      "auroc_unknown": 0.4544711639660292
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.0881571406241859,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.027575,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.0035994166666666666,
+      "auroc_known": null,
+      "auroc_unknown": 0.4554121730578856
+     }
+    },
+    "2018-03-01": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.005578076860710232,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.015725,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.024207506434008874,
+      "auroc_known": null,
+      "auroc_unknown": 0.6001713839792444
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.0,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.0066297425691810045,
+      "auroc_known": null,
+      "auroc_unknown": 0.44835209177882274
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.006453705205124047,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.014975000000000002,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.024268779997176734,
+      "auroc_known": null,
+      "auroc_unknown": 0.6057273917626074
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.0094697583914383,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.019950000000000002,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.021628334523809523,
+      "auroc_known": null,
+      "auroc_unknown": 0.5162147275822928
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.007005026755310524,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.020225,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.02571675,
+      "auroc_known": null,
+      "auroc_unknown": 0.5928651633695475
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.009469758391438302,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.024775,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.028763912878787885,
+      "auroc_known": null,
+      "auroc_unknown": 0.5975130979406519
+     }
+    },
+    "2018-03-02": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.0076,
+      "conformal_known_recall": 0.0026249999999999997,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0029645238095238097,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9590284062500001,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0001234301684825366,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.459783033125,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.0066099999999999996,
+      "conformal_known_recall": 0.00255,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.002642,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.941154608125,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.00102,
+      "conformal_known_recall": 0.005075,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.006625000000000001,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9590871193750001,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.00663,
+      "conformal_known_recall": 0.007525,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.007825,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.96790586625,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.00317,
+      "conformal_known_recall": 0.004624999999999999,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.00814458858068973,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.966895534375,
+      "auroc_unknown": null
+     }
+    }
+   },
+   "aegis_vs_xgb_known_conformal": {
+    "a": "Aegis-OSR",
+    "b": "Closed-set XGB",
+    "metric": "conformal_known_recall",
+    "variant": "recal@2000",
+    "mean": -0.23739896344894623,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": -0.793475,
+     "2018-02-15": -0.20492500000000002,
+     "2018-02-16": -0.8789999999999999,
+     "2018-02-20": -0.08180000000000001,
+     "2018-02-21": 0.007174999999999999,
+     "2018-02-22": 0.009259259259259259,
+     "2018-02-23": 0.038674033149171276,
+     "2018-03-02": 0.0049
+    },
+    "groups_a_better": 4,
+    "groups_b_better": 4,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": -0.26571489304106133,
+     "2": -0.2205563708563536,
+     "3": -0.30085756108894346,
+     "4": -0.27217121849635084,
+     "5": -0.1276947737620217
+    },
+    "seeds_a_better": 0,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.001432252845784395,
+    "group_level_wilcoxon_p": 0.3125,
+    "hierarchical_bootstrap_95ci": [
+     -0.5044889418514682,
+     -0.012095957115178033
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   },
+   "aegis_vs_xgb_known_matched": {
+    "a": "Aegis-OSR",
+    "b": "Closed-set XGB",
+    "metric": "tpr_known@1%fpr",
+    "variant": "recal@2000",
+    "mean": -0.20207816882663932,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": -0.7940052284182451,
+     "2018-02-15": -0.32423423295454545,
+     "2018-02-16": -0.5461182953839926,
+     "2018-02-20": -0.012179707117130182,
+     "2018-02-21": -0.0433724037816025,
+     "2018-02-22": 0.05768233219213611,
+     "2018-02-23": 0.04074170865978909,
+     "2018-03-02": 0.004860476190476191
+    },
+    "groups_a_better": 3,
+    "groups_b_better": 5,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": -0.21895687994782995,
+     "2": -0.27003394918269275,
+     "3": -0.233796932578957,
+     "4": -0.21136376859583345,
+     "5": -0.07623931382788342
+    },
+    "seeds_a_better": 0,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.0036179449943357952,
+    "group_level_wilcoxon_p": 0.25,
+    "hierarchical_bootstrap_95ci": [
+     -0.4345089818525425,
+     -0.009925717198402744
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   },
+   "max_vs_xgb_known_matched": {
+    "a": "Aegis-OSR w/ max fusion",
+    "b": "Closed-set XGB",
+    "metric": "tpr_known@1%fpr",
+    "variant": "recal@2000",
+    "mean": -0.04334558049342904,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": -0.004048085561102188,
+     "2018-02-15": -0.3642805815208537,
+     "2018-02-16": -0.0005925963598815143,
+     "2018-02-20": -0.10485470711713016,
+     "2018-02-21": -0.007020072685007728,
+     "2018-02-22": 0.009233322958813154,
+     "2018-02-23": 0.11961801156656389,
+     "2018-03-02": 0.005180064771165919
+    },
+    "groups_a_better": 3,
+    "groups_b_better": 5,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": -0.045279256715530236,
+     "2": -0.017704389700178895,
+     "3": -0.008926097894810145,
+     "4": -0.10126761273427254,
+     "5": -0.04355054542235339
+    },
+    "seeds_a_better": 0,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.05477488910629349,
+    "group_level_wilcoxon_p": 0.7421875,
+    "hierarchical_bootstrap_95ci": [
+     -0.1523638153098508,
+     0.03344204942524455
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   },
+   "aegis_vs_max_known_matched": {
+    "a": "Aegis-OSR",
+    "b": "Aegis-OSR w/ max fusion",
+    "metric": "tpr_known@1%fpr",
+    "variant": "recal@2000",
+    "mean": -0.15873258833321027,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": -0.7899571428571428,
+     "2018-02-15": 0.040046348566308246,
+     "2018-02-16": -0.5455256990241113,
+     "2018-02-20": 0.09267499999999998,
+     "2018-02-21": -0.03635233109659477,
+     "2018-02-22": 0.04844900923332296,
+     "2018-02-23": -0.0788763029067748,
+     "2018-03-02": -0.0003195885806897286
+    },
+    "groups_a_better": 3,
+    "groups_b_better": 5,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": -0.17367762323229968,
+     "2": -0.25232955948251384,
+     "3": -0.22487083468414687,
+     "4": -0.11009615586156093,
+     "5": -0.03268876840553003
+    },
+    "seeds_a_better": 0,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.01622859829329644,
+    "group_level_wilcoxon_p": 0.546875,
+    "hierarchical_bootstrap_95ci": [
+     -0.40049119859968574,
+     0.024417281535631177
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   }
+  },
+  "recal@5000": {
+   "per_day_mean_over_seeds": {
+    "2018-02-14": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.005619999999999999,
+      "conformal_known_recall": 0.9840500000000001,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9843657626397814,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9985925106249999,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.11220802347525607,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9165654693749999,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.00655,
+      "conformal_known_recall": 0.9843,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9843500000000001,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9978575525,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.010280000000000001,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.40703773437499996,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.00925,
+      "conformal_known_recall": 0.0078,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.017625000000000002,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9798863525,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.00993,
+      "conformal_known_recall": 0.98005,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.98285,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.996898685,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-15": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.00636,
+      "conformal_known_recall": 0.471275,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.471275,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.969291189375,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0016099999999999999,
+      "conformal_known_recall": 0.032325,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.050256018599379434,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.56359060875,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.00617,
+      "conformal_known_recall": 0.47597500000000004,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.4765774096385543,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9627695,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.02505,
+      "conformal_known_recall": 0.0251,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.5087577400000001,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.00894,
+      "conformal_known_recall": 0.28592499999999993,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.30225,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9033330312500001,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.02312,
+      "conformal_known_recall": 0.47124999999999995,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.40822276835067317,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9321435768749999,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-16": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.015184757505773671,
+      "conformal_known_recall": 0.9968999999999999,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9970110388198758,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9996811200923787,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.015762124711316394,
+      "conformal_known_recall": 0.542125,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.5379323054934131,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7270097243071594,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.011685912240184757,
+      "conformal_known_recall": 0.9972999999999999,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9992300561536418,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9996790004330254,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.002702078521939954,
+      "conformal_known_recall": 0.00825,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.008725,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.04517495164549654,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.0098729792147806,
+      "conformal_known_recall": 0.27525,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.36995,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9878073195727483,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.009757505773672055,
+      "conformal_known_recall": 0.992875,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9964800592457079,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9993393331408775,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-20": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.008289999999999999,
+      "conformal_known_recall": 0.10880000000000001,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.11276219995690587,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.97743715125,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.005114243645208474,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.450941690625,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.00798,
+      "conformal_known_recall": 0.417725,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.419312037037037,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9808795250000001,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.06660999999999999,
+      "conformal_known_recall": 0.00095,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.00038714285714285717,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8106354818750001,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.013340000000000001,
+      "conformal_known_recall": 0.10662500000000001,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.105975,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.944439635625,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.041359999999999994,
+      "conformal_known_recall": 0.109025,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.013341377551020406,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.896463463125,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-21": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.021725,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0873525687937063,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.49857603138222856,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 7.835762419683435e-05,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.27463609348064566,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0217,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.5999394467592593,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8879552715091679,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.00012537219871493497,
+      "conformal_known_recall": 0.022125,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.036625000000000005,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.052377532910202154,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.028849999999999997,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.042975,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.2551429223475944,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 3.1343049678733744e-05,
+      "conformal_known_recall": 0.0289,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.08151826221804512,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.3054744240714621,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-22": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.00572,
+      "conformal_known_recall": 0.006790123456790123,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.006790123456790123,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8652523919753087,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0018499999999999999,
+      "conformal_known_recall": 0.06172839506172839,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.07608522700038964,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.5640047685185186,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.0060799999999999995,
+      "conformal_known_recall": 0.3296296296296296,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.3296296296296296,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8891735030864197,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.00078,
+      "conformal_known_recall": 0.07901234567901234,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.12469135802469136,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.6021495679012345,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.00704,
+      "conformal_known_recall": 0.015432098765432098,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0771604938271605,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7862562191358025,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.00283,
+      "conformal_known_recall": 0.01604938271604938,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.025029017621610215,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.807567299382716,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-23": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.005209999999999999,
+      "conformal_known_recall": 0.01731123388581952,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.03525919295357148,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8726665377532228,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.00176,
+      "conformal_known_recall": 0.051197053406998164,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.07057557591796591,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.5808822559852671,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.00501,
+      "conformal_known_recall": 0.25082872928176797,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.26827857111729203,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8929138121546961,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.0008,
+      "conformal_known_recall": 0.196316758747698,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.3747320205883742,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7061713904235727,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.00801,
+      "conformal_known_recall": 0.06445672191528545,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0833082203247949,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8663473572744016,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.00303,
+      "conformal_known_recall": 0.10386740331491713,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.2223205403616376,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8805747329650094,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-28": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.07468347835148231,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.02175,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.0032691986600293975,
+      "auroc_known": null,
+      "auroc_unknown": 0.44580350844057726
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.0,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.007868266809853221,
+      "auroc_known": null,
+      "auroc_unknown": 0.4996043323086542
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.06884801750638254,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.021225,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.0037606639209871993,
+      "auroc_known": null,
+      "auroc_unknown": 0.4473698646642005
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.010357943000052102,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.013850000000000001,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.013576395436507935,
+      "auroc_known": null,
+      "auroc_unknown": 0.4969134274214557
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.02160162559266399,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.0173,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.009750674197860963,
+      "auroc_known": null,
+      "auroc_unknown": 0.45577554056166314
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.024561037878393165,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.0157,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.005327748395145675,
+      "auroc_known": null,
+      "auroc_unknown": 0.45569815362371696
+     }
+    },
+    "2018-03-01": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.001686395329982163,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.001925,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.02251941178229665,
+      "auroc_known": null,
+      "auroc_unknown": 0.6001982892816604
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.0,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.006628636342339565,
+      "auroc_known": null,
+      "auroc_unknown": 0.4483500547267715
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.001426949894600292,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.00335,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.017414096618357487,
+      "auroc_known": null,
+      "auroc_unknown": 0.6040976345873197
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.012031782065834279,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.023225000000000003,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.02160800328947369,
+      "auroc_known": null,
+      "auroc_unknown": 0.5162126459380574
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.005805091616669369,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.015425,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.019875,
+      "auroc_known": null,
+      "auroc_unknown": 0.5774062631749636
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.005253770066482892,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.014900000000000002,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.02061970625,
+      "auroc_known": null,
+      "auroc_unknown": 0.5800674882438787
+     }
+    },
+    "2018-03-02": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.01129,
+      "conformal_known_recall": 0.0045249999999999995,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.003330669642857143,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.959368584375,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 9.772613183247158e-05,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.459701406875,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.012199999999999999,
+      "conformal_known_recall": 0.004,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0026249999999999997,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9502569893749999,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.0006799999999999999,
+      "conformal_known_recall": 0.0052499999999999995,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.006625000000000001,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9590921699999999,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.011510000000000001,
+      "conformal_known_recall": 0.007325000000000001,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0072250000000000005,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9704549950000001,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.005210000000000001,
+      "conformal_known_recall": 0.0052499999999999995,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.008297227328431373,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9677650950000001,
+      "auroc_unknown": null
+     }
+    }
+   },
+   "aegis_vs_xgb_known_conformal": {
+    "a": "Aegis-OSR",
+    "b": "Closed-set XGB",
+    "metric": "conformal_known_recall",
+    "variant": "recal@5000",
+    "mean": -0.2274640670827365,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": -0.9762500000000001,
+     "2018-02-15": -0.18535,
+     "2018-02-16": -0.72165,
+     "2018-02-20": -0.0021750000000000007,
+     "2018-02-21": 0.007124999999999999,
+     "2018-02-22": 0.008641975308641974,
+     "2018-02-23": 0.047145488029465936,
+     "2018-03-02": 0.0027999999999999995
+    },
+    "groups_a_better": 4,
+    "groups_b_better": 4,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": -0.2506649103062547,
+     "2": -0.18261363374769796,
+     "3": -0.25422013014971695,
+     "4": -0.2346851287002933,
+     "5": -0.2151365325097197
+    },
+    "seeds_a_better": 0,
+    "seeds": 5,
+    "seed_level_paired_t_p": 6.597998920736514e-05,
+    "group_level_wilcoxon_p": 0.640625,
+    "hierarchical_bootstrap_95ci": [
+     -0.5076970141286833,
+     0.000793704534990656
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   },
+   "aegis_vs_xgb_known_matched": {
+    "a": "Aegis-OSR",
+    "b": "Closed-set XGB",
+    "metric": "tpr_known@1%fpr",
+    "variant": "recal@5000",
+    "mean": -0.21145973026394155,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": -0.9667407626397815,
+     "2018-02-15": -0.16902499999999998,
+     "2018-02-16": -0.6270610388198757,
+     "2018-02-20": -0.006787199956905851,
+     "2018-02-21": -0.0443775687937063,
+     "2018-02-22": 0.07037037037037037,
+     "2018-02-23": 0.048049027371223435,
+     "2018-03-02": 0.003894330357142857
+    },
+    "groups_a_better": 3,
+    "groups_b_better": 5,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": -0.18028440857750108,
+     "2": -0.25924282184199243,
+     "3": -0.22841057541064785,
+     "4": -0.1726637697017622,
+     "5": -0.2166970757878044
+    },
+    "seeds_a_better": 0,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.00018612321193950127,
+    "group_level_wilcoxon_p": 0.3125,
+    "hierarchical_bootstrap_95ci": [
+     -0.48311251713896963,
+     0.002944509889054073
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   },
+   "max_vs_xgb_known_matched": {
+    "a": "Aegis-OSR w/ max fusion",
+    "b": "Closed-set XGB",
+    "metric": "tpr_known@1%fpr",
+    "variant": "recal@5000",
+    "mean": 0.004989087051704709,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": -0.0015157626397813485,
+     "2018-02-15": -0.06305223164932686,
+     "2018-02-16": -0.0005309795741679224,
+     "2018-02-20": -0.09942082240588544,
+     "2018-02-21": -0.005834306575661181,
+     "2018-02-22": 0.01823889416482009,
+     "2018-02-23": 0.1870613474080661,
+     "2018-03-02": 0.00496655768557423
+    },
+    "groups_a_better": 3,
+    "groups_b_better": 5,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": 0.011606527323193255,
+     "2": 0.02825541501811466,
+     "3": 0.010955760620302575,
+     "4": -0.04976255187724932,
+     "5": 0.02389028417416237
+    },
+    "seeds_a_better": 4,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.7413097212094927,
+    "group_level_wilcoxon_p": 0.84375,
+    "hierarchical_bootstrap_95ci": [
+     -0.050404047181034216,
+     0.06746919014409539
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   },
+   "aegis_vs_max_known_matched": {
+    "a": "Aegis-OSR",
+    "b": "Aegis-OSR w/ max fusion",
+    "metric": "tpr_known@1%fpr",
+    "variant": "recal@5000",
+    "mean": -0.2164488173156463,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": -0.965225,
+     "2018-02-15": -0.10597276835067315,
+     "2018-02-16": -0.6265300592457079,
+     "2018-02-20": 0.09263362244897959,
+     "2018-02-21": -0.03854326221804512,
+     "2018-02-22": 0.052131476205550274,
+     "2018-02-23": -0.13901232003684266,
+     "2018-03-02": -0.001072227328431373
+    },
+    "groups_a_better": 2,
+    "groups_b_better": 6,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": -0.19189093590069434,
+     "2": -0.28749823686010706,
+     "3": -0.2393663360309504,
+     "4": -0.12290121782451291,
+     "5": -0.24058735996196676
+    },
+    "seeds_a_better": 0,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.0014771824224976055,
+    "group_level_wilcoxon_p": 0.1484375,
+    "hierarchical_bootstrap_95ci": [
+     -0.48601416385698304,
+     0.00019187456779806727
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   }
+  },
+  "recal+ref@2000": {
+   "per_day_mean_over_seeds": {
+    "2018-02-14": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.00468,
+      "conformal_known_recall": 0.9840500000000001,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9847618805500211,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9985164400000001,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.1121800456579524,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9165316112499999,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.00535,
+      "conformal_known_recall": 0.9835,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9842897926722246,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9974898718749999,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.01074,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.952095186875,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.010100000000000001,
+      "conformal_known_recall": 0.993775,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9963583333333332,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.996876685625,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.007819999999999999,
+      "conformal_known_recall": 0.7784,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.8668000627404286,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9949897875,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-15": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.006899999999999999,
+      "conformal_known_recall": 0.47165,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.47149965121971116,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.969266228125,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0016099999999999999,
+      "conformal_known_recall": 0.032325,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.050256018599379434,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.56359060875,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.00698,
+      "conformal_known_recall": 0.47602500000000003,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.47647628484320564,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9631469275000001,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.036770000000000004,
+      "conformal_known_recall": 0.13305,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.011678144973607371,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8797068993750001,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.01667,
+      "conformal_known_recall": 0.511125,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.41521500000000006,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9668802299999999,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.03404,
+      "conformal_known_recall": 0.43477499999999997,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.3625353955617276,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9276589968750001,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-16": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.0074133949191685896,
+      "conformal_known_recall": 0.7309249999999999,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9928111038328857,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9996273174076211,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.015704387990762122,
+      "conformal_known_recall": 0.42589999999999995,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.413829206315435,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7237552201212472,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.004191685912240185,
+      "conformal_known_recall": 0.910525,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.9988260332800412,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9997141512702079,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.07610854503464203,
+      "conformal_known_recall": 0.046700000000000005,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.03687208333333333,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.1388290018764434,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.02513856812933025,
+      "conformal_known_recall": 0.38527500000000003,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.33648,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9442211655600463,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.046616628175519634,
+      "conformal_known_recall": 0.74285,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.37292941520467837,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9722717595265589,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-20": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.0049,
+      "conformal_known_recall": 0.1081,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.14133179250594535,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9777200531249999,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.005096456385528828,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.450921230625,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.00601,
+      "conformal_known_recall": 0.412775,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.42858832320162116,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9800093275,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.10232000000000001,
+      "conformal_known_recall": 0.303375,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.000375,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8633889074999999,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.08158000000000001,
+      "conformal_known_recall": 0.764925,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.104975,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.938560905625,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.09938,
+      "conformal_known_recall": 0.22842500000000002,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.017224999999999997,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8614700262499999,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-21": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.021450000000000004,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.08826371230652832,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.49853798581727,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.27463609348064566,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.01225,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.3961375079030288,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8857286093480645,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 4.7014574518100615e-05,
+      "conformal_known_recall": 0.5321,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.5385467822666644,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9764493799952983,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.07360000000000001,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.540825,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8876938979000156,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.43274999999999997,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.5385467822666644,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9666888457921955,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-22": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.00394,
+      "conformal_known_recall": 0.006172839506172839,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.007850070163820697,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.865611836419753,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0018499999999999999,
+      "conformal_known_recall": 0.06172839506172839,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0760012919046831,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.563885200617284,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.00306,
+      "conformal_known_recall": 0.30246913580246915,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.33286359530261966,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8826712962962964,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.0049099999999999994,
+      "conformal_known_recall": 0.3376543209876543,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.3390197336444055,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8166505555555557,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.0044599999999999996,
+      "conformal_known_recall": 0.34012345679012346,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.3580246913580247,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8844663580246912,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.00289,
+      "conformal_known_recall": 0.20493827160493824,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.33799291111477525,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8400847222222222,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-23": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.00142,
+      "conformal_known_recall": 0.005156537753222836,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.035625889464180445,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.8726717403314919,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.00165,
+      "conformal_known_recall": 0.051197053406998164,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.07057074610353631,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.5808743554327809,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.002,
+      "conformal_known_recall": 0.18931860036832412,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.2730854353500447,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.893024990791897,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.02191,
+      "conformal_known_recall": 0.3403314917127072,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.25788472809060975,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.6325165745856355,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.007680000000000001,
+      "conformal_known_recall": 0.2139963167587477,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.26740331491712704,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7994724309392265,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.011310000000000002,
+      "conformal_known_recall": 0.23499079189686922,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.2618484987377682,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.7934406445672192,
+      "auroc_unknown": null
+     }
+    },
+    "2018-02-28": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.07920596050643464,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.02355,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.0035994166666666666,
+      "auroc_known": null,
+      "auroc_unknown": 0.44581932801021207
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.005043505444693378,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.0040750000000000005,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.007885325675544758,
+      "auroc_known": null,
+      "auroc_unknown": 0.4996115582504038
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.07308914708487471,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.023575000000000002,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.003674416666666667,
+      "auroc_known": null,
+      "auroc_unknown": 0.4470749986974417
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.02157036419527953,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.017725,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.00828997183534703,
+      "auroc_known": null,
+      "auroc_unknown": 0.47563312145052883
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.09285677069765017,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.031700000000000006,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.0039056041666666666,
+      "auroc_known": null,
+      "auroc_unknown": 0.4559221916844683
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.07448548950138072,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.024675,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.0035994166666666666,
+      "auroc_known": null,
+      "auroc_unknown": 0.45528068827176577
+     }
+    },
+    "2018-03-01": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.0047997405545646184,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.0134,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.023468769005847955,
+      "auroc_known": null,
+      "auroc_unknown": 0.6001218886816929
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.0,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.006626279995159992,
+      "auroc_known": null,
+      "auroc_unknown": 0.4483470873196043
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.004767309875141884,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.011899999999999997,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.020514402933986306,
+      "auroc_known": null,
+      "auroc_unknown": 0.6056377209340036
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.00846440732933355,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.025625,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.026374425,
+      "auroc_known": null,
+      "auroc_unknown": 0.5948209644073293
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.017447705529430844,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.08377500000000002,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.035836,
+      "auroc_known": null,
+      "auroc_unknown": 0.6020442557159073
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.0075887789849197335,
+      "conformal_known_recall": null,
+      "conformal_unknown_recall": 0.024200000000000003,
+      "tpr_known@1%fpr": null,
+      "tpr_unknown@1%fpr": 0.02758904044314197,
+      "auroc_known": null,
+      "auroc_unknown": 0.5978944563807362
+     }
+    },
+    "2018-03-02": {
+     "Closed-set XGB": {
+      "conformal_fpr": 0.00735,
+      "conformal_known_recall": 0.0026249999999999997,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.003058712121212121,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9590836675000001,
+      "auroc_unknown": null
+     },
+     "Closed-set DT (v1.1-style)": {
+      "conformal_fpr": 0.0,
+      "conformal_known_recall": 0.0,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.000123250925921291,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.45978261624999994,
+      "auroc_unknown": null
+     },
+     "XGB + Energy": {
+      "conformal_fpr": 0.006619999999999999,
+      "conformal_known_recall": 0.0026249999999999997,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.0026249999999999997,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.94353525625,
+      "auroc_unknown": null
+     },
+     "kNN distance": {
+      "conformal_fpr": 0.00284,
+      "conformal_known_recall": 0.0059,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.016099614229856167,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9342154687499999,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR": {
+      "conformal_fpr": 0.0062699999999999995,
+      "conformal_known_recall": 0.200775,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.5883838235294118,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9806841762499999,
+      "auroc_unknown": null
+     },
+     "Aegis-OSR w/ max fusion": {
+      "conformal_fpr": 0.00494,
+      "conformal_known_recall": 0.006975,
+      "conformal_unknown_recall": null,
+      "tpr_known@1%fpr": 0.00896548753343858,
+      "tpr_unknown@1%fpr": null,
+      "auroc_known": 0.9388052600000002,
+      "auroc_unknown": null
+     }
+    }
+   },
+   "aegis_vs_xgb_known_conformal": {
+    "a": "Aegis-OSR",
+    "b": "Closed-set XGB",
+    "metric": "conformal_known_recall",
+    "variant": "recal+ref@2000",
+    "mean": 0.14418317453618443,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": 0.009724999999999984,
+     "2018-02-15": 0.039474999999999996,
+     "2018-02-16": -0.34564999999999996,
+     "2018-02-20": 0.656825,
+     "2018-02-21": 0.05215000000000001,
+     "2018-02-22": 0.33395061728395065,
+     "2018-02-23": 0.20883977900552483,
+     "2018-03-02": 0.19815
+    },
+    "groups_a_better": 7,
+    "groups_b_better": 1,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": 0.08786014660493827,
+     "2": 0.18271717268603782,
+     "3": 0.196445753188732,
+     "4": 0.07977109231123392,
+     "5": 0.17412170788998022
+    },
+    "seeds_a_better": 5,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.00444283537202955,
+    "group_level_wilcoxon_p": 0.1484375,
+    "hierarchical_bootstrap_95ci": [
+     -0.054712103619935525,
+     0.34656833972784923
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   },
+   "aegis_vs_xgb_known_matched": {
+    "a": "Aegis-OSR",
+    "b": "Closed-set XGB",
+    "metric": "tpr_known@1%fpr",
+    "variant": "recal+ref@2000",
+    "mean": 0.11030779387169898,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": 0.011596452783312094,
+     "2018-02-15": -0.05628465121971118,
+     "2018-02-16": -0.6563311038328857,
+     "2018-02-20": -0.03635679250594535,
+     "2018-02-21": 0.45256128769347165,
+     "2018-02-22": 0.350174621194204,
+     "2018-02-23": 0.2317774254529466,
+     "2018-03-02": 0.5853251114081996
+    },
+    "groups_a_better": 5,
+    "groups_b_better": 3,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": 0.07618272182044344,
+     "2": 0.18512010863101097,
+     "3": 0.0341286016733168,
+     "4": 0.11524498610863282,
+     "5": 0.14086255112509083
+    },
+    "seeds_a_better": 5,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.013240332614462114,
+    "group_level_wilcoxon_p": 0.546875,
+    "hierarchical_bootstrap_95ci": [
+     -0.16589432230985185,
+     0.35298934295334555
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   },
+   "max_vs_xgb_known_matched": {
+    "a": "Aegis-OSR w/ max fusion",
+    "b": "Closed-set XGB",
+    "metric": "tpr_known@1%fpr",
+    "variant": "recal+ref@2000",
+    "mean": 0.005205092624397012,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": -0.11796181780959256,
+     "2018-02-15": -0.10896425565798365,
+     "2018-02-16": -0.6198816886282075,
+     "2018-02-20": -0.12410679250594536,
+     "2018-02-21": 0.4502830699601361,
+     "2018-02-22": 0.3301428409509546,
+     "2018-02-23": 0.2262226092735878,
+     "2018-03-02": 0.005906775412226457
+    },
+    "groups_a_better": 4,
+    "groups_b_better": 4,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": -0.06651089631237722,
+     "2": 0.07314774500475557,
+     "3": -0.01974493067440189,
+     "4": -0.08576933584266594,
+     "5": 0.12490288094667454
+    },
+    "seeds_a_better": 2,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.9042014816750645,
+    "group_level_wilcoxon_p": 0.9453125,
+    "hierarchical_bootstrap_95ci": [
+     -0.23350604644224568,
+     0.21797318968415785
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   },
+   "aegis_vs_max_known_matched": {
+    "a": "Aegis-OSR",
+    "b": "Aegis-OSR w/ max fusion",
+    "metric": "tpr_known@1%fpr",
+    "variant": "recal+ref@2000",
+    "mean": 0.10510270124730195,
+    "per_group_mean_over_seeds": {
+     "2018-02-14": 0.12955827059290465,
+     "2018-02-15": 0.052679604438272444,
+     "2018-02-16": -0.036449415204678384,
+     "2018-02-20": 0.08775,
+     "2018-02-21": 0.0022782177333355857,
+     "2018-02-22": 0.0200317802432494,
+     "2018-02-23": 0.005554816179358812,
+     "2018-03-02": 0.5794183359959731
+    },
+    "groups_a_better": 7,
+    "groups_b_better": 1,
+    "groups": 8,
+    "per_seed_mean_over_groups": {
+     "1": 0.14269361813282067,
+     "2": 0.11197236362625541,
+     "3": 0.05387353234771866,
+     "4": 0.20101432195129879,
+     "5": 0.0159596701784163
+    },
+    "seeds_a_better": 5,
+    "seeds": 5,
+    "seed_level_paired_t_p": 0.03209999244934587,
+    "group_level_wilcoxon_p": 0.0546875,
+    "hierarchical_bootstrap_95ci": [
+     0.0049275346716931715,
+     0.2651792225033168
+    ],
+    "statistics_note": "seed-level test: groups share the trained model within a seed, so only seeds are independent replicates; group-level Wilcoxon and the hierarchical bootstrap (groups, then seeds) describe how far the effect generalises across days/families. Unadjusted p-values."
+   }
+  }
+ },
+ "temporal_records": {
+  "source": "research_artifacts/openset_temporal_records.json",
+  "per_fold": {
+   "Mon-Thu\u2192Fri": {
+    "none": {
+     "zero_day_recall": {
+      "aegis_mean": 0.4953414953414953,
+      "xgb_mean": 0.4705782705782706,
+      "diff_mean": 0.024763224763224755,
+      "seeds_aegis_better": 5,
+      "seeds": 5,
+      "paired_t_p": 0.05925809945180787
+     },
+     "fpr": {
+      "aegis_mean": 0.07088933333333333,
+      "xgb_mean": 0.012694666666666668,
+      "diff_mean": 0.05819466666666666,
+      "seeds_aegis_better": 5,
+      "seeds": 5,
+      "paired_t_p": 3.167912845795546e-06
+     }
+    },
+    "recal@500": {
+     "zero_day_recall": {
+      "aegis_mean": 0.3448910448910449,
+      "xgb_mean": 0.36572341572341577,
+      "diff_mean": -0.020832370832370828,
+      "seeds_aegis_better": 0,
+      "seeds": 5,
+      "paired_t_p": 0.3552298357675255
+     },
+     "fpr": {
+      "aegis_mean": 0.0035653333333333327,
+      "xgb_mean": 0.006056000000000001,
+      "diff_mean": -0.0024906666666666666,
+      "seeds_aegis_better": 0,
+      "seeds": 5,
+      "paired_t_p": 0.1720177410051132
+     }
+    },
+    "recal+ref@500": {
+     "zero_day_recall": {
+      "aegis_mean": 0.3287672287672288,
+      "xgb_mean": 0.3442172942172942,
+      "diff_mean": -0.015450065450065442,
+      "seeds_aegis_better": 0,
+      "seeds": 5,
+      "paired_t_p": 0.36838929368375917
+     },
+     "fpr": {
+      "aegis_mean": 0.004588,
+      "xgb_mean": 0.004684,
+      "diff_mean": -9.600000000000008e-05,
+      "seeds_aegis_better": 1,
+      "seeds": 5,
+      "paired_t_p": 0.9482697750902161
+     }
+    },
+    "recal@2000": {
+     "zero_day_recall": {
+      "aegis_mean": 0.42917917917917914,
+      "xgb_mean": 0.3673173173173173,
+      "diff_mean": 0.06186186186186186,
+      "seeds_aegis_better": 5,
+      "seeds": 5,
+      "paired_t_p": 0.01653660411583826
+     },
+     "fpr": {
+      "aegis_mean": 0.008246666666666666,
+      "xgb_mean": 0.006816,
+      "diff_mean": 0.0014306666666666671,
+      "seeds_aegis_better": 3,
+      "seeds": 5,
+      "paired_t_p": 0.6418820818794283
+     }
+    },
+    "recal+ref@2000": {
+     "zero_day_recall": {
+      "aegis_mean": 0.3827481327481328,
+      "xgb_mean": 0.36762531762531764,
+      "diff_mean": 0.015122815122815114,
+      "seeds_aegis_better": 2,
+      "seeds": 5,
+      "paired_t_p": 0.39107030414511035
+     },
+     "fpr": {
+      "aegis_mean": 0.006280000000000001,
+      "xgb_mean": 0.006290666666666667,
+      "diff_mean": -1.0666666666666464e-05,
+      "seeds_aegis_better": 2,
+      "seeds": 5,
+      "paired_t_p": 0.995430536448794
+     }
+    },
+    "recal@5000": {
+     "zero_day_recall": {
+      "aegis_mean": 0.44142219142219147,
+      "xgb_mean": 0.364957264957265,
+      "diff_mean": 0.07646492646492646,
+      "seeds_aegis_better": 5,
+      "seeds": 5,
+      "paired_t_p": 0.008501492366993898
+     },
+     "fpr": {
+      "aegis_mean": 0.025731999999999998,
+      "xgb_mean": 0.006637333333333334,
+      "diff_mean": 0.01909466666666667,
+      "seeds_aegis_better": 5,
+      "seeds": 5,
+      "paired_t_p": 0.0030921722436451763
+     }
+    },
+    "recal+ref@5000": {
+     "zero_day_recall": {
+      "aegis_mean": 0.4438630938630938,
+      "xgb_mean": 0.3555170555170556,
+      "diff_mean": 0.08834603834603834,
+      "seeds_aegis_better": 5,
+      "seeds": 5,
+      "paired_t_p": 0.013650720763816857
+     },
+     "fpr": {
+      "aegis_mean": 0.028353333333333335,
+      "xgb_mean": 0.005508,
+      "diff_mean": 0.022845333333333336,
+      "seeds_aegis_better": 5,
+      "seeds": 5,
+      "paired_t_p": 0.002076629380059233
+     }
+    },
+    "oracle@2000": {
+     "zero_day_recall": {
+      "aegis_mean": 0.3896550396550396,
+      "xgb_mean": 0.3971625471625472,
+      "diff_mean": -0.007507507507507505,
+      "seeds_aegis_better": 2,
+      "seeds": 5,
+      "paired_t_p": 0.5306416189721811
+     },
+     "fpr": {
+      "aegis_mean": 0.009689333333333331,
+      "xgb_mean": 0.008146666666666667,
+      "diff_mean": 0.0015426666666666664,
+      "seeds_aegis_better": 4,
+      "seeds": 5,
+      "paired_t_p": 0.2448370059586425
+     }
+    }
+   },
+   "Mon-Wed\u2192Thu": {
+    "none": {
+     "zero_day_recall": {
+      "aegis_mean": 0.9922900413033501,
+      "xgb_mean": 0.9824690224873794,
+      "diff_mean": 0.009821018815970617,
+      "seeds_aegis_better": 5,
+      "seeds": 5,
+      "paired_t_p": 0.001121832917838177
+     },
+     "fpr": {
+      "aegis_mean": 0.017158666666666666,
+      "xgb_mean": 0.012514666666666669,
+      "diff_mean": 0.004644,
+      "seeds_aegis_better": 5,
+      "seeds": 5,
+      "paired_t_p": 0.0649263486628859
+     }
+    },
+    "recal@500": {
+     "zero_day_recall": {
+      "aegis_mean": 0.9376778338687473,
+      "xgb_mean": 0.9513538320330426,
+      "diff_mean": -0.013675998164295544,
+      "seeds_aegis_better": 2,
+      "seeds": 5,
+      "paired_t_p": 0.2401327798045917
+     },
+     "fpr": {
+      "aegis_mean": 0.0027266666666666667,
+      "xgb_mean": 0.004314666666666666,
+      "diff_mean": -0.0015879999999999998,
+      "seeds_aegis_better": 1,
+      "seeds": 5,
+      "paired_t_p": 0.05430021334808756
+     }
+    },
+    "recal+ref@500": {
+     "zero_day_recall": {
+      "aegis_mean": 0.9255621844882974,
+      "xgb_mean": 0.930977512620468,
+      "diff_mean": -0.005415328132170716,
+      "seeds_aegis_better": 0,
+      "seeds": 5,
+      "paired_t_p": 0.09332938702050447
+     },
+     "fpr": {
+      "aegis_mean": 0.0024146666666666665,
+      "xgb_mean": 0.002606666666666667,
+      "diff_mean": -0.00019200000000000003,
+      "seeds_aegis_better": 1,
+      "seeds": 5,
+      "paired_t_p": 0.3414617144922517
+     }
+    },
+    "recal@2000": {
+     "zero_day_recall": {
+      "aegis_mean": 0.9513538320330426,
+      "xgb_mean": 0.9804497475906379,
+      "diff_mean": -0.02909591555759523,
+      "seeds_aegis_better": 0,
+      "seeds": 5,
+      "paired_t_p": 0.04370351193911484
+     },
+     "fpr": {
+      "aegis_mean": 0.004902666666666666,
+      "xgb_mean": 0.009708,
+      "diff_mean": -0.004805333333333333,
+      "seeds_aegis_better": 0,
+      "seeds": 5,
+      "paired_t_p": 0.01990595848450956
+     }
+    },
+    "recal+ref@2000": {
+     "zero_day_recall": {
+      "aegis_mean": 0.954290959155576,
+      "xgb_mean": 0.9599816429554842,
+      "diff_mean": -0.0056906837999082475,
+      "seeds_aegis_better": 1,
+      "seeds": 5,
+      "paired_t_p": 0.5884237291945696
+     },
+     "fpr": {
+      "aegis_mean": 0.0049173333333333335,
+      "xgb_mean": 0.007909333333333332,
+      "diff_mean": -0.0029919999999999994,
+      "seeds_aegis_better": 2,
+      "seeds": 5,
+      "paired_t_p": 0.2138075451918436
+     }
+    },
+    "recal@5000": {
+     "zero_day_recall": {
+      "aegis_mean": 0.8815052776502983,
+      "xgb_mean": 0.9819183111519045,
+      "diff_mean": -0.10041303350160624,
+      "seeds_aegis_better": 0,
+      "seeds": 5,
+      "paired_t_p": 0.26545888511676224
+     },
+     "fpr": {
+      "aegis_mean": 0.006653333333333333,
+      "xgb_mean": 0.009969333333333334,
+      "diff_mean": -0.0033160000000000004,
+      "seeds_aegis_better": 0,
+      "seeds": 5,
+      "paired_t_p": 6.214527498409671e-05
+     }
+    },
+    "recal+ref@5000": {
+     "zero_day_recall": {
+      "aegis_mean": 0.9605323542909592,
+      "xgb_mean": 0.9812758145938505,
+      "diff_mean": -0.020743460302891224,
+      "seeds_aegis_better": 0,
+      "seeds": 5,
+      "paired_t_p": 0.0030225502551448017
+     },
+     "fpr": {
+      "aegis_mean": 0.0077146666666666665,
+      "xgb_mean": 0.010213333333333333,
+      "diff_mean": -0.002498666666666666,
+      "seeds_aegis_better": 0,
+      "seeds": 5,
+      "paired_t_p": 0.10480507453601412
+     }
+    },
+    "oracle@2000": {
+     "zero_day_recall": {
+      "aegis_mean": 0.9813675998164296,
+      "xgb_mean": 0.9695273061037174,
+      "diff_mean": 0.01184029371271229,
+      "seeds_aegis_better": 4,
+      "seeds": 5,
+      "paired_t_p": 0.12569027442432443
+     },
+     "fpr": {
+      "aegis_mean": 0.0092,
+      "xgb_mean": 0.008454666666666668,
+      "diff_mean": 0.0007453333333333334,
+      "seeds_aegis_better": 3,
+      "seeds": 5,
+      "paired_t_p": 0.5982847636017924
+     }
+    }
+   }
+  },
+  "note": "conformal operating point only; rows with unequal realised FPR must be read with the fpr row. The oracle@W variants re-target the threshold on target benign flows."
+ }
+}

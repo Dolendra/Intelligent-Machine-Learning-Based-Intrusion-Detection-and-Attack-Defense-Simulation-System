@@ -156,3 +156,54 @@ Ordered by consequence. Full detail is in ML_PIPELINE_AUDIT.md Part B.
 | **Methodological** | **Partially aligned** | Strong practice is in place: artifact protection, an exact regression gate, seed-level statistics, generated paper numbers, a claim audit. But R3 is not campaign-ready (RES-2, RES-10), design and evaluation flows overlap (RES-6), and the proposed reliability method fails its own pre-registered criterion on the discovery data. |
 
 **Overall:** the direction is right, and the research process is unusually disciplined for a student project. Aegis is **not research-ready yet**. The blockers are fixable and mostly cheap: documentation corrections, a handful of code defects, and protocol amendments. They should be closed before R3 compute is spent.
+
+
+---
+
+## Phase 2 update (2026-11-18)
+
+This update draws on `RESEARCH_INTEGRITY_REPORT.md`, `CLAIM_AUDIT.md` §11 and `R2_LITERATURE_VERIFICATION.md`.
+
+### §2, distinguishability: narrowed further
+
+Three published papers now cover ground that this review left open:
+* **Şahin & Mert** (*Electronics* 15(18):4084, 2026) report the 2017→2018 result that recalibration keeps the error
+  certificate while detection collapses.
+* **Arepalli et al.** (*Discover Informatics* 1:33, 2026; formerly "F4") run LOAFO on CIC-IDS2017 with the same kNN
+  mean-distance score.
+* **Mchina et al.** (*Network* 6(2):23, 2026; formerly "F6") fuse supervised and anomaly scores at a fixed FPR budget, with
+  adaptive per-signal weighting.
+
+The Arepalli et al. full-text statements are not yet independently re-read.
+
+What remains distinguishable is narrow:
+* the stream-level account of why fixed Fisher fusion falls below its own classifier after benign-only, time-disjoint
+  recalibration (the mechanism itself is classical);
+* the matched-FPR evidence that the sign of the fusion effect depends on the setting:
+  * in-distribution: +0.218;
+  * temporal: neutral;
+  * cross-network: −0.202.
+
+Neither is a methodological contribution.
+
+### §3, methodology: progress
+
+* Items 1 and 8 (claims exceeding evidence; production-side claims) are **corrected**.
+* Item 3 (uncertainty) is partly addressed: family- and day-level hierarchical intervals now exist for the headline
+  comparisons.
+* Item 4 (unequal realised FPR) is addressed for analysis: matched-FPR comparisons exist. It is not fixed in the protocol
+  (PR-01 is still open).
+* Items 2, 5, 6 and 7 are unchanged.
+
+### §5, reliability approach: weaker than before
+
+Max fusion already recovers almost all of the classifier's post-shift detection at matched FPR (−0.043, CI [−0.152, +0.033]).
+A reliability-gated method must therefore beat max fusion and supervised-only, not Fisher. The pre-registered H1b already
+fails on the discovery data.
+
+### Updated verdict
+
+| Dimension | Verdict |
+|---|---|
+| Scientific | **Claims now match the evidence** in the corrected documents. The R1b LaTeX recompile is pending. |
+| Methodological | **Partially aligned.** R3 is not ready (PR-01 to PR-04 open; H1c bar must change). |

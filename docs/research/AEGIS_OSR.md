@@ -25,7 +25,7 @@ Two practical requirements make this harder:
 |----|----------|
 | RQ-A | Does fusing supervised evidence with benign-novelty evidence detect unseen attack families better than a closed-set classifier at the *same* benign false-alarm rate? |
 | RQ-B | Can the benign false-alarm rate be *guaranteed* (not just tuned) in finite samples? |
-| RQ-C | What happens to that guarantee under realistic temporal and cross-network shift — and can it be restored without retraining? |
+| RQ-C | What happens to that guarantee under realistic temporal and cross-network shift — and how far does recalibration without retraining recover it? (Answer so far: partly and unreliably; see `RESEARCH_INTEGRITY_REPORT.md`.) |
 | RQ-D | Can alerts be attributed honestly (known family vs. unknown attack vs. novel anomaly)? |
 
 ## 2. Method
@@ -72,7 +72,9 @@ alone are `ZERO-DAY-ANOMALY`.
 **Label-light adaptation (no retraining).** Given a small window of *W* confirmed-benign flows
 from the new environment:
 
-* `recal@W` — re-estimate `C1`/`C2` on the window (restores exchangeability for calibration);
+* `recal@W` — re-estimate `C1`/`C2` on the window. This re-targets the threshold to the new traffic; the FPR bound
+  holds only if the window is exchangeable with the traffic scored afterwards, which early-window sampling does not
+  ensure (realised FPR after recal@2000 ranged 0.00 %–8.84 % across 2018 days, seed means; Friday recal@5000: 2.57 %);
 * `recal+ref@W` — additionally append ⅓ of the window to the kNN benign reference
   (those flows are excluded from calibration to avoid zero self-distances).
 

@@ -21,7 +21,7 @@ F = {k: v.display for k, v in PUB.facts().items()}
 # Order in which tables appear below; Roman numerals for cross-references are derived from it
 # and checked against the builder's own numbering at the end of the build.
 TABLE_ORDER = ["data", "cand", "v11", "loafo", "significance", "family", "temporal", "adapt", "gate", "v11_2018",
-               "cross", "cross_perday", "families", "range_def", "range_det", "xai", "p11", "perf"]
+               "cross", "cross_perday", "inversion", "families", "range_def", "range_det", "xai", "p11", "perf"]
 _NUM = _json.loads((_ROOT / "docs" / "research" / "paper_numbers.json").read_text(encoding="utf-8"))
 _SUMMARY = _json.loads((_ROOT / "research_artifacts" / "openset_loafo_summary.json").read_text(encoding="utf-8"))
 _GATE = _json.loads((_ROOT / "research_artifacts" / "zero_day_gate_report.json").read_text(encoding="utf-8"))["evaluation"]
@@ -103,7 +103,8 @@ P.para("**Abstract—**Machine-learning intrusion detectors routinely report F1 
        f"flows left it at {F['a_fri_recal_5000_osr_fpr']}). On the 2018 data, re-calibrating separately on each capture day's own "
        f"benign flows brought the average false-alarm rate to {F['pd_recal2000_fpr']}, but the gate then recognised only "
        f"{F['pd_recal2000_known']} of known-family attacks and {F['pd_recal2000_zdr']} of the unseen family, so transfer remains "
-       "unsolved. To measure what such numbers mean operationally, we built a trace-driven cyber range that replays "
+       f"unsolved; after that re-calibration the fused score detected fewer known attacks than the classifier alone "
+       f"({F['ra_pd_fisher_xgb_conf']}, an exploratory finding), so fusion that helps in-distribution can hurt under shift. To measure what such numbers mean operationally, we built a trace-driven cyber range that replays "
        "recorded flows through the real detectors on a seeded clock and lets a human choose the response. Across "
        f"{F['range_runs']} runs, the frozen detector raised an incident in {F['rz_frozen_detected']} of {F['range_seeds']} zero-day "
        f"runs and the gate in {F['rz_gate_detected']} (mean {F['rz_gate_latency']} s); requiring three alerts within five seconds "
@@ -313,11 +314,17 @@ P.para("Flows that the binary stage calls malicious are passed to an attack-only
        f"0.3·weighted-F1; the Random Forest scored {F['mc_score_random_forest']} on validation against "
        f"{F['mc_score_xgboost']} for XGBoost and was selected.")
 P.subsection("Test Results")
-P.para(f"Table {TR['v11']} gives the frozen detector's scores on the {F['v11_test_rows']}-row stratified test split. Of "
-       f"{F['mc_test_attacks']} attacks in the multiclass test set, {F['mc_misattributed']} were assigned to the wrong family; "
-       f"the largest group was {F['mc_worst_cell']}. These are excellent numbers, and they are also the numbers that the "
-       "rest of this paper warns against reading too much into: they come from a random split of a single capture, "
-       "and every family in the test set was present in training.")
+P.para(f"Table {TR['v11']} gives the frozen detector's scores on the {F['v11_test_rows']}-row stratified test split at both "
+       "the argmax threshold 0.5 and the deployed threshold 0.85. Earlier versions of this report labelled the 0.5 "
+       f"figures as 0.85; at 0.85 the binary F1 is {F['v11_f1']} (recall {F['v11_recall_085']}, false-positive rate "
+       f"{F['v11_fpr_085']}). The aggregate hides a minority-family failure: at 0.85 the two-stage system detects only "
+       f"{F['v11_bot_det_085']} of botnet flows (n = {F['v11_bot_n']}) and {F['v11_web_det_085']} of web-attack flows "
+       f"(n = {F['v11_web_n']}), and its end-to-end seven-class macro-F1 is {F['v11_e2e_macro_f1']}. The threshold rule maximised "
+       "overall F1, which DoS and DDoS dominate. Of "
+       f"{F['mc_test_attacks']} attacks in the multiclass test set, {F['mc_misattributed']} were assigned to the wrong family "
+       f"when the family model is applied to every true attack, i.e. assuming a perfect first stage; the largest group was "
+       f"{F['mc_worst_cell']}. These numbers come from a random split of a single capture, and every family in the test set "
+       "was present in training.")
 PT("v11")
 
 # =====================================================================================  VI. AEGIS-OSR
@@ -751,13 +758,16 @@ P.para(f"Table {TR['v11_2018']} scores the *unchanged* frozen detector on CSE-CI
        f"detected by the frozen detector at its fixed operating thresholds, while LOIC-HTTP ({F['x_frozen_loichttp']}) transferred partly and Slowloris ({F['x_frozen_slowloris']}) "
        "carried over. Per-label rates also depend on how the sample is drawn: the earlier sample, which kept each label's "
        "first flows in file order, showed LOIC-HTTP as undetected. This does not make those attacks undetectable. In an "
-       "exploratory, post-hoc analysis of the per-day records, a classifier retrained on CICIDS2017 and re-calibrated on "
+       "exploratory, post-hoc analysis of the per-day records, the closed-set XGBoost classifier trained on CICIDS2017 "
+       "(not retrained on 2018 data) and re-calibrated on "
        "2,000 benign flows of the same day detected the 2018-02-14 brute-force attacks (recall "
        f"{F['rd_xgb_bf_known']} at {F['rd_xgb_bf_fpr']} false alarms) and the 2018-02-16 DoS attacks "
-       f"({F['rd_xgb_dos_known']} at {F['rd_xgb_dos_fpr']}): the shift moved scores relative to the frozen thresholds "
-       "rather than removing the signal. Differences between the flow extractors used for the two releases may "
-       "contribute and are confounded with the change of network; separating the two requires data produced by a "
-       "single extractor.")
+       f"({F['rd_xgb_dos_known']} at {F['rd_xgb_dos_fpr']}): on these two days the shift moved scores relative to the frozen "
+       f"thresholds rather than removing the signal. It does not hold on every day: on {F['ra_xgb_low_days']} of the "
+       f"{F['ra_known_days']} days with known-family attacks the re-calibrated classifier detected under 5% of them "
+       f"(Table {TR['inversion']}). Differences between the flow extractors used for the two releases may "
+       "contribute and are confounded with the change of network; this is a hypothesis we have not tested, and "
+       "separating the two requires data produced by a single extractor.")
 PT("v11_2018")
 P.para(f"Table {TR['cross']} reports the open-set protocol across datasets, with Infiltration—never in training—as "
        "the unknown family. It is a negative result. Every method's ability to separate the unknown family from benign "
@@ -769,7 +779,7 @@ P.para(f"Table {TR['cross']} reports the open-set protocol across datasets, with
        f"({F['pd_days_within']} of {F['pd_days']} days within 1.5%; per-day range {F['pd_recal2000_fpr_range']}), but recall "
        f"fell to {F['pd_recal2000_known']} on known families and {F['pd_recal2000_zdr']} on the unseen family. Calibrating on "
        "the target day therefore controls false alarms where the day's early traffic resembles the rest of it, but it "
-       "cannot create separation that the evidence does not contain. On "
+       "cannot restore separation that the fused score has lost. On "
        f"{F['pd_anomaly_day']} the flows labelled benign differ sharply from benign traffic on every other day (median "
        f"{F['pd_anomaly_bytes']} against {F['pd_other_bytes_median']} bytes/s) and every one of them alerted before "
        f"re-calibration, consistent with documented labelling problems in this release; we keep the day, and excluding it "
@@ -779,6 +789,25 @@ P.para(f"Table {TR['cross']} reports the open-set protocol across datasets, with
        "from benign traffic [40].")
 PT("cross")
 PT("cross_perday")
+P.para(f"Table {TR['inversion']} compares, for every 2018 day with known-family attacks, the classifier alone, max fusion "
+       "and Fisher fusion (Aegis-OSR) after the same re-calibration. This is an exploratory, post-hoc re-analysis of the "
+       "stored per-flow scores. Averaged over days, Fisher fusion detected fewer known-family attacks than the classifier "
+       f"alone ({F['ra_pd_fisher_xgb_conf']}; hierarchical bootstrap over days and seeds {F['ra_pd_fisher_xgb_conf_ci']}; "
+       f"{F['ra_pd_fisher_xgb_conf_seeds']} seeds favour fusion). The loss comes from the four days on which the classifier still "
+       "separates attacks; on the other four every method detects under 5%. At an exactly matched 1% false-alarm rate "
+       f"(an oracle threshold, used only to compare rankings) the difference is {F['ra_pd_fisher_xgb_matched']} "
+       f"{F['ra_pd_fisher_xgb_matched_ci']}, while max fusion stays close to the classifier ({F['ra_pd_max_xgb_matched']} "
+       f"{F['ra_pd_max_xgb_matched_ci']}). A sum of surprisals loses power when one stream carries no signal or an "
+       "inverted one—the classical observation that no p-value combiner is most powerful against every alternative, "
+       "with Fisher's sum favouring evidence spread across tests and the minimum-p rule evidence concentrated in one "
+       "[41], [42]—and on several of these days the k-NN stream ranks attacks below benign flows. Şahin and Mert [43] "
+       "report, for conformal alert triage across a cross-dataset shift, that after re-calibration on labelled target data "
+       "degradation appears as reduced automation rather than silent errors; our finding that re-calibration restores "
+       "the false-alarm budget but not detection is consistent with theirs and is not claimed as new. In-distribution the "
+       f"same fusion helps (LOAFO, matched 1% false-alarm rate: {F['ra_loafo_xgb_matched']} over the classifier, "
+       f"{F['ra_loafo_xgb_matched_ci']} over families and seeds), so the sign of the fusion effect depends on the setting. "
+       "Day, attack family, extractor and label quality are confounded in this comparison.")
+PT("inversion")
 P.subsection("Would a Different Classifier Solve It?")
 P.para(f"Table {TR['families']} compares ten classifier families at the same 1% benign false-alarm budget. With "
        f"every family seen in training they are hard to tell apart: binary F1 ranged from {F['fam_iid_f1_range']}, and "
@@ -851,13 +880,15 @@ P.para(f"Table {TR['xai']} reports the explanation-stability study on replay flo
        "not as evidence of causation.")
 PT("xai")
 P.subsection("Mitigation on the Controlled Test Plane")
-P.para(f"Before the range existed, the controlled test plane measured the response chain directly (Table {TR['p11']}). "
+P.para(f"Before the range existed, the controlled test plane exercised the response chain directly (Table {TR['p11']}). "
+       "These values are harness validation and hold by construction of the test adapter; they are not "
+       "mitigation-effectiveness measurements. "
        "Without defence and with a proposed-but-unapproved recommendation, the target accepted every attack attempt; "
        "with an approved response, the source block denied all subsequent DDoS attempts and the rate limit "
        f"{F['p11_dos_eff']} of DoS attempts—close to what the controlled adapter is built to do. The experiment validates "
        "the chain detection → approval → enforcement → verification → rollback more than it estimates what a real "
-       "firewall would achieve. The storyboard's assumed values are reported beside the measurements and were not "
-       "adjusted to match them.")
+       "firewall would achieve. The storyboard's assumed values are reported beside them and were not adjusted; the "
+       "difference between the two is not meaningful.")
 PT("p11")
 P.subsection("Engineering Performance and Security Validation")
 P.para(f"Table {TR['perf']} lists the measured operating envelope on the development machine. The vectorised models "
@@ -959,10 +990,12 @@ P.para("We set out to give a flow-based intrusion detector a way to say \"this i
        f"false-alarm rate, against {F['xgb_zdr']} for the same classifier alone, labelled those alerts as unknown rather "
        f"than forcing them into a known family, and flagged {F['unseen_gate']} of {F['unseen_total']} naturally unseen "
        "attacks that the frozen detector missed. The guarantee held when its assumption held and failed when traffic "
-       "changed: across days, re-calibration on a few thousand benign flows largely restored it without retraining, "
-       "though the result depended on how the window was drawn; across networks, neither the frozen detector "
+       "changed: across days, re-calibration on a few thousand benign flows brought it near the budget for some window "
+       "sizes but not others, without retraining; across networks, neither the frozen detector "
        f"(F1 {F['v11_f1']} → {F['x_frozen_f1']}) nor the gate transferred, and per-day re-calibration controlled false "
-       "alarms at the cost of most of the recall. In the trace-driven cyber range, the gate turned a zero-day scenario "
+       "alarms at the cost of most of the recall; after that re-calibration the fixed Fisher fusion detected fewer "
+       "known attacks than its own classifier, so a fusion rule that helps in-distribution should not be kept fixed under "
+       "shift. In the trace-driven cyber range, the gate turned a zero-day scenario "
        f"that the frozen detector did not detect into one detected in about {F['rz_gate_latency']} seconds, alert aggregation removed false "
        "incidents, and the choice and timing of the human-approved response—not detection speed—decided the modelled "
        "service outcome.")
@@ -1039,6 +1072,9 @@ REFS = [
     "R. A. Fisher, *Statistical Methods for Research Workers*, 4th ed. Edinburgh, U.K.: Oliver and Boyd, 1932.",
     "F. Wilcoxon, \"Individual comparisons by ranking methods,\" *Biometrics Bull.*, vol. 1, no. 6, pp. 80–83, 1945.",
     "L. Liu, G. Engelen, T. Lynar, D. Essam, and W. Joosen, \"Error prevalence in NIDS datasets: A case study on CIC-IDS-2017 and CSE-CIC-IDS-2018,\" in *Proc. IEEE Conf. Commun. Netw. Security (CNS)*, 2022.",
+    "A. Birnbaum, \"Combining independent tests of significance,\" *J. Amer. Statist. Assoc.*, vol. 49, no. 267, pp. 559–574, 1954.",
+    "N. A. Heard and P. Rubin-Delanchy, \"Choosing between methods of combining p-values,\" *Biometrika*, vol. 105, no. 1, pp. 239–246, 2018.",
+    "F. Şahin and N. S. Mert, \"Dual-threshold conformal deferral for trustworthy security alert triage,\" *Electronics*, vol. 15, no. 18, art. 4084, 2026.",
 ]
 for i, ref in enumerate(REFS, 1):
     p = d.add_paragraph()

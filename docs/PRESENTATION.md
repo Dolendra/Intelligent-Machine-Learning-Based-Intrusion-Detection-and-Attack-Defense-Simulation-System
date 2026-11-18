@@ -15,9 +15,9 @@ python scripts/08_export_presentation_pptx.py
 
 | Class | Example |
 |-------|---------|
-| Research (IID / temporal) | Binary F1 **0.99048** |
+| Research (IID) | Binary F1 **0.99382** @ 0.85 (0.99048 @ 0.5); Bot / WebAttack detected 57 % / 37 % |
 | Simulation assumptions | DDoS efficacy **0.82** |
-| Controlled-lab (P11) | DDoS `BLOCK_SOURCE` **1.00** |
+| Controlled-lab (P11) | Harness validation: DDoS `BLOCK_SOURCE` 1.00 by construction |
 
 ---
 
@@ -63,8 +63,10 @@ python scripts/08_export_presentation_pptx.py
 - Families: Bot · BruteForce · DDoS · DoS · PortScan · WebAttack
 
 ## Slide 9 — Model results (research IID)
-- Binary test: F1 **0.99048** · Recall **0.997** · PR-AUC **0.99744** · ROC-AUC **0.99916**
-- Multiclass test: macro-F1 **0.99813** · weighted-F1 **0.99979**
+- Binary test @ deployed 0.85: F1 **0.99382** · Recall **0.992** · FPR **0.091 %** (historical 0.99048 / 0.997 were @ 0.5)
+- PR-AUC **0.99744** · ROC-AUC **0.99916** (threshold-free)
+- Multiclass test: macro-F1 **0.99813** · weighted-F1 **0.99979** — *given a perfect stage 1*
+- End-to-end @ 0.85: Bot **57.1 %**, WebAttack **37.3 %** detected — the minority-family weakness
 - Message: **IID benchmark ≠ live guarantee**
 - Figures: confusion + ROC
 
@@ -88,12 +90,12 @@ python scripts/08_export_presentation_pptx.py
 - DRY_RUN / CONTROLLED / LIVE(forbidden)
 - RBAC: viewer · analyst (propose) · responder/admin (approve)
 
-## Slide 14 — P11 empirical mitigation
-| Scenario | Measured | Sim prior |
+## Slide 14 — P11 harness validation (deterministic by construction)
+| Scenario | Harness value | Sim prior |
 |----------|---------:|----------:|
 | DDoS `BLOCK_SOURCE` | **1.00** | 0.82 |
 | DoS `RATE_LIMIT` | **0.80** | 0.78 |
-- CONTROLLED lab only · recommendation-only ≠ mitigation · priors **not** overwritten
+- CONTROLLED lab only · values hold by construction of the test adapter (not measured mitigation) · priors **not** overwritten
 
 ## Slide 15 — P12 security validation
 - Ten categories · **Overall: PASS**

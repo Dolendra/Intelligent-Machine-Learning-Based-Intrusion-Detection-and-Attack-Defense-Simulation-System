@@ -15,7 +15,7 @@
 | [PRESENTATION.md](PRESENTATION.md) | Slide outline synced to frozen DT/RF metrics |
 | [PROJECT_REPORT.md](PROJECT_REPORT.md) | **Final project report** (Ch. 1–16; research vs simulation vs P11 lab) |
 | [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) | What “productionized” means / hard boundaries |
-| [GENERALIZATION.md](GENERALIZATION.md) | P10 temporal generalization |
+| [GENERALIZATION.md](GENERALIZATION.md) | P10 temporal generalization — **superseded (contaminated, ML-3)**; historical record only |
 | [EMPIRICAL_MITIGATION.md](EMPIRICAL_MITIGATION.md) | P11 controlled-lab measurements |
 | [FINAL_SECURITY_VALIDATION.md](FINAL_SECURITY_VALIDATION.md) | P12 security validation PASS |
 | [POST_MERGE_VERIFICATION.md](POST_MERGE_VERIFICATION.md) | Post-merge `main` verification |

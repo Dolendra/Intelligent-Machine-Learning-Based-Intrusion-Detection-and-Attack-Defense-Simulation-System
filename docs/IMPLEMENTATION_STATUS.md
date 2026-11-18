@@ -10,13 +10,17 @@ Last updated after submission polish (README dataset honesty, DEMO_MODE batch ga
 - README clarifies raw CICIDS2017 is **not** in Git
 - `/predict`, `/predict/batch`, `/predict/batch/csv` (and explain) honor `allow_missing` only under `DEMO_MODE`
 - Simulation disclaimer: defense effectiveness = **assumptions**, not measured rates
-- Temporal/day-aware holdout: `scripts/25_temporal_holdout_eval.py` → `temporal_holdout_report.json`
+- ~~Temporal/day-aware holdout: `scripts/25_temporal_holdout_eval.py` → `temporal_holdout_report.json`~~ **Superseded
+  (contaminated, ML-3):** script 25 re-scored rows the model trained on (~70 % of Friday rows). Use the research
+  track's day-ordered protocol (`docs/research/RESULTS.md`) for any temporal claim.
 - `requirements-lock.txt` pins freeze environment versions
 - Experiment index expanded through EXP-016
 
 ## Academic wording reminders
 
-- Report **IID stratified** metrics separately from **temporal/Friday holdout** metrics
+- Report **IID stratified** metrics with the threshold they were computed at: the historical test figures are @ 0.5;
+  deployed @ 0.85 figures are in `research_artifacts/v11_reeval/` (ML-1, ML-2). Do not cite the script-25 Friday
+  figures (superseded).
 - Drift: no feature exceeded PSI ≥ 0.2 on train→IID test — not “no drift exists”
 - docker-compose uses `DEMO_MODE=true` for demos only
 
