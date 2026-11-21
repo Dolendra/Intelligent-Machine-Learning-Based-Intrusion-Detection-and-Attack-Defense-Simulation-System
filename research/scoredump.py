@@ -53,6 +53,8 @@ class ScoreDump:
         for m in sc.fused:
             cols[f"fused__{m}"] = np.asarray(sc.fused[m], dtype=np.float64)
             cols[f"p__{m}"] = np.asarray(sc.pvalue[m], dtype=np.float64)
+            if getattr(sc, "pvalue_det", None) is not None:  # PR-01: deterministic rule kept as sensitivity check
+                cols[f"pdet__{m}"] = np.asarray(sc.pvalue_det[m], dtype=np.float64)
         cols["p_family"] = np.asarray(sc.p_fam, dtype=np.float64)
         cols["pred_family_idx"] = np.asarray(sc.pred_family_idx, dtype=np.int16)
         cols["pred_class_idx"] = np.asarray(sc.proba.argmax(axis=1), dtype=np.int16)  # native (closed-set) decision, arm A

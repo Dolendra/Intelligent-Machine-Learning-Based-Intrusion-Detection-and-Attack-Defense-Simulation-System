@@ -161,6 +161,7 @@ class OSRScores:
     p_fam: np.ndarray                # Mondrian p-value of the predicted attack family
     pred_family_idx: np.ndarray
     extras: dict = field(default_factory=dict)
+    pvalue_det: dict[str, np.ndarray] | None = None  # deterministic p-values when pvalue_mode == "smoothed"
 
 
 class AegisOSR:
@@ -169,8 +170,13 @@ class AegisOSR:
     def __init__(self, seed: int = 0, alpha: float = 0.01, alpha_family: float = 0.01,
                  ae_kwargs: dict | None = None, with_baselines: bool = True, knn_ref: int = 40_000,
                  knn_k: int = 5, clf_factory: Callable[[int, int], object] | None = None,
-                 methods: dict[str, MethodSpec] | None = None) -> None:
+                 methods: dict[str, MethodSpec] | None = None, pvalue_mode: str = "deterministic") -> None:
+        if pvalue_mode not in ("deterministic", "smoothed"):
+            raise ValueError(f"unknown pvalue_mode {pvalue_mode!r}")
         self.seed = seed
+        # "deterministic" reproduces v3/R1b exactly; "smoothed" is the R3 primary rule (PR-01)
+        self.pvalue_mode = pvalue_mode
+        self._score_calls = 0
         self.alpha = alpha
         self.alpha_family = alpha_family
         self.ae_kwargs = {"epochs": 25, **(ae_kwargs or {})}
@@ -301,10 +307,18 @@ class AegisOSR:
         raw, proba = self._raw_scores(X)
         fused = {m: self._fuse(raw, spec) for m, spec in self.methods.items()}
         pval = {m: self.cal_[m].pvalue(f) for m, f in fused.items()}
+        pval_det = None
+        if self.pvalue_mode == "smoothed":
+            # reproducible tie-breaking: one stream per (seed, score call, method)
+            self._score_calls += 1
+            pval_det = pval
+            pval = {m: self.cal_[m].pvalue_smoothed(f, np.random.default_rng([self.seed, self._score_calls, i]))
+                    for i, (m, f) in enumerate(fused.items())}
         ap = proba[:, 1:] / np.maximum(proba[:, 1:].sum(axis=1, keepdims=True), 1e-12)
         fam_idx = ap.argmax(axis=1) + 1
         p_fam = self.cal_fam_.pvalue(1.0 - ap.max(axis=1), fam_idx)
-        return OSRScores(raw=raw, fused=fused, pvalue=pval, proba=proba, p_fam=p_fam, pred_family_idx=fam_idx)
+        return OSRScores(raw=raw, fused=fused, pvalue=pval, proba=proba, p_fam=p_fam, pred_family_idx=fam_idx,
+                         pvalue_det=pval_det)
 
     # ------------------------------------------------------------------ decide
     def label(self, sc: OSRScores, alpha: float | None = None) -> np.ndarray:

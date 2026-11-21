@@ -41,6 +41,25 @@ class ConformalCalibrator:
         n_ge = self.n - np.searchsorted(self.cal_, s, side="left")
         return (1.0 + n_ge) / (self.n + 1.0)
 
+    def pvalue_smoothed(self, scores: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+        """Randomised (smoothed) conformal p-value (R3 amendment PR-01, RES-2).
+
+            p(s) = (#{i : s_i > s} + U * (1 + #{i : s_i = s})) / (n + 1),   U ~ Uniform(0, 1)
+
+        Under exchangeability ``P(p <= alpha) = alpha`` *exactly* (Vovk et al. 2005), so tied scores
+        (e.g. a decision tree's few distinct leaf probabilities) no longer push the realised
+        false-alarm rate far below or above alpha. It is always <= the deterministic p-value.
+        """
+        if self.cal_ is None:
+            raise RuntimeError("ConformalCalibrator is not fitted")
+        s = np.asarray(scores, dtype=np.float64)
+        lo = np.searchsorted(self.cal_, s, side="left")
+        hi = np.searchsorted(self.cal_, s, side="right")
+        n_gt = self.n - hi
+        n_eq = hi - lo
+        u = rng.random(s.shape)
+        return (n_gt + u * (1.0 + n_eq)) / (self.n + 1.0)
+
     def threshold(self, alpha: float) -> float:
         """Strict alert boundary: ``pvalue(s) <= alpha`` exactly when ``s > threshold``.
 

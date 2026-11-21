@@ -238,11 +238,34 @@ def cross_dataset(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[int], lo
 PERDAY_TEST_CAPS = {"BENIGN": 20_000, "_attack": 8_000}
 
 
+SCREEN_WINDOW = 500   # W_s: earliest benign flows of the warm-up window (RESEARCH_GAP_ANALYSIS, Contribution 1)
+SCREEN_ALPHA0 = 0.05  # alpha_0 of the staleness screen
+
+
+def stream_screen(model: AegisOSR, Xw: np.ndarray, n: int = SCREEN_WINDOW, alpha0: float = SCREEN_ALPHA0) -> dict:
+    """Source-calibrated exceedance rate e_j of every evidence stream on the first ``n`` warm-up flows.
+
+    e_j = fraction of target benign flows whose *source* benign p-value of stream j is <= alpha0
+    (p_j = exp(-surprisal_j) under the source C1 maps). Without shift e_j is about alpha0.
+    Uses only benign target flows; the model state is not changed.
+    """
+    if len(Xw) == 0:
+        return {}
+    raw, _ = model._raw_scores(Xw[:n])
+    out = {}
+    for k, v in raw.items():
+        if k in model.cdf_:
+            p = np.exp(-model.cdf_[k](v))
+            out[k] = float(np.mean(p <= alpha0))
+    return {"window": int(min(n, len(Xw))), "alpha0": alpha0, "exceedance": out}
+
+
 def cross_dataset_perday(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[int], log: Log = print,
                          alpha: float = 0.01, ae_kwargs: dict | None = None,
                          windows: Iterable[int] = WARMUP_WINDOWS, dump: Dump | None = None,
                          model_kwargs: dict | None = None,
-                         on_split: Callable[[dict, dict], None] | None = None) -> list[dict]:
+                         on_split: Callable[[dict, dict], None] | None = None,
+                         held_out: str | None = None, protocol: str = "cross_perday") -> list[dict]:
     """CICIDS2017 → CSE-CIC-IDS2018 with **independent per-day** recalibration (R1b).
 
     The model is trained once per seed on CICIDS2017. For every 2018 capture day separately:
@@ -258,6 +281,8 @@ def cross_dataset_perday(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[i
     for seed in seeds:
         src_base = src[~src["family"].isin(RARE_NATURAL_UNKNOWN)]
         tr, va, _ = stratified_split(src_base, (0.85, 0.15, 0.0), seed)
+        if held_out is not None:  # cross-dataset LOAFO (PR-04): the family is absent from every source split
+            tr, va = tr[tr["family"] != held_out], va[va["family"] != held_out]
         train = cap_per_family(tr, _caps(tr, TRAIN_CAPS), seed)
         val = cap_per_family(va, _caps(va, VAL_CAPS), seed)
         t0 = time.time()
@@ -274,17 +299,19 @@ def cross_dataset_perday(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[i
             test = _cap_keep_index(pool, _caps(pool, PERDAY_TEST_CAPS), seed).reset_index(drop=True)
             overlap = int(len(set(warm.index) & set(pool.index)))
             if on_split is not None:
-                on_split({"protocol": "cross_perday", "fold": day, "seed": seed, "unknown": []},
+                on_split({"protocol": protocol, "fold": day, "seed": seed,
+                          "unknown": [held_out] if held_out else []},
                          {"train": train, "val": val, "test": test, "warmup": warm})
             fam = test["family"].astype(str).to_numpy()
             unknown = sorted(set(fam) - known_set - {"BENIGN"})
             groups = np.where(fam == "BENIGN", "benign", np.where(np.isin(fam, unknown), "unknown", "known"))
             Xte = scaler.transform(test[feats].to_numpy())
             model.restore(base_state)
-            key = {"protocol": "cross_perday", "fold": day, "seed": seed}
+            key = {"protocol": protocol, "fold": day if held_out is None else f"{held_out}@{day}", "seed": seed}
             methods, attribution, _ = _evaluate(model, Xte, fam, groups, alpha, dump, {**key, "variant": "none"})
             rec = {
-                "protocol": "cross_perday", "fold": day, "seed": seed, "alpha": alpha,
+                "protocol": protocol, "fold": key["fold"], "day": day, "held_out": held_out,
+                "seed": seed, "alpha": alpha,
                 "known_families": sorted(known_set), "unknown_families": unknown,
                 "n_test": {g: int((groups == g).sum()) for g in ("benign", "known", "unknown")},
                 "test_families": {f: int((fam == f).sum()) for f in sorted(set(fam))},
@@ -293,6 +320,7 @@ def cross_dataset_perday(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[i
                 "adaptation": {},
             }
             Xw = scaler.transform(warm.sort_values("seq")[feats].to_numpy())
+            rec["screen"] = stream_screen(model.restore(base_state), Xw)
             for W in windows:
                 if W > len(Xw):
                     continue
@@ -305,9 +333,27 @@ def cross_dataset_perday(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[i
             model.restore(base_state)
             p = methods[PROPOSED]
             ad = rec["adaptation"].get("recal@2000", {}).get("methods", {}).get(PROPOSED, {})
-            log(f"[cross_perday:{day}:s{seed}] n={rec['n_test']} FPR={p['fpr']:.4f} → recal@2000 "
+            log(f"[{protocol}:{key['fold']}:s{seed}] n={rec['n_test']} FPR={p['fpr']:.4f} → recal@2000 "
                 f"FPR={ad.get('fpr', float('nan')):.4f} ZDR={ad.get('zero_day_recall', float('nan'))}")
             records.append(rec)
+    return records
+
+
+def cross_loafo(src: pd.DataFrame, dst: pd.DataFrame, seeds: Iterable[int], families: Iterable[str] | None = None,
+                log: Log = print, **kw) -> list[dict]:
+    """Cross-dataset LOAFO (R3 amendment PR-04, RES-6): design-free unknown flows.
+
+    For each family F present in both datasets: train on CICIDS2017 without F, then evaluate per
+    CSE-CIC-IDS2018 day that contains F (independent per-day warm-up, as in ``cross_dataset_perday``).
+    F's 2018 flows were never used as unknowns in any design decision.
+    """
+    fams = sorted(set(map(str, src["family"].unique())) & set(map(str, dst["family"].unique()))
+                  - {"BENIGN", *RARE_NATURAL_UNKNOWN}) if families is None else list(families)
+    records = []
+    for f in fams:
+        days = sorted(dst.loc[dst["family"].astype(str) == f, "day"].astype(str).unique())
+        sub = dst[dst["day"].astype(str).isin(days)]
+        records += cross_dataset_perday(src, sub, seeds, log=log, held_out=f, protocol="cross_loafo", **kw)
     return records
 
 
