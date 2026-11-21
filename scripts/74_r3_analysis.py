@@ -93,12 +93,22 @@ def score_file(path: Path) -> tuple[dict, dict]:
     return out, {"stream_auroc": streams, "n": {k: int(v.sum()) for k, v in masks.items()}}
 
 
-def collect(run: Path) -> tuple[list[dict], list[dict]]:
+def _model_runs(runs: list[Path]) -> dict[str, Path]:
+    """Model -> the run directory holding its dumps (a model must appear in exactly one run)."""
+    where: dict[str, Path] = {}
+    for run in runs:
+        for model in MODELS:
+            if (run / "scores" / model / "manifest.json").exists():
+                if model in where:
+                    raise SystemExit(f"{model} appears in two runs: {where[model]} and {run}")
+                where[model] = run
+    return where
+
+
+def collect(runs: list[Path]) -> tuple[list[dict], list[dict]]:
     rows, files = [], []
-    for model in MODELS:
+    for model, run in _model_runs(runs).items():
         man_path = run / "scores" / model / "manifest.json"
-        if not man_path.exists():
-            continue
         man = json.loads(man_path.read_text(encoding="utf-8"))["files"]
         for rel, info in sorted(man.items()):
             path = run / "scores" / model / rel
@@ -114,10 +124,10 @@ def collect(run: Path) -> tuple[list[dict], list[dict]]:
 
 
 # ----------------------------------------------------------------------------- anchor
-def anchor(run: Path, rows: list[dict]) -> dict:
+def anchor(runs: list[Path], rows: list[dict]) -> dict:
     idx = {(r["model"], r["protocol"], r["fold"], r["seed"], r["variant"], r["method"]): r for r in rows}
     checked, worst = 0, 0.0
-    for model in MODELS:
+    for model, run in _model_runs(runs).items():
         for rec_path in sorted(run.glob(f"*__{model}_records.json")):
             for rec in json.loads(rec_path.read_text(encoding="utf-8"))["records"]:
                 blocks = {"none": rec["methods"], **{v: a["methods"] for v, a in (rec.get("adaptation") or {}).items()}}
@@ -347,9 +357,9 @@ def rs_verdict(r: dict) -> str:
     return "inconclusive"
 
 
-def reliability(run: Path, rows: list[dict], files: list[dict], rng) -> dict:
+def reliability(runs: list[Path], rows: list[dict], files: list[dict], rng) -> dict:
     screens = {}
-    for model in MODELS:
+    for model, run in _model_runs(runs).items():
         for proto in ("cross_perday", "cross_loafo"):
             p = run / f"{proto}__{model}_records.json"
             if not p.exists():
@@ -407,11 +417,13 @@ def sha256(path: Path) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--run", default="campaign")
+    ap.add_argument("--run", nargs="+", default=["campaign"], help="one or more run directories under r3/runs")
+    ap.add_argument("--name", default=None, help="analysis name (default: the run names joined by '+')")
     ap.add_argument("--tag", default=None)
     a = ap.parse_args()
-    run = R3_DIR / "runs" / a.run
-    out = R3_DIR / "analysis" / (a.run + (f"_{a.tag}" if a.tag else ""))
+    run = [R3_DIR / "runs" / r for r in a.run]
+    name = a.name or "+".join(a.run)
+    out = R3_DIR / "analysis" / (name + (f"_{a.tag}" if a.tag else ""))
     if out.exists():
         raise SystemExit(f"{out} exists; analysis outputs are never overwritten (use --tag)")
     rows, files = collect(run)
@@ -423,7 +435,7 @@ def main() -> None:
     hyp = hypotheses(rows, rng)
     rel = reliability(run, rows, files, rng)
     out.mkdir(parents=True)
-    meta = {"run": a.run, "generated": datetime.now(timezone.utc).isoformat(),
+    meta = {"runs": a.run, "generated": datetime.now(timezone.utc).isoformat(),
             "git_commit": subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip(),
             "preregistration": "docs/research/R3_AMENDMENT.md", "alpha": ALPHA, "target_fpr": TARGET_FPR,
             "bootstrap": {"replicates": BOOT, "seed": BOOT_SEED}, "anchor": anc,

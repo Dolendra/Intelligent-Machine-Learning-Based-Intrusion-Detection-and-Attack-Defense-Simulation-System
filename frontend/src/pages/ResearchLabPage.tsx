@@ -39,8 +39,9 @@ import { SkeletonCard } from "../components/ui/Skeleton";
 import { StackBar, Heatmap, RangeChart, TimeSeriesArea, useChartTheme, type ChartTheme } from "../components/charts";
 import { TabPanel, Tabs } from "../components/ui/Tabs";
 import { formatCI, formatDateTime, formatPct, humanize } from "../lib/format";
+import { R3Panel } from "../components/research/R3Panel";
 
-type TabId = "overview" | ProtocolKey | "gate";
+type TabId = "overview" | ProtocolKey | "gate" | "r3";
 
 const PROTOCOLS: Record<ProtocolKey, { title: string; short: string; icon: typeof Shuffle; question: string; script: string }> = {
   loafo: {
@@ -473,6 +474,7 @@ export function ResearchLabPage() {
         count: data && !data.status[p] ? undefined : data?.[p]?.methods.length,
       })),
       { id: "gate" as TabId, label: "Zero-Day Gate", icon: Radar },
+      { id: "r3" as TabId, label: "R3 campaign", icon: Sigma },
     ],
     [data]
   );
@@ -514,6 +516,10 @@ export function ResearchLabPage() {
       </Callout>
 
       <Tabs id="research-lab" label="Research protocols" items={tabs} value={tab} onChange={setTab} />
+
+      <TabPanel tabsId="research-lab" value="r3" active={tab} className="stack">
+        {tab === "r3" ? <R3Panel /> : null}
+      </TabPanel>
 
       {!data && !error ? (
         <div className="grid grid-2">

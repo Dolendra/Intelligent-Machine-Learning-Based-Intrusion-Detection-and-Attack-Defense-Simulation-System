@@ -103,6 +103,86 @@ def research_overview():
     return build_overview(ARTIFACTS)
 
 
+R3_ANALYSIS = ARTIFACTS / "r3" / "analysis"
+R3_HYPOTHESES = ("A1", "A2", "A4", "A5", "A6", "A7")
+
+
+def _latest_r3_analysis() -> Path | None:
+    if not R3_ANALYSIS.exists():
+        return None
+    runs = [p for p in R3_ANALYSIS.iterdir() if (p / "hypotheses.json").exists() and (p / "MANIFEST.json").exists()]
+    return max(runs, key=lambda p: (p / "MANIFEST.json").stat().st_mtime) if runs else None
+
+
+def _model_row(r: dict) -> dict:
+    keys = ("mean", "t_p", "holm_p", "hierarchical_bootstrap_95ci", "n_seeds", "folds_positive", "folds",
+            "tost_p", "noninferiority_p", "realised_fpr_smoothed", "realised_fpr_deterministic", "in_band")
+    return {k: r[k] for k in keys if k in r}
+
+
+@router.get("/research/r3")
+def research_r3():
+    """Pre-registered R3 results (docs/research/R3_AMENDMENT.md): verdicts, per-model effects, reliability study."""
+    d = _latest_r3_analysis()
+    if d is None:
+        raise HTTPException(status_code=404, detail={"code": "NOT_RUN", "message": "R3 analysis not generated yet"})
+    hyp, rel = _read_json(d / "hypotheses.json"), _read_json(d / "reliability.json")
+    if hyp is None or rel is None:
+        raise HTTPException(status_code=500, detail={"code": "CORRUPT", "message": f"unreadable analysis in {d.name}"})
+    out = {"analysis": d.name, "meta": hyp.get("meta", {}), "hypotheses": {}}
+    for h in R3_HYPOTHESES:
+        block = hyp.get(h, {})
+        per = block.get("per_model") or block.get("per_model_method") or {}
+        out["hypotheses"][h] = {"description": block.get("description"), "verdict": block.get("verdict"),
+                                "per_model": {m: _model_row(r) for m, r in per.items()}}
+    out["reliability"] = {k: {kk: rel[k].get(kk) for kk in ("rho", "day_cluster_ci95", "n", "clusters", "verdict")}
+                          for k in ("RS1", "RS2")}
+    out["reliability"]["phase7_gate_open"] = rel.get("phase7_gate", {}).get("open")
+    return out
+
+
+# --------------------------------------------------------------------------- framework (Phase 9/10)
+@router.get("/framework/modules")
+def framework_modules():
+    """Registered framework modules and the pipeline the service is configured to run."""
+    from framework import AegisPipeline, registry
+
+    try:
+        active = AegisPipeline.from_config().describe()
+    except Exception as exc:  # noqa: BLE001 — a bad config must not hide the catalogue
+        active = {"error": str(exc)}
+    return {"modules": registry.describe(), "active": active}
+
+
+@router.post("/framework/assess")
+def framework_assess(body: dict):
+    """Run flows through a chosen module combination. Read-only: nothing is persisted and no incident is raised.
+
+    Body: ``{"flows": [...], "policy": "frozen|gate|union", "open_set": "aegis_osr_gate|none"}``
+    """
+    from framework import AegisPipeline, UnknownModuleError
+    from ml.prediction.predictor import FeatureValidationError
+
+    flows = body.get("flows")
+    if not isinstance(flows, list) or not flows or not all(isinstance(f, dict) for f in flows):
+        raise HTTPException(status_code=422, detail={"code": "INVALID_BATCH", "message": "flows must be a non-empty list"})
+    if len(flows) > 500:
+        raise HTTPException(status_code=422, detail={"code": "BATCH_TOO_LARGE", "message": "at most 500 flows"})
+    overrides = {k: body[k] for k in ("policy", "open_set") if body.get(k)}
+    try:
+        pipe = AegisPipeline.from_config(explainer=None, **overrides)
+        results = pipe.process(flows)
+    except FeatureValidationError as exc:  # a ValueError subclass: must be caught first
+        raise HTTPException(status_code=422, detail={"code": "INVALID_FEATURES", "message": str(exc)}) from exc
+    except (UnknownModuleError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail={"code": "INVALID_MODULE", "message": str(exc)}) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail={"code": "MODEL_NOT_READY", "message": str(exc)}) from exc
+    return {"pipeline": pipe.describe(), "persisted": False, "total": len(results),
+            "incidents": sum(r.decision.raises_incident for r in results),
+            "results": [r.to_dict() for r in results]}
+
+
 @router.get("/research/openset/{protocol}")
 def research_protocol(protocol: str):
     if protocol not in _PROTOCOLS:

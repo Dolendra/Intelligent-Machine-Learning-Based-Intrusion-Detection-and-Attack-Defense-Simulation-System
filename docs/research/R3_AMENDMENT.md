@@ -7,7 +7,7 @@ still applies.
 |---|---|
 | Branch | `research/phase4-11-completion` |
 | Date | 2026-11-22 |
-| Approval | The user's instruction of 2026-11-22, "complete the entire project end to end", is taken as approval of this amendment and of the reduced campaign. It is recorded here because the roadmap requires approval before R3 runs. |
+| Approval | The user approved the reduced campaign explicitly on 2026-11-22 ("Approve campaign"), after the pre-registration commit `4e84358` and the configuration freeze `5b4b472`. The campaign ran as two streams: `campaign_a` (catboost) and `campaign_b` (the other six models). |
 
 **Re-scoped question.** Following Phase 2 (`RESEARCH_INTEGRITY_REPORT.md` §6), the question is:
 

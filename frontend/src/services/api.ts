@@ -1338,6 +1338,10 @@ export const api = {
     }),
   liveScenarios: () => request<LiveScenariosResponse>("/api/live/scenarios"),
   researchOverview: () => request<ResearchOverview>("/api/research/overview"),
+  /** Pre-registered R3 campaign results (404 NOT_RUN until the analysis exists). */
+  researchR3: () => request<R3Results>("/api/research/r3"),
+  /** Framework module catalogue and the active pipeline (Phase 9). */
+  frameworkModules: () => request<FrameworkModules>("/api/framework/modules"),
   /** Raw protocol summary (404 NOT_RUN until generated). */
   researchProtocol: (protocol: ProtocolKey) => request<Record<string, unknown>>(`/api/research/openset/${protocol}`),
 };
@@ -1372,4 +1376,52 @@ export function eventsWsUrl(): string {
 /** WebSocket URL for the Live Traffic Monitor replay stream. */
 export function liveWsUrl(scenario: string, rate: number): string {
   return wsUrl("/api/ws/live", { scenario, rate });
+}
+
+/* ---------------- Phase 9/10: framework + R3 ---------------- */
+export interface R3ModelRow {
+  mean?: number;
+  t_p?: number | null;
+  holm_p?: number | null;
+  hierarchical_bootstrap_95ci?: [number, number] | null;
+  n_seeds?: number;
+  folds_positive?: number;
+  folds?: number;
+  tost_p?: number | null;
+  noninferiority_p?: number | null;
+  realised_fpr_smoothed?: number;
+  realised_fpr_deterministic?: number;
+  in_band?: boolean;
+}
+
+export interface R3Hypothesis {
+  description: string | null;
+  verdict: string | null;
+  per_model: Record<string, R3ModelRow>;
+}
+
+export interface R3Reliability {
+  rho: number | null;
+  day_cluster_ci95: [number, number] | null;
+  n: number | null;
+  clusters?: number | null;
+  verdict: string | null;
+}
+
+export interface R3Results {
+  analysis: string;
+  meta: { seeds?: number[]; models?: string[]; protocols?: string[]; preregistration?: string };
+  hypotheses: Record<string, R3Hypothesis>;
+  reliability: { RS1: R3Reliability; RS2: R3Reliability; phase7_gate_open: boolean | null };
+}
+
+export interface FrameworkModule {
+  name: string;
+  description: string;
+  status: string;
+}
+
+export interface FrameworkModules {
+  modules: Record<"detector" | "open_set" | "adapter" | "explainer" | "policy", FrameworkModule[]>;
+  active: Record<string, string | null> & { error?: string };
 }

@@ -203,3 +203,12 @@ zero_day_gate:
   # 82,111 flows held out from both models (Phase 2, research_artifacts/v11_reeval/v11_policy_alert_rates.json):
   # frozen 0.077%, gate 0.896%, union 0.934%.
   incident_policy: frozen
+
+# Phase 9 modular framework (framework/): which registered module fills each role. GET /api/framework/modules
+# lists the alternatives. policy: null -> zero_day_gate.incident_policy, so the API and the framework agree.
+framework:
+  detector: frozen_v11
+  open_set: aegis_osr_gate
+  policy: null
+  explainer: shap
+  adapter: null
