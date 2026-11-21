@@ -37,6 +37,23 @@ Last updated after submission polish (README dataset honesty, DEMO_MODE batch ga
 - UI redesign: real charts, light/dark theme, command palette, login page, accessibility fixes
 - Performance: `load_config()` now caches parsed YAML (per-flow risk scoring re-parsed it every call)
 
+## Phases 4–11 additions (branch `research/phase4-11-completion`)
+
+| Item | Status |
+|---|---|
+| R3 protocol fixes PR-01 to PR-04: smoothed conformal p-values, frozen configs, unified method names, feature-only leakage report, cross-dataset LOAFO | IMPLEMENTED AND VERIFIED (`tests/test_r3_amendment.py`) |
+| Pre-registered reduced R3 campaign: 6 CPU evidence models, seeds 101–105, 4 protocols (`docs/research/R3_AMENDMENT.md`) | IMPLEMENTED AND VERIFIED. Results in `docs/research/R3_RESULTS.md`. |
+| Evidence-reliability study (RS1/RS2) and the Phase 7 gate | IMPLEMENTED AND VERIFIED. The verdict is in `docs/research/EVIDENCE_RELIABILITY_STUDY.md`. |
+| Modular framework (`framework/`): typed detector / open-set / adapter / explainer / policy modules, registry, composable pipeline | IMPLEMENTED AND VERIFIED (`tests/test_framework.py`; the default pipeline is decision-identical to the service) |
+| `conformal_recalibration` adapter | IMPLEMENTED BUT NOT FULLY VERIFIED (tested on exchangeable benign data only; under shift it re-targets the threshold, it does not restore detection) |
+| API `GET /api/framework/modules`, `POST /api/framework/assess` (read-only), `GET /api/research/r3` | IMPLEMENTED AND VERIFIED (`tests/test_e2e_integration.py`) |
+| Research Lab "R3 campaign" tab | IMPLEMENTED AND VERIFIED (`R3Panel.test.tsx`) |
+| Docker runtime (production mode, authentication on) | IMPLEMENTED AND VERIFIED on 2026-11-22: build, health, frontend through nginx, 401 without a token, login, prediction raising an incident, framework endpoint |
+| Release validation (`scripts/75_release_validation.py`) | IMPLEMENTED AND VERIFIED: security checks, integrity, framework parity and R3 gates in one versioned report |
+| TabM and CLOSR benchmark | **Not run.** Needs a GPU campaign; CLOSR is blocked by the LycoS licence hold |
+| CatBoost in R3 | **Not run.** Dropped for compute before any result was read (amendment 2) |
+| Hyper-parameter tuning in R3 | **Not run.** Every model used library defaults (equal budget of 0 trials) |
+
 ## Optional leftovers
 
 - Playwright browser journeys

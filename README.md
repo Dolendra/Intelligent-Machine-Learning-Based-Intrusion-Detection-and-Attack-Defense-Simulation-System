@@ -137,6 +137,24 @@ python scripts/53_summarize_research.py && python scripts/55_research_figures.py
 python scripts/51_train_zero_day_gate.py && python scripts/52_build_replay_pool.py
 ```
 
+## Modular framework (Phase 9–10)
+
+`framework/` exposes the system as interchangeable modules behind typed interfaces: **detector**, **open-set**,
+**adapter**, **explainer** and **incident policy**. The modules are thin wrappers over the existing components. The
+pipeline the API serves is configured in `config.yaml → framework`, and it is decision-identical to the service
+(tested).
+
+```python
+from framework import AegisPipeline
+AegisPipeline.from_config().process(flows)                       # what the API runs
+AegisPipeline.build(open_set="none").process(flows)              # closed-set variant
+```
+
+* **`GET /api/framework/modules`:** lists the modules.
+* **`POST /api/framework/assess`:** compares module combinations on the same flows without persisting anything.
+
+See [`docs/FRAMEWORK.md`](docs/FRAMEWORK.md).
+
 ## Cyber Range — measured attack/defense experiments
 
 The **Cyber Range** page (`/range`) replays recorded CICIDS2017 flows (40 normal users plus the scenario's

@@ -93,15 +93,22 @@ def score_file(path: Path) -> tuple[dict, dict]:
     return out, {"stream_auroc": streams, "n": {k: int(v.sum()) for k, v in masks.items()}}
 
 
+ASSIGN: dict[str, str] = {}  # model -> run name, from --assign (resolves models present in two runs)
+
+
 def _model_runs(runs: list[Path]) -> dict[str, Path]:
-    """Model -> the run directory holding its dumps (a model must appear in exactly one run)."""
+    """Model -> the run directory holding its dumps. A model found in two runs (e.g. a partial duplicate from
+    parallel streams) must be assigned explicitly with --assign; the other copy is excluded."""
     where: dict[str, Path] = {}
     for run in runs:
         for model in MODELS:
-            if (run / "scores" / model / "manifest.json").exists():
-                if model in where:
-                    raise SystemExit(f"{model} appears in two runs: {where[model]} and {run}")
-                where[model] = run
+            if not (run / "scores" / model / "manifest.json").exists():
+                continue
+            if model in ASSIGN and ASSIGN[model] != run.name:
+                continue
+            if model in where:
+                raise SystemExit(f"{model} appears in {where[model].name} and {run.name}: use --assign {model}=<run>")
+            where[model] = run
     return where
 
 
@@ -420,7 +427,9 @@ def main() -> None:
     ap.add_argument("--run", nargs="+", default=["campaign"], help="one or more run directories under r3/runs")
     ap.add_argument("--name", default=None, help="analysis name (default: the run names joined by '+')")
     ap.add_argument("--tag", default=None)
+    ap.add_argument("--assign", nargs="*", default=[], help="model=run pairs for models present in several runs")
     a = ap.parse_args()
+    ASSIGN.update(dict(x.split("=", 1) for x in a.assign))
     run = [R3_DIR / "runs" / r for r in a.run]
     name = a.name or "+".join(a.run)
     out = R3_DIR / "analysis" / (name + (f"_{a.tag}" if a.tag else ""))
@@ -435,7 +444,8 @@ def main() -> None:
     hyp = hypotheses(rows, rng)
     rel = reliability(run, rows, files, rng)
     out.mkdir(parents=True)
-    meta = {"runs": a.run, "generated": datetime.now(timezone.utc).isoformat(),
+    meta = {"runs": a.run, "assign": ASSIGN,
+            "model_runs": {m: r.name for m, r in _model_runs(run).items()}, "generated": datetime.now(timezone.utc).isoformat(),
             "git_commit": subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip(),
             "preregistration": "docs/research/R3_AMENDMENT.md", "alpha": ALPHA, "target_fpr": TARGET_FPR,
             "bootstrap": {"replicates": BOOT, "seed": BOOT_SEED}, "anchor": anc,
