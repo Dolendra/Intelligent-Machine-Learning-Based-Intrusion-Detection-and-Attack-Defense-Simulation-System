@@ -37,7 +37,7 @@ the first 500 benign warm-up flows, using the *source* calibration maps (α₀ =
 | Item | R3_PROTOCOL | Amended | Reason |
 |---|---|---|---|
 | Seeds | 101–110 | **101–105** | Schedule. Paired t-test is primary; the minimum exact Wilcoxon p at S = 5 is 0.0625 (stated). |
-| Models | 8 + TabICL | **xgb_ref, dt, rf, et, xgb, lgbm, catboost** (7) | TabM and CLOSR need the GPU campaign (≈ 88 GPU-h). CLOSR Stage 1 is blocked by the LycoS licence hold. Both are deferred, not dropped from the plan. |
+| Models | 8 + TabICL | **xgb_ref, dt, rf, et, xgb, lgbm** (6; catboost dropped by amendment 2, §5b) | TabM and CLOSR need the GPU campaign (≈ 88 GPU-h). CLOSR Stage 1 is blocked by the LycoS licence hold. Both are deferred, not dropped from the plan. |
 | Tuning | 30 Optuna trials | **0 trials for every model** (library defaults; xgb_ref = v3 configuration) | Budget (25–60 CPU-h). The defaults arm was already required. Equal budget is kept. |
 | Protocols | P1–P4 | **loafo, temporal, cross_perday, cross_loafo** | cross_loafo added (PR-04). The whole-sample `cross` is dropped: per-day supersedes it (R1b). |
 | Warm-up windows | 500, 2000, 5000 | **2000** (recal and recal+ref) | The Phase 2 findings are at W = 2000. In the per-day protocols the evaluation pool is the day minus its first 2,000 benign flows. |
@@ -105,6 +105,18 @@ downloads that remain on hold.
 
 **If the gate stays closed,** Phase 7 is closed as "hypothesis not supported". The negative result is reported, and
 Phase 8 validates the R3 findings instead.
+
+## 5b. Amendment 2 (2026-11-22, before any confirmatory result was read): CatBoost dropped
+
+* **Reason: compute.** CatBoost took about 18 min per LOAFO fold when running in parallel (243 s solo in the pilot),
+  which projected 15–20 h for its stream alone. The user chose to drop it.
+* **Status of its stream (`campaign_a`):** stopped after 2 seed-101 LOAFO folds. Those records are **excluded from
+  every analysis** and kept only as an incomplete run.
+* **New model set:** 6 models (xgb_ref, dt, rf, et, xgb, lgbm).
+* **Holm correction:** across 6 models (5 comparisons for A2).
+* **Count rules:** unchanged in absolute terms (supported ≥ 5, rejected ≤ 2). Out of 6 models this is **stricter**
+  than ≥ 5 of 7.
+* **Analysis command:** `python scripts/74_r3_analysis.py --run campaign_b`.
 
 ## 6. Failure criteria (any one stops interpretation)
 

@@ -22,6 +22,8 @@ COPY backend ./backend
 # Monitor / Cyber Range need the leakage-free replay pool. Without these the API cannot start.
 COPY cyberrange ./cyberrange
 COPY research ./research
+# Phase 9: modular framework (GET /api/framework/modules, POST /api/framework/assess)
+COPY framework ./framework
 COPY research_artifacts/replay ./research_artifacts/replay
 COPY database ./database
 COPY alembic ./alembic
