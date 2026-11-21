@@ -99,6 +99,34 @@
   "research_artifacts/zero_day_gate_report.json": {
    "sha256": "2da9237522595cda4b3281b2de5187ad3f21a90f9602fb9cbbd263785c4c8670",
    "added": "2026-11-17"
+  },
+  "research_artifacts/reanalysis/MANIFEST.json": {
+   "sha256": "c59d8368d97501f4ce20343ae6f01ff9af79534947b48ea0d13bceb1488f7e5d",
+   "added": "2026-11-21"
+  },
+  "research_artifacts/reanalysis/matched_fpr_rows.json": {
+   "sha256": "9e323be71adc18727096d968a69ed0f0ebf47ca8b286c435c3e59d2ac29d0b24",
+   "added": "2026-11-21"
+  },
+  "research_artifacts/reanalysis/matched_fpr_summary.json": {
+   "sha256": "47561923581dfcd72455fab64c0c43cdb2711987df36640a656bc05388cfe327",
+   "added": "2026-11-21"
+  },
+  "research_artifacts/v11_reeval/MANIFEST.json": {
+   "sha256": "e5536d24c9fec1ec9de5fb15803ec960a3d94178cd49544a9b559af94e2e32eb",
+   "added": "2026-11-21"
+  },
+  "research_artifacts/v11_reeval/v11_family_end_to_end.json": {
+   "sha256": "b7270391675c4d9b8d21078f10c2a1f7642e2a3a1dd152ed5c66a7ea2aca1836",
+   "added": "2026-11-21"
+  },
+  "research_artifacts/v11_reeval/v11_policy_alert_rates.json": {
+   "sha256": "bcc7dafbf1a0f68cd8d172f2843c1f6f2c72e1fa0dbef728146f216cc761cb2f",
+   "added": "2026-11-21"
+  },
+  "research_artifacts/v11_reeval/v11_test_metrics_by_threshold.json": {
+   "sha256": "0ccbdae8896e8727f0948a97ff1aea8aa72881750e96deef29bf0d59b28670f8",
+   "added": "2026-11-21"
   }
  },
  "history": [
@@ -131,6 +159,19 @@
     "research_artifacts/replay/replay_pool_manifest.json",
     "research_artifacts/reproduction_loafo_repro.json",
     "research_artifacts/zero_day_gate_report.json"
+   ]
+  },
+  {
+   "at": "2026-11-21T19:03:24.152558+00:00",
+   "reason": "Phase 2: protect versioned re-evaluation outputs (v11_reeval, reanalysis)",
+   "added": [
+    "research_artifacts/reanalysis/MANIFEST.json",
+    "research_artifacts/reanalysis/matched_fpr_rows.json",
+    "research_artifacts/reanalysis/matched_fpr_summary.json",
+    "research_artifacts/v11_reeval/MANIFEST.json",
+    "research_artifacts/v11_reeval/v11_family_end_to_end.json",
+    "research_artifacts/v11_reeval/v11_policy_alert_rates.json",
+    "research_artifacts/v11_reeval/v11_test_metrics_by_threshold.json"
    ]
   }
  ],
