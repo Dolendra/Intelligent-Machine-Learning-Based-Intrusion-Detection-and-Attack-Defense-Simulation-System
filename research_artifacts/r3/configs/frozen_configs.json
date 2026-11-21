@@ -1,0 +1,62 @@
+{
+ "frozen_at": "2026-11-21T19:30:45.388085+00:00",
+ "git_commit": "4e84358",
+ "amendment": "docs/research/R3_AMENDMENT.md",
+ "tuning": {
+  "trials_per_model": 0,
+  "deviation_from": "R3_PROTOCOL.md \u00a77 (30 Optuna trials)",
+  "reason": "budget: 25-60 CPU-h estimated, outside the remaining schedule"
+ },
+ "design": {
+  "seeds": [
+   101,
+   102,
+   103,
+   104,
+   105
+  ],
+  "protocols": [
+   "loafo",
+   "temporal",
+   "cross_perday",
+   "cross_loafo"
+  ],
+  "windows": [
+   2000
+  ],
+  "pvalue_mode": "smoothed",
+  "alpha": 0.01,
+  "primary_metric": "TPR at matched 1 % benign FPR (threshold set on test benign; label 'oracle-matched')",
+  "secondary_metric": "conformal recall at alpha = 1 % with smoothed p-values, realised FPR shown"
+ },
+ "models": {
+  "xgb_ref": {
+   "params": {},
+   "arm": "v3 reference configuration (research.openset.build_classifier)"
+  },
+  "dt": {
+   "params": {},
+   "arm": "library defaults"
+  },
+  "rf": {
+   "params": {},
+   "arm": "library defaults (n_estimators=300 fixed by protocol)"
+  },
+  "et": {
+   "params": {},
+   "arm": "library defaults (n_estimators=300 fixed by protocol)"
+  },
+  "xgb": {
+   "params": {},
+   "arm": "library defaults + early stopping on its own 10 % split"
+  },
+  "lgbm": {
+   "params": {},
+   "arm": "library defaults + early stopping on its own 10 % split"
+  },
+  "catboost": {
+   "params": {},
+   "arm": "library defaults + early stopping on its own 10 % split"
+  }
+ }
+}
