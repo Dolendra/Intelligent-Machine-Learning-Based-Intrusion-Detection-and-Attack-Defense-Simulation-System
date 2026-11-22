@@ -56,6 +56,8 @@ results/empirical/*
 reports/*
 !reports/.gitkeep
 !reports/final_security_validation_report.json
+# Phase 11 release validation reports (scripts/75; never overwritten, committed)
+!reports/release/
 
 # P9 backup drill artifacts
 backups/

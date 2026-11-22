@@ -56,7 +56,7 @@ Standing rules applied throughout:
 | Leakage | `campaign_c`: 390 splits, all pass. `campaign_b`: fatal-on-failure checker, no traceback (`STREAM_NOTE.json`) |
 | Reproduction anchor | 21,300 record values recomputed from per-flow dumps, max abs. diff 5.0×10⁻⁷ |
 | LaTeX validation (`scripts/63`) | tables, macros, placeholders, cross-document headline facts, log (no undefined refs, 0 overfull boxes): PASS |
-| Release validation (`scripts/75`) | `reports/release/release_validation_20261122*.json` |
+| Release validation (`scripts/75`) | **PASS** (`reports/release/release_validation_20261122_phase11b.json`): security 10/10 categories, integrity (32 protected files), framework parity (18 flows, 0 mismatches), R3 analysis. The first attempt (`..._phase11.json`) failed because the script did not isolate its environment. Its security checks then started the app against the developer database, which refused to start in production mode; startup recovery had already reclaimed 1 orphaned response action. The script now uses the test configuration with a throwaway database. |
 
 ## Deviations (all recorded before results were read, or execution-only)
 

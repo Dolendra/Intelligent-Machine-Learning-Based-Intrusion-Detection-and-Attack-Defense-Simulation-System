@@ -27,6 +27,28 @@ sys.path.insert(0, str(ROOT))
 sys.stdout.reconfigure(encoding="utf-8")
 
 
+def isolate_environment() -> str:
+    """Run every in-process check like the test suite does: AEGIS_ENV=test, a throwaway SQLite database and the
+    test-only seed passwords, so the release check never starts the app against the developer database."""
+    import os
+    import tempfile
+
+    db = Path(tempfile.mkdtemp(prefix="aegis_release_")) / "aegis_release.db"
+    os.environ["AEGIS_ENV"] = "test"
+    os.environ["DISABLE_RATE_LIMIT"] = "true"
+    os.environ["IDS_DB_PATH"] = str(db)
+    os.environ["IDS_DB_URL"] = "sqlite:///" + db.as_posix()
+    os.environ["AEGIS_RANGE_RUNS_DIR"] = str(db.parent / "range_runs")
+    from tests._seed_passwords import SEED_PASSWORDS
+
+    for user, pw in SEED_PASSWORDS.items():
+        os.environ[f"AEGIS_SEED_PASSWORD_{user.upper()}"] = pw
+    from database.db import init_db
+
+    init_db()
+    return str(db)
+
+
 def gate_security() -> dict:
     from security.validation.p12_checks import run_all_p12_checks
 
@@ -88,6 +110,7 @@ def main() -> int:
     out = ROOT / "reports" / "release" / f"release_validation_{day}{'_' + a.tag if a.tag else ''}.json"
     if out.exists():
         raise SystemExit(f"{out.relative_to(ROOT)} exists; release reports are never overwritten (use --tag)")
+    isolated_db = isolate_environment()
     gates = {}
     for name, fn in (("security", gate_security), ("integrity", gate_integrity),
                      ("framework_parity", gate_framework_parity), ("r3_analysis", gate_r3)):
@@ -99,6 +122,9 @@ def main() -> int:
     report = {"generated_at": datetime.now(timezone.utc).isoformat(),
               "git_commit": subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip(),
               "python": platform.python_version(), "platform": platform.platform(),
+              "environment": {"AEGIS_ENV": "test", "database": "throwaway SQLite (" + isolated_db + ")",
+                              "note": "in-process checks run in the test configuration; production-mode startup "
+                                      "with authentication is verified separately in Docker"},
               "overall": "PASS" if all(g["status"] == "PASS" for g in gates.values()) else "FAIL", "gates": gates}
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
