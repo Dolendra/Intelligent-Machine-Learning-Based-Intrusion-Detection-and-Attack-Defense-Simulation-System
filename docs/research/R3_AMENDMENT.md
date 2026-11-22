@@ -7,7 +7,7 @@ still applies.
 |---|---|
 | Branch | `research/phase4-11-completion` |
 | Date | 2026-11-22 |
-| Approval | The user approved the reduced campaign explicitly on 2026-11-22 ("Approve campaign"), after the pre-registration commit `4e84358` and the configuration freeze `5b4b472`. The campaign ran as two streams: `campaign_a` (catboost) and `campaign_b` (the other six models). |
+| Approval | The user approved the reduced campaign explicitly on 2026-11-22 ("Approve campaign"), after the pre-registration commit `4e84358` and the configuration freeze `5b4b472`. The campaign ran as streams `campaign_a` (catboost, excluded by amendment 2), `campaign_b` and `campaign_c` (§5c). |
 
 **Re-scoped question.** Following Phase 2 (`RESEARCH_INTEGRITY_REPORT.md` §6), the question is:
 
@@ -116,7 +116,21 @@ Phase 8 validates the R3 findings instead.
 * **Holm correction:** across 6 models (5 comparisons for A2).
 * **Count rules:** unchanged in absolute terms (supported ≥ 5, rejected ≤ 2). Out of 6 models this is **stricter**
   than ≥ 5 of 7.
-* **Analysis command:** `python scripts/74_r3_analysis.py --run campaign_b`.
+* **Analysis command:** `python scripts/74_r3_analysis.py --run campaign_b`. Superseded by §5c, which changes only the
+  execution, not the design.
+
+## 5c. Execution record (added after the campaign; no design change)
+
+* **Two streams.** To finish within the schedule, the six approved models ran as two parallel streams with the frozen
+  configuration (at most 2 concurrent data-loading jobs, amendment A10):
+  * `campaign_b`: xgb_ref, dt, rf. It was stopped by plan after rf, so its partial et dump is unused
+    (`runs/campaign_b/STREAM_NOTE.json`).
+  * `campaign_c`: lgbm, xgb, et.
+* **Analysis command actually run:**
+  `python scripts/74_r3_analysis.py --run campaign_b campaign_c --name campaign --assign xgb_ref=campaign_b dt=campaign_b rf=campaign_b et=campaign_c xgb=campaign_c lgbm=campaign_c`
+* **Holm.** The Holm correction in the analysis is across the 6 models present (5 comparisons for A2), as stated in §5b.
+  The "7 models" wording in §4 predates amendment 2.
+* **Results:** `R3_RESULTS.md` and `EVIDENCE_RELIABILITY_STUDY.md`.
 
 ## 6. Failure criteria (any one stops interpretation)
 

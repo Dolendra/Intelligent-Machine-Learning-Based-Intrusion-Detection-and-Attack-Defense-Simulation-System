@@ -1,0 +1,61 @@
+{
+ "files": {
+  "rows.json": "b1247dc6a9eea4fda6c1ed43a30c348f8f5c4571cc3c4155cefb1a311867ec25",
+  "hypotheses.json": "78a85b0b46a0dcc781a902c83b183968788f0e816cf03d96de45c8137687543a",
+  "reliability.json": "549bcc7eb2d8969433ecab1ec21cdb811e0a7695ec154158786156ea38249311"
+ },
+ "runs": [
+  "campaign_b",
+  "campaign_c"
+ ],
+ "assign": {
+  "xgb_ref": "campaign_b",
+  "dt": "campaign_b",
+  "rf": "campaign_b",
+  "et": "campaign_c",
+  "xgb": "campaign_c",
+  "lgbm": "campaign_c"
+ },
+ "model_runs": {
+  "xgb_ref": "campaign_b",
+  "dt": "campaign_b",
+  "rf": "campaign_b",
+  "et": "campaign_c",
+  "xgb": "campaign_c",
+  "lgbm": "campaign_c"
+ },
+ "generated": "2026-11-22T00:57:20.734159+00:00",
+ "git_commit": "c8989b4",
+ "preregistration": "docs/research/R3_AMENDMENT.md",
+ "alpha": 0.01,
+ "target_fpr": 0.01,
+ "bootstrap": {
+  "replicates": 10000,
+  "seed": 20261122
+ },
+ "anchor": {
+  "values_checked": 21300,
+  "max_abs_diff": 4.999614999615006e-07
+ },
+ "models": [
+  "xgb_ref",
+  "dt",
+  "rf",
+  "et",
+  "xgb",
+  "lgbm"
+ ],
+ "protocols": [
+  "cross_loafo",
+  "cross_perday",
+  "loafo",
+  "temporal"
+ ],
+ "seeds": [
+  101,
+  102,
+  103,
+  104,
+  105
+ ]
+}

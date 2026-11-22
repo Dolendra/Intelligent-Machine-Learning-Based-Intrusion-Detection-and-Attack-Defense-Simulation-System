@@ -1,6 +1,6 @@
 {
- "generated_at": "2026-11-21T19:07:17.274026+00:00",
- "pdf_sha256": "eb14896b80ecb7717ae79a6b5ff425e858ba01460a125111e1a3a9b4c26913dc",
+ "generated_at": "2026-11-22T01:07:37.372654+00:00",
+ "pdf_sha256": "7d20d41f00c989381bee457a3b82a5a96d92b77c1a97cd4edac46ee818fa889c",
  "pages": 7,
  "checks": {
   "tables": {
@@ -12,13 +12,14 @@
     "cross",
     "cross_perday",
     "inversion",
-    "v11_2018"
+    "v11_2018",
+    "r3"
    ],
    "missing_numeric_tokens": {},
    "pass": true
   },
   "macros": {
-   "used": 78,
+   "used": 103,
    "missing": {},
    "pass": true
   },
@@ -88,8 +89,8 @@
   }
  },
  "inputs_sha256": {
-  "docs/research/paper.tex": "f44942fa8dc4a9531ce010c5b64c29a544f2f49e29f826bd4adc2f53a6934858",
-  "docs/research/paper_numbers.tex": "d0cf314e89c74d56ffeb0844dcef35a9e14822403a1f62525ae9a53eb2982870",
+  "docs/research/paper.tex": "3ac36f13bf4f4418c7ea918bcbb29642bd2138289f99d4358922b366671d9eaf",
+  "docs/research/paper_numbers.tex": "757b04d81f399b6457da1c35fab267e04bbb2f65d0d9c18e12f8409a32720a32",
   "docs/research/publication/tables/loafo.tex": "72c00122baa7ef59e985159177a2ebb38dfbaf31aaa0177b4576ef404fe86236",
   "docs/research/publication/tables/significance.tex": "5f856d437345754894b228775519a30e3a32e0d105c46047880865bdd70079fa",
   "docs/research/publication/tables/temporal.tex": "3a6c54ad695b6d1c3d451c712b3ffd2f35a76888ce0583f451e1a9a6b98624f0",
@@ -97,7 +98,8 @@
   "docs/research/publication/tables/cross.tex": "c8fd32845b56dcc087198f70d440a8d04ab6303365e093ac6c644e34e4ec1210",
   "docs/research/publication/tables/cross_perday.tex": "6ed80a626ddc928c49a940b0c7dd42db530d53968a29bf6c314009ec8a902a7c",
   "docs/research/publication/tables/inversion.tex": "da414c66e6344a2e7c6147aa691d72191cf22c2a472a436bfc8ab8993c1fe709",
-  "docs/research/publication/tables/v11_2018.tex": "10daa018e3f5f634bb8374b2d07fd21c9d1a0b5259250a23335eb5d977a2799d"
+  "docs/research/publication/tables/v11_2018.tex": "10daa018e3f5f634bb8374b2d07fd21c9d1a0b5259250a23335eb5d977a2799d",
+  "docs/research/publication/tables/r3.tex": "fcdf9d0fd4072431a3ea74fda40b0dbde878f083ecf2f407dcd3626d5695e7f9"
  },
  "pass": true
 }

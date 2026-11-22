@@ -1,0 +1,136 @@
+{
+ "files": {
+  "loafo/Bot__s101__none.parquet": {
+   "protocol": "loafo",
+   "fold": "Bot",
+   "seed": 101,
+   "variant": "none",
+   "rows": 230383,
+   "groups": {
+    "benign": 150000,
+    "known": 78388,
+    "unknown": 1995
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "pdet__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "pdet__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "pdet__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "pdet__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "pdet__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "dfdffbfee64c6f2f28c14e9598eb78f0733c954c349513623941935c6ac5dcf1"
+  },
+  "loafo/BruteForce__s101__none.parquet": {
+   "protocol": "loafo",
+   "fold": "BruteForce",
+   "seed": 101,
+   "variant": "none",
+   "rows": 235424,
+   "groups": {
+    "benign": 150000,
+    "known": 76227,
+    "unknown": 9197
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "pdet__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "pdet__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "pdet__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "pdet__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "pdet__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "66d9e20edd6723e66956da81800d2a346739ffd801c0c55eac3469a751b1b22f"
+  },
+  "loafo/DDoS__s101__none.parquet": {
+   "protocol": "loafo",
+   "fold": "DDoS",
+   "seed": 101,
+   "variant": "none",
+   "rows": 229019,
+   "groups": {
+    "benign": 150000,
+    "known": 53972,
+    "unknown": 25047
+   },
+   "columns": [
+    "row",
+    "family",
+    "group",
+    "raw_sup",
+    "t_sup",
+    "raw_knn",
+    "t_knn",
+    "fused__Closed-set (sup only)",
+    "p__Closed-set (sup only)",
+    "pdet__Closed-set (sup only)",
+    "fused__Aegis-OSR",
+    "p__Aegis-OSR",
+    "pdet__Aegis-OSR",
+    "fused__Aegis-OSR w/ max fusion",
+    "p__Aegis-OSR w/ max fusion",
+    "pdet__Aegis-OSR w/ max fusion",
+    "fused__Aegis-OSR w/ omnibus fusion",
+    "p__Aegis-OSR w/ omnibus fusion",
+    "pdet__Aegis-OSR w/ omnibus fusion",
+    "fused__kNN distance",
+    "p__kNN distance",
+    "pdet__kNN distance",
+    "p_family",
+    "pred_family_idx",
+    "pred_class_idx"
+   ],
+   "streams": [
+    "knn",
+    "sup"
+   ],
+   "sha256": "4ad935121120f38b28036671aa92339e66ff4327823360a592670b0190ea00af"
+  }
+ }
+}

@@ -1,0 +1,2879 @@
+[
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 31455,
+   "val": 8809,
+   "test": 19274
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "Bot",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 33286,
+   "val": 9414,
+   "test": 20638
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Wed\u2192Thu",
+   "seed": 0,
+   "unknown": [
+    "Infiltration",
+    "WebAttack"
+   ]
+  },
+  "sizes": {
+   "train": 26000,
+   "val": 7600,
+   "test": 12036,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Thu\u2192Fri",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "DDoS",
+    "PortScan"
+   ]
+  },
+  "sizes": {
+   "train": 27822,
+   "val": 7921,
+   "test": 15948,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": [
+    "Bot"
+   ]
+  },
+  "sizes": {
+   "train": 33822,
+   "val": 9521,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": [
+    "BruteForce"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": [
+    "DoS"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 31455,
+   "val": 8809,
+   "test": 19274
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "Bot",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 33286,
+   "val": 9414,
+   "test": 20638
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Wed\u2192Thu",
+   "seed": 0,
+   "unknown": [
+    "Infiltration",
+    "WebAttack"
+   ]
+  },
+  "sizes": {
+   "train": 26000,
+   "val": 7600,
+   "test": 12036,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Thu\u2192Fri",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "DDoS",
+    "PortScan"
+   ]
+  },
+  "sizes": {
+   "train": 27822,
+   "val": 7921,
+   "test": 15948,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": [
+    "Bot"
+   ]
+  },
+  "sizes": {
+   "train": 33822,
+   "val": 9521,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": [
+    "BruteForce"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": [
+    "DoS"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 31455,
+   "val": 8809,
+   "test": 19274
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "Bot",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 33286,
+   "val": 9414,
+   "test": 20638
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Wed\u2192Thu",
+   "seed": 0,
+   "unknown": [
+    "Infiltration",
+    "WebAttack"
+   ]
+  },
+  "sizes": {
+   "train": 26000,
+   "val": 7600,
+   "test": 12036,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Thu\u2192Fri",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "DDoS",
+    "PortScan"
+   ]
+  },
+  "sizes": {
+   "train": 27822,
+   "val": 7921,
+   "test": 15948,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": [
+    "Bot"
+   ]
+  },
+  "sizes": {
+   "train": 33822,
+   "val": 9521,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": [
+    "BruteForce"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": [
+    "DoS"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 31455,
+   "val": 8809,
+   "test": 19274
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "Bot",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 33286,
+   "val": 9414,
+   "test": 20638
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Wed\u2192Thu",
+   "seed": 0,
+   "unknown": [
+    "Infiltration",
+    "WebAttack"
+   ]
+  },
+  "sizes": {
+   "train": 26000,
+   "val": 7600,
+   "test": 12036,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Thu\u2192Fri",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "DDoS",
+    "PortScan"
+   ]
+  },
+  "sizes": {
+   "train": 27822,
+   "val": 7921,
+   "test": 15948,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": [
+    "Bot"
+   ]
+  },
+  "sizes": {
+   "train": 33822,
+   "val": 9521,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": [
+    "BruteForce"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": [
+    "DoS"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 31455,
+   "val": 8809,
+   "test": 19274
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "Bot",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 33286,
+   "val": 9414,
+   "test": 20638
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Wed\u2192Thu",
+   "seed": 0,
+   "unknown": [
+    "Infiltration",
+    "WebAttack"
+   ]
+  },
+  "sizes": {
+   "train": 26000,
+   "val": 7600,
+   "test": 12036,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Thu\u2192Fri",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "DDoS",
+    "PortScan"
+   ]
+  },
+  "sizes": {
+   "train": 27822,
+   "val": 7921,
+   "test": 15948,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": [
+    "Bot"
+   ]
+  },
+  "sizes": {
+   "train": 33822,
+   "val": 9521,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": [
+    "BruteForce"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": [
+    "DoS"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 31455,
+   "val": 8809,
+   "test": 19274
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "Bot",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 33286,
+   "val": 9414,
+   "test": 20638
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Wed\u2192Thu",
+   "seed": 0,
+   "unknown": [
+    "Infiltration",
+    "WebAttack"
+   ]
+  },
+  "sizes": {
+   "train": 26000,
+   "val": 7600,
+   "test": 12036,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Thu\u2192Fri",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "DDoS",
+    "PortScan"
+   ]
+  },
+  "sizes": {
+   "train": 27822,
+   "val": 7921,
+   "test": 15948,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": [
+    "Bot"
+   ]
+  },
+  "sizes": {
+   "train": 33822,
+   "val": 9521,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": [
+    "BruteForce"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": [
+    "DoS"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "DoS",
+   "seed": 0,
+   "unknown": [
+    "DoS",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 31455,
+   "val": 8809,
+   "test": 19274
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "loafo",
+   "fold": "Bot",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "Heartbleed",
+    "Infiltration"
+   ]
+  },
+  "sizes": {
+   "train": 33286,
+   "val": 9414,
+   "test": 20638
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "val&test": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Wed\u2192Thu",
+   "seed": 0,
+   "unknown": [
+    "Infiltration",
+    "WebAttack"
+   ]
+  },
+  "sizes": {
+   "train": 26000,
+   "val": 7600,
+   "test": 12036,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "temporal",
+   "fold": "Mon-Thu\u2192Fri",
+   "seed": 0,
+   "unknown": [
+    "Bot",
+    "DDoS",
+    "PortScan"
+   ]
+  },
+  "sizes": {
+   "train": 27822,
+   "val": 7921,
+   "test": 15948,
+   "warmup": 5000,
+   "warmup_oracle": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "train&warmup_oracle": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "val&warmup_oracle": 0,
+   "test&warmup": 0,
+   "test&warmup_oracle": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_perday",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": []
+  },
+  "sizes": {
+   "train": 35478,
+   "val": 9813,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-03-02",
+   "seed": 0,
+   "unknown": [
+    "Bot"
+   ]
+  },
+  "sizes": {
+   "train": 33822,
+   "val": 9521,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-14",
+   "seed": 0,
+   "unknown": [
+    "BruteForce"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ },
+ {
+  "key": {
+   "protocol": "cross_loafo",
+   "fold": "2018-02-16",
+   "seed": 0,
+   "unknown": [
+    "DoS"
+   ]
+  },
+  "sizes": {
+   "train": 32478,
+   "val": 9013,
+   "test": 4000,
+   "warmup": 2000
+  },
+  "overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "unknown_in_training": {
+   "train": 0,
+   "val": 0
+  },
+  "informational_overlaps": [
+   "train&test",
+   "train&warmup",
+   "val&test",
+   "val&warmup"
+  ],
+  "feature_only_overlaps": {
+   "train&val": 0,
+   "train&test": 0,
+   "train&warmup": 0,
+   "val&test": 0,
+   "val&warmup": 0,
+   "test&warmup": 0
+  },
+  "pass": true
+ }
+]

@@ -21,7 +21,7 @@ F = {k: v.display for k, v in PUB.facts().items()}
 # Order in which tables appear below; Roman numerals for cross-references are derived from it
 # and checked against the builder's own numbering at the end of the build.
 TABLE_ORDER = ["data", "cand", "v11", "loafo", "significance", "family", "temporal", "adapt", "gate", "v11_2018",
-               "cross", "cross_perday", "inversion", "families", "range_def", "range_det", "xai", "p11", "perf"]
+               "cross", "cross_perday", "inversion", "r3", "families", "range_def", "range_det", "xai", "p11", "perf"]
 _NUM = _json.loads((_ROOT / "docs" / "research" / "paper_numbers.json").read_text(encoding="utf-8"))
 _SUMMARY = _json.loads((_ROOT / "research_artifacts" / "openset_loafo_summary.json").read_text(encoding="utf-8"))
 _GATE = _json.loads((_ROOT / "research_artifacts" / "zero_day_gate_report.json").read_text(encoding="utf-8"))["evaluation"]
@@ -808,6 +808,36 @@ P.para(f"Table {TR['inversion']} compares, for every 2018 day with known-family 
        f"{F['ra_loafo_xgb_matched_ci']} over families and seeds), so the sign of the fusion effect depends on the setting. "
        "Day, attack family, extractor and label quality are confounded in this comparison.")
 PT("inversion")
+P.subsection("A Pre-Registered Multi-Model Campaign")
+P.para("The results above use one evidence model (XGBoost) and seeds that also informed the design. To test whether they "
+       "depend on that choice, we committed hypotheses, decision rules and frozen configurations before running a reduced "
+       f"campaign: {F['r3_models']} tree-based evidence models (the v3 XGBoost configuration, a decision tree, a random forest, "
+       "extra trees, and XGBoost and LightGBM with library defaults), five new seeds, and four protocols. The protocols are "
+       "LOAFO, the day-ordered split, per-day 2018 re-calibration, and a cross-dataset LOAFO in which a family present in both "
+       "datasets is removed from training and evaluated on the 2018 days that contain it. Each model is used alone and fused "
+       "with the same k-NN stream, with identical calibration. Conformal p-values use randomised tie-breaking, which makes the "
+       "false-alarm rate exact for tree models with tied scores. The primary metric is the detection rate at an exactly "
+       "matched 1% false-alarm rate. The seed is the statistical unit (paired t-test, Holm correction across models), and a "
+       "hypothesis counts as supported only if at least five of the six models meet its rule.")
+P.para(f"Table {TR['r3']} gives the verdicts. The validity check passed: all {F['r3_a4_cells']} model-arm combinations realised "
+       f"{F['r3_a4_min']}–{F['r3_a4_max']} false alarms at α = 1% under LOAFO. Fisher fusion improved zero-day detection for "
+       f"{F['r3_a1_n']} evidence models ({F['r3_a1_min']} to {F['r3_a1_max']}), and the v3 XGBoost gain on the new seeds "
+       f"({F['r3_a1_xgbref']} {F['r3_a1_xgbref_ci']}) matches the earlier estimate ({F['ra_loafo_xgb_matched']}). With a "
+       f"decision tree as evidence the fused detector found {F['r3_a2_dt']} less than with XGBoost. On the 2018 data after "
+       f"per-day re-calibration, Fisher fusion detected fewer known-family attacks than its own evidence model for "
+       f"{F['r3_a5_n']} models ({F['r3_a5_min']} to {F['r3_a5_max']}), so the inversion is not specific to XGBoost. Max fusion "
+       f"is not a safe fixed alternative: it was non-inferior to the evidence model alone (margin {F['r3_ni_margin']}) for {F['r3_a7_n']} "
+       f"models. In the cross-dataset LOAFO the in-distribution gain did not transfer ({F['r3_a6_min']} to {F['r3_a6_max']}). "
+       "Dropping any single family or day leaves these verdicts unchanged, except that the max-fusion verdict becomes "
+       "inconclusive when one 2018 day is dropped.")
+P.para("We also pre-registered a label-free reliability screen: the share of a day's first 500 benign flows that each "
+       "stream, under its source calibration, already calls anomalous at α₀ = 5%. It did not predict the stream's AUROC "
+       f"(Spearman ρ = {F['r3_rs1_rho']}, day-cluster 95% interval {F['r3_rs1_ci']}) or the fusion loss (ρ = {F['r3_rs2_rho']}, "
+       f"{F['r3_rs2_ci']}). The k-NN screen saturates, flagging {F['r3_screen_min']}–{F['r3_screen_max']} of benign warm-up "
+       "flows on every 2018 day, so it cannot rank days. By the pre-registered rule, no gated fusion method was built. In "
+       "an exploratory analysis, refreshing the k-NN reference set with the warm-up flows largely removed the inversion; "
+       "this needs its own confirmatory test.")
+PT("r3")
 P.subsection("Would a Different Classifier Solve It?")
 P.para(f"Table {TR['families']} compares ten classifier families at the same 1% benign false-alarm budget. With "
        f"every family seen in training they are hard to tell apart: binary F1 ranged from {F['fam_iid_f1_range']}, and "
@@ -977,6 +1007,9 @@ P.numbered([
     "used one seed. Results on uncapped data could differ, particularly for the largest families.",
     "*Design selection.* The fusion rule and novelty detector were chosen on a pilot seed excluded from reporting; "
     "hyper-parameters such as k = 5 were not tuned further.",
+    "*Pre-registered campaign scope.* The multi-model campaign covers tree-based evidence models with library defaults "
+    "and five seeds (the smallest exact Wilcoxon p is then 0.0625); neural evidence models and GPU-bound open-set "
+    "baselines were not run.",
     "*Controlled plane.* The mitigation experiment runs in process on synthetic connection attempts, with an adapter "
     "whose behaviour partly determines the result; it says nothing about a real firewall or endpoint agent.",
 ])
@@ -995,7 +1028,9 @@ P.para("We set out to give a flow-based intrusion detector a way to say \"this i
        f"(F1 {F['v11_f1']} → {F['x_frozen_f1']}) nor the gate transferred, and per-day re-calibration controlled false "
        "alarms at the cost of most of the recall; after that re-calibration the fixed Fisher fusion detected fewer "
        "known attacks than its own classifier, so a fusion rule that helps in-distribution should not be kept fixed under "
-       "shift. In the trace-driven cyber range, the gate turned a zero-day scenario "
+       "shift. A pre-registered campaign over six tree-based evidence models showed that both the in-distribution gain and the "
+       "cross-network loss hold across models, and that a simple benign-only screen does not predict when fusion hurts. "
+       "In the trace-driven cyber range, the gate turned a zero-day scenario "
        f"that the frozen detector did not detect into one detected in about {F['rz_gate_latency']} seconds, alert aggregation removed false "
        "incidents, and the choice and timing of the human-approved response—not detection speed—decided the modelled "
        "service outcome.")

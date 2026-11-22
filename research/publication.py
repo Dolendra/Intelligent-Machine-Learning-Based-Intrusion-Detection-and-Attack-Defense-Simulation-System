@@ -40,6 +40,12 @@ V11_TEST = f"{RA}/v11_reeval/v11_test_metrics_by_threshold.json"  # scripts/71 (
 V11_FAM = f"{RA}/v11_reeval/v11_family_end_to_end.json"  # scripts/71 (E-02)
 V11_POLICY = f"{RA}/v11_reeval/v11_policy_alert_rates.json"  # scripts/71 (E-03)
 REANALYSIS = f"{RA}/reanalysis/matched_fpr_summary.json"  # scripts/72 (E-04/E-05)
+# Phase 5-6 (2026-11-22): pre-registered reduced R3 campaign (docs/research/R3_AMENDMENT.md), scripts/74
+R3_HYP = f"{RA}/r3/analysis/campaign/hypotheses.json"
+R3_REL = f"{RA}/r3/analysis/campaign/reliability.json"
+R3_MODELS = ["xgb_ref", "dt", "rf", "et", "xgb", "lgbm"]
+R3_NAMES = {"xgb_ref": "XGBoost (v3 ref.)", "dt": "Decision tree", "rf": "Random forest", "et": "Extra trees",
+            "xgb": "XGBoost (defaults)", "lgbm": "LightGBM"}
 TRAINING = "models/trained_models/training_report.json"
 P11 = "models/trained_models/empirical_mitigation_report.json"
 ENVELOPE = "results/performance/operating_envelope_latest.json"
@@ -472,6 +478,34 @@ def t_inversion() -> Table:
                  docx={"widths": [0.85, 0.75, 0.9, 0.9, 0.9, 0.6, 0.6, 0.6, 0.6], "size": 7})
 
 
+def _r3_cell(r: dict | None) -> str:
+    if not r or not r.get("n_seeds"):
+        return DASH
+    ci = r.get("hierarchical_bootstrap_95ci")
+    return f"{r['mean']:+.3f} [{ci[0]:+.2f}, {ci[1]:+.2f}]" if ci else f"{r['mean']:+.3f}"
+
+
+def t_r3() -> Table:
+    """Phase 5: pre-registered reduced R3 campaign, matched 1 % FPR, 6 evidence models x 5 seeds."""
+    h = load(R3_HYP)
+    rows = []
+    for m in R3_MODELS:
+        fpr = h["A4"]["per_model_method"].get(f"{m} | {OSR}", {}).get("realised_fpr_smoothed")
+        rows.append([R3_NAMES[m], _r3_cell(h["A1"]["per_model"].get(m)), _r3_cell(h["A5"]["per_model"].get(m)),
+                     _r3_cell(h["A6"]["per_model"].get(m)), _r3_cell(h["A7"]["per_model"].get(m)), pct(fpr, 2)])
+    rows.append(["Pre-registered verdict", h["A1"]["verdict"], h["A5"]["verdict"], h["A6"]["verdict"], h["A7"]["verdict"],
+                 h["A4"]["verdict"]])
+    return Table("r3", "Pre-Registered R3 Campaign: Effect of Fusion at a Matched 1% False-Alarm Rate across Six Evidence Models",
+                 ["Evidence model", "LOAFO: Fisher − sup. (A1)", "2018 per day: Fisher − sup. (A5)",
+                  "Cross-dataset LOAFO: Fisher − sup. (A6)", "2018 per day: max − sup. (A7)", "LOAFO realised FPR (A4)"], rows,
+                 notes="Difference in detection rate at an exactly matched 1 % benign FPR (threshold set on the evaluated benign "
+                       "flows); 'sup.' is the evidence model alone, calibrated identically. Mean over seeds 101-105; brackets: "
+                       "hierarchical bootstrap 95 % interval (folds or days, then seeds). Per-day columns use same-day "
+                       "re-calibration on 2,000 benign flows. Realised FPR: Aegis-OSR (Fisher) with smoothed conformal p-values "
+                       "at α = 1 %. Hypotheses, rules and thresholds were committed before the campaign (R3_AMENDMENT.md).",
+                 sources=[f"{R3_HYP}:A1,A4,A5,A6,A7"], docx={"widths": [1.15, 1.2, 1.2, 1.2, 1.2, 0.75], "size": 7})
+
+
 def t_families() -> Table:
     d = load(FAMILIES)
     r = d["results"]
@@ -658,7 +692,7 @@ def t_xai() -> Table:
 BUILDERS: dict[str, Callable[[], Table]] = {  # in paper order
     "data": t_data, "cand": t_cand, "v11": t_v11, "loafo": t_loafo, "significance": t_significance, "family": t_family,
     "temporal": t_temporal, "adapt": t_adapt, "gate": t_gate, "v11_2018": t_v11_2018, "cross": t_cross,
-    "cross_perday": t_cross_perday, "inversion": t_inversion, "families": t_families, "range_def": t_range_def, "range_det": t_range_det,
+    "cross_perday": t_cross_perday, "inversion": t_inversion, "r3": t_r3, "families": t_families, "range_def": t_range_def, "range_det": t_range_det,
     "xai": t_xai, "p11": t_p11, "perf": t_perf,
 }
 
@@ -1092,6 +1126,47 @@ def facts() -> dict[str, Fact]:
         put("ra_known_days", n_known, str(n_known), f"{pd_}.per_day_mean_over_seeds (days with known-family attacks)")
         put("ra_xgb_auroc_0221", xs["2018-02-21"][XGB]["auroc_known"], f3(xs["2018-02-21"][XGB]["auroc_known"]),
             f"{pd_}.per_day_mean_over_seeds.2018-02-21.{XGB}.auroc_known")
+    if exists(R3_HYP):
+        # Phases 5-6: pre-registered reduced R3 campaign (R3_AMENDMENT.md; scripts/74), confirmatory
+        h, rel = load(R3_HYP), load(R3_REL)
+        put("r3_models", len(R3_MODELS), str(len(R3_MODELS)), f"{R3_HYP}:A1.n_models")
+        put("r3_ni_margin", 0.02, "0.02", "docs/research/R3_AMENDMENT.md §4 A7 (pre-registered margin; scripts/74 TOST_MARGIN)")
+        for hid in ("A1", "A2", "A4", "A5", "A6", "A7"):
+            put(f"r3_{hid.lower()}_verdict", h[hid]["verdict"], h[hid]["verdict"], f"{R3_HYP}:{hid}.verdict")
+
+        def rng_(hid: str) -> None:
+            vals = [h[hid]["per_model"][mm]["mean"] for mm in R3_MODELS]
+            put(f"r3_{hid.lower()}_min", min(vals), f"{min(vals):+.3f}", f"{R3_HYP}:{hid}.per_model.*.mean (min)")
+            put(f"r3_{hid.lower()}_max", max(vals), f"{max(vals):+.3f}", f"{R3_HYP}:{hid}.per_model.*.mean (max)")
+
+        for hid in ("A1", "A5", "A6", "A7"):
+            rng_(hid)
+        put("r3_a1_n", h["A1"]["n_meeting"], f"{h['A1']['n_meeting']} of {h['A1']['n_models']}", f"{R3_HYP}:A1.n_meeting")
+        put("r3_a5_n", h["A5"]["n_in_direction"], f"{h['A5']['n_in_direction']} of {h['A5']['n_models']}",
+            f"{R3_HYP}:A5.n_in_direction")
+        put("r3_a6_neg", h["A6"]["n_sig_negative"], str(h["A6"]["n_sig_negative"]), f"{R3_HYP}:A6.n_sig_negative")
+        put("r3_a6_pos", h["A6"]["n_sig_positive"], str(h["A6"]["n_sig_positive"]), f"{R3_HYP}:A6.n_sig_positive")
+        put("r3_a7_n", len(h["A7"]["models_noninferior"]), str(len(h["A7"]["models_noninferior"])),
+            f"{R3_HYP}:A7.models_noninferior")
+        x = h["A1"]["per_model"]["xgb_ref"]
+        lo, hi = x["hierarchical_bootstrap_95ci"]
+        put("r3_a1_xgbref", x["mean"], f"{x['mean']:+.3f}", f"{R3_HYP}:A1.per_model.xgb_ref.mean")
+        put("r3_a1_xgbref_ci", (lo, hi), f"[{lo:+.3f}, {hi:+.3f}]", f"{R3_HYP}:A1.per_model.xgb_ref.hierarchical_bootstrap_95ci")
+        d2 = h["A2"]["per_model"]["dt"]["mean"]
+        put("r3_a2_dt", d2, f"{d2:+.3f}", f"{R3_HYP}:A2.per_model.dt.mean")
+        fp = [v["realised_fpr_smoothed"] for v in h["A4"]["per_model_method"].values()]
+        put("r3_a4_cells", len(fp), str(len(fp)), f"{R3_HYP}:A4.per_model_method")
+        put("r3_a4_min", min(fp), pct(min(fp), 2), f"{R3_HYP}:A4.per_model_method.*.realised_fpr_smoothed (min)")
+        put("r3_a4_max", max(fp), pct(max(fp), 2), f"{R3_HYP}:A4.per_model_method.*.realised_fpr_smoothed (max)")
+        for rs in ("RS1", "RS2"):
+            r_ = rel[rs]
+            lo, hi = r_["day_cluster_ci95"]
+            put(f"r3_{rs.lower()}_rho", r_["rho"], f"{r_['rho']:+.2f}", f"{R3_REL}:{rs}.rho")
+            put(f"r3_{rs.lower()}_ci", (lo, hi), f"[{lo:+.2f}, {hi:+.2f}]", f"{R3_REL}:{rs}.day_cluster_ci95")
+            put(f"r3_{rs.lower()}_verdict", r_["verdict"], r_["verdict"], f"{R3_REL}:{rs}.verdict")
+        sc = list(rel["knn_screen_by_fold_xgb_ref"].values())
+        put("r3_screen_min", min(sc), f"{min(sc):.2f}", f"{R3_REL}:knn_screen_by_fold_xgb_ref (min)")
+        put("r3_screen_max", max(sc), f"{max(sc):.2f}", f"{R3_REL}:knn_screen_by_fold_xgb_ref (max)")
     return F
 
 

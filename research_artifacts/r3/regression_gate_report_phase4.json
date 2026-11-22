@@ -1,0 +1,45 @@
+{
+ "generated_at": "2026-11-22T00:18:23.699045+00:00",
+ "git_commit": "c8989b4",
+ "python": "D:\\IDS-Project\\.venvs\\r3-cpu\\Scripts\\python.exe",
+ "protocols": [
+  "loafo"
+ ],
+ "seeds": [
+  1
+ ],
+ "checks": {
+  "historical_artifacts_unchanged": {
+   "changed_or_missing": {},
+   "pass": true
+  },
+  "frozen_v11_files_equal_tag": {
+   "differing": [],
+   "pass": true
+  },
+  "overwrite_protection": {
+   "attempts": {
+    "research_artifacts/openset_loafo_records.json": "refused",
+    "models/trained_models/binary_best.joblib": "refused"
+   },
+   "pass": true
+  },
+  "reproduction_loafo": {
+   "records_compared": 6,
+   "values_compared": 1338,
+   "mismatches": [],
+   "n_mismatches": 0,
+   "missing_in_rerun": [],
+   "extra_in_rerun": [],
+   "pass": true
+  },
+  "score_completeness_loafo": {
+   "dumps_checked": 6,
+   "flows_with_scores": 1383383,
+   "problems": [],
+   "pass": true
+  }
+ },
+ "runtime_seconds": 991.7,
+ "pass": true
+}

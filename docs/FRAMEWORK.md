@@ -48,7 +48,8 @@ results = pipe.process(flows)                            # [PipelineResult(detec
 
 ## What the framework does not do
 
-* **No new detector.** The research found no method worth adding (see `docs/research/R3_RESULTS.md`).
+* **No new detector.** The pre-registered reliability study rejected the benign-only screen that a gated fusion module
+  would need, so none was added (`docs/research/EVIDENCE_RELIABILITY_STUDY.md`, `docs/research/R3_RESULTS.md`).
 * **No automatic adaptation in serving.** The adapter exists for experiments and is off by default (`adapter: null`).
 * **No guarantee under shift.** Under distribution shift the conformal bound holds only conditionally on
   exchangeability; recalibration re-targets the threshold but does not restore detection.

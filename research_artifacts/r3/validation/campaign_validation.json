@@ -1,0 +1,444 @@
+{
+ "generated_at": "2026-11-22T00:58:46.674817+00:00",
+ "analysis": "campaign",
+ "status": "post hoc robustness of pre-registered hypotheses; descriptive, changes no verdict",
+ "V1_leave_one_fold_out": {
+  "A1": {
+   "preregistered_verdict": "supported",
+   "recomputed_full": "supported",
+   "drop_one": {
+    "Bot": {
+     "verdict": "supported",
+     "n_meeting": 6
+    },
+    "BruteForce": {
+     "verdict": "supported",
+     "n_meeting": 6
+    },
+    "DDoS": {
+     "verdict": "supported",
+     "n_meeting": 6
+    },
+    "DoS": {
+     "verdict": "supported",
+     "n_meeting": 6
+    },
+    "PortScan": {
+     "verdict": "supported",
+     "n_meeting": 6
+    },
+    "WebAttack": {
+     "verdict": "supported",
+     "n_meeting": 6
+    }
+   },
+   "verdict_stable": true,
+   "verdicts_seen": [
+    "supported"
+   ]
+  },
+  "A5": {
+   "preregistered_verdict": "supported",
+   "recomputed_full": "supported",
+   "drop_one": {
+    "2018-02-14": {
+     "verdict": "supported",
+     "n_meeting": 5
+    },
+    "2018-02-15": {
+     "verdict": "supported",
+     "n_meeting": 5
+    },
+    "2018-02-16": {
+     "verdict": "supported",
+     "n_meeting": 6
+    },
+    "2018-02-20": {
+     "verdict": "supported",
+     "n_meeting": 6
+    },
+    "2018-02-21": {
+     "verdict": "supported",
+     "n_meeting": 6
+    },
+    "2018-02-22": {
+     "verdict": "supported",
+     "n_meeting": 6
+    },
+    "2018-02-23": {
+     "verdict": "supported",
+     "n_meeting": 6
+    },
+    "2018-03-02": {
+     "verdict": "supported",
+     "n_meeting": 5
+    }
+   },
+   "verdict_stable": true,
+   "verdicts_seen": [
+    "supported"
+   ]
+  },
+  "A6": {
+   "preregistered_verdict": "setting- and model-dependent",
+   "recomputed_full": "setting- and model-dependent",
+   "drop_one": {
+    "Bot@2018-03-02": {
+     "verdict": "setting- and model-dependent",
+     "n_sig_positive": 0,
+     "n_sig_negative": 1
+    },
+    "BruteForce@2018-02-14": {
+     "verdict": "setting- and model-dependent",
+     "n_sig_positive": 0,
+     "n_sig_negative": 1
+    },
+    "DDoS@2018-02-20": {
+     "verdict": "setting- and model-dependent",
+     "n_sig_positive": 0,
+     "n_sig_negative": 0
+    },
+    "DDoS@2018-02-21": {
+     "verdict": "setting- and model-dependent",
+     "n_sig_positive": 0,
+     "n_sig_negative": 1
+    },
+    "DoS@2018-02-15": {
+     "verdict": "setting- and model-dependent",
+     "n_sig_positive": 0,
+     "n_sig_negative": 0
+    },
+    "DoS@2018-02-16": {
+     "verdict": "setting- and model-dependent",
+     "n_sig_positive": 1,
+     "n_sig_negative": 1
+    },
+    "WebAttack@2018-02-22": {
+     "verdict": "setting- and model-dependent",
+     "n_sig_positive": 0,
+     "n_sig_negative": 1
+    },
+    "WebAttack@2018-02-23": {
+     "verdict": "setting- and model-dependent",
+     "n_sig_positive": 0,
+     "n_sig_negative": 2
+    }
+   },
+   "verdict_stable": true,
+   "verdicts_seen": [
+    "setting- and model-dependent"
+   ]
+  },
+  "A7": {
+   "preregistered_verdict": "rejected",
+   "recomputed_full": "rejected",
+   "drop_one": {
+    "2018-02-14": {
+     "verdict": "rejected",
+     "n_noninferior": 0
+    },
+    "2018-02-15": {
+     "verdict": "rejected",
+     "n_noninferior": 0
+    },
+    "2018-02-16": {
+     "verdict": "rejected",
+     "n_noninferior": 0
+    },
+    "2018-02-20": {
+     "verdict": "inconclusive",
+     "n_noninferior": 3
+    },
+    "2018-02-21": {
+     "verdict": "rejected",
+     "n_noninferior": 0
+    },
+    "2018-02-22": {
+     "verdict": "rejected",
+     "n_noninferior": 0
+    },
+    "2018-02-23": {
+     "verdict": "rejected",
+     "n_noninferior": 0
+    },
+    "2018-03-02": {
+     "verdict": "rejected",
+     "n_noninferior": 0
+    }
+   },
+   "verdict_stable": false,
+   "verdicts_seen": [
+    "inconclusive",
+    "rejected"
+   ]
+  }
+ },
+ "V2_replication": {
+  "phase2_seeds_1_5": {
+   "mean": 0.21761530628699982,
+   "hierarchical_bootstrap_95ci": [
+    0.07906518597847204,
+    0.39646885212202465
+   ],
+   "source": "research_artifacts/reanalysis/matched_fpr_summary.json:loafo.aegis_vs_xgb_unknown_matched"
+  },
+  "r3_seeds_101_105": {
+   "mean": 0.22820238324940229,
+   "hierarchical_bootstrap_95ci": [
+    0.08372671607201307,
+    0.4169217177126733
+   ],
+   "source": "research_artifacts/r3/analysis/campaign/hypotheses.json:A1.per_model.xgb_ref"
+  },
+  "difference": 0.010587076962402464,
+  "new_mean_inside_old_ci": true,
+  "per_family": {
+   "Bot": {
+    "phase2": 0.020210526315789474,
+    "r3": 0.026466165413533832
+   },
+   "BruteForce": {
+    "phase2": 0.616643859022352,
+    "r3": 0.6552504525291585
+   },
+   "DDoS": {
+    "phase2": 0.22836906615562746,
+    "r3": 0.2694224381971418
+   },
+   "DoS": {
+    "phase2": 0.15095723070929684,
+    "r3": 0.12194460129242737
+   },
+   "PortScan": {
+    "phase2": 0.24641917900229915,
+    "r3": 0.2531900027947459
+   },
+   "WebAttack": {
+    "phase2": 0.04309197651663406,
+    "r3": 0.04294063926940643
+   }
+  }
+ },
+ "V3_pvalue_rule": {
+  "realised_fpr": {
+   "xgb_ref | Closed-set (sup only)": {
+    "realised_fpr_smoothed": 0.010009555555555556,
+    "realised_fpr_deterministic": 0.009979333333333335,
+    "in_band": true
+   },
+   "xgb_ref | Aegis-OSR": {
+    "realised_fpr_smoothed": 0.01036111111111111,
+    "realised_fpr_deterministic": 0.010360222222222222,
+    "in_band": true
+   },
+   "xgb_ref | Aegis-OSR w/ max fusion": {
+    "realised_fpr_smoothed": 0.010247777777777778,
+    "realised_fpr_deterministic": 0.010192666666666666,
+    "in_band": true
+   },
+   "xgb_ref | Aegis-OSR w/ omnibus fusion": {
+    "realised_fpr_smoothed": 0.010419999999999999,
+    "realised_fpr_deterministic": 0.010366666666666666,
+    "in_band": true
+   },
+   "dt | Closed-set (sup only)": {
+    "realised_fpr_smoothed": 0.010110444444444444,
+    "realised_fpr_deterministic": 0.00102,
+    "in_band": true
+   },
+   "dt | Aegis-OSR": {
+    "realised_fpr_smoothed": 0.010315777777777778,
+    "realised_fpr_deterministic": 0.010274222222222223,
+    "in_band": true
+   },
+   "dt | Aegis-OSR w/ max fusion": {
+    "realised_fpr_smoothed": 0.010312444444444444,
+    "realised_fpr_deterministic": 0.010274222222222223,
+    "in_band": true
+   },
+   "dt | Aegis-OSR w/ omnibus fusion": {
+    "realised_fpr_smoothed": 0.010315333333333333,
+    "realised_fpr_deterministic": 0.010274222222222223,
+    "in_band": true
+   },
+   "rf | Closed-set (sup only)": {
+    "realised_fpr_smoothed": 0.010039777777777778,
+    "realised_fpr_deterministic": 0.00976688888888889,
+    "in_band": true
+   },
+   "rf | Aegis-OSR": {
+    "realised_fpr_smoothed": 0.010213111111111112,
+    "realised_fpr_deterministic": 0.010211777777777778,
+    "in_band": true
+   },
+   "rf | Aegis-OSR w/ max fusion": {
+    "realised_fpr_smoothed": 0.010248222222222225,
+    "realised_fpr_deterministic": 0.010193111111111111,
+    "in_band": true
+   },
+   "rf | Aegis-OSR w/ omnibus fusion": {
+    "realised_fpr_smoothed": 0.010386444444444445,
+    "realised_fpr_deterministic": 0.010337333333333332,
+    "in_band": true
+   },
+   "et | Closed-set (sup only)": {
+    "realised_fpr_smoothed": 0.009990444444444444,
+    "realised_fpr_deterministic": 0.009699555555555555,
+    "in_band": true
+   },
+   "et | Aegis-OSR": {
+    "realised_fpr_smoothed": 0.00990111111111111,
+    "realised_fpr_deterministic": 0.009899333333333333,
+    "in_band": true
+   },
+   "et | Aegis-OSR w/ max fusion": {
+    "realised_fpr_smoothed": 0.010192666666666666,
+    "realised_fpr_deterministic": 0.010112222222222222,
+    "in_band": true
+   },
+   "et | Aegis-OSR w/ omnibus fusion": {
+    "realised_fpr_smoothed": 0.010183555555555557,
+    "realised_fpr_deterministic": 0.010130222222222223,
+    "in_band": true
+   },
+   "xgb | Closed-set (sup only)": {
+    "realised_fpr_smoothed": 0.01014022222222222,
+    "realised_fpr_deterministic": 0.010109777777777777,
+    "in_band": true
+   },
+   "xgb | Aegis-OSR": {
+    "realised_fpr_smoothed": 0.010281333333333333,
+    "realised_fpr_deterministic": 0.010281333333333333,
+    "in_band": true
+   },
+   "xgb | Aegis-OSR w/ max fusion": {
+    "realised_fpr_smoothed": 0.010435333333333333,
+    "realised_fpr_deterministic": 0.010372444444444445,
+    "in_band": true
+   },
+   "xgb | Aegis-OSR w/ omnibus fusion": {
+    "realised_fpr_smoothed": 0.01060911111111111,
+    "realised_fpr_deterministic": 0.010581555555555556,
+    "in_band": true
+   },
+   "lgbm | Closed-set (sup only)": {
+    "realised_fpr_smoothed": 0.010253333333333333,
+    "realised_fpr_deterministic": 0.010206,
+    "in_band": true
+   },
+   "lgbm | Aegis-OSR": {
+    "realised_fpr_smoothed": 0.01035911111111111,
+    "realised_fpr_deterministic": 0.010358000000000001,
+    "in_band": true
+   },
+   "lgbm | Aegis-OSR w/ max fusion": {
+    "realised_fpr_smoothed": 0.010414444444444445,
+    "realised_fpr_deterministic": 0.010364888888888889,
+    "in_band": true
+   },
+   "lgbm | Aegis-OSR w/ omnibus fusion": {
+    "realised_fpr_smoothed": 0.010565555555555554,
+    "realised_fpr_deterministic": 0.010513777777777778,
+    "in_band": true
+   }
+  },
+  "largest_gap": "dt | Closed-set (sup only)",
+  "loafo_fisher_minus_B_conformal_recall": {
+   "smoothed": {
+    "xgb_ref": 0.231,
+    "dt": 0.272,
+    "rf": 0.1486,
+    "et": 0.2187,
+    "xgb": 0.249,
+    "lgbm": 0.1566
+   },
+   "deterministic": {
+    "xgb_ref": 0.2315,
+    "dt": 0.2786,
+    "rf": 0.1511,
+    "et": 0.2255,
+    "xgb": 0.2495,
+    "lgbm": 0.1569
+   }
+  }
+ },
+ "V4_metric_agreement": {
+  "A1": {
+   "xgb_ref": {
+    "matched_tpr": 0.22820238324940229,
+    "conformal_recall": 0.23096397232274807,
+    "same_sign": true
+   },
+   "dt": {
+    "matched_tpr": 0.26757923990735233,
+    "conformal_recall": 0.2720066672750504,
+    "same_sign": true
+   },
+   "rf": {
+    "matched_tpr": 0.13361394225533463,
+    "conformal_recall": 0.14858559737887883,
+    "same_sign": true
+   },
+   "et": {
+    "matched_tpr": 0.21356083826852731,
+    "conformal_recall": 0.2186742794000356,
+    "same_sign": true
+   },
+   "xgb": {
+    "matched_tpr": 0.2465081972907867,
+    "conformal_recall": 0.24895814651768325,
+    "same_sign": true
+   },
+   "lgbm": {
+    "matched_tpr": 0.15410176466348394,
+    "conformal_recall": 0.15662400713931285,
+    "same_sign": true
+   }
+  },
+  "A5": {
+   "xgb_ref": {
+    "matched_tpr": -0.21168479583398084,
+    "conformal_recall": -0.238758552620319,
+    "same_sign": true
+   },
+   "dt": {
+    "matched_tpr": -0.006235874703173263,
+    "conformal_recall": -0.02904421695648205,
+    "same_sign": true
+   },
+   "rf": {
+    "matched_tpr": -0.1257135301902292,
+    "conformal_recall": -0.13044810386287398,
+    "same_sign": true
+   },
+   "et": {
+    "matched_tpr": -0.05536978187628524,
+    "conformal_recall": -0.06845039678464662,
+    "same_sign": true
+   },
+   "xgb": {
+    "matched_tpr": -0.18079037799569644,
+    "conformal_recall": -0.24475457329248532,
+    "same_sign": true
+   },
+   "lgbm": {
+    "matched_tpr": -0.1868484732018644,
+    "conformal_recall": -0.24914964849900736,
+    "same_sign": true
+   }
+  }
+ },
+ "V5_A5_without_anomaly_day": {
+  "excluded": "2018-02-21",
+  "verdict": "supported",
+  "n_meeting": 6,
+  "means": {
+   "xgb_ref": -0.2416,
+   "dt": -0.0097,
+   "rf": -0.1473,
+   "et": -0.066,
+   "xgb": -0.2064,
+   "lgbm": -0.2135
+  }
+ }
+}

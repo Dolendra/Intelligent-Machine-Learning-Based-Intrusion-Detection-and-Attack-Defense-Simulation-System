@@ -137,6 +137,20 @@ python scripts/53_summarize_research.py && python scripts/55_research_figures.py
 python scripts/51_train_zero_day_gate.py && python scripts/52_build_replay_pool.py
 ```
 
+## Pre-registered R3 campaign (Phases 4–8)
+
+Six tree-based evidence models (xgb_ref, dt, rf, et, xgb, lgbm), seeds 101–105 and four protocols were tested against
+hypotheses committed before the run (`docs/research/R3_AMENDMENT.md`). Results are in `docs/research/R3_RESULTS.md`:
+
+* **LOAFO gain:** in-distribution, the zero-day gain of Fisher fusion at a matched 1 % FPR holds for all 6 models
+  (+0.13 to +0.27).
+* **Cross-network loss:** after per-day recalibration on CSE-CIC-IDS2018, fusion loses known-attack detection for all 6
+  models.
+* **No transfer, no safe fixed rule:** the gain does not transfer to unseen families on the new network, and max fusion
+  is not a safe fixed alternative.
+* **No gated method:** the pre-registered benign-only reliability screen was rejected
+  (`docs/research/EVIDENCE_RELIABILITY_STUDY.md`), so no gated method was built.
+
 ## Modular framework (Phase 9–10)
 
 `framework/` exposes the system as interchangeable modules behind typed interfaces: **detector**, **open-set**,

@@ -241,6 +241,22 @@ _Known-family recall and realised benign FPR at α = 1 % (conformal operating po
 
 Sources: `research_artifacts/reanalysis/matched_fpr_summary.json:cross_perday.recal@2000.per_day_mean_over_seeds`; `research_artifacts/openset_cross_perday_records.json:records[*].test_families`
 
+### Pre-Registered R3 Campaign: Effect of Fusion at a Matched 1% False-Alarm Rate across Six Evidence Models
+
+| Evidence model | LOAFO: Fisher − sup. (A1) | 2018 per day: Fisher − sup. (A5) | Cross-dataset LOAFO: Fisher − sup. (A6) | 2018 per day: max − sup. (A7) | LOAFO realised FPR (A4) |
+|---|---|---|---|---|---|
+| XGBoost (v3 ref.) | +0.228 [+0.08, +0.42] | -0.212 [-0.44, -0.03] | -0.043 [-0.16, +0.01] | -0.022 [-0.10, +0.04] | 1.04% |
+| Decision tree | +0.268 [+0.06, +0.51] | -0.006 [-0.10, +0.08] | +0.022 [-0.01, +0.07] | -0.032 [-0.15, +0.08] | 1.03% |
+| Random forest | +0.134 [+0.04, +0.25] | -0.126 [-0.28, +0.00] | -0.053 [-0.16, +0.03] | -0.079 [-0.26, +0.05] | 1.02% |
+| Extra trees | +0.214 [+0.07, +0.38] | -0.055 [-0.18, +0.02] | -0.046 [-0.14, +0.02] | -0.055 [-0.19, +0.04] | 0.99% |
+| XGBoost (defaults) | +0.247 [+0.10, +0.43] | -0.181 [-0.40, -0.02] | -0.020 [-0.06, +0.01] | -0.031 [-0.11, +0.03] | 1.03% |
+| LightGBM | +0.154 [+0.06, +0.26] | -0.187 [-0.40, -0.03] | -0.025 [-0.08, +0.02] | -0.048 [-0.17, +0.04] | 1.04% |
+| Pre-registered verdict | supported | supported | setting- and model-dependent | rejected | supported |
+
+_Difference in detection rate at an exactly matched 1 % benign FPR (threshold set on the evaluated benign flows); 'sup.' is the evidence model alone, calibrated identically. Mean over seeds 101-105; brackets: hierarchical bootstrap 95 % interval (folds or days, then seeds). Per-day columns use same-day re-calibration on 2,000 benign flows. Realised FPR: Aegis-OSR (Fisher) with smoothed conformal p-values at α = 1 %. Hypotheses, rules and thresholds were committed before the campaign (R3_AMENDMENT.md)._
+
+Sources: `research_artifacts/r3/analysis/campaign/hypotheses.json:A1,A4,A5,A6,A7`
+
 ### 10 Classifier Families at a 1% Benign False-Alarm Budget: Seen vs. Withheld Families (Seed 1)
 
 | Model | IID F1 | IID FPR (%) | Withheld: mean recall | Bot | Brute | DDoS | DoS | Scan | Web |

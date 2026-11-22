@@ -1,0 +1,123 @@
+{
+ "meta": {
+  "runs": [
+   "campaign_b",
+   "campaign_c"
+  ],
+  "assign": {
+   "xgb_ref": "campaign_b",
+   "dt": "campaign_b",
+   "rf": "campaign_b",
+   "et": "campaign_c",
+   "xgb": "campaign_c",
+   "lgbm": "campaign_c"
+  },
+  "model_runs": {
+   "xgb_ref": "campaign_b",
+   "dt": "campaign_b",
+   "rf": "campaign_b",
+   "et": "campaign_c",
+   "xgb": "campaign_c",
+   "lgbm": "campaign_c"
+  },
+  "generated": "2026-11-22T00:57:20.734159+00:00",
+  "git_commit": "c8989b4",
+  "preregistration": "docs/research/R3_AMENDMENT.md",
+  "alpha": 0.01,
+  "target_fpr": 0.01,
+  "bootstrap": {
+   "replicates": 10000,
+   "seed": 20261122
+  },
+  "anchor": {
+   "values_checked": 21300,
+   "max_abs_diff": 4.999614999615006e-07
+  },
+  "models": [
+   "xgb_ref",
+   "dt",
+   "rf",
+   "et",
+   "xgb",
+   "lgbm"
+  ],
+  "protocols": [
+   "cross_loafo",
+   "cross_perday",
+   "loafo",
+   "temporal"
+  ],
+  "seeds": [
+   101,
+   102,
+   103,
+   104,
+   105
+  ]
+ },
+ "RS1": {
+  "n": 630,
+  "clusters": 10,
+  "rho": -0.16079713022244424,
+  "day_cluster_ci95": [
+   -0.5124174919887333,
+   0.26661418030133394
+  ],
+  "by_stream": {
+   "sup": {
+    "n": 540,
+    "clusters": 10,
+    "rho": -0.018841954161635803,
+    "day_cluster_ci95": [
+     -0.381523985631109,
+     0.3789451126636723
+    ]
+   },
+   "knn": {
+    "n": 90,
+    "clusters": 10,
+    "rho": -0.395257784928242,
+    "day_cluster_ci95": [
+     -0.8699330943676534,
+     0.4910253262095432
+    ]
+   }
+  },
+  "verdict": "rejected"
+ },
+ "RS2": {
+  "n": 540,
+  "clusters": 10,
+  "rho": 0.20009513290543246,
+  "day_cluster_ci95": [
+   -0.30221381984686874,
+   0.6217968012908969
+  ],
+  "verdict": "rejected"
+ },
+ "phase7_gate": {
+  "open": false,
+  "rule": "build the gated method only if RS1 and RS2 are both supported (R3_AMENDMENT \u00a75)"
+ },
+ "knn_screen_by_fold_xgb_ref": {
+  "cross_perday | 2018-02-14": 0.6936,
+  "cross_perday | 2018-02-15": 0.6208,
+  "cross_perday | 2018-02-16": 1.0,
+  "cross_perday | 2018-02-20": 0.6696000000000001,
+  "cross_perday | 2018-02-21": 1.0,
+  "cross_perday | 2018-02-22": 0.6172,
+  "cross_perday | 2018-02-23": 0.7792,
+  "cross_perday | 2018-02-28": 0.7260000000000001,
+  "cross_perday | 2018-03-01": 0.8092,
+  "cross_perday | 2018-03-02": 0.8687999999999999,
+  "cross_loafo | Bot@2018-03-02": 0.8687999999999999,
+  "cross_loafo | BruteForce@2018-02-14": 0.6936,
+  "cross_loafo | DDoS@2018-02-20": 0.6688000000000001,
+  "cross_loafo | DDoS@2018-02-21": 1.0,
+  "cross_loafo | DoS@2018-02-15": 0.6216,
+  "cross_loafo | DoS@2018-02-16": 1.0,
+  "cross_loafo | WebAttack@2018-02-22": 0.6172,
+  "cross_loafo | WebAttack@2018-02-23": 0.7792
+ },
+ "screen_alpha0": 0.05
+}

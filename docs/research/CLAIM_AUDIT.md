@@ -433,3 +433,28 @@ No historical artifact was changed. Details and numbers are in `RESEARCH_INTEGRI
 | C-22 | Per-window FPR guarantee at small W | CORRECTED (limitation stated) | The paper's limitations state the marginal-bound caveat (RES-5). Calibration-conditional bounds are not computed. |
 | C-23 | Every paper number traces to an artifact | VERIFIED | `scripts/59` and `scripts/62` regenerated; publication tests pass. The new facts cite `research_artifacts/{v11_reeval,reanalysis}`. |
 | C-24 | R1b: "paper.tex compiled and validated" (§8) | **No longer current** | The sources changed in Phase 2. Recompile with Tectonic, then rerun `scripts/63`. |
+
+## 12. Phases 5–8: pre-registered R3 campaign (2026-11-22)
+
+Sources:
+* `R3_RESULTS.md`, `EVIDENCE_RELIABILITY_STUDY.md`;
+* `research_artifacts/r3/analysis/campaign/` (`scripts/74`);
+* `research_artifacts/r3/validation/campaign_validation.json` (`scripts/76`).
+
+The hypotheses, rules and configurations were committed before the campaign. Every verdict is reported, including the
+rejected ones.
+
+| # | Claim | Status | Evidence / action |
+|---|---|---|---|
+| C-25 | The LOAFO gain of Fisher fusion is specific to XGBoost | **Rejected; the gain is general across tree models** | A1 supported: 6 of 6 evidence models, +0.134 to +0.268 at matched 1 % FPR, Holm *p* ≤ 0.0036, positive on every seed and family. |
+| C-26 | C-09 replicates on new seeds | VERIFIED | xgb_ref +0.228 [+0.084, +0.417] on seeds 101–105 vs +0.218 [+0.079, +0.396] on seeds 1–5 (V2). |
+| C-27 | Conformal FPR is exact for tree models | VERIFIED with smoothed *p* (PR-01) | A4: 24 of 24 cells at 0.99–1.06 %. With deterministic ties, dt arm B realises 0.10 %. |
+| C-28 | C-14, the fusion inversion after 2018 per-day recalibration | **Upgraded: confirmatory in direction** | A5 supported: 6 of 6 models negative. The size is model-dependent (−0.212 to −0.006), and only rf is individually Holm-significant. It survives leave-one-day-out and excluding 2018-02-21. |
+| C-29 | The LOAFO gain transfers to unseen families on a new network | **Not supported** | A6: setting- and model-dependent. 5 of 6 means are negative; only rf is significant, and it is negative. |
+| C-30 | Max fusion is a safe fixed alternative under shift | **Rejected** | A7: 0 of 6 models are non-inferior (margin 0.02). Dropping 2018-02-20 makes it inconclusive. |
+| C-31 | C-21: stream reliability can be screened from benign traffic (gated fusion) | **Rejected** | RS1 ρ = −0.16 [−0.51, +0.27]; RS2 ρ = +0.20 [−0.30, +0.62]. The kNN screen saturates (0.62–1.00 on every day). The Phase 7 gate is closed and no method was built. |
+| C-32 | A reference refresh removes the inversion | **Exploratory only** | recal+ref@2000: Fisher − B is positive for 5 of 6 models on cross_perday and cross_loafo. Not pre-registered; needs its own test. |
+| C-33 | The evidence model matters inside the fused detector | VERIFIED at the extremes | A2: dt −0.173 vs xgb_ref (Holm *p* 2×10⁻⁵). et, xgb and lgbm are within ±0.03, but none is TOST-equivalent at 5 seeds. |
+
+Not run, so nothing may be claimed: TabM, CLOSR (the GPU campaign; LycoS hold), CatBoost (amendment 2), tuned models,
+and independent confirmation data (NF-v3, LycoS).

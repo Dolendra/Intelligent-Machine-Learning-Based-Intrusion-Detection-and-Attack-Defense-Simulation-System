@@ -1,0 +1,7 @@
+{
+ "stream": "campaign_b",
+ "planned_models": ["xgb_ref", "dt", "rf"],
+ "note": "Launched with --models xgb_ref dt rf et xgb lgbm; by the split plan (campaign_c ran lgbm, xgb, et in parallel) a watcher stopped this process right after '== rf/cross_loafo' was logged (2026-11-22 ~06:21 IST). Every record file for xgb_ref, dt and rf is complete (30 loafo, 10 temporal, 50 cross_perday, 40 cross_loafo each, see campaign.log). scores/et is a partial dump of the interrupted et run and is NOT used: et is analysed from campaign_c (--assign et=campaign_c).",
+ "leakage": "LeakageChecker raises LeakageError on any failed split; campaign.log contains no traceback, so every split of the three models passed. Because the process was stopped, the end-of-run leakage_report.json/run_summary.json were not written for this stream.",
+ "excluded_partial": ["scores/et"]
+}

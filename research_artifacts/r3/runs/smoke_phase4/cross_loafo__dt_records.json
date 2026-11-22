@@ -1,0 +1,1147 @@
+{
+ "meta": {
+  "mode": "smoke",
+  "versions": {
+   "python": "3.11.9",
+   "executable": "D:\\IDS-Project\\.venvs\\r3-cpu\\Scripts\\python.exe",
+   "numpy": "2.4.2",
+   "pandas": "2.3.3",
+   "sklearn": "1.9.0",
+   "xgboost": "3.2.0",
+   "lightgbm": "4.7.0",
+   "catboost": "1.2.10",
+   "torch": "2.12.0+cpu",
+   "optuna": "5.0.0"
+  }
+ },
+ "records": [
+  {
+   "protocol": "cross_loafo",
+   "fold": "Bot@2018-03-02",
+   "day": "2018-03-02",
+   "held_out": "Bot",
+   "seed": 0,
+   "alpha": 0.01,
+   "known_families": [
+    "BruteForce",
+    "DDoS",
+    "DoS",
+    "PortScan",
+    "WebAttack"
+   ],
+   "unknown_families": [
+    "Bot"
+   ],
+   "n_test": {
+    "benign": 3000,
+    "known": 0,
+    "unknown": 1000
+   },
+   "test_families": {
+    "BENIGN": 3000,
+    "Bot": 1000
+   },
+   "warmup_available": 2000,
+   "warmup_eval_overlap": 0,
+   "methods": {
+    "Closed-set (sup only)": {
+     "fpr": 0.029,
+     "known_recall": null,
+     "zero_day_recall": 0.009,
+     "auroc_unknown": 0.49033333333333334,
+     "auprc_unknown": 0.25,
+     "auroc_all": 0.49033333333333334,
+     "fpr@0.001": 0.004,
+     "zero_day_recall@0.001": 0.0,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.029,
+     "zero_day_recall@0.01": 0.009,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.07133333333333333,
+     "zero_day_recall@0.05": 0.047,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "Bot": 0.009
+     }
+    },
+    "Aegis-OSR": {
+     "fpr": 0.42233333333333334,
+     "known_recall": null,
+     "zero_day_recall": 0.972,
+     "auroc_unknown": 0.9518261666666668,
+     "auprc_unknown": 0.7858233212141428,
+     "auroc_all": 0.9518261666666668,
+     "fpr@0.001": 0.018333333333333333,
+     "zero_day_recall@0.001": 0.007,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.42233333333333334,
+     "zero_day_recall@0.01": 0.972,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.7443333333333333,
+     "zero_day_recall@0.05": 0.972,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "Bot": 0.972
+     }
+    },
+    "Aegis-OSR w/ max fusion": {
+     "fpr": 0.4196666666666667,
+     "known_recall": null,
+     "zero_day_recall": 0.972,
+     "auroc_unknown": 0.9551115000000001,
+     "auprc_unknown": 0.8078380292525392,
+     "auroc_all": 0.9551115000000001,
+     "fpr@0.001": 0.09,
+     "zero_day_recall@0.001": 0.972,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.4196666666666667,
+     "zero_day_recall@0.01": 0.972,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.7443333333333333,
+     "zero_day_recall@0.05": 0.972,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "Bot": 0.972
+     }
+    },
+    "Aegis-OSR w/ omnibus fusion": {
+     "fpr": 0.4246666666666667,
+     "known_recall": null,
+     "zero_day_recall": 0.972,
+     "auroc_unknown": 0.9535058333333334,
+     "auprc_unknown": 0.798428590400547,
+     "auroc_all": 0.9535058333333334,
+     "fpr@0.001": 0.022,
+     "zero_day_recall@0.001": 0.036,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.4246666666666667,
+     "zero_day_recall@0.01": 0.972,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.7443333333333333,
+     "zero_day_recall@0.05": 0.972,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "Bot": 0.972
+     }
+    },
+    "kNN distance": {
+     "fpr": 0.5446666666666666,
+     "known_recall": null,
+     "zero_day_recall": 0.972,
+     "auroc_unknown": 0.9552141666666667,
+     "auprc_unknown": 0.8078613414977585,
+     "auroc_all": 0.9552141666666667,
+     "fpr@0.001": 0.093,
+     "zero_day_recall@0.001": 0.972,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.5446666666666666,
+     "zero_day_recall@0.01": 0.972,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.7413333333333333,
+     "zero_day_recall@0.05": 0.972,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "Bot": 0.972
+     }
+    }
+   },
+   "aegis_osr_attribution": {
+    "unknown_flagged_as_unknown": 0.972,
+    "unknown_misattributed_to_known": 0.0,
+    "unknown_missed_as_benign": 0.028,
+    "known_family_accuracy": null,
+    "openset_macro_f1": 0.22318781593337692
+   },
+   "fit_seconds": 4.6,
+   "adaptation": {
+    "recal@2000": {
+     "window": 2000,
+     "variant": "recal",
+     "methods": {
+      "Closed-set (sup only)": {
+       "fpr": 0.008333333333333333,
+       "known_recall": null,
+       "zero_day_recall": 0.0,
+       "auroc_unknown": 0.49033333333333334,
+       "auprc_unknown": 0.25,
+       "auroc_all": 0.49033333333333334,
+       "fpr@0.001": 0.0006666666666666666,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.008333333333333333,
+       "zero_day_recall@0.01": 0.0,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.046,
+       "zero_day_recall@0.05": 0.026,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "Bot": 0.0
+       }
+      },
+      "Aegis-OSR": {
+       "fpr": 0.005333333333333333,
+       "known_recall": null,
+       "zero_day_recall": 0.005,
+       "auroc_unknown": 0.9485111666666667,
+       "auprc_unknown": 0.8867924591871033,
+       "auroc_all": 0.9485111666666667,
+       "fpr@0.001": 0.0006666666666666666,
+       "zero_day_recall@0.001": 0.005,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.005333333333333333,
+       "zero_day_recall@0.01": 0.005,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.021,
+       "zero_day_recall@0.05": 0.007,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "Bot": 0.005
+       }
+      },
+      "Aegis-OSR w/ max fusion": {
+       "fpr": 0.0016666666666666668,
+       "known_recall": null,
+       "zero_day_recall": 0.006,
+       "auroc_unknown": 0.9485395,
+       "auprc_unknown": 0.887877443290796,
+       "auroc_all": 0.9485395,
+       "fpr@0.001": 0.0006666666666666666,
+       "zero_day_recall@0.001": 0.005,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.0016666666666666668,
+       "zero_day_recall@0.01": 0.006,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.021,
+       "zero_day_recall@0.05": 0.007,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "Bot": 0.006
+       }
+      },
+      "Aegis-OSR w/ omnibus fusion": {
+       "fpr": 0.0036666666666666666,
+       "known_recall": null,
+       "zero_day_recall": 0.006,
+       "auroc_unknown": 0.948525,
+       "auprc_unknown": 0.8871099362879947,
+       "auroc_all": 0.948525,
+       "fpr@0.001": 0.0006666666666666666,
+       "zero_day_recall@0.001": 0.005,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.0036666666666666666,
+       "zero_day_recall@0.01": 0.006,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.021,
+       "zero_day_recall@0.05": 0.007,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "Bot": 0.006
+       }
+      },
+      "kNN distance": {
+       "fpr": 0.0013333333333333333,
+       "known_recall": null,
+       "zero_day_recall": 0.006,
+       "auroc_unknown": 0.9553783333333333,
+       "auprc_unknown": 0.908439349660073,
+       "auroc_all": 0.9553783333333333,
+       "fpr@0.001": 0.0006666666666666666,
+       "zero_day_recall@0.001": 0.006,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.0013333333333333333,
+       "zero_day_recall@0.01": 0.006,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.002,
+       "zero_day_recall@0.05": 0.007,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "Bot": 0.006
+       }
+      }
+     },
+     "aegis_osr_attribution": {
+      "unknown_flagged_as_unknown": 0.005,
+      "unknown_misattributed_to_known": 0.0,
+      "unknown_missed_as_benign": 0.995,
+      "known_family_accuracy": null,
+      "openset_macro_f1": 0.2883557752275126
+     }
+    },
+    "recal+ref@2000": {
+     "window": 2000,
+     "variant": "recal+ref",
+     "methods": {
+      "Closed-set (sup only)": {
+       "fpr": 0.01,
+       "known_recall": null,
+       "zero_day_recall": 0.0,
+       "auroc_unknown": 0.49033333333333334,
+       "auprc_unknown": 0.25,
+       "auroc_all": 0.49033333333333334,
+       "fpr@0.001": 0.002,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.01,
+       "zero_day_recall@0.01": 0.0,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.04933333333333333,
+       "zero_day_recall@0.05": 0.03,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "Bot": 0.0
+       }
+      },
+      "Aegis-OSR": {
+       "fpr": 0.004333333333333333,
+       "known_recall": null,
+       "zero_day_recall": 0.002,
+       "auroc_unknown": 0.8680263333333333,
+       "auprc_unknown": 0.5944060172547729,
+       "auroc_all": 0.8680263333333333,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.004333333333333333,
+       "zero_day_recall@0.01": 0.002,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.04066666666666666,
+       "zero_day_recall@0.05": 0.047,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "Bot": 0.002
+       }
+      },
+      "Aegis-OSR w/ max fusion": {
+       "fpr": 0.0026666666666666666,
+       "known_recall": null,
+       "zero_day_recall": 0.006,
+       "auroc_unknown": 0.8687788333333334,
+       "auprc_unknown": 0.6053875336828166,
+       "auroc_all": 0.8687788333333334,
+       "fpr@0.001": 0.001,
+       "zero_day_recall@0.001": 0.001,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.0026666666666666666,
+       "zero_day_recall@0.01": 0.006,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.04066666666666666,
+       "zero_day_recall@0.05": 0.047,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "Bot": 0.006
+       }
+      },
+      "Aegis-OSR w/ omnibus fusion": {
+       "fpr": 0.004666666666666667,
+       "known_recall": null,
+       "zero_day_recall": 0.002,
+       "auroc_unknown": 0.8683981666666666,
+       "auprc_unknown": 0.5978511420198142,
+       "auroc_all": 0.8683981666666666,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.004666666666666667,
+       "zero_day_recall@0.01": 0.002,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.04066666666666666,
+       "zero_day_recall@0.05": 0.047,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "Bot": 0.002
+       }
+      },
+      "kNN distance": {
+       "fpr": 0.003,
+       "known_recall": null,
+       "zero_day_recall": 0.006,
+       "auroc_unknown": 0.8858306666666667,
+       "auprc_unknown": 0.6360318949279797,
+       "auroc_all": 0.8858306666666667,
+       "fpr@0.001": 0.0013333333333333333,
+       "zero_day_recall@0.001": 0.001,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.003,
+       "zero_day_recall@0.01": 0.006,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.07066666666666667,
+       "zero_day_recall@0.05": 0.047,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "Bot": 0.006
+       }
+      }
+     },
+     "aegis_osr_attribution": {
+      "unknown_flagged_as_unknown": 0.002,
+      "unknown_misattributed_to_known": 0.0,
+      "unknown_missed_as_benign": 0.998,
+      "known_family_accuracy": null,
+      "openset_macro_f1": 0.17184748346001302
+     }
+    }
+   },
+   "screen": {
+    "window": 500,
+    "alpha0": 0.05,
+    "exceedance": {
+     "sup": 0.014,
+     "knn": 0.872
+    }
+   },
+   "evidence_model": "dt"
+  },
+  {
+   "protocol": "cross_loafo",
+   "fold": "BruteForce@2018-02-14",
+   "day": "2018-02-14",
+   "held_out": "BruteForce",
+   "seed": 0,
+   "alpha": 0.01,
+   "known_families": [
+    "Bot",
+    "DDoS",
+    "DoS",
+    "PortScan",
+    "WebAttack"
+   ],
+   "unknown_families": [
+    "BruteForce"
+   ],
+   "n_test": {
+    "benign": 3000,
+    "known": 0,
+    "unknown": 1000
+   },
+   "test_families": {
+    "BENIGN": 3000,
+    "BruteForce": 1000
+   },
+   "warmup_available": 2000,
+   "warmup_eval_overlap": 0,
+   "methods": {
+    "Closed-set (sup only)": {
+     "fpr": 0.05733333333333333,
+     "known_recall": null,
+     "zero_day_recall": 0.011,
+     "auroc_unknown": 0.47683333333333333,
+     "auprc_unknown": 0.24952721088435373,
+     "auroc_all": 0.47683333333333333,
+     "fpr@0.001": 0.011666666666666667,
+     "zero_day_recall@0.001": 0.002,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.05733333333333333,
+     "zero_day_recall@0.01": 0.011,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.098,
+     "zero_day_recall@0.05": 0.048,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "BruteForce": 0.011
+     }
+    },
+    "Aegis-OSR": {
+     "fpr": 0.31766666666666665,
+     "known_recall": null,
+     "zero_day_recall": 0.002,
+     "auroc_unknown": 0.40168366666666666,
+     "auprc_unknown": 0.21065161792038567,
+     "auroc_all": 0.40168366666666666,
+     "fpr@0.001": 0.016666666666666666,
+     "zero_day_recall@0.001": 0.0,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.31766666666666665,
+     "zero_day_recall@0.01": 0.002,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.682,
+     "zero_day_recall@0.05": 1.0,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "BruteForce": 0.002
+     }
+    },
+    "Aegis-OSR w/ max fusion": {
+     "fpr": 0.31433333333333335,
+     "known_recall": null,
+     "zero_day_recall": 0.002,
+     "auroc_unknown": 0.4015106666666667,
+     "auprc_unknown": 0.21062883131682061,
+     "auroc_all": 0.4015106666666667,
+     "fpr@0.001": 0.030333333333333334,
+     "zero_day_recall@0.001": 0.0,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.31433333333333335,
+     "zero_day_recall@0.01": 0.002,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.6816666666666666,
+     "zero_day_recall@0.05": 1.0,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "BruteForce": 0.002
+     }
+    },
+    "Aegis-OSR w/ omnibus fusion": {
+     "fpr": 0.32,
+     "known_recall": null,
+     "zero_day_recall": 0.002,
+     "auroc_unknown": 0.40166433333333335,
+     "auprc_unknown": 0.21064152327583274,
+     "auroc_all": 0.40166433333333335,
+     "fpr@0.001": 0.019333333333333334,
+     "zero_day_recall@0.001": 0.0,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.32,
+     "zero_day_recall@0.01": 0.002,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.682,
+     "zero_day_recall@0.05": 1.0,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "BruteForce": 0.002
+     }
+    },
+    "kNN distance": {
+     "fpr": 0.37566666666666665,
+     "known_recall": null,
+     "zero_day_recall": 0.0,
+     "auroc_unknown": 0.4172433333333333,
+     "auprc_unknown": 0.21412593775307934,
+     "auroc_all": 0.4172433333333333,
+     "fpr@0.001": 0.03166666666666667,
+     "zero_day_recall@0.001": 0.0,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.37566666666666665,
+     "zero_day_recall@0.01": 0.0,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.6843333333333333,
+     "zero_day_recall@0.05": 1.0,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "BruteForce": 0.0
+     }
+    }
+   },
+   "aegis_osr_attribution": {
+    "unknown_flagged_as_unknown": 0.0,
+    "unknown_misattributed_to_known": 0.002,
+    "unknown_missed_as_benign": 0.998,
+    "known_family_accuracy": null,
+    "openset_macro_f1": 0.11287565481113869
+   },
+   "fit_seconds": 3.6,
+   "adaptation": {
+    "recal@2000": {
+     "window": 2000,
+     "variant": "recal",
+     "methods": {
+      "Closed-set (sup only)": {
+       "fpr": 0.006666666666666667,
+       "known_recall": null,
+       "zero_day_recall": 0.0,
+       "auroc_unknown": 0.47683333333333333,
+       "auprc_unknown": 0.24952721088435373,
+       "auroc_all": 0.47683333333333333,
+       "fpr@0.001": 0.0003333333333333333,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.006666666666666667,
+       "zero_day_recall@0.01": 0.0,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.034,
+       "zero_day_recall@0.05": 0.001,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "BruteForce": 0.0
+       }
+      },
+      "Aegis-OSR": {
+       "fpr": 0.004333333333333333,
+       "known_recall": null,
+       "zero_day_recall": 0.0,
+       "auroc_unknown": 0.4017428333333333,
+       "auprc_unknown": 0.207127901446246,
+       "auroc_all": 0.4017428333333333,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.004333333333333333,
+       "zero_day_recall@0.01": 0.0,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.035333333333333335,
+       "zero_day_recall@0.05": 0.001,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "BruteForce": 0.0
+       }
+      },
+      "Aegis-OSR w/ max fusion": {
+       "fpr": 0.005666666666666667,
+       "known_recall": null,
+       "zero_day_recall": 0.0,
+       "auroc_unknown": 0.40170116666666666,
+       "auprc_unknown": 0.20712094147385507,
+       "auroc_all": 0.40170116666666666,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.005666666666666667,
+       "zero_day_recall@0.01": 0.0,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.042,
+       "zero_day_recall@0.05": 0.0,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "BruteForce": 0.0
+       }
+      },
+      "Aegis-OSR w/ omnibus fusion": {
+       "fpr": 0.005,
+       "known_recall": null,
+       "zero_day_recall": 0.0,
+       "auroc_unknown": 0.40172500000000005,
+       "auprc_unknown": 0.2071227447525436,
+       "auroc_all": 0.40172500000000005,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.005,
+       "zero_day_recall@0.01": 0.0,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.037333333333333336,
+       "zero_day_recall@0.05": 0.001,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "BruteForce": 0.0
+       }
+      },
+      "kNN distance": {
+       "fpr": 0.005666666666666667,
+       "known_recall": null,
+       "zero_day_recall": 0.0,
+       "auroc_unknown": 0.41725066666666666,
+       "auprc_unknown": 0.21055729750486102,
+       "auroc_all": 0.41725066666666666,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.005666666666666667,
+       "zero_day_recall@0.01": 0.0,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.042,
+       "zero_day_recall@0.05": 0.0,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "BruteForce": 0.0
+       }
+      }
+     },
+     "aegis_osr_attribution": {
+      "unknown_flagged_as_unknown": 0.0,
+      "unknown_misattributed_to_known": 0.0,
+      "unknown_missed_as_benign": 1.0,
+      "known_family_accuracy": null,
+      "openset_macro_f1": 0.17100329182767998
+     }
+    },
+    "recal+ref@2000": {
+     "window": 2000,
+     "variant": "recal+ref",
+     "methods": {
+      "Closed-set (sup only)": {
+       "fpr": 0.006666666666666667,
+       "known_recall": null,
+       "zero_day_recall": 0.0,
+       "auroc_unknown": 0.47683333333333333,
+       "auprc_unknown": 0.24952721088435373,
+       "auroc_all": 0.47683333333333333,
+       "fpr@0.001": 0.0003333333333333333,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.006666666666666667,
+       "zero_day_recall@0.01": 0.0,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.033666666666666664,
+       "zero_day_recall@0.05": 0.001,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "BruteForce": 0.0
+       }
+      },
+      "Aegis-OSR": {
+       "fpr": 0.011333333333333334,
+       "known_recall": null,
+       "zero_day_recall": 0.002,
+       "auroc_unknown": 0.9472143333333334,
+       "auprc_unknown": 0.7482679589231844,
+       "auroc_all": 0.9472143333333334,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.011333333333333334,
+       "zero_day_recall@0.01": 0.002,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.05366666666666667,
+       "zero_day_recall@0.05": 0.474,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "BruteForce": 0.002
+       }
+      },
+      "Aegis-OSR w/ max fusion": {
+       "fpr": 0.013333333333333334,
+       "known_recall": null,
+       "zero_day_recall": 0.0,
+       "auroc_unknown": 0.9559446666666667,
+       "auprc_unknown": 0.7791340600866515,
+       "auroc_all": 0.9559446666666667,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.013333333333333334,
+       "zero_day_recall@0.01": 0.0,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.05266666666666667,
+       "zero_day_recall@0.05": 0.957,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "BruteForce": 0.0
+       }
+      },
+      "Aegis-OSR w/ omnibus fusion": {
+       "fpr": 0.012,
+       "known_recall": null,
+       "zero_day_recall": 0.002,
+       "auroc_unknown": 0.9487791666666666,
+       "auprc_unknown": 0.7532732170030897,
+       "auroc_all": 0.9487791666666666,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.012,
+       "zero_day_recall@0.01": 0.002,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.053,
+       "zero_day_recall@0.05": 0.474,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "BruteForce": 0.002
+       }
+      },
+      "kNN distance": {
+       "fpr": 0.013,
+       "known_recall": null,
+       "zero_day_recall": 0.0,
+       "auroc_unknown": 0.9559446666666667,
+       "auprc_unknown": 0.7791340600866515,
+       "auroc_all": 0.9559446666666667,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.013,
+       "zero_day_recall@0.01": 0.0,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.05266666666666667,
+       "zero_day_recall@0.05": 0.967,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "BruteForce": 0.0
+       }
+      }
+     },
+     "aegis_osr_attribution": {
+      "unknown_flagged_as_unknown": 0.0,
+      "unknown_misattributed_to_known": 0.002,
+      "unknown_missed_as_benign": 0.998,
+      "known_family_accuracy": null,
+      "openset_macro_f1": 0.14196821749952135
+     }
+    }
+   },
+   "screen": {
+    "window": 500,
+    "alpha0": 0.05,
+    "exceedance": {
+     "sup": 0.082,
+     "knn": 0.686
+    }
+   },
+   "evidence_model": "dt"
+  },
+  {
+   "protocol": "cross_loafo",
+   "fold": "DoS@2018-02-16",
+   "day": "2018-02-16",
+   "held_out": "DoS",
+   "seed": 0,
+   "alpha": 0.01,
+   "known_families": [
+    "Bot",
+    "BruteForce",
+    "DDoS",
+    "PortScan",
+    "WebAttack"
+   ],
+   "unknown_families": [
+    "DoS"
+   ],
+   "n_test": {
+    "benign": 3000,
+    "known": 0,
+    "unknown": 1000
+   },
+   "test_families": {
+    "BENIGN": 3000,
+    "DoS": 1000
+   },
+   "warmup_available": 2000,
+   "warmup_eval_overlap": 0,
+   "methods": {
+    "Closed-set (sup only)": {
+     "fpr": 0.01,
+     "known_recall": null,
+     "zero_day_recall": 0.013,
+     "auroc_unknown": 0.5013333333333333,
+     "auprc_unknown": 0.2515,
+     "auroc_all": 0.5013333333333333,
+     "fpr@0.001": 0.0003333333333333333,
+     "zero_day_recall@0.001": 0.0,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.01,
+     "zero_day_recall@0.01": 0.013,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.05333333333333334,
+     "zero_day_recall@0.05": 0.05,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "DoS": 0.013
+     }
+    },
+    "Aegis-OSR": {
+     "fpr": 0.9913333333333333,
+     "known_recall": null,
+     "zero_day_recall": 0.059,
+     "auroc_unknown": 0.057822499999999985,
+     "auprc_unknown": 0.15545845937938635,
+     "auroc_all": 0.057822499999999985,
+     "fpr@0.001": 0.0003333333333333333,
+     "zero_day_recall@0.001": 0.002,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.9913333333333333,
+     "zero_day_recall@0.01": 0.059,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.9956666666666667,
+     "zero_day_recall@0.05": 0.06,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "DoS": 0.059
+     }
+    },
+    "Aegis-OSR w/ max fusion": {
+     "fpr": 0.9913333333333333,
+     "known_recall": null,
+     "zero_day_recall": 0.059,
+     "auroc_unknown": 0.057629499999999986,
+     "auprc_unknown": 0.15293395973038612,
+     "auroc_all": 0.057629499999999986,
+     "fpr@0.001": 0.050666666666666665,
+     "zero_day_recall@0.001": 0.02,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.9913333333333333,
+     "zero_day_recall@0.01": 0.059,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.9956666666666667,
+     "zero_day_recall@0.05": 0.06,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "DoS": 0.059
+     }
+    },
+    "Aegis-OSR w/ omnibus fusion": {
+     "fpr": 0.9913333333333333,
+     "known_recall": null,
+     "zero_day_recall": 0.059,
+     "auroc_unknown": 0.05780049999999999,
+     "auprc_unknown": 0.1546903668316328,
+     "auroc_all": 0.05780049999999999,
+     "fpr@0.001": 0.004333333333333333,
+     "zero_day_recall@0.001": 0.011,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.9913333333333333,
+     "zero_day_recall@0.01": 0.059,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.9956666666666667,
+     "zero_day_recall@0.05": 0.06,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "DoS": 0.059
+     }
+    },
+    "kNN distance": {
+     "fpr": 0.9913333333333333,
+     "known_recall": null,
+     "zero_day_recall": 0.058,
+     "auroc_unknown": 0.05484816666666665,
+     "auprc_unknown": 0.15233850083613854,
+     "auroc_all": 0.05484816666666665,
+     "fpr@0.001": 0.050666666666666665,
+     "zero_day_recall@0.001": 0.02,
+     "known_recall@0.001": null,
+     "fpr@0.01": 0.9913333333333333,
+     "zero_day_recall@0.01": 0.058,
+     "known_recall@0.01": null,
+     "fpr@0.05": 0.9956666666666667,
+     "zero_day_recall@0.05": 0.059,
+     "known_recall@0.05": null,
+     "zero_day_recall_by_family": {
+      "DoS": 0.058
+     }
+    }
+   },
+   "aegis_osr_attribution": {
+    "unknown_flagged_as_unknown": 0.056,
+    "unknown_misattributed_to_known": 0.003,
+    "unknown_missed_as_benign": 0.941,
+    "known_family_accuracy": null,
+    "openset_macro_f1": 0.008181320665908237
+   },
+   "fit_seconds": 2.9,
+   "adaptation": {
+    "recal@2000": {
+     "window": 2000,
+     "variant": "recal",
+     "methods": {
+      "Closed-set (sup only)": {
+       "fpr": 0.003,
+       "known_recall": null,
+       "zero_day_recall": 0.004,
+       "auroc_unknown": 0.5013333333333333,
+       "auprc_unknown": 0.2515,
+       "auroc_all": 0.5013333333333333,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.003,
+       "zero_day_recall@0.01": 0.004,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.03833333333333333,
+       "zero_day_recall@0.05": 0.035,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "DoS": 0.004
+       }
+      },
+      "Aegis-OSR": {
+       "fpr": 0.0003333333333333333,
+       "known_recall": null,
+       "zero_day_recall": 0.014,
+       "auroc_unknown": 0.05861966666666666,
+       "auprc_unknown": 0.2218119602797083,
+       "auroc_all": 0.05861966666666666,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.0003333333333333333,
+       "zero_day_recall@0.01": 0.014,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.0016666666666666668,
+       "zero_day_recall@0.05": 0.015,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "DoS": 0.014
+       }
+      },
+      "Aegis-OSR w/ max fusion": {
+       "fpr": 0.0003333333333333333,
+       "known_recall": null,
+       "zero_day_recall": 0.014,
+       "auroc_unknown": 0.05861966666666666,
+       "auprc_unknown": 0.22182294929069732,
+       "auroc_all": 0.05861966666666666,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.0003333333333333333,
+       "zero_day_recall@0.01": 0.014,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.0016666666666666668,
+       "zero_day_recall@0.05": 0.015,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "DoS": 0.014
+       }
+      },
+      "Aegis-OSR w/ omnibus fusion": {
+       "fpr": 0.0003333333333333333,
+       "known_recall": null,
+       "zero_day_recall": 0.014,
+       "auroc_unknown": 0.05861966666666666,
+       "auprc_unknown": 0.2218119602797083,
+       "auroc_all": 0.05861966666666666,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.0003333333333333333,
+       "zero_day_recall@0.01": 0.014,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.0016666666666666668,
+       "zero_day_recall@0.05": 0.015,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "DoS": 0.014
+       }
+      },
+      "kNN distance": {
+       "fpr": 0.0003333333333333333,
+       "known_recall": null,
+       "zero_day_recall": 0.011,
+       "auroc_unknown": 0.055640999999999996,
+       "auprc_unknown": 0.2186921349616675,
+       "auroc_all": 0.055640999999999996,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.0003333333333333333,
+       "zero_day_recall@0.01": 0.011,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.0016666666666666668,
+       "zero_day_recall@0.05": 0.012,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "DoS": 0.011
+       }
+      }
+     },
+     "aegis_osr_attribution": {
+      "unknown_flagged_as_unknown": 0.011,
+      "unknown_misattributed_to_known": 0.003,
+      "unknown_missed_as_benign": 0.986,
+      "known_family_accuracy": null,
+      "openset_macro_f1": 0.176091568268021
+     }
+    },
+    "recal+ref@2000": {
+     "window": 2000,
+     "variant": "recal+ref",
+     "methods": {
+      "Closed-set (sup only)": {
+       "fpr": 0.004666666666666667,
+       "known_recall": null,
+       "zero_day_recall": 0.005,
+       "auroc_unknown": 0.5013333333333333,
+       "auprc_unknown": 0.2515,
+       "auroc_all": 0.5013333333333333,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.001,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.004666666666666667,
+       "zero_day_recall@0.01": 0.005,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.044,
+       "zero_day_recall@0.05": 0.048,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "DoS": 0.005
+       }
+      },
+      "Aegis-OSR": {
+       "fpr": 0.06733333333333333,
+       "known_recall": null,
+       "zero_day_recall": 0.06,
+       "auroc_unknown": 0.2635345,
+       "auprc_unknown": 0.20533453896974174,
+       "auroc_all": 0.2635345,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.0,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.06733333333333333,
+       "zero_day_recall@0.01": 0.06,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.371,
+       "zero_day_recall@0.05": 0.173,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "DoS": 0.06
+       }
+      },
+      "Aegis-OSR w/ max fusion": {
+       "fpr": 0.068,
+       "known_recall": null,
+       "zero_day_recall": 0.059,
+       "auroc_unknown": 0.263411,
+       "auprc_unknown": 0.20437166150626218,
+       "auroc_all": 0.263411,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.006,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.068,
+       "zero_day_recall@0.01": 0.059,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.37133333333333335,
+       "zero_day_recall@0.05": 0.172,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "DoS": 0.059
+       }
+      },
+      "Aegis-OSR w/ omnibus fusion": {
+       "fpr": 0.06466666666666666,
+       "known_recall": null,
+       "zero_day_recall": 0.061,
+       "auroc_unknown": 0.26345583333333333,
+       "auprc_unknown": 0.20482423251232515,
+       "auroc_all": 0.26345583333333333,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.007,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.06466666666666666,
+       "zero_day_recall@0.01": 0.061,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.37166666666666665,
+       "zero_day_recall@0.05": 0.174,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "DoS": 0.061
+       }
+      },
+      "kNN distance": {
+       "fpr": 0.069,
+       "known_recall": null,
+       "zero_day_recall": 0.059,
+       "auroc_unknown": 0.2633955,
+       "auprc_unknown": 0.20434792527021467,
+       "auroc_all": 0.2633955,
+       "fpr@0.001": 0.0,
+       "zero_day_recall@0.001": 0.007,
+       "known_recall@0.001": null,
+       "fpr@0.01": 0.069,
+       "zero_day_recall@0.01": 0.059,
+       "known_recall@0.01": null,
+       "fpr@0.05": 0.37066666666666664,
+       "zero_day_recall@0.05": 0.171,
+       "known_recall@0.05": null,
+       "zero_day_recall_by_family": {
+        "DoS": 0.059
+       }
+      }
+     },
+     "aegis_osr_attribution": {
+      "unknown_flagged_as_unknown": 0.057,
+      "unknown_misattributed_to_known": 0.003,
+      "unknown_missed_as_benign": 0.94,
+      "known_family_accuracy": null,
+      "openset_macro_f1": 0.1842267074575492
+     }
+    }
+   },
+   "screen": {
+    "window": 500,
+    "alpha0": 0.05,
+    "exceedance": {
+     "sup": 0.024,
+     "knn": 1.0
+    }
+   },
+   "evidence_model": "dt"
+  }
+ ]
+}
