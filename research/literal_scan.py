@@ -35,6 +35,8 @@ ALLOWED = {
     "1.1": "frozen model version name (v1.1)", "0.30": "selection-score weight in the S equation (config)",
     "0.20": "selection-score weight in the S equation (config)", "0.2%": "misattribution cut used in a sentence (design)",
     "0.1%": "α setting in a sentence (design)",
+    "10.1109": "DOI registrant prefix in a reference (IEEE)", "10.1007": "DOI registrant prefix in a reference (Springer)",
+    "10.3390": "DOI registrant prefix in a reference (MDPI)", "10.3389": "DOI registrant prefix in a reference (Frontiers)",
 }
 
 

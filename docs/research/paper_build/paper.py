@@ -209,6 +209,27 @@ P.para("Conformal prediction [6] produces predictions with finite-sample error g
        "generally is surveyed in [29], [30]. Our work differs from Transcend in what is being calibrated: we "
        "calibrate a fused statistic built from a supervised and an unsupervised detector, and we use the "
        "calibration both to raise alerts at a fixed benign false-alarm rate and to attribute them.")
+P.subsection("Closest Prior Work")
+P.para("Several recent papers are close to ours, and we state the differences explicitly. CLOSR [44] learns a "
+       "benign-anchored contrastive representation for zero-day and open-set intrusion detection and reports "
+       "threshold-free metrics on a single dataset; it does not set an operating point with a false-alarm bound, "
+       "and we have not compared against it inside our calibrated pipeline, so we make no claim of better zero-day "
+       "detection than CLOSR. FIRCE [45] uses Transcend-style conformal evaluation as a drift signal for a binary "
+       "IoT intrusion classifier and retrains with labels when drift is flagged; Aegis-OSR instead calibrates one "
+       "open-set alert threshold on disjoint benign data and adapts without labels or retraining. Arepalli et al. "
+       "[46] use conformal prediction for intrusion triage and compare probability-space and k-nearest-neighbour "
+       "feature-space novelty scores under leave-one-attack-family-out evaluation; their k-NN score has the same "
+       "form as ours, but they do not test cross-network shift. Mchina et al. [47] cascade a CNN classifier with an "
+       "autoencoder-based zero-day detector on CSE-CIC-IDS2018 and adapt thresholds and fusion parameters at "
+       "deployment time without retraining; their fusion is tuned to a false-positive budget rather than calibrated "
+       "conformally, and no model is transferred between datasets. Outside intrusion detection, MaSF [48] combines "
+       "per-layer empirical p-values with Fisher and Simes rules under Type-I error control; Aegis-OSR sums "
+       "surprisals and re-calibrates the sum on a disjoint split, so its validity comes from that final calibration "
+       "rather than from a p-value combination theorem. Finally, Ahmed et al. [49] audit label-free monitoring, "
+       "including conformal abstention, and test-time adaptation on the same CIC-IDS2017 to CSE-CIC-IDS2018 shift. "
+       "That such tools degrade under this transfer is therefore not new; what we add is a matched-false-alarm "
+       "measurement of what recalibration restores for fused versus single-stream evidence, across several "
+       "evidence models.")
 P.subsection("Explainability and Decision Support")
 P.para("SHAP [31], [32] and LIME [33] are widely used to explain individual predictions. In intrusion detection "
        "they help an analyst decide whether an alert is plausible, though they do not establish causality. "
@@ -1110,6 +1131,12 @@ REFS = [
     "A. Birnbaum, \"Combining independent tests of significance,\" *J. Amer. Statist. Assoc.*, vol. 49, no. 267, pp. 559–574, 1954.",
     "N. A. Heard and P. Rubin-Delanchy, \"Choosing between methods of combining p-values,\" *Biometrika*, vol. 105, no. 1, pp. 239–246, 2018.",
     "F. Şahin and N. S. Mert, \"Dual-threshold conformal deferral for trustworthy security alert triage,\" *Electronics*, vol. 15, no. 18, art. 4084, 2026.",
+    "J. Wilkie, H. Hindy, C. Michie, C. Tachtatzis, J. Irvine, and R. Atkinson, \"A novel contrastive loss for zero-day network intrusion detection,\" *IEEE Trans. Netw. Service Manag.*, vol. 23, pp. 2064–2076, 2026, doi:10.1109/TNSM.2026.3652529.",
+    "S. Barrett, L. Li, G. Dorai, and S. Rajaganapathy, \"FIRCE: A framework for intrusion response and conformal evaluation,\" in *Proc. Int. Conf. Smart Appl., Commun. Netw. (SmartNets)*, 2026, pp. 1–9, doi:10.1109/SmartNets69662.2026.11604738.",
+    "S. V. Arepalli, U. S. G. Irrinki, A. Morampudi, and R. K. Surapani, \"Conformal prediction for network intrusion triage and analysis of unseen attack families,\" *Discover Informatics*, vol. 1, art. 33, 2026, doi:10.1007/s44564-026-00033-y.",
+    "J. P. Mchina, N. Mduma, and R. S. Sinde, \"Adaptive decision-level intrusion detection for known and zero-day attacks,\" *Network*, vol. 6, no. 2, art. 23, 2026, doi:10.3390/network6020023.",
+    "M. Haroush, T. Frostig, R. Heller, and D. Soudry, \"A statistical framework for efficient out of distribution detection in deep neural networks,\" in *Proc. Int. Conf. Learn. Represent. (ICLR)*, 2022.",
+    "W. Ahmed, M. A. Rahaman, P. Roy, and P. Alam, \"The dashboard says 'perfect': A systematic audit of label-free model monitoring and test-time adaptation under temporal distribution shift in network intrusion detection,\" *Front. Artif. Intell.*, vol. 9, art. 1928858, 2026, doi:10.3389/frai.2026.1928858.",
 ]
 for i, ref in enumerate(REFS, 1):
     p = d.add_paragraph()

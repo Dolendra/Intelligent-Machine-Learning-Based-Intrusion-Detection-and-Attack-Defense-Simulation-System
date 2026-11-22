@@ -181,7 +181,7 @@ The first is an empirical observation with a classical mechanism. The second is 
 * FADES full text;
 * Verkerken 2023 (not re-checked; the closest architectural prior, and uncited in the papers).
 
-**Citation gap remaining.** Neither paper yet discusses CLOSR, FIRCE, MaSF, Arepalli et al. or Mchina et al. Adding them needs a manual read of the closed-access parts, which is still pending.
+~~**Citation gap remaining.** Neither paper yet discusses CLOSR, FIRCE, MaSF, Arepalli et al. or Mchina et al.~~ **Closed 2026-11-22.** Both papers now have a "Closest Prior Work" subsection citing CLOSR, FIRCE, Arepalli et al., Mchina et al., MaSF and Ahmed et al. (refs 44–49 in the DOCX). Bibliographic records were re-checked against Crossref on 2026-11-22; Mchina et al. and Ahmed et al. design statements against their Crossref abstracts. **Still not independently re-checked:** the Arepalli et al. full text (Springer login wall); the papers state only its design (conformal triage, probability- vs k-NN novelty, leave-one-family-out) and that it has no cross-network test, as read in the R2 pass, and quote none of its numbers. CLOSR is described as not compared, and no advantage over it is claimed.
 
 ## 6. Readiness for R3 — **not ready**
 
