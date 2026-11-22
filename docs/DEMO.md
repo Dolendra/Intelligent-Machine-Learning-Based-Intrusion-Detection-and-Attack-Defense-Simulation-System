@@ -46,21 +46,20 @@
 
 **Terminal A — API**
 
-```bash
-uvicorn backend.main:app --port 8000
-```
-
-Optional seed of demo incidents:
+> With auth off, the API **refuses to start** unless `AEGIS_ENV=development` (fail-closed posture, R-05/R-06:
+> `InsecureConfigurationError`). Always set it for the viva demo.
 
 ```bash
 # PowerShell
-$env:DEMO_MODE="true"; uvicorn backend.main:app --port 8000
+$env:AEGIS_ENV="development"; $env:DEMO_MODE="true"; python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
 
 ```bash
 # bash
-DEMO_MODE=true uvicorn backend.main:app --port 8000
+AEGIS_ENV=development DEMO_MODE=true python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
+
+`scripts/start_all.ps1` already sets `AEGIS_ENV=development`.
 
 **Terminal B — Frontend**
 
@@ -114,6 +113,13 @@ If ready is **503 / NOT_READY**: stop and fix models path / restart API. Do not 
 | Raw CICIDS2017 | Not in Git | **Do not** open or upload on viva day |
 
 **Primary walkthrough attack:** **DDoS** (clearest BLOCK_SOURCE story for P11).
+
+> **Sample flows are random.** `Load sample flow` draws a new test flow each time. DDoS, DoS, PortScan, BruteForce and
+> WebAttack samples were detected in the 2026-11-22 rehearsal. **Bot** is the documented weakness (57.1 % detected at
+> 0.85): in rehearsal 2 of 5 Bot samples came back BENIGN. If an examiner asks for Bot and it shows BENIGN, say so:
+> *"This is the minority-family weakness we report — the frozen tree misses about 43 % of Bot flows at 0.85."* You may
+> then score the same flow in the Zero-Day Lab; in rehearsal one missed Bot flow was flagged by the gate (p = 0.0018 < α),
+> but that is a single flow — do not generalise it.
 
 **Expected after Detect & classify (DDoS sample):**
 
