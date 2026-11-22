@@ -1,0 +1,61 @@
+{
+  "generated_at": "2026-11-22T03:03:40.322186+00:00",
+  "git_commit": "667471a",
+  "python": "3.11.9",
+  "platform": "Windows-10-10.0.26300-SP0",
+  "environment": {
+    "AEGIS_ENV": "test",
+    "database": "throwaway SQLite (C:\\Users\\dolen\\AppData\\Local\\Temp\\aegis_release_5wn3ca1t\\aegis_release.db)",
+    "note": "in-process checks run in the test configuration; production-mode startup with authentication is verified separately in Docker"
+  },
+  "overall": "PASS",
+  "gates": {
+    "security": {
+      "status": "PASS",
+      "categories": {
+        "Authentication/RBAC": "PASS",
+        "Response safety": "PASS",
+        "API/input security": "PASS",
+        "Persistence/recovery": "PASS",
+        "Model-serving safety": "PASS",
+        "Simulation isolation": "PASS",
+        "Empirical mitigation": "PASS",
+        "Audit integrity": "PASS",
+        "Production boundary": "PASS",
+        "Frozen research baseline": "PASS"
+      },
+      "failed_checks": []
+    },
+    "integrity": {
+      "status": "PASS",
+      "protected_files": 32,
+      "changed_or_missing": {},
+      "frozen_v11_differs_from_tag": []
+    },
+    "framework_parity": {
+      "status": "PASS",
+      "flows": 18,
+      "mismatches": 0,
+      "pipeline": {
+        "detector": "frozen_v11",
+        "open_set": "aegis_osr_gate",
+        "policy": "frozen",
+        "explainer": null,
+        "adapter": null
+      }
+    },
+    "r3_analysis": {
+      "status": "PASS",
+      "analysis": "campaign",
+      "verdicts": {
+        "A1": "supported",
+        "A2": "supported",
+        "A4": "supported",
+        "A5": "supported",
+        "A6": "setting- and model-dependent",
+        "A7": "rejected"
+      },
+      "note": "PASS means the analysis exists and the reference model passed the validity check (A4); verdicts are reported as they are, supported or not"
+    }
+  }
+}
