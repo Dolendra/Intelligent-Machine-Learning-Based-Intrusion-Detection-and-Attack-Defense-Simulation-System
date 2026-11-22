@@ -1,6 +1,6 @@
 # Aegis IDS — Comprehensive Viva Q&A Pack
 
-**Tags:** research freeze `v1.1-research` · product `v2.0-aegis-productionized`  
+**Tags:** research freeze `v1.1-research` · product `v2.0-aegis-productionized` · open-set research track and R3 campaign on `main` (section 11A)  
 **Source of truth:** [`PROJECT_REPORT.md`](PROJECT_REPORT.md)  
 **Demo playbook:** [`DEMO.md`](DEMO.md) · **Slides:** [`PRESENTATION.md`](PRESENTATION.md)
 
@@ -23,6 +23,7 @@ Use **short answers first**; expand only if asked. Never collapse the three meas
 | **Research (IID)** | Frozen DT/RF on the CICIDS2017 random test split | Binary F1 **0.99382** @ 0.85 (0.99048 @ 0.5) · stage-2 macro-F1 **0.99813** (perfect stage 1 assumed) · Bot / WebAttack detected 57.1 % / 37.3 % @ 0.85 |
 | **Simulation assumptions** | Visualization priors in `config.yaml` | DDoS **0.82** · DoS **0.78** |
 | **Controlled-lab (P11)** | Harness validation on `TestNetworkAdapter`, deterministic by construction | DDoS `BLOCK_SOURCE` 1.00 · DoS `RATE_LIMIT` 0.80 (by construction; not mitigation measurements) |
+| **Research (open-set)** | Aegis-OSR and the pre-registered R3 campaign: unseen-family and cross-network detection at a fixed false-alarm rate | LOAFO zero-day recall **0.706** vs **0.490** (same classifier alone) at α = 1 % · fusion gain in **6 of 6** models · frozen v1.1 F1 on CSE-CIC-IDS2018 **0.278** |
 
 **P12** is a security-validation outcome (**Overall PASS**), not a detection F1.
 
@@ -32,7 +33,7 @@ Use **short answers first**; expand only if asked. Never collapse the three meas
 
 ### 30 seconds
 
-> Aegis IDS is a productionized IDS **prototype**: frozen Decision Tree + Random Forest on CICIDS flow features, SHAP explanations, risk and advisory defenses, then a **human-approved CONTROLLED** response path and attack–defense **simulation**. Research F1 is **0.99382** at the deployed 0.85 threshold (0.99048 at 0.5), but Bot and WebAttack detection at 0.85 is only 57 % / 37 %; simulation priors (**0.82 / 0.78**) are assumptions; P11 1.00 / 0.80 validates the lab harness (by construction); P12 security validation **PASS**. We do **not** auto-block live networks.
+> Aegis IDS is a productionized IDS **prototype**: frozen Decision Tree + Random Forest on CICIDS flow features, SHAP explanations, risk and advisory defenses, then a **human-approved CONTROLLED** response path and attack–defense **simulation**. Research F1 is **0.99382** at the deployed 0.85 threshold (0.99048 at 0.5), but Bot and WebAttack detection at 0.85 is only 57 % / 37 %; simulation priors (**0.82 / 0.78**) are assumptions; P11 1.00 / 0.80 validates the lab harness (by construction); P12 security validation **PASS**. We do **not** auto-block live networks. Our research track adds a conformal zero-day gate: in distribution it raises unseen-family detection from 0.49 to 0.71 at a 1 % false-alarm rate, but a pre-registered campaign shows the same fusion loses detection on a new network.
 
 ### 1 minute
 
@@ -44,7 +45,8 @@ Use **short answers first**; expand only if asked. Never collapse the three meas
 > **Approach.** Two-stage ML on CICIDS2017 (binary then attack-only multiclass), 40 `f_classif` features fit on train only, SHAP primary / LIME secondary, configurable risk blend, advisory recommendations.  
 > **Safety.** Response modes are DRY_RUN and CONTROLLED only; LIVE is forbidden; approval is mandatory; reclaim never auto-replays.  
 > **Evidence.** IID binary F1 **0.99382** @ 0.85 (0.99048 @ 0.5); stage-2 macro-F1 **0.99813** given a perfect stage 1; Bot / WebAttack detected 57.1 % / 37.3 % @ 0.85; the P10 Friday result is superseded (contaminated); simulation priors **0.82/0.78**; P11 harness validation **1.00/0.80** (by construction); P12 **PASS**.  
-> **Limits.** Benchmark ≠ live traffic; no zero-day claim; no external dataset yet; P11 is not a real firewall.  
+> **Research.** Aegis-OSR fuses the classifier with a kNN benign-novelty score and calibrates it conformally. Unseen-family recall **0.706** vs **0.490** at α = 1 %; the gain holds for all six tree models in a pre-registered campaign, but after cross-network recalibration fusion detects *fewer* known attacks for all six, and our proposed reliability screen was rejected.  
+> **Limits.** Benchmark ≠ live traffic; zero-day detection measured, not guaranteed; the false-alarm bound breaks under shift; P11 is not a real firewall.  
 > **Claim.** Productionized, security-validated **prototype** with a hard boundary against live enforcement.
 
 ---
@@ -58,7 +60,7 @@ Many IDS demos stop at classification. Analysts also need **family**, **why**, *
 Detect malicious vs benign; classify six attack families; explain (SHAP/LIME); score risk; recommend advisory defenses; simulate lifecycle; provide CONTROLLED response with approval/verify/rollback; productionize P0–P12 without changing frozen ML artifacts.
 
 ### What is the novelty / contribution?
-**Not** a novel IDS learning algorithm. Contribution = **reproducible end-to-end decision-support framework** + honest separation of research / simulation / lab measurements + productionization and security validation.
+**Not** a novel IDS learning algorithm. Contribution = **reproducible end-to-end decision-support framework** + honest separation of research / simulation / lab measurements + productionization and security validation. On the research side: a **pre-registered measurement** of when fusing supervised and novelty evidence helps (in distribution, all six models) and when it hurts (after cross-network recalibration). That recalibration restores the false-alarm rate but not detection is prior work (Şahin & Mert, 2026); we do not claim it.
 
 ### One-line architecture?
 `Flow → preprocess → binary ML → family → risk → XAI → recommendation → incident → propose/dry-run/approve → CONTROLLED response → verify/rollback → simulation → SOC UI`
@@ -323,7 +325,57 @@ Perfect subset scores cover only **Bot / DDoS / PortScan** present in that sampl
 Wording: *no feature exceeded PSI threshold in the IID comparison* — **not** “there is no drift.”
 
 ### External dataset?
-**Not performed** — future work. Do not invent CSE-CIC-IDS2018 results.
+**Performed in the research track** (section 11A). The frozen v1.1 binary model scores F1 **0.278** on CSE-CIC-IDS2018 (precision 0.988, recall 0.162) versus 0.990 IID (`research_artifacts/frozen_v11_on_cic2018_v2.json`). The models were not retrained on 2018.
+
+---
+
+# 11A. Open-set zero-day research (Aegis-OSR and R3)
+
+> Source: `PROJECT_REPORT.md` Chapter 13, `docs/research/R3_RESULTS.md`, `docs/research/EVIDENCE_RELIABILITY_STUDY.md`.
+
+### What is Aegis-OSR, in one breath?
+Two evidence scores per flow: the classifier's `1 − P(benign)` and the distance to the 5 nearest **benign** training flows. Each becomes a benign tail probability; they are **added** (Fisher fusion); the sum becomes a **split-conformal p-value**; alert when `p ≤ α`.
+
+### Why conformal?
+It gives a finite-sample bound: benign false-alarm rate ≤ α, **if** test benign traffic is exchangeable with the calibration traffic. That "if" is exactly what breaks under drift, and we measure that.
+
+### How do you test zero-day detection honestly?
+**LOAFO** (leave one attack family out): remove a family from training entirely, then treat it as the unseen attack. Six families × five seeds; the seed is the statistical unit.
+
+### Headline result?
+Unseen-family recall **0.706** [0.689, 0.723] at α = 1 % with realised FPR 1.00 %, versus **0.490** for the same XGBoost alone and **0.241** for a v1.1-style decision tree. Gain **+0.216** [+0.180, +0.252], positive on 5 of 5 seeds.
+
+### Does the false-alarm guarantee hold under shift?
+**No.** Mon–Thu → Friday: realised FPR **7.09 %** at a 1 % budget. CICIDS2017 → CSE-CIC-IDS2018: **36.7 %**. Recalibrating on 2,000 benign flows per 2018 day brings the mean FPR to 1.62 %, but known-family recall is then only 0.088.
+
+### What is R3?
+A **pre-registered** confirmatory campaign: hypotheses and analysis rules written and committed **before** any result existed, approved, then run. Six tree models (XGBoost ×2, decision tree, random forest, extra trees, LightGBM), new seeds 101–105, four protocols, 780 records. Paired *t*-test with Holm correction; hierarchical bootstrap intervals.
+
+### R3 verdicts?
+| ID | Result |
+|---|---|
+| A4 validity | FPR 0.99–1.06 % in all 24 cells: **supported** |
+| A1 LOAFO gain | **6 of 6** models, +0.134 to +0.268: **supported** |
+| A2 model matters | Decision tree −0.173 vs XGBoost: **supported** |
+| A5 2018 loss after recalibration | Same sign for **6 of 6**: **supported** |
+| A6 gain transfers to 2018 unseen families | **No** (setting- and model-dependent) |
+| A7 max fusion safe | 0 of 6: **rejected** |
+| RS1 / RS2 benign-only reliability screen | ρ = −0.16 / +0.20: **both rejected** |
+
+### Why did you not build the new method (Phase 7)?
+The pre-registered rule said: build a gated method only if **both** RS1 and RS2 are supported. Both were rejected: the screen flags 62–100 % of benign warm-up flows on every 2018 day, so it cannot separate good days from bad ones. Building it anyway would have been choosing the method after seeing the data.
+
+### Isn't a negative result a failure?
+No. The question was *when* fusion helps or hurts. "It does not transfer, and this screen cannot predict it" is an answer, and reporting it prevents others from deploying a rule that fails under shift.
+
+### Is the result robust?
+Leave-one-family/day-out keeps A1, A5 and A6 (A7 becomes inconclusive without one day). The XGBoost gain replicates on new seeds (+0.218 → +0.228). Matched-FPR and conformal recall agree in sign for 6 of 6 models.
+
+### What would you do next?
+Pre-register a test of the **reference-refresh** lead (adding warm-up benign flows to the kNN reference removed most of the 2018 loss, exploratory only), then confirm on independent data (NF-v3, LycoS once licensing allows).
+
+### Does the gate change what the live system does?
+No. It is **advisory**: the frozen v1.1 detector stays the decision authority (`incident_policy: frozen`). On 82,111 held-out flows the benign incident rate is 0.077 % (frozen), 0.896 % (gate), 0.934 % (union).
 
 ---
 
@@ -364,26 +416,28 @@ Documented DR path for SQLite persistence (prototype scope — not HA cluster cl
 # 14. Limitations (what we do **not** claim)
 
 1. Benchmark ≠ production traffic guarantee  
-2. No zero-day / unknown-class detection claim  
-3. No external-dataset validation yet  
+2. Zero-day detection is measured in distribution (LOAFO), not guaranteed; it does not transfer to unseen families on CSE-CIC-IDS2018  
+3. The conformal false-alarm bound holds only under exchangeability; it breaks under drift (7.09 % Friday, 36.7 % on 2018)  
 4. Incomplete temporal multiclass (Fri missing BruteForce/DoS/WebAttack)  
 5. Simulation efficacy is **assumed**  
 6. P11 ≠ real firewall/EDR  
 7. No unsupervised live response; LIVE forbidden  
 8. PCAP extraction needs optional cicflowmeter (fail closed without it)  
 9. Auth may be off in research demos  
-10. Not an enterprise SOC (no SLA / HA / full SOAR)
+10. Not an enterprise SOC (no SLA / HA / full SOAR)  
+11. R3 scope: six CPU tree models, library defaults, five seeds; TabM, CLOSR, CatBoost, tuning and independent confirmation data not run
 
 ---
 
 # 15. Future work
 
-1. Cross-dataset evaluation under **frozen** preprocessing  
+1. Pre-registered test of the reference-refresh lead, then independent confirmation data (NF-v3, LycoS)  
 2. Broader temporal multiclass across all six families  
 3. Sandbox/opt-in real adapters **only after** CONTROLLED maturity + same approval model  
 4. Online drift monitoring beyond IID PSI  
 5. Richer case-management UX, advisory-first defaults  
-6. Optional novelty/unknown-class as a **separate** experiment (do not retune freeze on that holdout)
+6. A label-free signal for choosing fusion vs the classifier under shift (the benign-only screen failed)  
+7. GPU campaign (TabM, CLOSR) and equal-budget tuning
 
 ---
 
@@ -405,9 +459,13 @@ Documented DR path for SQLite persistence (prototype scope — not HA cluster cl
 | “Is auth disabled a security failure?” | “Demo default; P4/P5/P12 validate the hardened path; enable auth for non-demo.” |
 | “What if approve races?” | “Concurrent approve: atomic claim — measured 1 success / 8 racers in P8.” |
 | “Did you tune on the temporal holdout?” | “**No.** Frozen models scored as-is.” |
-| “External dataset results?” | “Not in scope — stated future work.” |
+| “External dataset results?” | “CSE-CIC-IDS2018: frozen v1.1 F1 drops to 0.278; Aegis-OSR's FPR reaches 36.7 % before recalibration. We report the failure.” |
+| “So you detect zero-days?” | “Unseen families in distribution: 0.706 vs 0.490 at 1 % FPR, all six models. Not universal: it does not transfer to the new network.” |
+| “Did you choose the hypotheses after seeing results?” | “No. R3 was pre-registered and committed before any record existed; deviations are dated in the amendment.” |
+| “Why only five seeds?” | “Schedule. The paired t-test is primary; we stated in advance that the minimum exact Wilcoxon p at 5 seeds is 0.0625.” |
+| “Why no deep model?” (research) | “TabM and CLOSR need a GPU campaign and CLOSR's data is under a licence hold; deferred and stated, not hidden.” |
 | “Overfitting?” | “High IID + train-only selectors + held-out test + temporal/PSI checks; still not a live guarantee.” |
-| “What’s your strongest academic claim?” | “Frozen reproducible CICIDS baseline + honest generalization + CONTROLLED empirics beside simulation + P12 PASS prototype boundary.” |
+| “What’s your strongest academic claim?” | “Frozen reproducible CICIDS baseline + honest generalization + CONTROLLED empirics beside simulation + P12 PASS prototype boundary; and a pre-registered result that fusion helps zero-day detection in distribution for six models but hurts after cross-network recalibration.” |
 
 ---
 
@@ -443,6 +501,12 @@ Simulation mirrors detect→recommend→defend→recover for teaching; not a ful
 | P11 DDoS / DoS | **1.00 / 0.80** | Controlled-lab |
 | P12 | **PASS** | Security validation |
 | Calibration | Off | Research decision |
+| LOAFO zero-day recall @ α = 1 % | **0.706** (OSR) vs 0.490 (XGB) vs 0.241 (DT) | Research (open-set) |
+| R3 fusion gain (LOAFO) | **+0.134 to +0.268**, 6 of 6 models | Research (open-set) |
+| R3 2018 loss after recal | **−0.212 to −0.006**, 6 of 6 same sign | Research (open-set) |
+| Frozen v1.1 F1 on CSE-CIC-IDS2018 | **0.278** | Research (external) |
+| FPR under shift @ 1 % budget | **7.09 %** Friday · **36.7 %** 2018 | Research (open-set) |
+| Release validation | **PASS** (4 gates) | Release |
 
 ---
 
@@ -457,7 +521,11 @@ Simulation mirrors detect→recommend→defend→recover for teaching; not a ful
 | Security P12 | `reports/final_security_validation_report.json` |
 | Performance | `docs/PERFORMANCE.md` · `results/performance/operating_envelope_latest.json` |
 | Security model | `docs/SECURITY_MODEL.md` |
+| Open-set method / results | `docs/research/AEGIS_OSR.md` · `docs/research/RESULTS.md` |
+| R3 pre-registration / results | `docs/research/R3_AMENDMENT.md` · `docs/research/R3_RESULTS.md` |
+| Reliability study | `docs/research/EVIDENCE_RELIABILITY_STUDY.md` |
+| Papers | `docs/research/Aegis_OSR_paper_ieee.pdf` · `docs/research/Aegis_Research_Paper.docx` |
 
 ---
 
-*End of viva pack — aligned to final report on `main` / `v2.0-aegis-productionized`.*
+*End of viva pack — aligned to the final report on `main` (v2.0-aegis-productionized plus the research track and R3).*

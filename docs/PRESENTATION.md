@@ -1,4 +1,4 @@
-# Aegis IDS — Final Presentation Outline (18 slides)
+# Aegis IDS — Final Presentation Outline (22 slides)
 
 **Source of truth:** `docs/PROJECT_REPORT.md` (aligned to `v2.0-aegis-productionized`).  
 **Generate PPTX:**
@@ -18,6 +18,7 @@ python scripts/08_export_presentation_pptx.py
 | Research (IID) | Binary F1 **0.99382** @ 0.85 (0.99048 @ 0.5); Bot / WebAttack detected 57 % / 37 % |
 | Simulation assumptions | DDoS efficacy **0.82** |
 | Controlled-lab (P11) | Harness validation: DDoS `BLOCK_SOURCE` 1.00 by construction |
+| Research (open-set) | LOAFO zero-day recall **0.706** vs 0.490 at α = 1 %; R3 gain in 6 of 6 models |
 
 ---
 
@@ -102,29 +103,60 @@ python scripts/08_export_presentation_pptx.py
 - Frozen artifact hashes intact · LIVE still forbidden
 - Productionized **prototype**, not enterprise SOC claim
 
-## Slide 16 — System demonstration
+## Slide 16 — Research track: Aegis-OSR
+- Closed-set classifiers cannot reject unseen families
+- Evidence: classifier `1 − P(benign)` + distance to 5 nearest benign flows → benign surprisals → **Fisher sum** → split-conformal p-value
+- FPR ≤ α only while traffic is exchangeable · advisory Zero-Day Gate beside the frozen model
+- Figure: `docs/research/paper_build/figs/fig2_aegis_osr.png`
+
+## Slide 17 — Research results: where it works and where it breaks
+| Setting | Result |
+|---|---|
+| LOAFO, Aegis-OSR @ α = 1 % | **0.706** [0.689, 0.723], FPR 1.00 % |
+| Same XGBoost / decision tree | 0.490 / 0.241 |
+| Temporal Mon–Thu → Fri | FPR **7.09 %** |
+| CICIDS2017 → CSE-CIC-IDS2018 | FPR **36.7 %** · frozen v1.1 F1 **0.278** |
+| 2018 recalibrated per day | FPR 1.62 %, known recall 0.088 · fusion − classifier **−0.237** |
+- Recalibration restoring FPR but not detection = prior work (Şahin & Mert 2026), not claimed
+
+## Slide 18 — Pre-registered R3 campaign
+- 6 tree models · seeds 101–105 · 4 protocols · 780 records · hypotheses committed before any result
+- A4 valid (24/24) · **A1 gain 6/6** (+0.134 to +0.268) · A2 model matters · **A5 2018 loss 6/6** · A6 no transfer · A7 rejected · RS1/RS2 rejected
+- Robust to leave-one-family/day-out (A7 → inconclusive); XGBoost gain replicates (+0.218 → +0.228)
+
+## Slide 19 — Negative results, reported
+- Phase 7 gate closed by the pre-registered rule → no new method built
+- Screen flags 62–100 % of benign warm-up flows on every 2018 day
+- Not claimed: universal zero-day detection · guaranteed FPR under shift · transfer
+- Exploratory: kNN reference refresh removes most of the 2018 loss → needs its own pre-registered test
+
+## Slide 20 — System demonstration
 - Point to live demo flow (`docs/DEMO.md`)
-- Detection → incident → propose → dry-run → approve → simulation → System/ops
+- Detection → incident → propose → dry-run → approve → simulation → System/ops → Research Lab (R3 tab)
 
-## Slide 17 — Limitations & future work
-- No zero-day claim · no external dataset yet · temporal multiclass incomplete
+## Slide 21 — Limitations & future work
+- IID ≠ live traffic · frozen v1.1 F1 0.278 on CSE-CIC-IDS2018
+- Zero-day detection measured in distribution, not guaranteed · FPR bound breaks under shift
+- R3 scope: six CPU tree models, defaults, 5 seeds · TabM / CLOSR / CatBoost / tuning not run
 - P11 ≠ real firewall · simulation ≠ measurement
-- Future: cross-dataset under frozen preprocess · broader temporal families · opt-in sandbox enforcement later
+- Future: pre-registered reference-refresh test · NF-v3 / LycoS confirmation · GPU campaign
 
-## Slide 18 — Conclusion & Q&A
+## Slide 22 — Conclusion & Q&A
 - Defensible claim (one sentence from PRODUCTION_READINESS)
 - Tags: `v1.1-research` · `v2.0-aegis-productionized`
 - Questions → `docs/VIVA_QA.md` · `docs/PROJECT_REPORT.md`
 
 ---
 
-## Timing guide (~10–12 min talk + demo)
+## Timing guide (~13–15 min talk + demo)
 
 | Segment | Slides | Time |
 |---------|--------|------|
 | Problem → proposal | 1–5 | ~2 min |
 | Architecture → ML | 6–10 | ~3 min |
 | XAI · sim · response | 11–13 | ~2 min |
-| P11 · P12 · limits | 14–17 | ~2.5 min |
-| Close | 18 | ~0.5 min |
+| P11 · P12 | 14–15 | ~1.5 min |
+| Research track | 16–19 | ~3 min |
+| Demo pointer · limits | 20–21 | ~1 min |
+| Close | 22 | ~0.5 min |
 | Live demo | — | 3–4 min |

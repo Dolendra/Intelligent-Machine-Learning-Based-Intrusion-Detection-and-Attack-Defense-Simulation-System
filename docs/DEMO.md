@@ -19,6 +19,7 @@
 | Simulation assumptions | DDoS prior **0.82** · DoS prior **0.78** (`config.yaml`) | “We measured 82% real mitigation” |
 | Controlled-lab (P11) | Harness validation, by construction: DDoS 1.00 · DoS 0.80 | “Measured mitigation”, “Same as simulation priors” |
 | Security (P12) | Overall **PASS** | “Enterprise SOC certified” |
+| Research (open-set) | Unseen-family recall **0.706** vs **0.490** (same classifier) at 1 % FPR · gain in **6 of 6** models (pre-registered) · fusion **loses** detection on CSE-CIC-IDS2018 after recalibration | “We detect all zero-days”, “FPR is guaranteed on any network” |
 
 **One honesty line (use once):**  
 > Research F1, simulation priors, and P11 lab measurements are three different measurement classes.
@@ -352,13 +353,41 @@ Use attack type **DDoS** unless noted.
 
 ---
 
+### Step 18 — Zero-Day Lab (research track)
+
+| | |
+|--|--|
+| **Go to** | Sidebar → **Zero-Day Research** → **Zero-Day Lab** (`/zero-day`) |
+| **Click / type** | Show the card **How the gate decides**, then the status tiles (**Budget α**, **Benign FPR**). Optionally score a flow. |
+| **Examiner should see** | The pipeline: classifier evidence + novelty evidence → Fisher fusion → conformal p-value → compare with α → label (BENIGN / known family / UNKNOWN-ATTACK / ZERO-DAY-ANOMALY). |
+| **Say** | “This is our research detector, Aegis-OSR. It is **advisory**: the frozen model still decides incidents. On unseen attack families it detects **0.706** of flows at a 1 % false-alarm budget, versus **0.490** for the same classifier alone. The 1 % bound holds only while traffic looks like the calibration traffic.” |
+| **Expected** | Page loads with gate status. |
+| **If it fails** | Show slide 16 (method figure) and continue. |
+
+---
+
+### Step 19 — Research Lab → R3 campaign
+
+| | |
+|--|--|
+| **Go to** | Sidebar → **Zero-Day Research** → **Research Lab** (`/research-lab`) → tab **R3 campaign** |
+| **Click / type** | Scroll the hypothesis cards A1–A7, then **Evidence-reliability study (RS1, RS2)**. |
+| **Examiner should see** | Each pre-registered hypothesis with its verdict badge: A1, A2, A4, A5 supported; A6 setting- and model-dependent; A7 rejected; RS1 and RS2 rejected. |
+| **Say** | “We wrote these hypotheses down and committed them **before** running the campaign: six tree models, new seeds. Fusion helps unseen-family detection for all six models, but after moving to a new network it loses detection for all six, and our idea for predicting that from benign traffic was rejected, so by our own rule we did not build a new method.” |
+| **Expected** | Verdict badges render. |
+| **If it fails** | Show slide 18 (verdict table) or `docs/research/R3_RESULTS.md`. |
+
+---
+
 ## 5. Timed shortcuts
 
 | Length | Path |
 |--------|------|
 | **≤5 min** | 1 → 2–9 (DDoS + SHAP + risk + rec) → 16 → honesty line → stop |
 | **~8–10 min** | Full 1–17 |
-| **Extra if asked** | Models (frozen DT/RF) · Research (temporal/PSI) · System (`/api/ready`) · Campaigns |
+| **~12 min** | Full 1–19 (adds Zero-Day Lab + R3 campaign) |
+| **Research-focused panel** | 1 → 2–4 → 18 → 19 → honesty line |
+| **Extra if asked** | Models (frozen DT/RF) · Live Monitor (`/live`) · System (`/api/ready`) · Campaigns |
 
 ---
 
@@ -371,7 +400,9 @@ Use attack type **DDoS** unless noted.
 | Advisory recommendations | “We auto-mitigate in production” |
 | IID / temporal research results | “Guarantees live accuracy” |
 | Simulation assumptions 0.82 / 0.78 | “82% real-world mitigation proven” |
-| P11 measured 1.00 / 0.80 | “Same number as simulation” |
+| P11 harness 1.00 / 0.80 (by construction) | “Same number as simulation”, “measured mitigation” |
+| Zero-day detection *measured in distribution* | “Detects all zero-days” |
+| Pre-registered, negative results reported | “The new method works everywhere” |
 | P12 security validation PASS | “Certified secure for enterprise” |
 
 ---
@@ -382,8 +413,8 @@ Use attack type **DDoS** unless noted.
 
 ### Fallback A — Architecture + evidence (no UI)
 
-1. Open `docs/Aegis_IDS_Viva_Presentation.pptx` (18 slides).  
-2. Walk: Architecture → ML results → XAI/Risk → Simulation → Controlled response → P11 → P12 → Limitations.  
+1. Open `docs/Aegis_IDS_Viva_Presentation.pptx` (22 slides).  
+2. Walk: Architecture → ML results → XAI/Risk → Simulation → Controlled response → P11 → P12 → Research (16–19) → Limitations.  
 3. Quote the numbers table at the top of this file.
 
 ### Fallback B — Artifacts on disk
@@ -397,6 +428,8 @@ Use attack type **DDoS** unless noted.
 | P11 empirical | `models/trained_models/empirical_mitigation_report.json` or `docs/EMPIRICAL_MITIGATION.md` |
 | P12 validation | `reports/final_security_validation_report.json` or `docs/FINAL_SECURITY_VALIDATION.md` |
 | Readiness doc | `docs/POST_MERGE_VERIFICATION.md` |
+| Research results | `docs/research/R3_RESULTS.md` · `docs/research/Aegis_OSR_paper_ieee.pdf` |
+| Release validation | `reports/release/release_validation_20261122_phase11b.json` |
 
 ### Fallback C — API only (UI down)
 
@@ -416,7 +449,7 @@ Use attack type **DDoS** unless noted.
 
 When the examiner says: *“Okay, explain what your system actually does.”*
 
-> **Aegis IDS** takes CICIDS-style network **flows**, runs a frozen **Decision Tree** (attack vs benign @ 0.85) and **Random Forest** (attack family), explains the decision with **SHAP**, scores **risk**, and emits an **advisory** defense. Analysts can open a **controlled** response path—propose, dry-run, approve, verify, rollback—on a **lab adapter**, never a live firewall. We also **simulate** the attack–defense lifecycle with labelled assumption priors, and we validated the response harness in P11 (DDoS 1.00, DoS 0.80, deterministic by construction) and validated security boundaries in P12 (**PASS**). It is a **productionized prototype** for decision support—not an enterprise auto-blocking SOC.
+> **Aegis IDS** takes CICIDS-style network **flows**, runs a frozen **Decision Tree** (attack vs benign @ 0.85) and **Random Forest** (attack family), explains the decision with **SHAP**, scores **risk**, and emits an **advisory** defense. Analysts can open a **controlled** response path—propose, dry-run, approve, verify, rollback—on a **lab adapter**, never a live firewall. We also **simulate** the attack–defense lifecycle with labelled assumption priors, and we validated the response harness in P11 (DDoS 1.00, DoS 0.80, deterministic by construction) and validated security boundaries in P12 (**PASS**). It is a **productionized prototype** for decision support—not an enterprise auto-blocking SOC. On the research side, an advisory **zero-day gate** raises unseen-family detection from 0.49 to 0.71 at a 1 % false-alarm rate, and a pre-registered campaign shows where that stops working: on a new network.
 
 ---
 

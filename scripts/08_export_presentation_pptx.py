@@ -1,6 +1,7 @@
-"""Generate final viva PowerPoint (18 slides) from PROJECT_REPORT.md numbers.
+"""Generate final viva PowerPoint (22 slides) from PROJECT_REPORT.md numbers.
 
-Aligned to tags v1.1-research (frozen ML) and v2.0-aegis-productionized.
+Aligned to tags v1.1-research (frozen ML) and v2.0-aegis-productionized, plus the open-set research track and the
+pre-registered R3 campaign (slides 16-19; numbers from PROJECT_REPORT.md Chapter 13 and docs/research/R3_RESULTS.md).
 
   python scripts/08_export_presentation_pptx.py
   → docs/Aegis_IDS_Viva_Presentation.pptx
@@ -17,6 +18,7 @@ from pptx.util import Inches, Pt
 
 ROOT = Path(__file__).resolve().parents[1]
 FIGS = ROOT / "models" / "trained_models" / "figures"
+RFIGS = ROOT / "docs" / "research" / "paper_build" / "figs"
 OUT = ROOT / "docs" / "Aegis_IDS_Viva_Presentation.pptx"
 
 BG = RGBColor(0x07, 0x11, 0x1A)
@@ -84,8 +86,35 @@ def footer(slide, text: str = "Aegis IDS  ·  v2.0-aegis-productionized  ·  Res
     _set_run(r, 11, False, MUTED)
 
 
-def add_pic(slide, name: str, left: float, top: float, height: float | None = None, width: float | None = None):
-    path = FIGS / name
+def table(slide, rows: list[list[str]], left: float, top: float, width: float, col0: float,
+          col1: float | None = None, size: int = 14):
+    """Dark-theme table; first row is the header."""
+    shape = slide.shapes.add_table(len(rows), len(rows[0]), Inches(left), Inches(top), Inches(width),
+                                   Inches(0.42 * len(rows)))
+    tbl = shape.table
+    tbl.columns[0].width = Inches(col0)
+    if len(rows[0]) == 2:
+        tbl.columns[1].width = Inches(width - col0)
+    else:
+        tbl.columns[1].width = Inches(col1)
+        tbl.columns[2].width = Inches(width - col0 - col1)
+    for i, row in enumerate(rows):
+        for j, text in enumerate(row):
+            cell = tbl.cell(i, j)
+            cell.fill.solid()
+            cell.fill.fore_color.rgb = RGBColor(0x12, 0x2A, 0x38) if i == 0 else (
+                RGBColor(0x0C, 0x1C, 0x27) if i % 2 else RGBColor(0x0F, 0x22, 0x2F))
+            cell.text = ""
+            run = cell.text_frame.paragraphs[0].add_run()
+            run.text = text
+            color = ACCENT if i == 0 else TEXT
+            if i and j == len(row) - 1 and text in ("Rejected", "Model-dependent"):
+                color = WARN
+            _set_run(run, size, i == 0, color)
+
+
+def add_pic(slide, name, left: float, top: float, height: float | None = None, width: float | None = None):
+    path = name if isinstance(name, Path) else FIGS / name
     if not path.exists():
         return False
     kwargs = {}
@@ -121,7 +150,8 @@ def main() -> None:
     r3 = p3.add_run()
     r3.text = (
         "\nv1.1-research  →  v2.0-aegis-productionized\n"
-        "Decision Tree @ 0.85  ·  Random Forest (attack-only)  ·  P12 PASS"
+        "Decision Tree @ 0.85  ·  Random Forest (attack-only)  ·  P12 PASS\n"
+        "Research: Aegis-OSR open-set zero-day gate  ·  pre-registered R3 campaign"
     )
     _set_run(r3, 15, False, MUTED)
     p4 = tf.add_paragraph()
@@ -248,10 +278,11 @@ def main() -> None:
     bullets(
         s,
         [
-            "Binary DT @ 0.85: F1 0.99048 · Recall 0.997 · PR-AUC 0.99744 · ROC-AUC 0.99916",
-            "Binary residuals: FP 1,377 · FN 255 (FPR 0.00329 / FNR 0.00300)",
-            "Multiclass RF: macro-F1 0.99813 · weighted-F1 0.99979 · accuracy 0.99979",
-            "Cite as: performance on the stratified IID holdout",
+            "Binary DT @ deployed 0.85: F1 0.99382 · Recall 0.992 · FPR 0.091 %  (0.99048 / 0.997 were @ 0.5)",
+            "Threshold-free: PR-AUC 0.99744 · ROC-AUC 0.99916",
+            "Multiclass RF: macro-F1 0.99813 — given a perfect stage 1",
+            "End-to-end @ 0.85: Bot 57.1 % · WebAttack 37.3 % detected (minority-family weakness)",
+            "Cite as: stratified IID holdout — not a live-network guarantee",
         ],
         left=0.55,
         width=6.4,
@@ -329,15 +360,15 @@ def main() -> None:
 
     # 14 P11
     s = add_blank(prs)
-    title_block(s, "P11 — Empirical mitigation", "Controlled lab measurements vs simulation priors")
+    title_block(s, "P11 — Harness validation", "Deterministic by construction — not measured mitigation")
     bullets(
         s,
         [
             "Conditions: no_defense vs recommendation_only vs controlled_response (N=10)",
-            "DDoS BLOCK_SOURCE: measured effectiveness 1.00  (sim prior 0.82 · Δ +0.18)",
-            "DoS RATE_LIMIT: measured effectiveness 0.80  (sim prior 0.78 · Δ +0.02)",
+            "DDoS BLOCK_SOURCE: harness value 1.00 by construction  (sim prior 0.82)",
+            "DoS RATE_LIMIT: harness value 0.80 by construction  (sim prior 0.78)",
             "Recommendation-only does not change traffic — detects ≠ mitigates",
-            "CONTROLLED lab only — not production firewall/EDR effectiveness",
+            "Validates the CONTROLLED response harness — not firewall/EDR effectiveness",
         ],
         size=16,
     )
@@ -345,7 +376,7 @@ def main() -> None:
     box = s.shapes.add_textbox(Inches(0.7), Inches(6.15), Inches(12), Inches(0.55))
     p = box.text_frame.paragraphs[0]
     r = p.add_run()
-    r.text = "Keep both numbers: simulation assumptions stay labelled assumptions."
+    r.text = "Keep both numbers: simulation assumptions stay labelled assumptions; harness values are not measurements."
     _set_run(r, 14, True, WARN)
     footer(s)
 
@@ -364,7 +395,98 @@ def main() -> None:
     )
     footer(s)
 
-    # 16 Demo
+    # 16 Research: problem and method
+    s = add_blank(prs)
+    title_block(s, "Research track — zero-day detection (Aegis-OSR)",
+                "A closed-set classifier cannot reject an attack family it never saw")
+    bullets(
+        s,
+        [
+            "Evidence 1: classifier's 1 − P(benign)",
+            "Evidence 2: distance to the 5 nearest benign flows (novelty)",
+            "Each → benign surprisal; summed (Fisher fusion)",
+            "Split-conformal p-value: benign FPR ≤ α — only while traffic is exchangeable",
+            "Advisory Zero-Day Gate beside the frozen v1.1 model (frozen model stays the authority)",
+            "Test: leave one attack family out (LOAFO), 6 families × 5 seeds",
+        ],
+        left=0.55,
+        width=6.3,
+        size=15,
+    )
+    add_pic(s, RFIGS / "fig2_aegis_osr.png", 7.0, 1.8, width=5.9)
+    footer(s)
+
+    # 17 Research: development results
+    s = add_blank(prs)
+    title_block(s, "Research results — where it works and where it breaks",
+                "Unseen-family recall at a 1 % benign false-alarm budget")
+    table(
+        s,
+        [
+            ["Setting", "Result"],
+            ["LOAFO, Aegis-OSR", "0.706 [0.689, 0.723] · realised FPR 1.00 %"],
+            ["LOAFO, same XGBoost alone / decision tree", "0.490 / 0.241"],
+            ["Gain over the classifier", "+0.216 [+0.180, +0.252] · 5 of 5 seeds"],
+            ["Temporal Mon–Thu → Friday", "FPR 7.09 % at a 1 % budget"],
+            ["CICIDS2017 → CSE-CIC-IDS2018", "FPR 36.7 % · frozen v1.1 F1 0.278"],
+            ["2018, recalibrated per day", "FPR 1.62 % but known recall 0.088"],
+            ["Fusion − classifier after recal", "−0.237 · 0 of 5 seeds positive"],
+        ],
+        left=0.6, top=1.65, width=7.0, col0=3.6, size=13,
+    )
+    add_pic(s, RFIGS / "fig3_loafo_by_family.png", 7.85, 1.75, width=5.0)
+    box = s.shapes.add_textbox(Inches(0.6), Inches(6.2), Inches(12.2), Inches(0.7))
+    box.text_frame.word_wrap = True
+    r = box.text_frame.paragraphs[0].add_run()
+    r.text = ("Recalibration restoring FPR but not detection is prior work (Şahin & Mert 2026) — not claimed. "
+              "Our observation: fusion that helps in distribution hurts after cross-network recalibration.")
+    _set_run(r, 13, True, WARN)
+    footer(s)
+
+    # 18 Research: pre-registered campaign
+    s = add_blank(prs)
+    title_block(s, "Pre-registered R3 campaign",
+                "6 tree models · new seeds 101–105 · 4 protocols · 780 records · hypotheses fixed before any result")
+    table(
+        s,
+        [
+            ["Hypothesis", "Result", "Verdict"],
+            ["A4  calibration valid (FPR in 0.8–1.2 %)", "24 of 24 cells, 0.99–1.06 %", "Supported"],
+            ["A1  fusion raises zero-day detection (LOAFO)", "6 of 6 models, +0.134 to +0.268", "Supported"],
+            ["A2  the evidence model matters", "decision tree −0.173 vs XGBoost", "Supported"],
+            ["A5  fusion loses detection on 2018 after recal", "6 of 6 same sign, −0.212 to −0.006", "Supported"],
+            ["A6  gain transfers to 2018 unseen families", "0 positive, 1 negative significant", "Model-dependent"],
+            ["A7  max fusion is a safe fixed rule", "0 of 6 non-inferior", "Rejected"],
+            ["RS1 / RS2  benign-only reliability screen", "ρ = −0.16 / +0.20", "Rejected"],
+        ],
+        left=0.6, top=1.75, width=12.1, col0=5.2, col1=4.4, size=14,
+    )
+    box = s.shapes.add_textbox(Inches(0.6), Inches(6.1), Inches(12.2), Inches(0.8))
+    box.text_frame.word_wrap = True
+    r = box.text_frame.paragraphs[0].add_run()
+    r.text = ("Robust: verdicts survive dropping any one family/day (A7 becomes inconclusive); "
+              "XGBoost gain replicates on new seeds (+0.218 → +0.228).")
+    _set_run(r, 14, False, MUTED)
+    footer(s)
+
+    # 19 Research: negative results and claims
+    s = add_blank(prs)
+    title_block(s, "Negative results — reported, not hidden", "Phase 7 gate stayed closed: no new method built")
+    bullets(
+        s,
+        [
+            "Rule fixed in advance: build a gated method only if RS1 and RS2 are both supported",
+            "Both rejected: the screen flags 62–100 % of benign warm-up flows on every 2018 day",
+            "Claim: fusion helps unseen-family detection in distribution — for all six models",
+            "Claim: after cross-network recalibration the same fusion hurts — no fixed rule is safe",
+            "Not claimed: universal zero-day detection · guaranteed FPR under shift · transfer to new networks",
+            "Exploratory lead: refreshing the kNN benign reference removes most of the 2018 loss → needs its own pre-registered test",
+        ],
+        size=16,
+    )
+    footer(s)
+
+    # 20 Demo
     s = add_blank(prs)
     title_block(s, "System demonstration", "See docs/DEMO.md for exact clicks")
     bullets(
@@ -374,27 +496,29 @@ def main() -> None:
             "Flow: Detection → classification / SHAP → risk → incident",
             "Propose → dry-run → approve (CONTROLLED) → verify",
             "Simulation lifecycle · System / ops readiness",
+            "Zero-Day Lab and Research Lab → R3 campaign tab (pre-registered results)",
         ],
         size=17,
     )
     footer(s)
 
-    # 17 Limitations
+    # 21 Limitations
     s = add_blank(prs)
     title_block(s, "Limitations & future work")
     bullets(
         s,
         [
-            "CICIDS2017 IID ≠ continuous enterprise traffic · no zero-day claim",
-            "Temporal multiclass incomplete for some families · external dataset = future work",
-            "Simulation efficacy = assumptions · P11 = CONTROLLED lab, not live EDR",
-            "Future: frozen cross-dataset eval · broader temporal families · opt-in sandbox enforcement later",
+            "CICIDS2017 IID ≠ continuous enterprise traffic · frozen v1.1 F1 falls to 0.278 on CSE-CIC-IDS2018",
+            "Zero-day detection measured in distribution, not guaranteed · FPR bound breaks under shift",
+            "R3: six CPU tree models, defaults, 5 seeds · TabM / CLOSR / CatBoost / tuning not run",
+            "Simulation efficacy = assumptions · P11 = CONTROLLED harness, not live EDR",
+            "Future: pre-registered reference-refresh test · independent data (NF-v3, LycoS) · GPU campaign",
         ],
         size=16,
     )
     footer(s)
 
-    # 18 Conclusion
+    # 22 Conclusion
     s = add_blank(prs)
     title_block(s, "Conclusion")
     bullets(
@@ -402,6 +526,7 @@ def main() -> None:
         [
             "Aegis IDS: productionized, security-validated IDS prototype",
             "Frozen ML + XAI + risk + controlled response + simulation + P11/P12 evidence",
+            "Research: fusion helps zero-day detection in distribution (6/6 models), hurts after cross-network recalibration — pre-registered",
             "Hard boundary against live network enforcement preserved",
             "Questions?  docs/VIVA_QA.md  ·  docs/PROJECT_REPORT.md  ·  DEMO.md",
         ],
@@ -415,7 +540,7 @@ def main() -> None:
     r = p.add_run()
     r.text = (
         "Thank you\n"
-        "v1.1-research  ·  v2.0-aegis-productionized  ·  P12 Overall PASS"
+        "v1.1-research  ·  v2.0-aegis-productionized  ·  P12 Overall PASS  ·  Release validation PASS"
     )
     _set_run(r, 16, False, MUTED)
     footer(s, "Fill Team / College / Year on slide 1 before the viva")
