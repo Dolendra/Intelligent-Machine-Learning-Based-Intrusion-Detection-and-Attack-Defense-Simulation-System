@@ -671,17 +671,21 @@ Together, tags **`v1.1-research`** and **`v2.0-aegis-productionized`**, and the 
 
 # Team Contribution
 
-Suggested three-member ownership (everyone should still understand the full pipeline for viva)—see `docs/TEAM.md`:
+**Authors:** Nelluri Dolendra Sai Teja, Edla Harshavardhan, Chittuluri Naveen · **Guide:** R Rahul  
+**Institution:** Department of Computer Science and Engineering, Rajiv Gandhi University of Knowledge Technologies (RGUKT), Basar, Telangana, India · 2026
 
-| Member focus | Primary ownership |
-|--------------|-------------------|
-| **ML / Data** | CICIDS loading, features, training, IID/temporal metrics, notebooks |
-| **Security intelligence** | SHAP/LIME, risk, recommendations, incidents, response safety narrative |
-| **Application / simulation** | FastAPI, React SOC UI, simulation engine, demo ops, Docker |
+Everyone should still understand the full pipeline for the viva (see `docs/TEAM.md`).
 
-Repository / release: Nelluri Dolendra Sai Teja — GitHub `Dolendra` · tags `v1.1-research`, `v2.0-aegis-productionized`.
+| Member | Primary ownership |
+|--------|-------------------|
+| **Nelluri Dolendra Sai Teja** | Data pipeline, model training and evaluation, open-set method and experiments (Aegis-OSR, R3), repository and release management |
+| **Edla Harshavardhan** | Explainability, risk scoring, recommendations, incident handling, response-safety design |
+| **Chittuluri Naveen** | Backend API, React console, simulation engine, deployment |
+| **R Rahul (guide)** | Supervision, research direction, critical revision |
 
-*(Replace with your institution’s exact author list and contribution percentages as required.)*
+Repository / release: GitHub `Dolendra` · tags `v1.1-research`, `v2.0-aegis-productionized`, `v3.0-submission`.
+
+*(Add contribution percentages only if your institution requires them.)*
 
 ---
 

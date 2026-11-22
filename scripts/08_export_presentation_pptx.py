@@ -157,7 +157,8 @@ def main() -> None:
     p4 = tf.add_paragraph()
     p4.alignment = PP_ALIGN.CENTER
     r4 = p4.add_run()
-    r4.text = "\nTeam members  ·  College  ·  Year"
+    r4.text = ("\nNelluri Dolendra Sai Teja  ·  Edla Harshavardhan  ·  Chittuluri Naveen\n"
+               "Guide: R Rahul  ·  Dept. of CSE, RGUKT Basar  ·  2026")
     _set_run(r4, 14, False, MUTED)
 
     # 2 Problem
@@ -543,7 +544,7 @@ def main() -> None:
         "v1.1-research  ·  v2.0-aegis-productionized  ·  P12 Overall PASS  ·  Release validation PASS"
     )
     _set_run(r, 16, False, MUTED)
-    footer(s, "Fill Team / College / Year on slide 1 before the viva")
+    footer(s)
 
     prs.save(OUT)
     print(f"Wrote {OUT} ({OUT.stat().st_size} bytes, {len(prs.slides)} slides)")
